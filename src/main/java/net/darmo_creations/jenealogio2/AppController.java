@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.AboutDialog;
 import net.darmo_creations.jenealogio2.ui.SettingsDialog;
 
 public class AppController {
@@ -72,6 +73,7 @@ public class AppController {
   private Button checkInconsistenciesToolbarButton;
 
   private final SettingsDialog settingsDialog = new SettingsDialog();
+  private final AboutDialog aboutDialog = new AboutDialog();
 
   public void initialize() {
     Theme theme = App.config().theme();
@@ -120,6 +122,11 @@ public class AppController {
   public void onSettings() {
     this.settingsDialog.setConfig(App.config());
     this.settingsDialog.show();
+  }
+
+  @FXML
+  public void onAbout() {
+    this.aboutDialog.show();
   }
 
   @FXML

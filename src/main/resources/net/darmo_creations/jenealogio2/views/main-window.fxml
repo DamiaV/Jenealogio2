@@ -118,7 +118,7 @@
             </Menu>
             <Menu text="%menu.help">
               <items>
-                <MenuItem fx:id="aboutMenuItem" text="%menu.help.about"/>
+                <MenuItem fx:id="aboutMenuItem" onAction="#onAbout" text="%menu.help.about"/>
               </items>
             </Menu>
           </menus>
