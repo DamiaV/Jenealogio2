@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.input.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0"
+            prefWidth="1280.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="net.darmo_creations.jenealogio2.AppController">
+  <children>
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+      <children>
+        <MenuBar>
+          <menus>
+            <Menu text="%menu.file">
+              <items>
+                <MenuItem fx:id="newFileMenuItem" text="%menu.file.new">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="openFileMenuItem" text="%menu.file.open">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <SeparatorMenuItem/>
+                <MenuItem fx:id="saveMenuItem" text="%menu.file.save">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="saveAsMenuItem" text="%menu.file.save_as">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <SeparatorMenuItem/>
+                <MenuItem fx:id="settingsMenuItem" onAction="#onSettings" text="%menu.file.settings">
+                  <accelerator>
+                    <KeyCodeCombination alt="DOWN" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="quitMenuItem" onAction="#onQuit" text="%menu.file.quit">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+              </items>
+            </Menu>
+            <Menu text="%menu.edit">
+              <items>
+                <MenuItem fx:id="undoMenuItem" text="%menu.edit.undo">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="Z" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="redoMenuItem" text="%menu.edit.redo">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="Y" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+              </items>
+              <SeparatorMenuItem/>
+              <items>
+                <MenuItem fx:id="addPersonMenuItem" text="%menu.edit.add_person">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="editPersonMenuItem" text="%menu.edit.edit_person">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="removePersonMenuItem" text="%menu.edit.remove_person">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="DELETE" control="UP" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <SeparatorMenuItem/>
+                <MenuItem fx:id="addParentMenuItem" text="%menu.edit.add_parent">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="addChildMenuItem" text="%menu.edit.add_child">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="C" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="removeParentalRelationMenuItem" text="%menu.edit.remove_parental_relation">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="DELETE" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="addRelationMenuItem" text="%menu.edit.add_relation">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="editRelationMenuItem" text="%menu.edit.edit_relation">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="removeRelationMenuItem" text="%menu.edit.remove_relation">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="DELETE" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+              </items>
+            </Menu>
+            <Menu text="%menu.tools">
+              <items>
+                <MenuItem fx:id="checkInconsistenciesMenuItem" text="%menu.tools.check_inconsistencies"/>
+              </items>
+            </Menu>
+            <Menu text="%menu.help">
+              <items>
+                <MenuItem fx:id="aboutMenuItem" text="%menu.help.about"/>
+              </items>
+            </Menu>
+          </menus>
+        </MenuBar>
+        <BorderPane>
+          <top>
+            <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+              <items>
+                <Button fx:id="newToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.new"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="openToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.open"/>
+                  </tooltip>
+                </Button>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="saveToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.save"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="saveAsToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.save_as"/>
+                  </tooltip>
+                </Button>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="undoToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.undo"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="redoToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.redo"/>
+                  </tooltip>
+                </Button>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="addPersonToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.add_person"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="addParentToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.add_parent"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="addChildToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.add_child"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="addRelationToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.add_relation"/>
+                  </tooltip>
+                </Button>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="checkInconsistenciesToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.check_inconsistencies"/>
+                  </tooltip>
+                </Button>
+              </items>
+            </ToolBar>
+          </top>
+        </BorderPane>
+      </children>
+    </VBox>
+  </children>
+</AnchorPane>
