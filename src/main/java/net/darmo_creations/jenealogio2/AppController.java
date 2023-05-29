@@ -4,9 +4,12 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.layout.AnchorPane;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.PersonWidget;
 import net.darmo_creations.jenealogio2.ui.TreeWidget;
 import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
@@ -75,6 +78,8 @@ public class AppController {
   private Button checkInconsistenciesToolbarButton;
 
   @FXML
+  private TreeView<Object> sideTreeView;
+  @FXML
   private AnchorPane mainPane;
 
   private final TreeWidget treeWidget = new TreeWidget();
@@ -123,6 +128,12 @@ public class AppController {
     this.addRelationToolbarButton.setGraphic(theme.getIcon(Icon.ADD_RELATION, Icon.Size.BIG));
 
     this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
+
+    TreeItem<Object> root = new TreeItem<>(App.config().language().translate("treeview.persons"));
+    for (PersonWidget widget : this.treeWidget.widgets()) {
+      root.getChildren().add(new TreeItem<>(widget.person()));
+    }
+    this.sideTreeView.setRoot(root);
 
     AnchorPane.setTopAnchor(this.treeWidget, 0.0);
     AnchorPane.setBottomAnchor(this.treeWidget, 0.0);

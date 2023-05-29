@@ -73,6 +73,10 @@ public class PersonWidget extends AnchorPane {
     this.refresh();
   }
 
+  public Person person() {
+    return this.person;
+  }
+
   private void onClick(MouseEvent mouseEvent) {
     // TODO open edit dialog
     this.requestFocus();

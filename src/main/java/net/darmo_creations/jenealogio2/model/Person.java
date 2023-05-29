@@ -226,6 +226,19 @@ public class Person extends GenealogyObject<Person> {
     return values.stream().map(String::strip).filter(s -> !s.isEmpty()).toList();
   }
 
+  @Override
+  public String toString() {
+    String firstNames = this.getJoinedPublicFirstNames()
+        .orElse(this.getJoinedLegalFirstNames().orElse("?"));
+    String lastName = this.publicLastName()
+        .orElse(this.legalLastName().orElse("?"));
+    String s = firstNames + " " + lastName;
+    if (this.disambiguationID != null) {
+      s += " (#%d)".formatted(this.disambiguationID);
+    }
+    return s;
+  }
+
   public record Child(@NotNull Person person, boolean adopted) {
     public Child {
       Objects.requireNonNull(person);
