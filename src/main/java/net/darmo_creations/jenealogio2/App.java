@@ -24,6 +24,7 @@ public class App extends Application {
   public static final Logger LOGGER = new Logger(NAME);
 
   public static final String RESOURCES_ROOT = "/net/darmo_creations/jenealogio2/";
+  public static final String IMAGES_PATH = RESOURCES_ROOT + "images/";
   private static final String VIEWS_PATH = RESOURCES_ROOT + "views/";
 
   private static Config config;

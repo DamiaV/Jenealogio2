@@ -18,7 +18,8 @@ import org.jetbrains.annotations.NotNull;
 public class PersonWidget extends AnchorPane {
   private static final String EMPTY_LABEL_VALUE = "-";
   @SuppressWarnings("DataFlowIssue")
-  public static final Image DEFAULT_IMAGE = new Image(PersonWidget.class.getResourceAsStream(App.RESOURCES_ROOT + "images/default_person_image.png"));
+  public static final Image DEFAULT_IMAGE =
+      new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_person_image.png"));
 
   private final Person person;
 

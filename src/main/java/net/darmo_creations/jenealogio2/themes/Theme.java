@@ -12,13 +12,15 @@ import java.net.URL;
 import java.util.*;
 
 public final class Theme {
-  private static final String BUILTIN_THEMES_PATH = "/net/darmo_creations/jenealogio2/themes/";
+  private static final String BUILTIN_THEMES_PATH = App.RESOURCES_ROOT + "themes/";
   private static final String[] BUILTIN_THEME_IDS = {
       "dark",
       "light",
   };
   public static final String DEFAULT_THEME_ID = BUILTIN_THEME_IDS[0];
   private static final File USER_THEMES_DIR = new File("themes");
+
+  private static final String ICONS_PATH = App.IMAGES_PATH + "icons/";
 
   private static final Map<String, Theme> THEMES = new HashMap<>();
 
@@ -91,7 +93,7 @@ public final class Theme {
 
   public Node getIcon(@NotNull Icon icon, @NotNull Icon.Size size) {
     InputStream stream = this.getClass().getResourceAsStream(
-        "%sicons/%s_%d.png".formatted(App.RESOURCES_ROOT, icon.baseName(), size.pixels()));
+        "%s%s_%d.png".formatted(ICONS_PATH, icon.baseName(), size.pixels()));
     if (stream == null) {
       return null;
     }
