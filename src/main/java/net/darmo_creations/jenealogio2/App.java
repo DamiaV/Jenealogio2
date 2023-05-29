@@ -34,10 +34,7 @@ public class App extends Application {
 
   public static ResourceBundle getResourceBundle() {
     if (resourceBundle == null) {
-      resourceBundle = ResourceBundle.getBundle(
-          RESOURCES_ROOT.substring(1).replace('/', '.') + "translations.ui",
-          config.language().locale()
-      );
+      resourceBundle = config().language().resources();
     }
     return resourceBundle;
   }

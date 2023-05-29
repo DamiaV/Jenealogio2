@@ -45,10 +45,10 @@ public final class Config implements Cloneable {
   private static void loadLanguages() throws IOException {
     LANGUAGES.clear();
     for (String langCode : LANGUAGE_CODES) {
-      ResourceBundle bundle = getResourceBundle(langCode);
+      ResourceBundle bundle = getResourceBundle(new Locale(langCode));
       if (bundle != null) {
         String langName = bundle.getString("language_name");
-        LANGUAGES.put(langCode, new Language(langCode, langName, new Locale(langCode)));
+        LANGUAGES.put(langCode, new Language(langCode, langName, new Locale(langCode), bundle));
       }
     }
     if (LANGUAGES.isEmpty()) {
@@ -56,10 +56,10 @@ public final class Config implements Cloneable {
     }
   }
 
-  private static ResourceBundle getResourceBundle(@NotNull String langCode) {
+  private static ResourceBundle getResourceBundle(@NotNull Locale locale) {
     return ResourceBundle.getBundle(
         App.RESOURCES_ROOT.substring(1).replace('/', '.') + "translations.ui",
-        new Locale(langCode)
+        locale
     );
   }
 
