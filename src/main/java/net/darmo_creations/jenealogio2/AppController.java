@@ -38,17 +38,21 @@ public class AppController {
   @FXML
   private MenuItem removePersonMenuItem;
   @FXML
-  private MenuItem addParentMenuItem;
-  @FXML
   private MenuItem addChildMenuItem;
   @FXML
-  private MenuItem removeParentalRelationMenuItem;
+  private MenuItem addSiblingMenuItem;
   @FXML
-  private MenuItem addRelationMenuItem;
+  private MenuItem editParentsMenuItem;
   @FXML
-  private MenuItem editRelationMenuItem;
+  private MenuItem editPartnersMenuItem;
   @FXML
-  private MenuItem removeRelationMenuItem;
+  private MenuItem setPictureMenuItem;
+  @FXML
+  private MenuItem calculateRelationshipsMenuItem;
+  @FXML
+  private MenuItem birthdaysMenuItem;
+  @FXML
+  private MenuItem mapMenuItem;
   @FXML
   private MenuItem checkInconsistenciesMenuItem;
   @FXML
@@ -69,11 +73,21 @@ public class AppController {
   @FXML
   private Button addPersonToolbarButton;
   @FXML
-  private Button addParentToolbarButton;
-  @FXML
   private Button addChildToolbarButton;
   @FXML
-  private Button addRelationToolbarButton;
+  private Button addSiblingToolbarButton;
+  @FXML
+  private Button editParentsToolbarButton;
+  @FXML
+  private Button editPartnersToolbarButton;
+  @FXML
+  private Button setPictureToolbarButton;
+  @FXML
+  private Button calculateRelationshipsToolbarButton;
+  @FXML
+  private Button birthdaysToolbarButton;
+  @FXML
+  private Button mapToolbarButton;
   @FXML
   private Button checkInconsistenciesToolbarButton;
 
@@ -103,13 +117,15 @@ public class AppController {
     this.addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
     this.editPersonMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PERSON, Icon.Size.SMALL));
     this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PERSON, Icon.Size.SMALL));
-    this.addParentMenuItem.setGraphic(theme.getIcon(Icon.ADD_PARENT, Icon.Size.SMALL));
     this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
-    this.removeParentalRelationMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PARENTAL_RELATION, Icon.Size.SMALL));
-    this.addRelationMenuItem.setGraphic(theme.getIcon(Icon.ADD_RELATION, Icon.Size.SMALL));
-    this.editRelationMenuItem.setGraphic(theme.getIcon(Icon.EDIT_RELATION, Icon.Size.SMALL));
-    this.removeRelationMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_RELATION, Icon.Size.SMALL));
+    this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
+    this.editParentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.SMALL));
+    this.editPartnersMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARTNERS, Icon.Size.SMALL));
+    this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
 
+    this.calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
+    this.birthdaysMenuItem.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.SMALL));
+    this.mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
     this.checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
 
     this.aboutMenuItem.setGraphic(theme.getIcon(Icon.ABOUT, Icon.Size.SMALL));
@@ -123,10 +139,15 @@ public class AppController {
     this.undoToolbarButton.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.BIG));
     this.redoToolbarButton.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.BIG));
     this.addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
-    this.addParentToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PARENT, Icon.Size.BIG));
     this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
-    this.addRelationToolbarButton.setGraphic(theme.getIcon(Icon.ADD_RELATION, Icon.Size.BIG));
+    this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
+    this.editParentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.BIG));
+    this.editPartnersToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARTNERS, Icon.Size.BIG));
+    this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
 
+    this.calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
+    this.birthdaysToolbarButton.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.BIG));
+    this.mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
     this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
 
     TreeItem<Object> root = new TreeItem<>(App.config().language().translate("treeview.persons"));

@@ -78,7 +78,7 @@ public class PersonWidget extends AnchorPane {
   }
 
   private void onClick(MouseEvent mouseEvent) {
-    // TODO open edit dialog
+    // TODO open edit dialog on double click
     this.requestFocus();
     mouseEvent.consume();
   }

@@ -60,9 +60,7 @@
                     <KeyCodeCombination alt="UP" code="Y" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
-              </items>
-              <SeparatorMenuItem/>
-              <items>
+                <SeparatorMenuItem/>
                 <MenuItem fx:id="addPersonMenuItem" text="%menu.edit.add_person">
                   <accelerator>
                     <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
@@ -79,41 +77,57 @@
                   </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem/>
-                <MenuItem fx:id="addParentMenuItem" text="%menu.edit.add_parent">
-                  <accelerator>
-                    <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
-                  </accelerator>
-                </MenuItem>
                 <MenuItem fx:id="addChildMenuItem" text="%menu.edit.add_child">
                   <accelerator>
                     <KeyCodeCombination alt="UP" code="C" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
-                <MenuItem fx:id="removeParentalRelationMenuItem" text="%menu.edit.remove_parental_relation">
+                <MenuItem fx:id="addSiblingMenuItem" text="%menu.edit.add_sibling">
                   <accelerator>
-                    <KeyCodeCombination alt="UP" code="DELETE" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                    <KeyCodeCombination alt="UP" code="B" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
-                <MenuItem fx:id="addRelationMenuItem" text="%menu.edit.add_relation">
+                <MenuItem fx:id="editParentsMenuItem" text="%menu.edit.edit_parents">
                   <accelerator>
-                    <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                    <KeyCodeCombination alt="DOWN" code="E" control="UP" meta="UP" shift="DOWN" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
-                <MenuItem fx:id="editRelationMenuItem" text="%menu.edit.edit_relation">
+                <MenuItem fx:id="editPartnersMenuItem" text="%menu.edit.edit_partners">
                   <accelerator>
-                    <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                    <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
-                <MenuItem fx:id="removeRelationMenuItem" text="%menu.edit.remove_relation">
+                <SeparatorMenuItem/>
+                <MenuItem fx:id="setPictureMenuItem" text="%menu.edit.set_picture">
                   <accelerator>
-                    <KeyCodeCombination alt="UP" code="DELETE" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                    <KeyCodeCombination alt="UP" code="I" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
               </items>
             </Menu>
             <Menu text="%menu.tools">
               <items>
-                <MenuItem fx:id="checkInconsistenciesMenuItem" text="%menu.tools.check_inconsistencies"/>
+                <MenuItem fx:id="calculateRelationshipsMenuItem" text="%menu.tools.calculate_relationships">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="birthdaysMenuItem" text="%menu.tools.birthdays">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="B" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="mapMenuItem" text="%menu.tools.map">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="M" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
+                <SeparatorMenuItem/>
+                <MenuItem fx:id="checkInconsistenciesMenuItem" text="%menu.tools.check_inconsistencies">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="I" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
               </items>
             </Menu>
             <Menu text="%menu.help">
@@ -165,19 +179,45 @@
                     <Tooltip text="%toolbar.add_person"/>
                   </tooltip>
                 </Button>
-                <Button fx:id="addParentToolbarButton">
-                  <tooltip>
-                    <Tooltip text="%toolbar.add_parent"/>
-                  </tooltip>
-                </Button>
                 <Button fx:id="addChildToolbarButton">
                   <tooltip>
                     <Tooltip text="%toolbar.add_child"/>
                   </tooltip>
                 </Button>
-                <Button fx:id="addRelationToolbarButton">
+                <Button fx:id="addSiblingToolbarButton">
                   <tooltip>
-                    <Tooltip text="%toolbar.add_relation"/>
+                    <Tooltip text="%toolbar.add_sibling"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="editParentsToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.edit_parents"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="editPartnersToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.edit_partners"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="setPictureToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.set_picture"/>
+                  </tooltip>
+                </Button>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="calculateRelationshipsToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.calculate_relationships"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="birthdaysToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.birthdays"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="mapToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.map"/>
                   </tooltip>
                 </Button>
                 <Separator orientation="VERTICAL"/>
