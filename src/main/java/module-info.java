@@ -13,5 +13,5 @@ module net.darmo_creations.jenealogio2 {
   // are not exported because it’s not necessary
   exports net.darmo_creations.jenealogio2;
   // Make dialog controllers open for reflection to JavaFX’s FXML system only
-  opens net.darmo_creations.jenealogio2.ui to javafx.fxml;
+  opens net.darmo_creations.jenealogio2.ui.dialogs to javafx.fxml;
 }

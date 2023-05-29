@@ -6,8 +6,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.AboutDialog;
-import net.darmo_creations.jenealogio2.ui.SettingsDialog;
+import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
+import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
 
 public class AppController {
   @FXML

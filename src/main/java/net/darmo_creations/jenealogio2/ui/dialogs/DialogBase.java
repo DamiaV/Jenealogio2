@@ -1,4 +1,4 @@
-package net.darmo_creations.jenealogio2.ui;
+package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ButtonType;
