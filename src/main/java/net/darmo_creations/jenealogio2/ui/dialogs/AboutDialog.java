@@ -25,7 +25,7 @@ public class AboutDialog extends DialogBase<Void> {
   public AboutDialog() {
     super("about", false, ButtonTypes.CLOSE);
     this.setTitle(StringUtils.format(this.getTitle(), new FormatArg("app_name", App.NAME)));
-    this.logo.setImage(this.createImage(App.RESOURCES_ROOT + "icons/app-icon.png"));
+    this.logo.setImage(this.createImage(App.IMAGES_PATH + "icons/app-icon.png"));
     this.titleLabel.setText(App.NAME);
     this.contentView.setText("""
         App version: %s
