@@ -29,14 +29,15 @@ public class AboutDialog extends DialogBase<Void> {
     this.titleLabel.setText(App.NAME);
     this.contentView.setText("""
         App version: %s
-        Java version: %s
-        JVM vendor: %s (%s)
                 
         Developped by Damia Vergnet (@Darmo117 on GitHub).
         This application is available under GPL-3.0 license.
                 
         Icons from FatCow (https://github.com/gammasoft/fatcow).
-        """.formatted(App.VERSION, System.getProperty("java.version"), System.getProperty("java.vendor"), System.getProperty("java.vendor.url")));
+                
+        System properties:
+        %s
+        """.formatted(App.VERSION, App.getSystemProperties()));
   }
 
   public Image createImage(String resourceName) {

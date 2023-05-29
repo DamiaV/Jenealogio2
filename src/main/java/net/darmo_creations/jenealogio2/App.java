@@ -13,7 +13,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.ResourceBundle;
+import java.util.StringJoiner;
 
 public class App extends Application {
   public static final String NAME = "Jenealogio";
@@ -96,14 +98,27 @@ public class App extends Application {
     LocalDateTime date = LocalDateTime.now();
     StringWriter out = new StringWriter();
     e.printStackTrace(new PrintWriter(out));
-    String message = """
+    String template = """
         --- %s (v%s) Crash Report ---
                 
         Time: %s
         Description: %s
                 
+        -- Detailled Stack Trace --
         %s
-        """.formatted(NAME, VERSION, DateTimeUtils.format(date), e.getMessage(), out);
+                
+        -- Technical Information --
+        System properties:
+        %s
+        """;
+    String message = template.formatted(
+        NAME,
+        VERSION,
+        DateTimeUtils.format(date),
+        e.getMessage(),
+        out,
+        getSystemProperties()
+    );
     LOGGER.fatal(message);
     File logsDir = new File("logs");
     if (!logsDir.exists()) {
@@ -116,6 +131,24 @@ public class App extends Application {
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }
+  }
+
+  public static String getSystemProperties() {
+    StringJoiner systemProperties = new StringJoiner("\n");
+    System.getProperties().entrySet().stream()
+        .filter(entry -> {
+          String key = entry.getKey().toString();
+          return !key.startsWith("user.")
+              && !key.startsWith("file.")
+              && !key.startsWith("jdk.")
+              && !key.contains(".path")
+              && !key.contains("path.")
+              && !key.equals("line.separator")
+              && !key.equals("java.home");
+        })
+        .sorted(Comparator.comparing(entry -> entry.getKey().toString()))
+        .forEach(property -> systemProperties.add("%s: %s".formatted(property.getKey(), property.getValue())));
+    return systemProperties.toString();
   }
 
   private record Args(boolean debug) {
