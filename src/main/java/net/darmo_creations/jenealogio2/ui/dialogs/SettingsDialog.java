@@ -31,10 +31,10 @@ public class SettingsDialog extends DialogBase<ButtonType> {
         try {
           App.updateConfig(this.localConfig);
           this.localConfig.save();
-          Alerts.info("dialog.settings.alert.needs_restart.content", null, null);
+          Alerts.info("dialog.settings.alert.needs_restart.header", null, null);
         } catch (IOException e) {
           App.LOGGER.exception(e);
-          Alerts.error("dialog.settings.alert.save_error.content", null, null);
+          Alerts.error("dialog.settings.alert.save_error.header", null, null);
         }
       }
       return null;
