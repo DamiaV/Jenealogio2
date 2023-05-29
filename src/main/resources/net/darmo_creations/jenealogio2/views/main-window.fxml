@@ -190,6 +190,7 @@
             </ToolBar>
           </top>
         </BorderPane>
+        <AnchorPane fx:id="mainPane" VBox.vgrow="ALWAYS"/>
       </children>
     </VBox>
   </children>

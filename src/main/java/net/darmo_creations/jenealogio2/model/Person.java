@@ -1,5 +1,7 @@
 package net.darmo_creations.jenealogio2.model;
 
+import javafx.scene.image.Image;
+import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
 import net.darmo_creations.jenealogio2.utils.Pair;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +30,10 @@ public class Person extends GenealogyObject<Person> {
    */
   private final List<LifeEvent> lifeEvents = new ArrayList<>();
 
+  public Optional<Image> getImage() {
+    return Optional.empty(); // TODO
+  }
+
   public Optional<Integer> disambiguationID() {
     return Optional.ofNullable(this.disambiguationID);
   }
@@ -52,6 +58,10 @@ public class Person extends GenealogyObject<Person> {
     return new ArrayList<>(this.legalFirstNames);
   }
 
+  public Optional<String> getJoinedLegalFirstNames() {
+    return StringUtils.stripNullable(String.join(", ", this.legalFirstNames));
+  }
+
   public void setLegalFirstNames(final @NotNull List<String> legalFirstNames) {
     this.ensureNoDuplicates(legalFirstNames);
     this.legalFirstNames.clear();
@@ -68,6 +78,10 @@ public class Person extends GenealogyObject<Person> {
 
   public List<String> publicFirstNames() {
     return new ArrayList<>(this.publicFirstNames);
+  }
+
+  public Optional<String> getJoinedPublicFirstNames() {
+    return StringUtils.stripNullable(String.join(", ", this.publicFirstNames));
   }
 
   public void setPublicFirstNames(final @NotNull List<String> publicFirstNames) {
@@ -138,6 +152,14 @@ public class Person extends GenealogyObject<Person> {
     return new ArrayList<>(this.children);
   }
 
+  public Optional<CalendarDate> getBirthDate() {
+    return Optional.empty(); // TODO
+  }
+
+  public Optional<CalendarDate> getDeathDate() {
+    return Optional.empty(); // TODO
+  }
+
   public List<LifeEvent> lifeEvents() {
     return new ArrayList<>(this.lifeEvents);
   }
@@ -158,6 +180,7 @@ public class Person extends GenealogyObject<Person> {
       this.lifeEvents.add(event);
       this.lifeEvents.sort(null);
     }
+    // TODO update life status
   }
 
   public void removeLifeEventAsActor(@NotNull LifeEvent event) {
@@ -167,6 +190,7 @@ public class Person extends GenealogyObject<Person> {
     if (!event.hasWitness(this)) {
       this.lifeEvents.remove(event);
     }
+    // TODO update life status
   }
 
   public void addLifeEventAsWitness(@NotNull LifeEvent event) {

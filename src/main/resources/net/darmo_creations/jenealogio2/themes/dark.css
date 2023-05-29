@@ -55,3 +55,23 @@
 .scroll-bar > .decrement-button:pressed > .decrement-arrow {
     -fx-background-color: -fx-mark-highlight-color, rgb(255, 255, 255);
 }
+
+/* Custom components */
+.person-widget {
+    -fx-padding: 0.5em;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-background-color: rgb(66, 66, 66);
+    -fx-border-color: rgb(30, 30, 30);
+    -fx-border-width: 2px;
+    -fx-cursor: hand;
+}
+
+.person-widget:hover {
+    -fx-background-color: rgb(76, 76, 76);
+    -fx-border-color: rgb(40, 40, 40);
+}
+
+.person-widget .person-data {
+    -fx-padding: 0 0 0 0.5em;
+}

@@ -5,4 +5,13 @@ public enum LifeStatus {
   DECEASED,
   MAYBE_LIVING,
   PROBABLY_DECEASED,
+  ;
+
+  public boolean isConsideredAlive() {
+    return this == LIVING || this == MAYBE_LIVING;
+  }
+
+  public boolean isConsideredDeceased() {
+    return this == DECEASED || this == PROBABLY_DECEASED;
+  }
 }

@@ -4,8 +4,10 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
+import javafx.scene.layout.AnchorPane;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.TreeWidget;
 import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
 
@@ -72,6 +74,11 @@ public class AppController {
   @FXML
   private Button checkInconsistenciesToolbarButton;
 
+  @FXML
+  private AnchorPane mainPane;
+
+  private final TreeWidget treeWidget = new TreeWidget();
+
   private final SettingsDialog settingsDialog = new SettingsDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
 
@@ -116,6 +123,12 @@ public class AppController {
     this.addRelationToolbarButton.setGraphic(theme.getIcon(Icon.ADD_RELATION, Icon.Size.BIG));
 
     this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
+
+    AnchorPane.setTopAnchor(this.treeWidget, 0.0);
+    AnchorPane.setBottomAnchor(this.treeWidget, 0.0);
+    AnchorPane.setLeftAnchor(this.treeWidget, 0.0);
+    AnchorPane.setRightAnchor(this.treeWidget, 0.0);
+    this.mainPane.getChildren().add(this.treeWidget);
   }
 
   @FXML

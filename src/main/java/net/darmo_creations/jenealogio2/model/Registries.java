@@ -6,14 +6,14 @@ import net.darmo_creations.jenealogio2.model.Registry.BuiltinEntry;
 import java.util.List;
 
 public final class Registries {
-  public static final Registry<Gender, Void> GENDERS =
+  public static final Registry<Gender, String> GENDERS =
       new Registry<>("genders", List.of(
-          new BuiltinEntry<>("agender"),
-          new BuiltinEntry<>("female"),
-          new BuiltinEntry<>("gender_fluid"),
-          new BuiltinEntry<>("male"),
-          new BuiltinEntry<>("non_binary")
-      ), (key, unused) -> new Gender(key));
+          new BuiltinEntry<>("agender", "#000000"),
+          new BuiltinEntry<>("female", "#ee8434"),
+          new BuiltinEntry<>("gender_fluid", "#bf17d5"),
+          new BuiltinEntry<>("male", "#00b69e"),
+          new BuiltinEntry<>("non_binary", "#fff430")
+      ), Gender::new);
 
   public static final Registry<LifeEventType, RegistryArgs> LIFE_EVENT_TYPES =
       new Registry<>("life_event_types", List.<BuiltinEntry<RegistryArgs>>of(
