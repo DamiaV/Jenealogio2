@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.ui;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
@@ -10,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-public class SettingsDialog extends DialogBase<Void> {
+public class SettingsDialog extends DialogBase<ButtonType> {
   @FXML
   @SuppressWarnings("unused")
   private ComboBox<Language> languageCombo;
@@ -30,15 +31,17 @@ public class SettingsDialog extends DialogBase<Void> {
         try {
           App.updateConfig(this.localConfig);
           this.localConfig.save();
+          Alerts.info("dialog.settings.alert.needs_restart.content", null, null);
         } catch (IOException e) {
           App.LOGGER.exception(e);
+          Alerts.error("dialog.settings.alert.save_error.content", null, null);
         }
       }
       return null;
     });
   }
 
-  public void setConfig(@NotNull Config config) {
+  public void setConfig(final @NotNull Config config) {
     this.localConfig = config.clone();
     this.languageCombo.getSelectionModel().select(this.localConfig.language());
     this.themeCombo.getSelectionModel().select(this.localConfig.theme());

@@ -2,7 +2,6 @@ package net.darmo_creations.jenealogio2.utils;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,9 +18,9 @@ public final class StringUtils {
     return s == null || s.isBlank() ? Optional.empty() : Optional.of(s.strip());
   }
 
-  public static String format(@NotNull String pattern, final @NotNull Map<String, Object> args) {
-    for (var e : args.entrySet()) {
-      pattern = pattern.replace("{" + e.getKey() + "}", Objects.toString(e.getValue()));
+  public static String format(@NotNull String pattern, final @NotNull FormatArg... args) {
+    for (FormatArg e : args) {
+      pattern = pattern.replace("{" + e.name() + "}", Objects.toString(e.value()));
     }
     return pattern;
   }

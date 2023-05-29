@@ -6,10 +6,10 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import net.darmo_creations.jenealogio2.App;
+import net.darmo_creations.jenealogio2.utils.FormatArg;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 
 import java.net.URL;
-import java.util.Collections;
 
 public class AboutDialog extends DialogBase<Void> {
   @FXML
@@ -24,7 +24,7 @@ public class AboutDialog extends DialogBase<Void> {
 
   public AboutDialog() {
     super("about", false, ButtonTypes.CLOSE);
-    this.setTitle(StringUtils.format(this.getTitle(), Collections.singletonMap("app_name", App.NAME)));
+    this.setTitle(StringUtils.format(this.getTitle(), new FormatArg("app_name", App.NAME)));
     this.logo.setImage(this.createImage(App.RESOURCES_ROOT + "icons/app-icon.png"));
     this.titleLabel.setText(App.NAME);
     this.contentView.setText("""
