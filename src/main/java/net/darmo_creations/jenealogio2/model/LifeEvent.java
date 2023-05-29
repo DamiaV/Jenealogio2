@@ -62,7 +62,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
     int max = this.maxActors();
     if (this.actors.size() == max && !this.hasActor(actor)) {
       throw new IllegalArgumentException("cannot add more than %d actor(s) to life event with type %s"
-          .formatted(max, this.type.name()));
+          .formatted(max, this.type.key()));
     }
     this.actors.add(actor);
     if (actor.getLifeEventsAsActor().contains(this)) {
