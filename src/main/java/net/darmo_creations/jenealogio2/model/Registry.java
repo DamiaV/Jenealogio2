@@ -13,11 +13,11 @@ public class Registry<E extends RegistryEntry, A> {
   private final List<E> defaults;
   private final EntryFactory<E, A> entryFactory;
 
-  // TODO use vararg for defaults
-  Registry(@NotNull String name, final @NotNull List<BuiltinEntry<A>> defaults, @NotNull EntryFactory<E, A> entryFactory) {
+  @SafeVarargs
+  Registry(@NotNull String name, @NotNull EntryFactory<E, A> entryFactory, final @NotNull BuiltinEntry<A>... defaults) {
     this.name = Objects.requireNonNull(name);
     this.entryFactory = Objects.requireNonNull(entryFactory);
-    this.defaults = defaults.stream()
+    this.defaults = Arrays.stream(defaults)
         .map(e -> this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), e.args(), true))
         .toList();
   }

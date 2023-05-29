@@ -3,20 +3,24 @@ package net.darmo_creations.jenealogio2.model;
 import net.darmo_creations.jenealogio2.model.LifeEventType.RegistryArgs;
 import net.darmo_creations.jenealogio2.model.Registry.BuiltinEntry;
 
-import java.util.List;
-
 public final class Registries {
   public static final Registry<Gender, String> GENDERS =
-      new Registry<>("genders", List.of(
+      new Registry<>(
+          "genders",
+          Gender::new,
+
           new BuiltinEntry<>("agender", "#000000"),
           new BuiltinEntry<>("female", "#ee8434"),
           new BuiltinEntry<>("gender_fluid", "#bf17d5"),
           new BuiltinEntry<>("male", "#00b69e"),
           new BuiltinEntry<>("non_binary", "#fff430")
-      ), Gender::new);
+      );
 
   public static final Registry<LifeEventType, RegistryArgs> LIFE_EVENT_TYPES =
-      new Registry<>("life_event_types", List.<BuiltinEntry<RegistryArgs>>of(
+      new Registry<>(
+          "life_event_types",
+          (key, args) -> new LifeEventType(key, args.group(), args.indicatesDeath(), args.maxActors()),
+
           new BuiltinEntry<>("annulment", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Annulation
           new BuiltinEntry<>("civil_solidarity_pact", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // PACS
           new BuiltinEntry<>("divorce", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Divorce
@@ -79,7 +83,7 @@ public final class Registries {
           new BuiltinEntry<>("membership", new RegistryArgs(LifeEventType.Group.OTHER, false)), // Adhésion
           new BuiltinEntry<>("passenger_list", new RegistryArgs(LifeEventType.Group.OTHER, false)), // Liste de passagers
           new BuiltinEntry<>("residence", new RegistryArgs(LifeEventType.Group.OTHER, false)) // Résidence
-      ), (key, args) -> new LifeEventType(key, args.group(), args.indicatesDeath(), args.maxActors()));
+      );
 
   private Registries() {
   }
