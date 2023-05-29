@@ -15,10 +15,10 @@ public class Registry<E extends RegistryEntry, A> {
 
   Registry(@NotNull String name, final @NotNull List<BuiltinEntry<A>> defaults, @NotNull EntryFactory<E, A> entryFactory) {
     this.name = Objects.requireNonNull(name);
+    this.entryFactory = Objects.requireNonNull(entryFactory);
     this.defaults = defaults.stream()
         .map(e -> this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), e.args(), true))
         .toList();
-    this.entryFactory = Objects.requireNonNull(entryFactory);
   }
 
   /**
