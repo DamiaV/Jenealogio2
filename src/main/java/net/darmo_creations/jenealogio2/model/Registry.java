@@ -5,18 +5,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class Registry<E extends RegistryEntry, A> {
+  public static final String BUILTIN_NS = "builtin";
+  public static final String USER_NS = "user";
+
   private final String name;
-  private final Map<Integer, E> entries = new HashMap<>();
+  private final Map<RegistryEntryKey, E> entries = new HashMap<>();
   private final List<E> defaults;
-  private final int customIDsStart;
-  private int customGlobalID;
   private final EntryFactory<E, A> entryFactory;
 
-  Registry(String name, final @NotNull List<BuiltinEntry<A>> defaults, int customIDsStart, @NotNull EntryFactory<E, A> entryFactory) {
-    this.name = name;
-    this.defaults = defaults.stream().map(e -> entryFactory.apply(e.id(), e.name(), true, e.args())).toList();
-    this.customIDsStart = customIDsStart;
-    this.customGlobalID = customIDsStart;
+  Registry(@NotNull String name, final @NotNull List<BuiltinEntry<A>> defaults, @NotNull EntryFactory<E, A> entryFactory) {
+    this.name = Objects.requireNonNull(name);
+    this.defaults = defaults.stream()
+        .map(e -> this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), e.args(), true))
+        .toList();
     this.entryFactory = Objects.requireNonNull(entryFactory);
   }
 
@@ -28,13 +29,6 @@ public class Registry<E extends RegistryEntry, A> {
   }
 
   /**
-   * The first ID to use for user-defined entries.
-   */
-  public int customIDsStart() {
-    return this.customIDsStart;
-  }
-
-  /**
    * A list of this registry’s entries, in no particular order.
    */
   public List<E> entries() {
@@ -42,23 +36,23 @@ public class Registry<E extends RegistryEntry, A> {
   }
 
   /**
-   * Return the entry with the given ID.
+   * Return the entry with the given key.
    *
-   * @param id ID of the entry to get.
-   * @return The entry or null if none matched the ID.
+   * @param key Key of the entry to get.
+   * @return The entry or null if none matched the key.
    */
-  public E getEntry(int id) {
-    return this.entries.get(id);
+  public E getEntry(@NotNull RegistryEntryKey key) {
+    return this.entries.get(Objects.requireNonNull(key));
   }
 
   /**
-   * Indicate whether this registry has the given entry ID.
+   * Indicate whether this registry has the given entry key.
    *
-   * @param id ID to check.
-   * @return True if the ID is already registered, false otherwise.
+   * @param key Key to check.
+   * @return True if the key is already registered, false otherwise.
    */
-  public boolean hasEntryID(int id) {
-    return this.entries.containsKey(id);
+  public boolean containsKey(@NotNull RegistryEntryKey key) {
+    return this.entries.containsKey(Objects.requireNonNull(key));
   }
 
   /**
@@ -66,61 +60,62 @@ public class Registry<E extends RegistryEntry, A> {
    */
   public void reset() {
     this.entries.clear();
-    this.defaults.forEach(g -> this.entries.put(g.id(), g));
-    this.customGlobalID = this.customIDsStart;
+    this.defaults.forEach(g -> this.entries.put(g.key(), g));
   }
 
   /**
-   * Create a new user-defined entry with an auto-generated ID.
+   * Register a new user-defined entry.
    *
-   * @param name Name of the entry to create.
-   * @param args Additional arguments to pass to the entry factory.
+   * @param key  Key of the entry to register.
+   * @param args Additional arguments to pass to the new entry’s constructor.
    * @return The newly created instance.
+   * @throws IllegalArgumentException If the specified key is already used
+   *                                  or the key is in the builtin namespace.
    */
-  public E createEntry(@NotNull String name, A args) {
-    return this.createEntry(this.customGlobalID++, name, args);
+  public E registerEntry(@NotNull RegistryEntryKey key, A args) {
+    return this.registerEntry(key, args, false);
   }
 
   /**
-   * Register a user-defined entry.
+   * Register a new entry.
    *
-   * @param id   ID of the entry to register.
-   * @param name Name of the entry to register.
-   * @param args Additional arguments to pass to the entry factory.
+   * @param key  Key of the entry to register.
+   * @param args Additional arguments to pass to the new entry’s constructor.
    * @return The newly created instance.
-   * @throws IllegalArgumentException If the specified ID is already used or is less than {@link #customIDsStart()}.
+   * @throws IllegalArgumentException If the specified key is already used
+   *                                  or allowBuiltin and the key is in the builtin namespace.
    */
-  public E createEntry(int id, @NotNull String name, A args) {
-    Objects.requireNonNull(name);
-    if (id < this.customIDsStart || this.entries.containsKey(id)) {
-      throw new IllegalArgumentException("ID %d already exists".formatted(id));
+  private E registerEntry(@NotNull RegistryEntryKey key, A args, boolean allowBuiltin) {
+    Objects.requireNonNull(this.name);
+    if (!allowBuiltin && key.namespace().equals(BUILTIN_NS)) {
+      throw new IllegalArgumentException("cannot register entries in the '%s' namespace.".formatted(BUILTIN_NS));
     }
-    // Update to avoid conflicts when calling createCustom()
-    this.customGlobalID = Math.max(id, this.customGlobalID);
-    E entry = this.entryFactory.apply(id, name, false, args);
-    this.entries.put(entry.id(), entry);
+    if (this.entries.containsKey(key)) {
+      throw new IllegalArgumentException("key '%s' already exists".formatted(key));
+    }
+    E entry = this.entryFactory.apply(key, args);
+    this.entries.put(key, entry);
     return entry;
   }
 
   /**
    * Wrapper class to provide builtin entries when creating a registry.
    *
-   * @param id   Entry’s ID.
-   * @param name Entry’s name.
+   * @param name Entry’s internal name.
    * @param args Entry’s additonal arguments.
    */
-  public record BuiltinEntry<A>(int id, @NotNull String name, A args) {
+  public record BuiltinEntry<A>(@NotNull String name, A args) {
     public BuiltinEntry {
       Objects.requireNonNull(name);
     }
 
-    public BuiltinEntry(int id, @NotNull String name) {
-      this(id, name, null);
+    public BuiltinEntry(@NotNull String name) {
+      this(name, null);
     }
   }
 
   @FunctionalInterface
   public interface EntryFactory<E extends RegistryEntry, A> {
-    E apply(int id, @NotNull String name, boolean builtin, A args);
+    E apply(@NotNull RegistryEntryKey key, A args);
   }
 }

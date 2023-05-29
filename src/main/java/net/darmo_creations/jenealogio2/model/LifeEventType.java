@@ -9,8 +9,8 @@ public final class LifeEventType extends RegistryEntry {
   private final boolean indicatesDeath;
   private final int maxActors;
 
-  LifeEventType(int id, @NotNull String name, boolean builtin, @NotNull Group group, boolean indicatesDeath, int maxActors) {
-    super(id, name, builtin);
+  LifeEventType(@NotNull RegistryEntryKey key, @NotNull Group group, boolean indicatesDeath, int maxActors) {
+    super(key);
     if (maxActors <= 0) {
       throw new IllegalArgumentException("maxActors must be > 0");
     }
@@ -62,31 +62,31 @@ public final class LifeEventType extends RegistryEntry {
 
   @Override
   public String toString() {
-    return "LifeEventType{id=%d, name=%s, builtin=%s, group=%s}"
-        .formatted(this.id(), this.name(), this.isBuiltin(), this.group);
+    return "LifeEventType{key='%s', group=%s}".formatted(this.key(), this.group);
   }
 
   public enum Group {
     ADMIN,
     DISTINCTION,
     EDUCATION,
-    FAMILY,
     LIFESPAN,
     MEDICAL,
     MILITARY,
+    RELATIONSHIP,
     RELIGION,
 
     OTHER
   }
 
-  public record RegistryArgs(Group group, boolean indicatesDeath, int maxActors) {
+  public record RegistryArgs(@NotNull Group group, boolean indicatesDeath, int maxActors) {
     public RegistryArgs {
+      Objects.requireNonNull(group);
       if (maxActors <= 0) {
         throw new IllegalArgumentException("maxActors should be > 0");
       }
     }
 
-    public RegistryArgs(Group group, boolean indicatesDeath) {
+    public RegistryArgs(@NotNull Group group, boolean indicatesDeath) {
       this(group, indicatesDeath, 1);
     }
   }

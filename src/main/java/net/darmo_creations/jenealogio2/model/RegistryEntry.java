@@ -9,36 +9,18 @@ import java.util.Objects;
  * whether it is built-in or user-defined.
  */
 public abstract class RegistryEntry {
-  private final int id;
-  private final String name;
-  private final boolean builtin;
+  private final RegistryEntryKey key;
 
-  protected RegistryEntry(int id, @NotNull String name, boolean builtin) {
-    this.id = id;
-    this.name = name.strip();
-    this.builtin = builtin;
+  protected RegistryEntry(@NotNull RegistryEntryKey key) {
+    this.key = Objects.requireNonNull(key);
   }
 
   /**
-   * Internal ID.
+   * The registry key of this entry. If this entry is in the default namespace,
+   * its name will be used as the translation key in the GUI, otherwise it will be used as is.
    */
-  public int id() {
-    return this.id;
-  }
-
-  /**
-   * The name of this entry. If builtin is true, it will be used as the translation key in the GUI,
-   * otherwise it will be used as is.
-   */
-  public String name() {
-    return this.name;
-  }
-
-  /**
-   * Indicates whether this entry is built-in or defined by a user.
-   */
-  public boolean isBuiltin() {
-    return this.builtin;
+  public RegistryEntryKey key() {
+    return this.key;
   }
 
   @Override
@@ -50,16 +32,16 @@ public abstract class RegistryEntry {
       return false;
     }
     RegistryEntry that = (RegistryEntry) o;
-    return this.id == that.id && this.builtin == that.builtin && Objects.equals(this.name, that.name);
+    return Objects.equals(this.key, that.key);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.id, this.name, this.builtin);
+    return Objects.hash(this.key);
   }
 
   @Override
   public String toString() {
-    return "RegistryEntry{id=%d, name='%s', builtin=%s}".formatted(this.id, this.name, this.builtin);
+    return "RegistryEntry{%s}".formatted(this.key);
   }
 }
