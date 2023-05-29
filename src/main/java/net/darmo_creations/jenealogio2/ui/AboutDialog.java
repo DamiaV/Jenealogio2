@@ -34,6 +34,8 @@ public class AboutDialog extends DialogBase<Void> {
                 
         Developped by Damia Vergnet (@Darmo117 on GitHub).
         This application is available under GPL-3.0 license.
+                
+        Icons from FatCow (https://github.com/gammasoft/fatcow).
         """.formatted(App.VERSION, System.getProperty("java.version"), System.getProperty("java.vendor"), System.getProperty("java.vendor.url")));
   }
 
