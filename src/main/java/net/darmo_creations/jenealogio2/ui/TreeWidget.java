@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.ui;
 
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.model.Registries;
@@ -28,5 +29,11 @@ public class TreeWidget extends Pane {
     this.getChildren().add(w1);
     w1.setLayoutX(20);
     w1.setLayoutY(200);
+
+    this.setOnMouseClicked(this::onClick);
+  }
+
+  private void onClick(MouseEvent mouseEvent) {
+    this.requestFocus();
   }
 }

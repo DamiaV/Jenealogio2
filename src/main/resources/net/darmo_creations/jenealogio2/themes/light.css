@@ -3,15 +3,19 @@
     -fx-padding: 0.5em;
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
-    -fx-background-color: rgb(228, 228, 228);
-    -fx-border-color: rgb(157, 157, 157);
+    -fx-background-color: derive(-fx-base, -10%);
+    -fx-border-color: derive(-fx-base, -20%);
     -fx-border-width: 2px;
     -fx-cursor: hand;
 }
 
 .person-widget:hover {
-    -fx-background-color: rgb(238, 238, 238);
-    -fx-border-color: rgb(167, 167, 167);
+    -fx-background-color: derive(-fx-base, -15%);
+    -fx-border-color: derive(-fx-base, -25%);
+}
+
+.person-widget:focused {
+    -fx-border-color: derive(-fx-base, -50%);
 }
 
 .person-widget .person-data {

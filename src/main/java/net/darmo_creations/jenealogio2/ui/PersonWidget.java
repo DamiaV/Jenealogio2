@@ -5,6 +5,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -29,6 +30,7 @@ public class PersonWidget extends AnchorPane {
   private final Label lastNameLabel = new Label();
   private final Label lifeSpanLabel = new Label();
 
+  // TODO click action
   public PersonWidget(final @NotNull Person person) {
     this.person = person;
     this.getStyleClass().add("person-widget");
@@ -66,7 +68,15 @@ public class PersonWidget extends AnchorPane {
 
     vBox.getChildren().addAll(this.firstNameLabel, this.lastNameLabel, this.lifeSpanLabel);
 
+    this.setOnMouseClicked(this::onClick);
+
     this.refresh();
+  }
+
+  private void onClick(MouseEvent mouseEvent) {
+    // TODO open edit dialog
+    this.requestFocus();
+    mouseEvent.consume();
   }
 
   public void refresh() {
