@@ -165,7 +165,7 @@ public class AppController {
 
   @FXML
   public void onSettings() {
-    this.settingsDialog.setConfig(App.config());
+    this.settingsDialog.resetLocalConfig();
     this.settingsDialog.show();
   }
 

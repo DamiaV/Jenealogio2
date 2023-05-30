@@ -7,7 +7,6 @@ import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.themes.Theme;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -41,8 +40,8 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     });
   }
 
-  public void setConfig(final @NotNull Config config) {
-    this.localConfig = config.clone();
+  public void resetLocalConfig() {
+    this.localConfig = App.config().clone();
     this.languageCombo.getSelectionModel().select(this.localConfig.language());
     this.themeCombo.getSelectionModel().select(this.localConfig.theme());
     this.updateState();
