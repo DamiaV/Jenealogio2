@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
@@ -9,7 +10,7 @@ import net.darmo_creations.jenealogio2.themes.Theme;
 
 import java.io.IOException;
 
-public class SettingsDialog extends DialogBase<SettingsDialog.ChangeType> {
+public class SettingsDialog extends DialogBase<ButtonType> {
   @FXML
   @SuppressWarnings("unused")
   private ComboBox<Language> languageCombo;
@@ -25,8 +26,8 @@ public class SettingsDialog extends DialogBase<SettingsDialog.ChangeType> {
     //noinspection DataFlowIssue
     this.languageCombo.getItems().addAll(Config.languages());
     this.themeCombo.getItems().addAll(Theme.themes());
-    this.setResultConverter(param -> {
-      if (!param.getButtonData().isCancelButton()) {
+    this.setResultConverter(buttonType -> {
+      if (!buttonType.getButtonData().isCancelButton()) {
         ChangeType changeType = this.configChanged();
         if (changeType.changed()) {
           try {
@@ -40,9 +41,8 @@ public class SettingsDialog extends DialogBase<SettingsDialog.ChangeType> {
             Alerts.error("dialog.settings.alert.save_error.header", null, null);
           }
         }
-        return changeType;
       }
-      return ChangeType.NONE;
+      return buttonType;
     });
   }
 
@@ -83,7 +83,7 @@ public class SettingsDialog extends DialogBase<SettingsDialog.ChangeType> {
     this.updateState();
   }
 
-  public enum ChangeType {
+  private enum ChangeType {
     NONE(false, false),
     NO_RESTART_NEEDED(true, false),
     NEEDS_RESTART(true, true),
