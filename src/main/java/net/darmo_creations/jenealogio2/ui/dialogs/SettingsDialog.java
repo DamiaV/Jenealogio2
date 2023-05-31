@@ -1,7 +1,6 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
@@ -10,7 +9,7 @@ import net.darmo_creations.jenealogio2.themes.Theme;
 
 import java.io.IOException;
 
-public class SettingsDialog extends DialogBase<ButtonType> {
+public class SettingsDialog extends DialogBase {
   @FXML
   @SuppressWarnings("unused")
   private ComboBox<Language> languageCombo;

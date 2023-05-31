@@ -11,7 +11,7 @@ import net.darmo_creations.jenealogio2.utils.StringUtils;
 
 import java.net.URL;
 
-public class AboutDialog extends DialogBase<Void> {
+public class AboutDialog extends DialogBase {
   @FXML
   @SuppressWarnings("unused")
   private ImageView logo;

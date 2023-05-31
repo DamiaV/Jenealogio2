@@ -3,30 +3,27 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-public abstract class DialogBase<T> extends Dialog<T> {
+public abstract class DialogBase extends Dialog<ButtonType> {
   private final String name;
 
   public DialogBase(@NotNull String name, boolean resizable, @NotNull ButtonType... buttonTypes) {
     this.name = name;
-    Config config = App.config();
-    FXMLLoader loader = App.getFxmlLoader(name + "-dialog");
+    FXMLLoader loader = App.getFxmlLoader(name.replace('_', '-') + "-dialog");
     loader.setController(this);
-    DialogPane dialogPane;
     try {
-      dialogPane = loader.load();
+      this.getDialogPane().setContent(loader.load());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    config.theme().getStyleSheet().ifPresent(css -> dialogPane.getStylesheets().add(css.toExternalForm()));
-    this.setDialogPane(dialogPane);
+    App.config().theme().getStyleSheet()
+        .ifPresent(styleSheet -> this.stage().getScene().getStylesheets().add(styleSheet.toExternalForm()));
     this.initModality(Modality.APPLICATION_MODAL);
     this.setResizable(resizable);
     this.setTitle(loader.getResources().getString("dialog.%s.title".formatted(name)));
@@ -35,5 +32,9 @@ public abstract class DialogBase<T> extends Dialog<T> {
 
   public String name() {
     return this.name;
+  }
+
+  public Stage stage() {
+    return (Stage) this.getDialogPane().getScene().getWindow();
   }
 }
