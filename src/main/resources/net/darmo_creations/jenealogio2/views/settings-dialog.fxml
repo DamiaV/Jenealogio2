@@ -6,7 +6,7 @@
 <DialogPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="400.0"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <content>
-    <VBox prefWidth="100.0">
+    <VBox>
       <children>
         <BorderPane>
           <top>
