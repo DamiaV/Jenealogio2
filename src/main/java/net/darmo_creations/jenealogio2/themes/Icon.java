@@ -32,6 +32,10 @@ public enum Icon {
   CHECK_INCONSISTENCIES("error_go"),
 
   ABOUT("information"),
+
+  HELP("help"),
+
+  ADD_EVENT("plus"),
   ;
 
   private final String baseName;

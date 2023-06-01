@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
@@ -11,7 +12,7 @@ import net.darmo_creations.jenealogio2.utils.StringUtils;
 
 import java.net.URL;
 
-public class AboutDialog extends DialogBase {
+public class AboutDialog extends DialogBase<ButtonType> {
   @FXML
   @SuppressWarnings("unused")
   private ImageView logo;

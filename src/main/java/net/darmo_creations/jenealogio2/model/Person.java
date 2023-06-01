@@ -102,6 +102,14 @@ public class Person extends GenealogyObject<Person> {
     return new ArrayList<>(this.nicknames);
   }
 
+  public Optional<String> getLastName() {
+    return this.publicLastName().or(this::legalLastName);
+  }
+
+  public Optional<String> getFirstNames() {
+    return this.getJoinedPublicFirstNames().or(this::getJoinedLegalFirstNames);
+  }
+
   public void setNicknames(final @NotNull List<String> nicknames) {
     this.ensureNoDuplicates(nicknames);
     this.nicknames.clear();

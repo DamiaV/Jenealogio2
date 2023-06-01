@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.ui;
 
+import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
@@ -15,12 +16,20 @@ import net.darmo_creations.jenealogio2.model.Gender;
 import net.darmo_creations.jenealogio2.model.Person;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * A JavaFX component representing a single person in a family tree.
+ */
 // TODO add icon to indicate parents/children if they are not shown
 public class PersonWidget extends AnchorPane {
   private static final String EMPTY_LABEL_VALUE = "-";
   @SuppressWarnings("DataFlowIssue")
   public static final Image DEFAULT_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_person_image.png"));
+
+  private final List<ClickListener> clickListeners = new LinkedList<>();
 
   private final Person person;
 
@@ -30,7 +39,13 @@ public class PersonWidget extends AnchorPane {
   private final Label lastNameLabel = new Label();
   private final Label lifeSpanLabel = new Label();
 
-  // TODO click action
+  private boolean selected;
+
+  /**
+   * Create a component for the given person.
+   *
+   * @param person A person object.
+   */
   public PersonWidget(final @NotNull Person person) {
     this.person = person;
     this.getStyleClass().add("person-widget");
@@ -73,13 +88,37 @@ public class PersonWidget extends AnchorPane {
     this.refresh();
   }
 
+  /**
+   * The person object wrapped by this component.
+   */
   public Person person() {
     return this.person;
   }
 
-  private void onClick(MouseEvent mouseEvent) {
-    // TODO open edit dialog on double click
-    this.requestFocus();
+  /**
+   * Indicate whether this component is selected.
+   */
+  public boolean isSelected() {
+    return this.selected;
+  }
+
+  /**
+   * Set the selection of this component.
+   */
+  public void setSelected(boolean selected) {
+    this.selected = selected;
+    this.pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), selected);
+  }
+
+  /**
+   * List of click listeners.
+   */
+  public List<ClickListener> clickListeners() {
+    return this.clickListeners;
+  }
+
+  private void onClick(@NotNull MouseEvent mouseEvent) {
+    this.clickListeners.forEach(clickListener -> clickListener.onClick(this, mouseEvent.getClickCount()));
     mouseEvent.consume();
   }
 
@@ -88,13 +127,11 @@ public class PersonWidget extends AnchorPane {
     String genderColor = this.person.gender().map(Gender::color).orElse(Gender.MISSING_COLOR);
     this.imagePane.setStyle("-fx-background-color: " + genderColor);
 
-    String firstNames = this.person.getJoinedPublicFirstNames()
-        .orElse(this.person.getJoinedLegalFirstNames().orElse(EMPTY_LABEL_VALUE));
+    String firstNames = this.person.getFirstNames().orElse(EMPTY_LABEL_VALUE);
     this.firstNameLabel.setText(firstNames);
     this.firstNameLabel.setTooltip(new Tooltip(firstNames));
 
-    String lastName = this.person.publicLastName()
-        .orElse(this.person.legalLastName().orElse(EMPTY_LABEL_VALUE));
+    String lastName = this.person.getLastName().orElse(EMPTY_LABEL_VALUE);
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
@@ -106,5 +143,9 @@ public class PersonWidget extends AnchorPane {
     }
     this.lifeSpanLabel.setText(lifeSpan);
     this.lifeSpanLabel.setTooltip(new Tooltip(lifeSpan));
+  }
+
+  interface ClickListener {
+    void onClick(@NotNull PersonWidget personWidget, int clickCount);
   }
 }

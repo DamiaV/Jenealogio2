@@ -1,18 +1,21 @@
 package net.darmo_creations.jenealogio2;
 
 import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
 import javafx.scene.layout.AnchorPane;
+import net.darmo_creations.jenealogio2.model.FamilyTree;
+import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.PersonWidget;
-import net.darmo_creations.jenealogio2.ui.TreeWidget;
+import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
+import net.darmo_creations.jenealogio2.ui.FamilyTreeView;
 import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
+import net.darmo_creations.jenealogio2.ui.dialogs.EditPersonDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
+import org.jetbrains.annotations.NotNull;
 
 public class AppController {
   @FXML
@@ -92,14 +95,18 @@ public class AppController {
   private Button checkInconsistenciesToolbarButton;
 
   @FXML
-  private TreeView<Object> sideTreeView;
+  private AnchorPane sideTreeView;
   @FXML
   private AnchorPane mainPane;
 
-  private final TreeWidget treeWidget = new TreeWidget();
+  private final FamilyTreeView familyTreeView = new FamilyTreeView();
+  private final FamilyTreePane familyTreePane = new FamilyTreePane();
 
+  private final EditPersonDialog editPersonDialog = new EditPersonDialog();
   private final SettingsDialog settingsDialog = new SettingsDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
+
+  private FamilyTree familyTree;
 
   public void initialize() {
     Theme theme = App.config().theme();
@@ -150,17 +157,50 @@ public class AppController {
     this.mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
     this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
 
-    TreeItem<Object> root = new TreeItem<>(App.config().language().translate("treeview.persons"));
-    for (PersonWidget widget : this.treeWidget.widgets()) {
-      root.getChildren().add(new TreeItem<>(widget.person()));
-    }
-    this.sideTreeView.setRoot(root);
+    AnchorPane.setTopAnchor(this.familyTreeView, 0.0);
+    AnchorPane.setBottomAnchor(this.familyTreeView, 0.0);
+    AnchorPane.setLeftAnchor(this.familyTreeView, 0.0);
+    AnchorPane.setRightAnchor(this.familyTreeView, 0.0);
+    this.sideTreeView.getChildren().add(this.familyTreeView);
+    this.familyTreeView.personClickListeners()
+        .add((person, clickCount) -> this.onPersonClick(person, clickCount, true));
 
-    AnchorPane.setTopAnchor(this.treeWidget, 0.0);
-    AnchorPane.setBottomAnchor(this.treeWidget, 0.0);
-    AnchorPane.setLeftAnchor(this.treeWidget, 0.0);
-    AnchorPane.setRightAnchor(this.treeWidget, 0.0);
-    this.mainPane.getChildren().add(this.treeWidget);
+    AnchorPane.setTopAnchor(this.familyTreePane, 0.0);
+    AnchorPane.setBottomAnchor(this.familyTreePane, 0.0);
+    AnchorPane.setLeftAnchor(this.familyTreePane, 0.0);
+    AnchorPane.setRightAnchor(this.familyTreePane, 0.0);
+    this.mainPane.getChildren().add(this.familyTreePane);
+    this.familyTreePane.personClickListeners()
+        .add((person, clickCount) -> this.onPersonClick(person, clickCount, false));
+
+    // TEMP
+    this.familyTree = new FamilyTree();
+    this.familyTreeView.setFamilyTree(this.familyTree);
+    this.familyTreePane.setFamilyTree(this.familyTree);
+
+    this.editPersonDialog.resultProperty().addListener(this::onPersonEdited);
+  }
+
+  private void onPersonClick(final @NotNull Person person, int clickCount, boolean inTree) {
+    if (inTree) {
+      this.familyTreePane.selectPerson(person);
+    } else {
+      this.familyTreeView.selectPerson(person);
+    }
+    if (clickCount == 2) {
+      this.editPersonDialog.setPerson(person);
+      this.editPersonDialog.show();
+    }
+  }
+
+  private void onPersonEdited(Observable observable) {
+    this.editPersonDialog.getResult().ifPresent(result -> {
+      if (result.isPersonCreated()) {
+        this.familyTree.persons().add(result.person());
+      }
+      this.familyTreeView.refresh();
+      this.familyTreePane.refresh();
+    });
   }
 
   @FXML

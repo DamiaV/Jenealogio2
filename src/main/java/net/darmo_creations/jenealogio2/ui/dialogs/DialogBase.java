@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-public abstract class DialogBase extends Dialog<ButtonType> {
+public abstract class DialogBase<T> extends Dialog<T> {
   private final String name;
 
   public DialogBase(@NotNull String name, boolean resizable, @NotNull ButtonType... buttonTypes) {

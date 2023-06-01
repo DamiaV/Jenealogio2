@@ -14,7 +14,7 @@
     -fx-border-color: derive(-fx-base, -25%);
 }
 
-.person-widget:focused {
+.person-widget:selected {
     -fx-border-color: derive(-fx-base, -50%);
 }
 
