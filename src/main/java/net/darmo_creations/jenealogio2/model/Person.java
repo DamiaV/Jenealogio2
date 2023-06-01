@@ -128,6 +128,10 @@ public class Person extends GenealogyObject<Person> {
     return new Pair<>(Optional.ofNullable(this.parents[0]), Optional.ofNullable(this.parents[1]));
   }
 
+  public boolean hasBothParents() {
+    return this.parents[0] != null && this.parents[1] != null;
+  }
+
   public void setBiologicalParent(int index, @NotNull Person parent) {
     this.setParent(index, Objects.requireNonNull(parent), false);
   }

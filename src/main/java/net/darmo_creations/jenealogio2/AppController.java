@@ -15,7 +15,6 @@ import net.darmo_creations.jenealogio2.ui.FamilyTreeView;
 import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.EditPersonDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
-import org.jetbrains.annotations.NotNull;
 
 public class AppController {
   @FXML
@@ -179,9 +178,11 @@ public class AppController {
     this.familyTreePane.setFamilyTree(this.familyTree);
 
     this.editPersonDialog.resultProperty().addListener(this::onPersonEdited);
+
+    this.updateButtons(null);
   }
 
-  private void onPersonClick(final @NotNull Person person, int clickCount, boolean inTree) {
+  private void onPersonClick(Person person, int clickCount, boolean inTree) {
     if (App.config().shouldSyncTreeWithMainPane()) {
       if (inTree) {
         this.familyTreePane.selectPerson(person);
@@ -193,6 +194,7 @@ public class AppController {
       this.editPersonDialog.setPerson(person);
       this.editPersonDialog.show();
     }
+    this.updateButtons(person);
   }
 
   private void onPersonEdited(Observable observable) {
@@ -203,6 +205,25 @@ public class AppController {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
     });
+  }
+
+  private void updateButtons(final Person selectedPerson) {
+    boolean selection = selectedPerson != null;
+    boolean hasParents = selection && selectedPerson.hasBothParents();
+
+    this.editPersonMenuItem.setDisable(!selection);
+    this.removePersonMenuItem.setDisable(!selection);
+    this.addChildMenuItem.setDisable(!selection);
+    this.addSiblingMenuItem.setDisable(!hasParents);
+    this.editParentsMenuItem.setDisable(!selection);
+    this.editPartnersMenuItem.setDisable(!selection);
+    this.setPictureMenuItem.setDisable(!selection);
+
+    this.addChildToolbarButton.setDisable(!selection);
+    this.addSiblingToolbarButton.setDisable(!hasParents);
+    this.editParentsToolbarButton.setDisable(!selection);
+    this.editPartnersToolbarButton.setDisable(!selection);
+    this.setPictureToolbarButton.setDisable(!selection);
   }
 
   @FXML
