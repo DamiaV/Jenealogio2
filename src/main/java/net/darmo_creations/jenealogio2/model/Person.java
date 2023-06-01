@@ -12,6 +12,8 @@ import java.util.*;
  * This class represents a person, deceased or alive.
  */
 public class Person extends GenealogyObject<Person> {
+  public static final String NAME_SEPARATOR = " ";
+
   private Integer disambiguationID;
   private LifeStatus lifeStatus = LifeStatus.LIVING;
   private final List<String> legalFirstNames = new ArrayList<>();
@@ -31,7 +33,7 @@ public class Person extends GenealogyObject<Person> {
   private final List<LifeEvent> lifeEvents = new ArrayList<>();
 
   public Optional<Image> getImage() {
-    return Optional.empty(); // TODO
+    return Optional.empty(); // TODO image
   }
 
   public Optional<Integer> disambiguationID() {
@@ -59,7 +61,7 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public Optional<String> getJoinedLegalFirstNames() {
-    return StringUtils.stripNullable(String.join(", ", this.legalFirstNames));
+    return StringUtils.stripNullable(String.join(NAME_SEPARATOR, this.legalFirstNames));
   }
 
   public void setLegalFirstNames(final @NotNull List<String> legalFirstNames) {
@@ -81,7 +83,7 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public Optional<String> getJoinedPublicFirstNames() {
-    return StringUtils.stripNullable(String.join(", ", this.publicFirstNames));
+    return StringUtils.stripNullable(String.join(NAME_SEPARATOR, this.publicFirstNames));
   }
 
   public void setPublicFirstNames(final @NotNull List<String> publicFirstNames) {
@@ -100,6 +102,10 @@ public class Person extends GenealogyObject<Person> {
 
   public List<String> nicknames() {
     return new ArrayList<>(this.nicknames);
+  }
+
+  public Optional<String> getJoinedNicknames() {
+    return StringUtils.stripNullable(String.join(NAME_SEPARATOR, this.nicknames));
   }
 
   public Optional<String> getLastName() {

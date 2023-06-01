@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
@@ -15,10 +16,7 @@ import net.darmo_creations.jenealogio2.utils.FormatArg;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Result>> {
@@ -82,6 +80,13 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
         .toList());
     this.updateGendersList();
 
+    // Only allow digits and empty text
+    this.disambiguationIDField.setTextFormatter(new TextFormatter<>(
+        new IntegerStringConverter(),
+        null,
+        change -> change.getControlNewText().matches("^\\d*$") ? change : null
+    ));
+
     this.addEventButton.setGraphic(config.theme().getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
     this.lifeEventsList.setSelectionModel(new NoSelectionModel());
 
@@ -92,7 +97,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
         Person p = this.person == null ? new Person() : this.person;
-        // TODO update person object
+        this.updatePerson(p);
         return Optional.of(new Result(p, this.person == null));
       }
       return Optional.empty();
@@ -122,9 +127,9 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       this.genderCombo.getSelectionModel().select(new GenderItem(person.gender().orElse(null), ""));
       this.legalLastNameField.setText(person.legalLastName().orElse(""));
       this.publicLastNameField.setText(person.publicLastName().orElse(""));
-      this.legalFirstNamesField.setText(String.join(", ", person.legalFirstNames()));
-      this.publicFirstNamesField.setText(String.join(", ", person.publicFirstNames()));
-      this.nicknamesField.setText(String.join(", ", person.nicknames()));
+      this.legalFirstNamesField.setText(person.getJoinedLegalFirstNames().orElse(""));
+      this.publicFirstNamesField.setText(person.getJoinedPublicFirstNames().orElse(""));
+      this.nicknamesField.setText(person.getJoinedNicknames().orElse(""));
       this.disambiguationIDField.setText(person.disambiguationID().map(String::valueOf).orElse(""));
       this.notesField.setText(person.notes().orElse(""));
       this.sourcesField.setText(person.sources().orElse(""));
@@ -145,6 +150,34 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       this.genderCombo.getSelectionModel().select(0);
       this.lifeEventsList.getItems().clear();
     }
+  }
+
+  private void updatePerson(Person p) {
+    // Profile
+    p.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().lifeStatus());
+    p.setGender(this.genderCombo.getSelectionModel().getSelectedItem().gender());
+    p.setLegalLastName(this.getText(this.legalLastNameField));
+    p.setPublicLastName(this.getText(this.publicLastNameField));
+    p.setLegalFirstNames(this.splitText(this.legalFirstNamesField));
+    p.setPublicFirstNames(this.splitText(this.publicFirstNamesField));
+    p.setNicknames(this.splitText(this.nicknamesField));
+    p.setDisambiguationID((Integer) this.disambiguationIDField.getTextFormatter().getValue());
+    p.setNotes(this.getText(this.notesField));
+    p.setSources(this.getText(this.sourcesField));
+
+    // Life events
+    // TODO
+  }
+
+  private String getText(final TextInputControl textInput) {
+    return StringUtils.stripNullable(textInput.getText()).orElse(null);
+  }
+
+  private List<String> splitText(final TextInputControl textInput) {
+    return Arrays.stream(textInput.getText().split("\\s+"))
+        .map(String::strip)
+        .filter(s -> !s.isEmpty())
+        .toList();
   }
 
   /**
