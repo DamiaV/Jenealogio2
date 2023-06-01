@@ -35,6 +35,9 @@ public enum Icon {
 
   HELP("help"),
 
+  CLEAR_TEXT("draw_eraser"),
+  SYNC_TREE("arrow_refresh"),
+
   ADD_EVENT("plus"),
   ;
 

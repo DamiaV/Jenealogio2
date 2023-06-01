@@ -23,6 +23,7 @@ public final class Config implements Cloneable {
   private static final String APP_SECTION = "App";
   private static final String LANGUAGE_OPTION = "language";
   private static final String THEME_OPTION = "theme";
+  private static final String SYNC_TREE_OPTION = "sync_tree";
 
   public static Config loadConfig(boolean debug) throws IOException, ConfigException {
     loadLanguages();
@@ -35,9 +36,11 @@ public final class Config implements Cloneable {
     }
     String themeID = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION)).orElse(Theme.DEFAULT_THEME_ID);
     Theme theme = Theme.getTheme(themeID).orElseThrow(() -> new ConfigException("undefined theme: " + themeID));
+    Boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
     return new Config(
         LANGUAGES.get(langCode),
         theme,
+        syncTree != null && syncTree,
         debug
     );
   }
@@ -70,10 +73,12 @@ public final class Config implements Cloneable {
   private final Language language;
   private final Theme theme;
   private final boolean debug;
+  private boolean syncTreeWithMainPane;
 
-  public Config(@NotNull Language language, @NotNull Theme theme, boolean debug) {
+  public Config(@NotNull Language language, @NotNull Theme theme, boolean syncTreeWithMainPane, boolean debug) {
     this.language = Objects.requireNonNull(language);
     this.theme = Objects.requireNonNull(theme);
+    this.syncTreeWithMainPane = syncTreeWithMainPane;
     this.debug = debug;
   }
 
@@ -85,6 +90,14 @@ public final class Config implements Cloneable {
     return this.theme;
   }
 
+  public boolean shouldSyncTreeWithMainPane() {
+    return this.syncTreeWithMainPane;
+  }
+
+  public void setShouldSyncTreeWithMainPane(boolean syncTreeWithMainPane) {
+    this.syncTreeWithMainPane = syncTreeWithMainPane;
+  }
+
   public boolean isDebug() {
     return this.debug;
   }
@@ -93,7 +106,7 @@ public final class Config implements Cloneable {
     return new Config(
         language,
         this.theme,
-        this.debug
+        this.syncTreeWithMainPane, this.debug
     );
   }
 
@@ -101,7 +114,7 @@ public final class Config implements Cloneable {
     return new Config(
         this.language,
         theme,
-        this.debug
+        this.syncTreeWithMainPane, this.debug
     );
   }
 
@@ -115,10 +128,13 @@ public final class Config implements Cloneable {
   }
 
   public void save() throws IOException {
+    App.LOGGER.info("Saving config…");
     Wini ini = new Wini(SETTINGS_FILE);
     ini.put(APP_SECTION, LANGUAGE_OPTION, this.language.code());
     ini.put(APP_SECTION, THEME_OPTION, this.theme.id());
+    ini.put(APP_SECTION, SYNC_TREE_OPTION, this.syncTreeWithMainPane);
     ini.store();
+    App.LOGGER.info("Done.");
   }
 
   @Override

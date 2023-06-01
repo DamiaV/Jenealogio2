@@ -182,10 +182,12 @@ public class AppController {
   }
 
   private void onPersonClick(final @NotNull Person person, int clickCount, boolean inTree) {
-    if (inTree) {
-      this.familyTreePane.selectPerson(person);
-    } else {
-      this.familyTreeView.selectPerson(person);
+    if (App.config().shouldSyncTreeWithMainPane()) {
+      if (inTree) {
+        this.familyTreePane.selectPerson(person);
+      } else {
+        this.familyTreeView.selectPerson(person);
+      }
     }
     if (clickCount == 2) {
       this.editPersonDialog.setPerson(person);

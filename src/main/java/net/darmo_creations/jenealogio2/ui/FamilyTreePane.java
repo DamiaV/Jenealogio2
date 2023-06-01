@@ -61,10 +61,12 @@ public class FamilyTreePane extends FamilyTreeComponent {
   private void onPersonWidgetClick(@NotNull PersonWidget personWidget, int clickCount) {
     this.select(personWidget.person());
     this.firePersonClickEvent(personWidget.person(), clickCount);
+    this.pane.requestFocus();
   }
 
   private void onBackgroundClicked(MouseEvent event) {
-    this.firePersonClickEvent(null, event.getClickCount());
     this.deselectAll();
+    this.firePersonClickEvent(null, event.getClickCount());
+    this.pane.requestFocus();
   }
 }
