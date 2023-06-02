@@ -103,8 +103,8 @@ public class FamilyTreeView extends FamilyTreeComponent {
     });
     this.treeView.setOnMouseClicked(event -> {
       TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
-      if (selectedItem != null && event.getClickCount() != 1) {
-        this.firePersonClickEvent((Person) selectedItem.getValue(), event.getClickCount());
+      if (event.getClickCount() != 1 && selectedItem != null && selectedItem.getValue() instanceof Person person) {
+        this.firePersonClickEvent(person, event.getClickCount());
       }
     });
   }
