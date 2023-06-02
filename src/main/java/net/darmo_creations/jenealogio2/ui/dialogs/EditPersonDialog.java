@@ -12,11 +12,16 @@ import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.Icon;
+import net.darmo_creations.jenealogio2.ui.components.ComboBoxItem;
+import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Result>> {
@@ -32,7 +37,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
   private Label disambiguationIDHelpLabel;
 
   @FXML
-  private ComboBox<LifeStatusItem> lifeStatusCombo;
+  private ComboBox<NotNullComboBoxItem<LifeStatus>> lifeStatusCombo;
   @FXML
   private TextField legalLastNameField;
   @FXML
@@ -44,7 +49,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
   @FXML
   private TextField nicknamesField;
   @FXML
-  private ComboBox<GenderItem> genderCombo;
+  private ComboBox<ComboBoxItem<Gender>> genderCombo;
   @FXML
   private TextField disambiguationIDField;
   @FXML
@@ -74,9 +79,9 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     this.lifeStatusCombo.getItems().addAll(Arrays.stream(LifeStatus.values())
         .map(lifeStatus -> {
           String text = language.translate("life_status." + lifeStatus.name().toLowerCase());
-          return new LifeStatusItem(lifeStatus, text);
+          return new NotNullComboBoxItem<>(lifeStatus, text);
         })
-        .sorted(Comparator.comparing(LifeStatusItem::text))
+        .sorted(Comparator.comparing(NotNullComboBoxItem::text))
         .toList());
     this.updateGendersList();
 
@@ -106,16 +111,16 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
 
   public void updateGendersList() {
     Language language = App.config().language();
-    this.genderCombo.getItems().add(new GenderItem(null, language.translate("gender.unknown")));
+    this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("gender.unknown")));
     this.genderCombo.getItems().addAll(Registries.GENDERS.entries().stream()
         .map(gender -> {
           RegistryEntryKey key = gender.key();
           String text = key.namespace().equals(Registry.BUILTIN_NS)
               ? language.translate("gender." + key.name())
               : key.name();
-          return new GenderItem(gender, text);
+          return new ComboBoxItem<>(gender, text);
         })
-        .sorted(Comparator.comparing(GenderItem::text))
+        .sorted(Comparator.comparing(ComboBoxItem::text))
         .toList());
   }
 
@@ -123,8 +128,8 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     this.person = person;
     if (person != null) {
       this.setTitle(StringUtils.format(this.getTitle(), new FormatArg("person_name", person.toString())));
-      this.lifeStatusCombo.getSelectionModel().select(new LifeStatusItem(person.lifeStatus()));
-      this.genderCombo.getSelectionModel().select(new GenderItem(person.gender().orElse(null)));
+      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(person.lifeStatus()));
+      this.genderCombo.getSelectionModel().select(new ComboBoxItem<>(person.gender().orElse(null)));
       this.legalLastNameField.setText(person.legalLastName().orElse(""));
       this.publicLastNameField.setText(person.publicLastName().orElse(""));
       this.legalFirstNamesField.setText(person.getJoinedLegalFirstNames().orElse(""));
@@ -146,7 +151,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       }
     } else {
       this.setTitle(App.config().language().translate("dialog.edit_person.title.create"));
-      this.lifeStatusCombo.getSelectionModel().select(new LifeStatusItem(LifeStatus.LIVING));
+      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.LIVING));
       this.genderCombo.getSelectionModel().select(0);
       this.lifeEventsList.getItems().clear();
     }
@@ -154,8 +159,8 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
 
   private void updatePerson(@NotNull Person p) {
     // Profile
-    p.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().lifeStatus());
-    p.setGender(this.genderCombo.getSelectionModel().getSelectedItem().gender());
+    p.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
+    p.setGender(this.genderCombo.getSelectionModel().getSelectedItem().data());
     p.setLegalLastName(this.getText(this.legalLastNameField));
     p.setPublicLastName(this.getText(this.publicLastNameField));
     p.setLegalFirstNames(this.splitText(this.legalFirstNamesField));
@@ -178,53 +183,6 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
         .map(String::strip)
         .filter(s -> !s.isEmpty())
         .toList();
-  }
-
-  /**
-   * Simple holder for a life status and its display text.
-   */
-  private record LifeStatusItem(LifeStatus lifeStatus, @NotNull String text) {
-    private LifeStatusItem {
-      Objects.requireNonNull(text);
-    }
-
-    public LifeStatusItem(LifeStatus lifeStatus) {
-      this(lifeStatus, "");
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      return o instanceof LifeStatusItem i && i.lifeStatus == this.lifeStatus;
-    }
-
-    @Override
-    public String toString() {
-      return this.text;
-    }
-  }
-
-  /**
-   * Simple holder for a gender and its display text.
-   */
-  private record GenderItem(Gender gender, @NotNull String text) {
-    private GenderItem {
-      Objects.requireNonNull(text);
-    }
-
-    public GenderItem(Gender gender) {
-      this(gender, "");
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      // Using == because gender instances are guaranted to be unique
-      return o instanceof GenderItem i && i.gender == this.gender;
-    }
-
-    @Override
-    public String toString() {
-      return this.text;
-    }
   }
 
   /**
