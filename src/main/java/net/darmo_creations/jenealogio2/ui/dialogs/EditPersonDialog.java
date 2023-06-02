@@ -123,8 +123,8 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     this.person = person;
     if (person != null) {
       this.setTitle(StringUtils.format(this.getTitle(), new FormatArg("person_name", person.toString())));
-      this.lifeStatusCombo.getSelectionModel().select(new LifeStatusItem(person.lifeStatus(), ""));
-      this.genderCombo.getSelectionModel().select(new GenderItem(person.gender().orElse(null), ""));
+      this.lifeStatusCombo.getSelectionModel().select(new LifeStatusItem(person.lifeStatus()));
+      this.genderCombo.getSelectionModel().select(new GenderItem(person.gender().orElse(null)));
       this.legalLastNameField.setText(person.legalLastName().orElse(""));
       this.publicLastNameField.setText(person.publicLastName().orElse(""));
       this.legalFirstNamesField.setText(person.getJoinedLegalFirstNames().orElse(""));
@@ -146,13 +146,13 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       }
     } else {
       this.setTitle(App.config().language().translate("dialog.edit_person.title.create"));
-      this.lifeStatusCombo.getSelectionModel().select(new LifeStatusItem(LifeStatus.LIVING, ""));
+      this.lifeStatusCombo.getSelectionModel().select(new LifeStatusItem(LifeStatus.LIVING));
       this.genderCombo.getSelectionModel().select(0);
       this.lifeEventsList.getItems().clear();
     }
   }
 
-  private void updatePerson(Person p) {
+  private void updatePerson(@NotNull Person p) {
     // Profile
     p.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().lifeStatus());
     p.setGender(this.genderCombo.getSelectionModel().getSelectedItem().gender());
@@ -188,6 +188,10 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       Objects.requireNonNull(text);
     }
 
+    public LifeStatusItem(LifeStatus lifeStatus) {
+      this(lifeStatus, "");
+    }
+
     @Override
     public boolean equals(Object o) {
       return o instanceof LifeStatusItem i && i.lifeStatus == this.lifeStatus;
@@ -205,6 +209,10 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
   private record GenderItem(Gender gender, @NotNull String text) {
     private GenderItem {
       Objects.requireNonNull(text);
+    }
+
+    public GenderItem(Gender gender) {
+      this(gender, "");
     }
 
     @Override
