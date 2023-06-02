@@ -8,8 +8,9 @@ public final class LifeEventType extends RegistryEntry {
   private final Group group;
   private final boolean indicatesDeath;
   private final int maxActors;
+  private final boolean unique;
 
-  LifeEventType(@NotNull RegistryEntryKey key, @NotNull Group group, boolean indicatesDeath, int maxActors) {
+  LifeEventType(@NotNull RegistryEntryKey key, @NotNull Group group, boolean indicatesDeath, int maxActors, boolean unique) {
     super(key);
     if (maxActors <= 0) {
       throw new IllegalArgumentException("maxActors must be > 0");
@@ -17,6 +18,7 @@ public final class LifeEventType extends RegistryEntry {
     this.group = Objects.requireNonNull(group);
     this.indicatesDeath = indicatesDeath;
     this.maxActors = maxActors;
+    this.unique = unique;
   }
 
   /**
@@ -38,6 +40,13 @@ public final class LifeEventType extends RegistryEntry {
    */
   public int maxActors() {
     return this.maxActors;
+  }
+
+  /**
+   * Indicate whether this event type may occur at most once in a person’s life.
+   */
+  public boolean isUnique() {
+    return this.unique;
   }
 
   @Override
@@ -78,7 +87,7 @@ public final class LifeEventType extends RegistryEntry {
     OTHER
   }
 
-  public record RegistryArgs(@NotNull Group group, boolean indicatesDeath, int maxActors) {
+  public record RegistryArgs(@NotNull Group group, boolean indicatesDeath, int maxActors, boolean isUnique) {
     public RegistryArgs {
       Objects.requireNonNull(group);
       if (maxActors <= 0) {
@@ -87,7 +96,11 @@ public final class LifeEventType extends RegistryEntry {
     }
 
     public RegistryArgs(@NotNull Group group, boolean indicatesDeath) {
-      this(group, indicatesDeath, 1);
+      this(group, indicatesDeath, 1, false);
+    }
+
+    public RegistryArgs(@NotNull Group group, boolean indicatesDeath, boolean isUnique) {
+      this(group, indicatesDeath, 1, isUnique);
     }
   }
 }

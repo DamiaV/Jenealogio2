@@ -64,7 +64,11 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
       throw new IllegalArgumentException("cannot add more than %d actor(s) to life event with type %s"
           .formatted(max, this.type.key()));
     }
-    this.actors.add(actor);
+    // Add link from this event to actor if not yet done
+    if (!this.hasActor(actor)) {
+      this.actors.add(actor);
+    }
+    // Add this event to actor if not yet done
     if (actor.getLifeEventsAsActor().contains(this)) {
       actor.addLifeEventAsActor(this);
     }
@@ -75,7 +79,11 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
     if (this.actors.size() == 1 && this.hasActor(actor)) {
       throw new IllegalStateException("cannot remove only actor");
     }
-    this.actors.remove(actor);
+    // Remove link from this event to actor if not yet done
+    if (this.hasActor(actor)) {
+      this.actors.remove(actor);
+    }
+    // Remove this event from actor if not yet done
     if (actor.getLifeEventsAsActor().contains(this)) {
       actor.removeLifeEventAsActor(this);
     }
@@ -94,7 +102,11 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
     if (this.hasActor(witness)) {
       throw new IllegalArgumentException("same person cannot be both witness and actor of same event");
     }
-    this.witnesses.add(witness);
+    // Add link from this event to witness if not yet done
+    if (!this.hasWitness(witness)) {
+      this.witnesses.add(witness);
+    }
+    // Add this event to witness if not yet done
     if (witness.getLifeEventsAsWitness().contains(this)) {
       witness.addLifeEventAsWitness(this);
     }
@@ -102,7 +114,11 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
 
   public void removeWitness(@NotNull Person witness) {
     Objects.requireNonNull(witness);
-    this.witnesses.remove(witness);
+    // Remove link from this event to witness if not yet done
+    if (this.hasWitness(witness)) {
+      this.witnesses.remove(witness);
+    }
+    // Remove this event from witness if not yet done
     if (witness.getLifeEventsAsWitness().contains(this)) {
       witness.removeLifeEventAsWitness(this);
     }

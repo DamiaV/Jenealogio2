@@ -171,11 +171,19 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public Optional<CalendarDate> getBirthDate() {
-    return Optional.empty(); // TODO
+    LifeEventType birthEventType = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
+    return this.lifeEvents.stream()
+        .filter(lifeEvent -> lifeEvent.type() == birthEventType)
+        .findFirst()
+        .map(LifeEvent::date);
   }
 
   public Optional<CalendarDate> getDeathDate() {
-    return Optional.empty(); // TODO
+    LifeEventType deathEventType = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "death"));
+    return this.lifeEvents.stream()
+        .filter(lifeEvent -> lifeEvent.type() == deathEventType)
+        .findFirst()
+        .map(LifeEvent::date);
   }
 
   public List<LifeEvent> lifeEvents() {
@@ -191,30 +199,45 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public void addLifeEventAsActor(@NotNull LifeEvent event) {
+    if (event.type().isUnique() && this.getLifeEventsAsActor().stream().anyMatch(e -> e.type() == event.type())) {
+      throw new IllegalArgumentException("%s already acts in an event of type %s".formatted(this, event.type()));
+    }
+    // Add link from event to this actor if not yet done
     if (!event.hasActor(this)) {
       event.addActor(this);
     }
+    // Add event to this actor; may have been done by the event itself in previous branch
     if (!this.lifeEvents.contains(event)) {
       this.lifeEvents.add(event);
       this.lifeEvents.sort(null);
     }
-    // TODO update life status
+    this.updateLifeStatusFromEvents();
   }
 
   public void removeLifeEventAsActor(@NotNull LifeEvent event) {
+    // Remove link from event to this actor if not yet done
     if (event.hasActor(this)) {
       event.removeActor(this);
     }
+    // Remove event from this actor; may have been done by the event itself in previous branch
     if (!event.hasWitness(this)) {
       this.lifeEvents.remove(event);
     }
-    // TODO update life status
+    this.updateLifeStatusFromEvents();
+  }
+
+  private void updateLifeStatusFromEvents() {
+    if (this.getLifeEventsAsActor().stream().anyMatch(lifeEvent -> lifeEvent.type().indicatesDeath())) {
+      this.lifeStatus = LifeStatus.DECEASED;
+    }
   }
 
   public void addLifeEventAsWitness(@NotNull LifeEvent event) {
+    // Add link from event to this witness if not yet done
     if (!event.hasWitness(this)) {
       event.addWitness(this);
     }
+    // Add event to this witness; may have been done by the event itself in previous branch
     if (!this.lifeEvents.contains(event)) {
       this.lifeEvents.add(event);
       this.lifeEvents.sort(null);
@@ -222,9 +245,11 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public void removeLifeEventAsWitness(@NotNull LifeEvent event) {
+    // Remove link from event to this witness if not yet done
     if (event.hasWitness(this)) {
       event.removeWitness(this);
     }
+    // Remove event from this witness; may have been done by the event itself in previous branch
     if (!event.hasActor(this)) {
       this.lifeEvents.remove(event);
     }

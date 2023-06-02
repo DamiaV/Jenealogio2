@@ -19,18 +19,18 @@ public final class Registries {
   public static final Registry<LifeEventType, RegistryArgs> LIFE_EVENT_TYPES =
       new Registry<>(
           "life_event_types",
-          (key, args) -> new LifeEventType(key, args.group(), args.indicatesDeath(), args.maxActors()),
+          (key, args) -> new LifeEventType(key, args.group(), args.indicatesDeath(), args.maxActors(), args.isUnique()),
 
-          new BuiltinEntry<>("annulment", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Annulation
-          new BuiltinEntry<>("civil_solidarity_pact", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // PACS
-          new BuiltinEntry<>("divorce", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Divorce
-          new BuiltinEntry<>("engagement", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Fiançailles
-          new BuiltinEntry<>("marriage", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Mariage
-          new BuiltinEntry<>("marriage_bann", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Bans de mariage
-          new BuiltinEntry<>("marriage_contract", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Contrat de mariage
-          new BuiltinEntry<>("marriage_licence", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Licence de mariage
-          new BuiltinEntry<>("partners", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Couple non marié
-          new BuiltinEntry<>("separation", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2)), // Séparation
+          new BuiltinEntry<>("annulment", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Annulation
+          new BuiltinEntry<>("civil_solidarity_pact", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // PACS
+          new BuiltinEntry<>("divorce", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Divorce
+          new BuiltinEntry<>("engagement", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Fiançailles
+          new BuiltinEntry<>("marriage", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Mariage
+          new BuiltinEntry<>("marriage_bann", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Bans de mariage
+          new BuiltinEntry<>("marriage_contract", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Contrat de mariage
+          new BuiltinEntry<>("marriage_licence", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Licence de mariage
+          new BuiltinEntry<>("partners", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Couple non marié
+          new BuiltinEntry<>("separation", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Séparation
 
           new BuiltinEntry<>("acquisition", new RegistryArgs(LifeEventType.Group.ADMIN, false)), // Acquisition
           new BuiltinEntry<>("census", new RegistryArgs(LifeEventType.Group.ADMIN, false)), // Recensement
@@ -51,10 +51,10 @@ public final class Registries {
           new BuiltinEntry<>("education", new RegistryArgs(LifeEventType.Group.EDUCATION, false)), // Éducation
           new BuiltinEntry<>("graduation", new RegistryArgs(LifeEventType.Group.EDUCATION, false)), // Diplome
 
-          new BuiltinEntry<>("birth", new RegistryArgs(LifeEventType.Group.LIFESPAN, false)), // Naissance
+          new BuiltinEntry<>("birth", new RegistryArgs(LifeEventType.Group.LIFESPAN, false, true)), // Naissance
           new BuiltinEntry<>("burial", new RegistryArgs(LifeEventType.Group.LIFESPAN, true)), // Inhumation
-          new BuiltinEntry<>("cremation", new RegistryArgs(LifeEventType.Group.LIFESPAN, true)), // Crémation
-          new BuiltinEntry<>("death", new RegistryArgs(LifeEventType.Group.LIFESPAN, true)), // Décès
+          new BuiltinEntry<>("cremation", new RegistryArgs(LifeEventType.Group.LIFESPAN, true, true)), // Crémation
+          new BuiltinEntry<>("death", new RegistryArgs(LifeEventType.Group.LIFESPAN, true, true)), // Décès
           new BuiltinEntry<>("funeral", new RegistryArgs(LifeEventType.Group.LIFESPAN, true)), // Funérailles
 
           new BuiltinEntry<>("circumcision", new RegistryArgs(LifeEventType.Group.MEDICAL, false)), // Circoncision
