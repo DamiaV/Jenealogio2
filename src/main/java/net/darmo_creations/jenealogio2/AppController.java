@@ -14,6 +14,7 @@ import net.darmo_creations.jenealogio2.ui.FamilyTreeComponent;
 import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
 import net.darmo_creations.jenealogio2.ui.FamilyTreeView;
 import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
+import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
 import net.darmo_creations.jenealogio2.ui.dialogs.EditPersonDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
 
@@ -204,22 +205,26 @@ public class AppController {
   private void onRemovePersonAction() {
     if (this.focusedComponent != null) {
       this.focusedComponent.getSelectedPerson().ifPresent(person -> {
-        for (LifeEvent lifeEvent : person.getLifeEventsAsActor()) {
-          if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
-            lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
-            lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
-            this.familyTree.lifeEvents().remove(lifeEvent);
-          } else {
-            person.removeLifeEvent(lifeEvent);
+        boolean delete = Alerts.confirmation(
+            "alert.delete_person.header", null, "alert.delete_person.title");
+        if (delete) {
+          for (LifeEvent lifeEvent : person.getLifeEventsAsActor()) {
+            if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
+              lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
+              lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
+              this.familyTree.lifeEvents().remove(lifeEvent);
+            } else {
+              person.removeLifeEvent(lifeEvent);
+            }
           }
+          for (LifeEvent lifeEvent : person.getLifeEventsAsWitness()) {
+            lifeEvent.removeWitness(person);
+          }
+          this.familyTree.persons().remove(person);
+          this.familyTreePane.refresh();
+          this.familyTreeView.refresh();
+          this.updateButtons(null);
         }
-        for (LifeEvent lifeEvent : person.getLifeEventsAsWitness()) {
-          lifeEvent.removeWitness(person);
-        }
-        this.familyTree.persons().remove(person);
-        this.familyTreePane.refresh();
-        this.familyTreeView.refresh();
-        this.updateButtons(null);
       });
     }
   }
