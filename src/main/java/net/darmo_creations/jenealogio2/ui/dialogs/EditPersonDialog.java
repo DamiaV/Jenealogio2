@@ -270,7 +270,7 @@ public class EditPersonDialog extends DialogBase<ButtonType> {
     });
     for (LifeEventView lifeEventView : this.eventsToDelete) {
       LifeEvent event = lifeEventView.lifeEvent();
-      if (event.actors().size() == event.type().minActors()) {
+      if (event.actors().size() <= event.type().minActors()) {
         event.actors().forEach(a -> a.removeLifeEvent(event));
         event.witnesses().forEach(w -> w.removeLifeEvent(event));
         this.familyTree.lifeEvents().remove(event);

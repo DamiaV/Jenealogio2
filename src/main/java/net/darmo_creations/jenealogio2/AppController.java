@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
+import net.darmo_creations.jenealogio2.model.LifeEvent;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
@@ -128,6 +129,7 @@ public class AppController {
     this.editPersonMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PERSON, Icon.Size.SMALL));
     this.editPersonMenuItem.setOnAction(event -> this.onEditPersonAction());
     this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PERSON, Icon.Size.SMALL));
+    this.removePersonMenuItem.setOnAction(event -> this.onRemovePersonAction());
     this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
     this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
     this.editParentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.SMALL));
@@ -196,6 +198,29 @@ public class AppController {
   private void onEditPersonAction() {
     if (this.focusedComponent != null) {
       this.focusedComponent.getSelectedPerson().ifPresent(this::openEditPersonDialog);
+    }
+  }
+
+  private void onRemovePersonAction() {
+    if (this.focusedComponent != null) {
+      this.focusedComponent.getSelectedPerson().ifPresent(person -> {
+        for (LifeEvent lifeEvent : person.getLifeEventsAsActor()) {
+          if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
+            lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
+            lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
+            this.familyTree.lifeEvents().remove(lifeEvent);
+          } else {
+            person.removeLifeEvent(lifeEvent);
+          }
+        }
+        for (LifeEvent lifeEvent : person.getLifeEventsAsWitness()) {
+          lifeEvent.removeWitness(person);
+        }
+        this.familyTree.persons().remove(person);
+        this.familyTreePane.refresh();
+        this.familyTreeView.refresh();
+        this.updateButtons(null);
+      });
     }
   }
 
