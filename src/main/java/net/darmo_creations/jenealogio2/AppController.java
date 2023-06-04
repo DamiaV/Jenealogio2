@@ -52,8 +52,6 @@ public class AppController {
   @FXML
   private MenuItem editParentsMenuItem;
   @FXML
-  private MenuItem editPartnersMenuItem;
-  @FXML
   private MenuItem setPictureMenuItem;
   @FXML
   private MenuItem calculateRelationshipsMenuItem;
@@ -86,8 +84,6 @@ public class AppController {
   private Button addSiblingToolbarButton;
   @FXML
   private Button editParentsToolbarButton;
-  @FXML
-  private Button editPartnersToolbarButton;
   @FXML
   private Button setPictureToolbarButton;
   @FXML
@@ -138,7 +134,6 @@ public class AppController {
     this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
     this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
     this.editParentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.SMALL));
-    this.editPartnersMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARTNERS, Icon.Size.SMALL));
     this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
 
     this.calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
@@ -162,7 +157,6 @@ public class AppController {
     this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
     this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
     this.editParentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.BIG));
-    this.editPartnersToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARTNERS, Icon.Size.BIG));
     this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
 
     this.calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
@@ -270,13 +264,11 @@ public class AppController {
     this.addChildMenuItem.setDisable(!selection);
     this.addSiblingMenuItem.setDisable(!hasParents);
     this.editParentsMenuItem.setDisable(!selection);
-    this.editPartnersMenuItem.setDisable(!selection);
     this.setPictureMenuItem.setDisable(!selection);
 
     this.addChildToolbarButton.setDisable(!selection);
     this.addSiblingToolbarButton.setDisable(!hasParents);
     this.editParentsToolbarButton.setDisable(!selection);
-    this.editPartnersToolbarButton.setDisable(!selection);
     this.setPictureToolbarButton.setDisable(!selection);
   }
 

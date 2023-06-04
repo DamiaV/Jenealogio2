@@ -23,7 +23,6 @@ public enum Icon {
   ADD_CHILD("kids_add"),
   ADD_SIBLING("users_3_add"),
   EDIT_PARENTS("group_edit"),
-  EDIT_PARTNERS("heart_edit"),
   SET_PICTURE("camera_edit"),
 
   CALCULATE_RELATIONSHIPS("link_go"),

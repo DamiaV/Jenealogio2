@@ -89,11 +89,6 @@
                 </MenuItem>
                 <MenuItem fx:id="editParentsMenuItem" text="%menu.edit.edit_parents">
                   <accelerator>
-                    <KeyCodeCombination alt="DOWN" code="E" control="UP" meta="UP" shift="DOWN" shortcut="UP"/>
-                  </accelerator>
-                </MenuItem>
-                <MenuItem fx:id="editPartnersMenuItem" text="%menu.edit.edit_partners">
-                  <accelerator>
                     <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
@@ -192,11 +187,6 @@
                 <Button fx:id="editParentsToolbarButton">
                   <tooltip>
                     <Tooltip text="%toolbar.edit_parents"/>
-                  </tooltip>
-                </Button>
-                <Button fx:id="editPartnersToolbarButton">
-                  <tooltip>
-                    <Tooltip text="%toolbar.edit_partners"/>
                   </tooltip>
                 </Button>
                 <Button fx:id="setPictureToolbarButton">
