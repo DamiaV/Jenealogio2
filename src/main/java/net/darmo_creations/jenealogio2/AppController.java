@@ -52,6 +52,8 @@ public class AppController {
   @FXML
   private MenuItem editParentsMenuItem;
   @FXML
+  private MenuItem editLifeEventsMenuItem;
+  @FXML
   private MenuItem setPictureMenuItem;
   @FXML
   private MenuItem calculateRelationshipsMenuItem;
@@ -84,6 +86,8 @@ public class AppController {
   private Button addSiblingToolbarButton;
   @FXML
   private Button editParentsToolbarButton;
+  @FXML
+  private Button editLifeEventsToolbarButton;
   @FXML
   private Button setPictureToolbarButton;
   @FXML
@@ -134,6 +138,9 @@ public class AppController {
     this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
     this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
     this.editParentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.SMALL));
+    this.editParentsMenuItem.setOnAction(event -> this.onEditParentsAction());
+    this.editLifeEventsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.SMALL));
+    this.editLifeEventsMenuItem.setOnAction(event -> this.onEditLifeEventsAction());
     this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
 
     this.calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
@@ -157,6 +164,9 @@ public class AppController {
     this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
     this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
     this.editParentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.BIG));
+    this.editParentsToolbarButton.setOnAction(event -> this.onEditParentsAction());
+    this.editLifeEventsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.BIG));
+    this.editLifeEventsToolbarButton.setOnAction(event -> this.onEditLifeEventsAction());
     this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
 
     this.calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
@@ -189,12 +199,27 @@ public class AppController {
   }
 
   private void onAddPersonAction() {
-    this.openEditPersonDialog(null);
+    this.openEditPersonDialog(null, EditPersonDialog.TAB_PROFILE);
   }
 
   private void onEditPersonAction() {
     if (this.focusedComponent != null) {
-      this.focusedComponent.getSelectedPerson().ifPresent(this::openEditPersonDialog);
+      this.focusedComponent.getSelectedPerson()
+          .ifPresent(person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_PROFILE));
+    }
+  }
+
+  private void onEditParentsAction() {
+    if (this.focusedComponent != null) {
+      this.focusedComponent.getSelectedPerson()
+          .ifPresent(person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_PARENTS));
+    }
+  }
+
+  private void onEditLifeEventsAction() {
+    if (this.focusedComponent != null) {
+      this.focusedComponent.getSelectedPerson()
+          .ifPresent(person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_EVENTS));
     }
   }
 
@@ -241,13 +266,14 @@ public class AppController {
       }
     }
     if (clickCount == 2) {
-      this.openEditPersonDialog(person);
+      this.openEditPersonDialog(person, EditPersonDialog.TAB_PROFILE);
     }
     this.updateButtons(person);
   }
 
-  private void openEditPersonDialog(Person person) {
+  private void openEditPersonDialog(Person person, int tabIndex) {
     this.editPersonDialog.setPerson(person, this.familyTree);
+    this.editPersonDialog.selectTab(tabIndex);
     Optional<Boolean> refresh = this.editPersonDialog.showAndWait();
     if (refresh.isPresent() && refresh.get()) {
       this.familyTreeView.refresh();
@@ -264,11 +290,13 @@ public class AppController {
     this.addChildMenuItem.setDisable(!selection);
     this.addSiblingMenuItem.setDisable(!hasParents);
     this.editParentsMenuItem.setDisable(!selection);
+    this.editLifeEventsMenuItem.setDisable(!selection);
     this.setPictureMenuItem.setDisable(!selection);
 
     this.addChildToolbarButton.setDisable(!selection);
     this.addSiblingToolbarButton.setDisable(!hasParents);
     this.editParentsToolbarButton.setDisable(!selection);
+    this.editLifeEventsToolbarButton.setDisable(!selection);
     this.setPictureToolbarButton.setDisable(!selection);
   }
 

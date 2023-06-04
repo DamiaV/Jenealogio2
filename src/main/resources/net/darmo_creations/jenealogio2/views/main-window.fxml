@@ -92,6 +92,11 @@
                     <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
+                <MenuItem fx:id="editLifeEventsMenuItem" text="%menu.edit.edit_life_events">
+                  <accelerator>
+                    <KeyCodeCombination alt="DOWN" code="E" control="UP" meta="UP" shift="DOWN" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
                 <SeparatorMenuItem/>
                 <MenuItem fx:id="setPictureMenuItem" text="%menu.edit.set_picture">
                   <accelerator>
@@ -187,6 +192,11 @@
                 <Button fx:id="editParentsToolbarButton">
                   <tooltip>
                     <Tooltip text="%toolbar.edit_parents"/>
+                  </tooltip>
+                </Button>
+                <Button fx:id="editLifeEventsToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.edit_life_events"/>
                   </tooltip>
                 </Button>
                 <Button fx:id="setPictureToolbarButton">

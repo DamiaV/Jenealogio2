@@ -31,6 +31,13 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class EditPersonDialog extends DialogBase<Boolean> {
+  public static final int TAB_PROFILE = 0;
+  public static final int TAB_EVENTS = 1;
+  public static final int TAB_PARENTS = 2;
+
+  @FXML
+  private TabPane tabPane;
+
   @FXML
   private Label legalLastNameHelpLabel;
   @FXML
@@ -247,6 +254,10 @@ public class EditPersonDialog extends DialogBase<Boolean> {
       list.setPersons(this.person.getRelatives(type));
       list.setPotentialRelatives(potentialRelatives);
     }
+  }
+
+  public void selectTab(int index) {
+    this.tabPane.getSelectionModel().select(index);
   }
 
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
