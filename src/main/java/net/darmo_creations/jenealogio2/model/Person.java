@@ -173,7 +173,7 @@ public class Person extends GenealogyObject<Person> {
 
   public Optional<CalendarDate> getBirthDate() {
     LifeEventType birthEventType = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
-    return this.lifeEvents.stream()
+    return this.getActedInEventsStream()
         .filter(lifeEvent -> lifeEvent.type() == birthEventType)
         .findFirst()
         .map(LifeEvent::date);
@@ -181,7 +181,7 @@ public class Person extends GenealogyObject<Person> {
 
   public Optional<CalendarDate> getDeathDate() {
     LifeEventType deathEventType = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "death"));
-    return this.lifeEvents.stream()
+    return this.getActedInEventsStream()
         .filter(lifeEvent -> lifeEvent.type() == deathEventType)
         .findFirst()
         .map(LifeEvent::date);
