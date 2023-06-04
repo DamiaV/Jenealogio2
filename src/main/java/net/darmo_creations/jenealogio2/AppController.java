@@ -18,8 +18,10 @@ import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
 import net.darmo_creations.jenealogio2.ui.dialogs.EditPersonDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
 
+import java.util.HashSet;
 import java.util.Optional;
 
+// TODO add right panel to display summary of selected person’s data
 public class AppController {
   @FXML
   private MenuItem newFileMenuItem;
@@ -219,6 +221,12 @@ public class AppController {
           }
           for (LifeEvent lifeEvent : person.getLifeEventsAsWitness()) {
             lifeEvent.removeWitness(person);
+          }
+          for (Person child : new HashSet<>(person.children())) {
+            for (Person.RelativeType type : Person.RelativeType.values()) {
+              child.removeRelative(person, type);
+            }
+            child.removeParent(person);
           }
           this.familyTree.persons().remove(person);
           this.familyTreePane.refresh();

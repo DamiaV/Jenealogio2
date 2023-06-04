@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Language;
@@ -111,13 +112,18 @@ public class LifeEventView extends TitledPane {
     addWitnessButton.setOnAction(this::onAddWitness);
     Button removeWitnessButton = new Button(language.translate("life_event_view.witnesses.remove"),
         theme.getIcon(Icon.REMOVE_WITNESS, Icon.Size.SMALL));
-    removeWitnessButton.setOnAction(this::onRemoveWitness);
+    removeWitnessButton.setOnAction(event -> this.onRemoveWitness());
     removeWitnessButton.setDisable(true);
     Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
     buttonsHBox.getChildren().addAll(spacer, addWitnessButton, removeWitnessButton);
     this.witnessesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
         removeWitnessButton.setDisable(this.witnessesList.getSelectionModel().getSelectedItems().isEmpty()));
+    this.witnessesList.setOnKeyPressed(event -> {
+      if (event.getCode() == KeyCode.DELETE) {
+        this.onRemoveWitness();
+      }
+    });
     this.witnessesList.setPrefHeight(100);
     gridPane.addRow(4, new Label(language.translate("life_event_view.witnesses")), witnessesVBox);
 
@@ -156,11 +162,9 @@ public class LifeEventView extends TitledPane {
     result.ifPresent(person -> this.witnessesList.getItems().add(person));
   }
 
-  private void onRemoveWitness(ActionEvent event) {
+  private void onRemoveWitness() {
     ObservableList<Person> selectedItem = this.witnessesList.getSelectionModel().getSelectedItems();
-    if (selectedItem != null) {
-      this.witnessesList.getItems().removeAll(selectedItem);
-    }
+    this.witnessesList.getItems().removeAll(new LinkedList<>(selectedItem));
   }
 
   public LifeEvent lifeEvent() {

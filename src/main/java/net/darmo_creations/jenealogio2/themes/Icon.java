@@ -42,6 +42,9 @@ public enum Icon {
   DELETE_EVENT("cross"),
   ADD_WITNESS("plus"),
   REMOVE_WITNESS("delete"),
+
+  ADD_PARENT("plus"),
+  REMOVE_PARENT("delete"),
   ;
 
   private final String baseName;

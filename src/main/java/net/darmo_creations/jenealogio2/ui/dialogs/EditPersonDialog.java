@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import net.darmo_creations.jenealogio2.App;
@@ -18,6 +19,7 @@ import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import net.darmo_creations.jenealogio2.ui.components.ComboBoxItem;
 import net.darmo_creations.jenealogio2.ui.components.LifeEventView;
 import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
+import net.darmo_creations.jenealogio2.ui.components.RelativesListView;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -65,6 +67,15 @@ public class EditPersonDialog extends DialogBase<Boolean> {
   private Button addEventButton;
   @FXML
   private ListView<LifeEventView> lifeEventsList;
+
+  @FXML
+  private GridPane parentsPane;
+  @FXML
+  private ComboBox<ComboBoxItem<Person>> parent1Combo;
+  @FXML
+  private ComboBox<ComboBoxItem<Person>> parent2Combo;
+
+  private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
 
   private Person person;
   private FamilyTree familyTree;
@@ -120,6 +131,17 @@ public class EditPersonDialog extends DialogBase<Boolean> {
     });
     this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
 
+    this.parent1Combo.getSelectionModel().selectedItemProperty()
+        .addListener((observable, oldValue, newValue) -> this.updateButtons());
+    this.parent2Combo.getSelectionModel().selectedItemProperty()
+        .addListener((observable, oldValue, newValue) -> this.updateButtons());
+    int i = 1;
+    for (Person.RelativeType type : Person.RelativeType.values()) {
+      RelativesListView component = new RelativesListView();
+      this.relativesLists.put(type, component);
+      this.parentsPane.add(component, 1, i++);
+    }
+
     Stage stage = this.stage();
     stage.setMinWidth(700);
     stage.setMinHeight(600);
@@ -155,48 +177,75 @@ public class EditPersonDialog extends DialogBase<Boolean> {
   public void setPerson(Person person, @NotNull FamilyTree familyTree) {
     this.familyTree = Objects.requireNonNull(familyTree);
     Language language = App.config().language();
-    if (person != null) {
-      this.person = person;
-      this.creating = false;
-      this.setTitle(language.translate("dialog.edit_person.title", new FormatArg("person_name", person.toString())));
-      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(person.lifeStatus()));
-      this.genderCombo.getSelectionModel().select(new ComboBoxItem<>(person.gender().orElse(null)));
-      this.legalLastNameField.setText(person.legalLastName().orElse(""));
-      this.publicLastNameField.setText(person.publicLastName().orElse(""));
-      this.legalFirstNamesField.setText(person.getJoinedLegalFirstNames().orElse(""));
-      this.publicFirstNamesField.setText(person.getJoinedPublicFirstNames().orElse(""));
-      this.nicknamesField.setText(person.getJoinedNicknames().orElse(""));
-      this.disambiguationIDField.setText(person.disambiguationID().map(String::valueOf).orElse(""));
-      this.notesField.setText(person.notes().orElse(""));
-      this.sourcesField.setText(person.sources().orElse(""));
 
-      this.lifeEventsList.getItems().clear();
-      person.getLifeEventsAsActor().stream().sorted().forEach(lifeEvent -> {
-        this.addEvent(lifeEvent, false);
-        if (lifeEvent.type().indicatesDeath()) {
-          this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
-          this.lifeStatusCombo.setDisable(true);
-        }
-      });
-      if (!this.lifeEventsList.getItems().isEmpty()) {
-        this.lifeEventsList.getItems().get(0).setExpanded(true);
-      }
+    this.creating = person == null;
+    if (!this.creating) {
+      this.person = person;
+      this.setTitle(language.translate("dialog.edit_person.title",
+          new FormatArg("person_name", this.person.toString())));
     } else {
       this.person = new Person();
-      this.creating = true;
       this.setTitle(language.translate("dialog.edit_person.title.create"));
-      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.LIVING));
-      this.lifeStatusCombo.setDisable(false);
-      this.genderCombo.getSelectionModel().select(0);
-      this.lifeEventsList.getItems().clear();
-      this.legalLastNameField.setText("");
-      this.publicLastNameField.setText("");
-      this.legalFirstNamesField.setText("");
-      this.publicFirstNamesField.setText("");
-      this.nicknamesField.setText("");
-      this.disambiguationIDField.setText("");
-      this.notesField.setText("");
-      this.sourcesField.setText("");
+    }
+
+    // Profile
+    this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.person.lifeStatus()));
+    this.genderCombo.getSelectionModel().select(new ComboBoxItem<>(this.person.gender().orElse(null)));
+    this.legalLastNameField.setText(this.person.legalLastName().orElse(""));
+    this.publicLastNameField.setText(this.person.publicLastName().orElse(""));
+    this.legalFirstNamesField.setText(this.person.getJoinedLegalFirstNames().orElse(""));
+    this.publicFirstNamesField.setText(this.person.getJoinedPublicFirstNames().orElse(""));
+    this.nicknamesField.setText(this.person.getJoinedNicknames().orElse(""));
+    this.disambiguationIDField.setText(this.person.disambiguationID().map(String::valueOf).orElse(""));
+    this.notesField.setText(this.person.notes().orElse(""));
+    this.sourcesField.setText(this.person.sources().orElse(""));
+
+    // Life events
+    this.lifeEventsList.getItems().clear();
+    this.person.getLifeEventsAsActor().stream().sorted().forEach(lifeEvent -> {
+      this.addEvent(lifeEvent, false);
+      if (lifeEvent.type().indicatesDeath()) {
+        this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
+        this.lifeStatusCombo.setDisable(true);
+      }
+    });
+    if (!this.lifeEventsList.getItems().isEmpty()) {
+      this.lifeEventsList.getItems().get(0).setExpanded(true);
+    }
+
+    // Relatives
+    List<Person> potentialRelatives = this.familyTree.persons().stream()
+        .filter(p -> p != this.person)
+        .sorted(Person.lastThenFirstNamesComparator())
+        .toList();
+    List<ComboBoxItem<Person>> relatives = potentialRelatives.stream()
+        .map(p -> new ComboBoxItem<>(p, p.toString()))
+        .toList();
+    this.parent1Combo.getItems().clear();
+    this.parent1Combo.getItems().add(new ComboBoxItem<>(null,
+        language.translate("dialog.edit_person.parents.parents.unknown")));
+    this.parent1Combo.getItems().addAll(relatives);
+    this.parent2Combo.getItems().clear();
+    this.parent2Combo.getItems().add(new ComboBoxItem<>(null,
+        language.translate("dialog.edit_person.parents.parents.unknown")));
+    this.parent2Combo.getItems().addAll(relatives);
+    var parents = this.person.parents();
+    Optional<Person> leftParent = parents.left();
+    if (leftParent.isPresent()) {
+      this.parent1Combo.getSelectionModel().select(new ComboBoxItem<>(leftParent.get()));
+    } else {
+      this.parent1Combo.getSelectionModel().select(0);
+    }
+    Optional<Person> rightParent = parents.right();
+    if (rightParent.isPresent()) {
+      this.parent2Combo.getSelectionModel().select(new ComboBoxItem<>(rightParent.get()));
+    } else {
+      this.parent2Combo.getSelectionModel().select(0);
+    }
+    for (Person.RelativeType type : Person.RelativeType.values()) {
+      RelativesListView list = this.relativesLists.get(type);
+      list.setPersons(this.person.getRelatives(type));
+      list.setPotentialRelatives(potentialRelatives);
     }
   }
 
@@ -252,20 +301,32 @@ public class EditPersonDialog extends DialogBase<Boolean> {
       }
     }
 
+    ComboBoxItem<Person> selectedParent1 = this.parent1Combo.getSelectionModel().getSelectedItem();
+    ComboBoxItem<Person> selectedParent2 = this.parent2Combo.getSelectionModel().getSelectedItem();
+    if (selectedParent1 != null && selectedParent2 != null) {
+      Person parent1 = selectedParent1.data();
+      Person parent2 = selectedParent2.data();
+      boolean sameParents = parent1 != null && parent1 == parent2;
+      this.parent1Combo.pseudoClassStateChanged(PseudoClasses.INVALID, sameParents);
+      this.parent2Combo.pseudoClassStateChanged(PseudoClasses.INVALID, sameParents);
+      invalid |= sameParents;
+    }
+
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(invalid);
   }
 
-  private void updatePerson(@NotNull Person p) {
+  private void updatePerson(@NotNull Person person) {
     // Profile
-    p.setGender(this.genderCombo.getSelectionModel().getSelectedItem().data());
-    p.setLegalLastName(this.getText(this.legalLastNameField));
-    p.setPublicLastName(this.getText(this.publicLastNameField));
-    p.setLegalFirstNames(this.splitText(this.legalFirstNamesField));
-    p.setPublicFirstNames(this.splitText(this.publicFirstNamesField));
-    p.setNicknames(this.splitText(this.nicknamesField));
-    p.setDisambiguationID(this.getDisambiguationID());
-    p.setNotes(this.getText(this.notesField));
-    p.setSources(this.getText(this.sourcesField));
+    person.setGender(this.genderCombo.getSelectionModel().getSelectedItem().data());
+    person.setLegalLastName(this.getText(this.legalLastNameField));
+    person.setPublicLastName(this.getText(this.publicLastNameField));
+    person.setLegalFirstNames(this.splitText(this.legalFirstNamesField));
+    person.setPublicFirstNames(this.splitText(this.publicFirstNamesField));
+    person.setNicknames(this.splitText(this.nicknamesField));
+    person.setDisambiguationID(this.getDisambiguationID());
+    person.setNotes(this.getText(this.notesField));
+    person.setSources(this.getText(this.sourcesField));
+
     // Life events
     this.lifeEventsList.getItems().forEach(w -> {
       w.applyChanges();
@@ -278,11 +339,24 @@ public class EditPersonDialog extends DialogBase<Boolean> {
         event.witnesses().forEach(w -> w.removeLifeEvent(event));
         this.familyTree.lifeEvents().remove(event);
       } else {
-        p.removeLifeEvent(event);
+        person.removeLifeEvent(event);
       }
     }
     // Update life status after events to avoid assertion error
-    p.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
+    person.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
+
+    // Relatives
+    person.setParent(0, this.parent1Combo.getSelectionModel().getSelectedItem().data());
+    person.setParent(1, this.parent2Combo.getSelectionModel().getSelectedItem().data());
+    for (Person.RelativeType type : Person.RelativeType.values()) {
+      // Clear relatives of the current type
+      for (Person relative : this.person.getRelatives(type)) {
+        this.person.removeRelative(relative, type);
+      }
+      // Add back the selected relatives
+      this.relativesLists.get(type).getPersons()
+          .forEach(p -> this.person.addRelative(p, type));
+    }
   }
 
   private @Nullable Integer getDisambiguationID() {

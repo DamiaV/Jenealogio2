@@ -27,11 +27,20 @@ public class Person extends GenealogyObject<Person> {
    * We assume exactly two parents per person.
    */
   private final Person[] parents = new Person[2];
-  private final List<Child> children = new ArrayList<>();
+  private final Set<Person> children = new HashSet<>();
+  private final Map<RelativeType, Set<Person>> relatives = new HashMap<>();
+  private final Map<RelativeType, Set<Person>> nonBiologicalChildren = new HashMap<>();
   /**
    * Ordered list of all life events this person was an actor in.
    */
   private final List<LifeEvent> lifeEvents = new ArrayList<>();
+
+  public Person() {
+    for (RelativeType type : RelativeType.values()) {
+      this.relatives.put(type, new HashSet<>());
+      this.nonBiologicalChildren.put(type, new HashSet<>());
+    }
+  }
 
   public Optional<Image> getImage() {
     return Optional.empty(); // TODO image
@@ -139,36 +148,53 @@ public class Person extends GenealogyObject<Person> {
     return this.parents[0] != null && this.parents[1] != null;
   }
 
-  public void setBiologicalParent(int index, @NotNull Person parent) {
-    this.setParent(index, Objects.requireNonNull(parent), false);
-  }
-
-  public void setAdoptiveParent(int index, @NotNull Person parent) {
-    this.setParent(index, Objects.requireNonNull(parent), true);
-  }
-
-  private void setParent(int index, Person parent, boolean adoptive) {
+  public void setParent(int index, Person parent) {
     Person previousParent = this.parents[index];
     if (previousParent == parent) {
       return;
     }
     this.parents[index] = parent;
     if (parent != null) {
-      parent.children.add(new Child(this, adoptive));
+      parent.children.add(this);
     }
     if (previousParent != null) {
-      previousParent.children.removeIf(child -> child.person == this);
+      previousParent.children.removeIf(person -> person == this);
     }
   }
 
-  public Optional<Person> removeParent(int index) {
-    Person parent = this.parents[index];
-    this.setParent(index, null, false);
-    return Optional.ofNullable(parent);
+  public void removeParent(@NotNull Person parent) {
+    int index = -1;
+    for (int i = 0; i < this.parents.length; i++) {
+      if (this.parents[i] == parent) {
+        index = i;
+        break;
+      }
+    }
+    if (index >= 0) {
+      this.setParent(index, null);
+    }
   }
 
-  public List<Child> children() {
-    return new ArrayList<>(this.children);
+  public Set<Person> children() {
+    return new HashSet<>(this.children);
+  }
+
+  public Set<Person> getRelatives(@NotNull RelativeType type) {
+    return new HashSet<>(this.relatives.get(type));
+  }
+
+  public void addRelative(@NotNull Person person, @NotNull RelativeType type) {
+    this.relatives.get(type).add(person);
+    person.nonBiologicalChildren.get(type).add(this);
+  }
+
+  public void removeRelative(@NotNull Person person, @NotNull RelativeType type) {
+    this.relatives.get(type).remove(person);
+    person.nonBiologicalChildren.get(type).remove(this);
+  }
+
+  public Set<Person> nonBiologicalChildren(@NotNull Person.RelativeType type) {
+    return new HashSet<>(this.nonBiologicalChildren.get(type));
   }
 
   public Optional<CalendarDate> getBirthDate() {
@@ -274,9 +300,9 @@ public class Person extends GenealogyObject<Person> {
     };
   }
 
-  public record Child(@NotNull Person person, boolean adopted) {
-    public Child {
-      Objects.requireNonNull(person);
-    }
+  public enum RelativeType {
+    ADOPTIVE,
+    GOD,
+    FOSTER,
   }
 }
