@@ -201,7 +201,6 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       }
       this.internalTypeChange = false;
       this.lifeStatusCombo.setDisable(anyDeath);
-      this.updateButtons();
     });
     this.lifeEventsList.getItems().add(lifeEventView);
   }
