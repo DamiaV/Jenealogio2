@@ -44,6 +44,7 @@ public final class Alerts {
     HBox hBox = new HBox();
     ComboBox<T> choicesCombo = new ComboBox<>();
     choicesCombo.getItems().addAll(choices);
+    choicesCombo.getSelectionModel().select(0);
     hBox.getChildren().add(choicesCombo);
     hBox.setAlignment(Pos.CENTER);
     alert.getDialogPane().setContent(hBox);
