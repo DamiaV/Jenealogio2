@@ -7,6 +7,7 @@ import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * This class represents a person, deceased or alive.
@@ -191,60 +192,34 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public List<LifeEvent> getLifeEventsAsActor() {
-    return this.lifeEvents.stream().filter(e -> e.hasActor(this)).toList();
+    return this.getActedInEventsStream().toList();
   }
 
   public List<LifeEvent> getLifeEventsAsWitness() {
-    return this.lifeEvents.stream().filter(e -> e.hasWitness(this)).toList();
+    return this.getWitnessedEventsStream().toList();
   }
 
-  public void addLifeEventAsActor(@NotNull LifeEvent event) {
-    if (event.type().isUnique() && this.getLifeEventsAsActor().stream().anyMatch(e -> e.type() == event.type())) {
+  public boolean isActorOf(final @NotNull LifeEvent lifeEvent) {
+    return this.getActedInEventsStream().anyMatch(e -> e == lifeEvent);
+  }
+
+  public boolean isWitnessOf(final @NotNull LifeEvent lifeEvent) {
+    return this.getWitnessedEventsStream().anyMatch(e -> e == lifeEvent);
+  }
+
+  public void addLifeEvent(final @NotNull LifeEvent event) {
+    if (event.type().isUnique() && event.hasActor(this)
+        && this.getActedInEventsStream().anyMatch(e -> e.type() == event.type())) {
       throw new IllegalArgumentException("%s already acts in an event of type %s".formatted(this, event.type()));
     }
-    // Add link from event to this actor if not yet done
-    if (!event.hasActor(this)) {
-      event.addActor(this);
-    }
-    // Add event to this actor; may have been done by the event itself in previous branch
     if (!this.lifeEvents.contains(event)) {
       this.lifeEvents.add(event);
       this.lifeEvents.sort(null);
     }
   }
 
-  public void removeLifeEventAsActor(@NotNull LifeEvent event) {
-    // Remove link from event to this actor if not yet done
-    if (event.hasActor(this)) {
-      event.removeActor(this);
-    }
-    // Remove event from this actor; may have been done by the event itself in previous branch
-    if (!event.hasWitness(this)) {
-      this.lifeEvents.remove(event);
-    }
-  }
-
-  public void addLifeEventAsWitness(@NotNull LifeEvent event) {
-    // Add link from event to this witness if not yet done
-    if (!event.hasWitness(this)) {
-      event.addWitness(this);
-    }
-    // Add event to this witness; may have been done by the event itself in previous branch
-    if (!this.lifeEvents.contains(event)) {
-      this.lifeEvents.add(event);
-      this.lifeEvents.sort(null);
-    }
-  }
-
-  public void removeLifeEventAsWitness(@NotNull LifeEvent event) {
-    // Remove link from event to this witness if not yet done
-    if (event.hasWitness(this)) {
-      event.removeWitness(this);
-    }
-    // Remove event from this witness; may have been done by the event itself in previous branch
-    if (!event.hasActor(this)) {
-      this.lifeEvents.remove(event);
-    }
+  public void removeLifeEvent(final LifeEvent event) {
+    this.lifeEvents.remove(event);
   }
 
   private <T> void ensureNoDuplicates(final @NotNull List<T> values) {
@@ -259,6 +234,14 @@ public class Person extends GenealogyObject<Person> {
 
   private List<String> filterOutEmptyStrings(final @NotNull List<String> values) {
     return values.stream().map(String::strip).filter(s -> !s.isEmpty()).toList();
+  }
+
+  private Stream<LifeEvent> getActedInEventsStream() {
+    return this.lifeEvents.stream().filter(e -> e.hasActor(this));
+  }
+
+  private Stream<LifeEvent> getWitnessedEventsStream() {
+    return this.lifeEvents.stream().filter(e -> e.hasWitness(this));
   }
 
   @Override

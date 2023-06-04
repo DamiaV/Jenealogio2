@@ -64,7 +64,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
     return new HashSet<>(this.actors);
   }
 
-  public void addActor(@NotNull Person actor) {
+  public void addActor(final @NotNull Person actor) {
     Objects.requireNonNull(actor);
     if (this.hasWitness(actor)) {
       throw new IllegalArgumentException("same person cannot be both actor and witness of same event");
@@ -74,29 +74,14 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
       throw new IllegalArgumentException("cannot add more than %d actor(s) to life event with type %s"
           .formatted(max, this.type.key()));
     }
-    // Add link from this event to actor if not yet done
-    if (!this.hasActor(actor)) {
-      this.actors.add(actor);
-    }
-    // Add this event to actor if not yet done
-    if (!actor.getLifeEventsAsActor().contains(this)) {
-      actor.addLifeEventAsActor(this);
-    }
+    this.actors.add(actor);
   }
 
-  public void removeActor(@NotNull Person actor) {
-    Objects.requireNonNull(actor);
+  public void removeActor(final Person actor) {
     if (this.actors.size() == 1 && this.hasActor(actor)) {
       throw new IllegalStateException("cannot remove only actor");
     }
-    // Remove link from this event to actor if not yet done
-    if (this.hasActor(actor)) {
-      this.actors.remove(actor);
-    }
-    // Remove this event from actor if not yet done
-    if (actor.getLifeEventsAsActor().contains(this)) {
-      actor.removeLifeEventAsActor(this);
-    }
+    this.actors.remove(actor);
   }
 
   public boolean hasActor(final Person person) {
@@ -112,26 +97,11 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
     if (this.hasActor(witness)) {
       throw new IllegalArgumentException("same person cannot be both witness and actor of same event");
     }
-    // Add link from this event to witness if not yet done
-    if (!this.hasWitness(witness)) {
-      this.witnesses.add(witness);
-    }
-    // Add this event to witness if not yet done
-    if (!witness.getLifeEventsAsWitness().contains(this)) {
-      witness.addLifeEventAsWitness(this);
-    }
+    this.witnesses.add(witness);
   }
 
-  public void removeWitness(@NotNull Person witness) {
-    Objects.requireNonNull(witness);
-    // Remove link from this event to witness if not yet done
-    if (this.hasWitness(witness)) {
-      this.witnesses.remove(witness);
-    }
-    // Remove this event from witness if not yet done
-    if (witness.getLifeEventsAsWitness().contains(this)) {
-      witness.removeLifeEventAsWitness(this);
-    }
+  public void removeWitness(final Person witness) {
+    this.witnesses.remove(witness);
   }
 
   public boolean hasWitness(final Person person) {

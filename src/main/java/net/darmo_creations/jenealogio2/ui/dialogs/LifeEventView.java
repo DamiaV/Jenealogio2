@@ -142,17 +142,23 @@ class LifeEventView extends TitledPane {
     this.lifeEvent.setPlace(StringUtils.stripNullable(this.placeField.getText()).orElse(null));
     this.lifeEvent.setNotes(StringUtils.stripNullable(this.notesField.getText()).orElse(null));
     this.lifeEvent.setSources(StringUtils.stripNullable(this.sourcesField.getText()).orElse(null));
+    if (!this.person.getLifeEventsAsActor().contains(this.lifeEvent)) {
+      this.person.addLifeEvent(this.lifeEvent);
+    }
   }
 
   private void updateActors() {
-    // Remove all actors and add back the correct ones
+    // Remove all actors that are not the edited person and add back the selected ones
     for (Person actor : this.lifeEvent.actors()) {
       if (actor != this.person) {
         this.lifeEvent.removeActor(actor);
+        actor.removeLifeEvent(this.lifeEvent);
       }
     }
     if (!this.partnerCombo.isDisabled()) {
-      this.lifeEvent.addActor(this.partnerCombo.getSelectionModel().getSelectedItem().data());
+      Person actor = this.partnerCombo.getSelectionModel().getSelectedItem().data();
+      this.lifeEvent.addActor(actor);
+      actor.addLifeEvent(this.lifeEvent);
     }
   }
 
