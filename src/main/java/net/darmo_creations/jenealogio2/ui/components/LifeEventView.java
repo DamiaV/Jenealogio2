@@ -1,4 +1,4 @@
-package net.darmo_creations.jenealogio2.ui.dialogs;
+package net.darmo_creations.jenealogio2.ui.components;
 
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -13,16 +13,14 @@ import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
-import net.darmo_creations.jenealogio2.ui.components.DateField;
-import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
+import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.Collator;
 import java.util.*;
 
-// TODO button to dissociate event from the person being edited
-class LifeEventView extends TitledPane {
+public class LifeEventView extends TitledPane {
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<DateField.DateType>> datePrecisionCombo = new ComboBox<>();
   private final DateField dateField = new DateField();

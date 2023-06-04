@@ -16,6 +16,7 @@ import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import net.darmo_creations.jenealogio2.ui.components.ComboBoxItem;
+import net.darmo_creations.jenealogio2.ui.components.LifeEventView;
 import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
