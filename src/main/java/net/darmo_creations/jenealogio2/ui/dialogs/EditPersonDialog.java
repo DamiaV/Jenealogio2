@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @SuppressWarnings("unused")
-public class EditPersonDialog extends DialogBase<ButtonType> {
+public class EditPersonDialog extends DialogBase<Boolean> {
   @FXML
   private Label legalLastNameHelpLabel;
   @FXML
@@ -130,8 +130,9 @@ public class EditPersonDialog extends DialogBase<ButtonType> {
         if (this.creating) {
           this.familyTree.persons().add(this.person);
         }
+        return true;
       }
-      return buttonType;
+      return false;
     });
   }
 
@@ -153,10 +154,11 @@ public class EditPersonDialog extends DialogBase<ButtonType> {
 
   public void setPerson(Person person, @NotNull FamilyTree familyTree) {
     this.familyTree = Objects.requireNonNull(familyTree);
+    Language language = App.config().language();
     if (person != null) {
       this.person = person;
       this.creating = false;
-      this.setTitle(StringUtils.format(this.getTitle(), new FormatArg("person_name", person.toString())));
+      this.setTitle(language.translate("dialog.edit_person.title", new FormatArg("person_name", person.toString())));
       this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(person.lifeStatus()));
       this.genderCombo.getSelectionModel().select(new ComboBoxItem<>(person.gender().orElse(null)));
       this.legalLastNameField.setText(person.legalLastName().orElse(""));
@@ -182,7 +184,7 @@ public class EditPersonDialog extends DialogBase<ButtonType> {
     } else {
       this.person = new Person();
       this.creating = true;
-      this.setTitle(App.config().language().translate("dialog.edit_person.title.create"));
+      this.setTitle(language.translate("dialog.edit_person.title.create"));
       this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.LIVING));
       this.lifeStatusCombo.setDisable(false);
       this.genderCombo.getSelectionModel().select(0);

@@ -18,6 +18,8 @@ import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
 import net.darmo_creations.jenealogio2.ui.dialogs.EditPersonDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
 
+import java.util.Optional;
+
 public class AppController {
   @FXML
   private MenuItem newFileMenuItem;
@@ -187,8 +189,6 @@ public class AppController {
     this.familyTreeView.setFamilyTree(this.familyTree);
     this.familyTreePane.setFamilyTree(this.familyTree);
 
-    this.editPersonDialog.resultProperty().addListener((observable, oldValue, newValue) -> this.onPersonEdited());
-
     this.updateButtons(null);
   }
 
@@ -246,12 +246,11 @@ public class AppController {
 
   private void openEditPersonDialog(Person person) {
     this.editPersonDialog.setPerson(person, this.familyTree);
-    this.editPersonDialog.show();
-  }
-
-  private void onPersonEdited() {
-    this.familyTreeView.refresh();
-    this.familyTreePane.refresh();
+    Optional<Boolean> refresh = this.editPersonDialog.showAndWait();
+    if (refresh.isPresent() && refresh.get()) {
+      this.familyTreeView.refresh();
+      this.familyTreePane.refresh();
+    }
   }
 
   private void updateButtons(final Person selectedPerson) {
@@ -275,11 +274,11 @@ public class AppController {
 
   private void onSettingsAction() {
     this.settingsDialog.resetLocalConfig();
-    this.settingsDialog.show();
+    this.settingsDialog.showAndWait();
   }
 
   private void onAboutAction() {
-    this.aboutDialog.show();
+    this.aboutDialog.showAndWait();
   }
 
   private void onQuitAction() {

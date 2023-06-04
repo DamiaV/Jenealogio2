@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -28,6 +29,7 @@ public class DateField extends HBox {
   public DateField() {
     super(4);
     this.getChildren().addAll(this.datePicker, this.label, this.secondDatePicker);
+    HBox.setMargin(this.label, new Insets(4, 0, 0, 0));
     this.setDateType(DateType.EXACT);
     this.datePicker.valueProperty().addListener((observable, oldValue, newValue) -> this.notifyListeners());
     this.secondDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> this.notifyListeners());

@@ -1,4 +1,4 @@
-package net.darmo_creations.jenealogio2.ui;
+package net.darmo_creations.jenealogio2.ui.components;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -13,6 +13,8 @@ import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.model.Gender;
 import net.darmo_creations.jenealogio2.model.Person;
+import net.darmo_creations.jenealogio2.model.calendar.*;
+import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
@@ -22,7 +24,7 @@ import java.util.List;
  * A JavaFX component representing a single person in a family tree.
  */
 // TODO add icon to indicate parents/children if they are not shown
-class PersonWidget extends AnchorPane {
+public class PersonWidget extends AnchorPane {
   private static final String EMPTY_LABEL_VALUE = "-";
   @SuppressWarnings("DataFlowIssue")
   public static final Image DEFAULT_IMAGE =
@@ -134,17 +136,30 @@ class PersonWidget extends AnchorPane {
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
-    String lifeSpan = this.person.getBirthDate()
-        .map(date -> String.valueOf(date.date().getYear())).orElse("????");
+    String lifeSpan = this.person.getBirthDate().map(this::formatDate).orElse("?");
     if (this.person.lifeStatus().isConsideredDeceased()) {
-      lifeSpan += "-" + this.person.getDeathDate()
-          .map(date -> String.valueOf(date.date().getYear())).orElse("????");
+      lifeSpan += " - " + this.person.getDeathDate().map(this::formatDate).orElse("?");
     }
     this.lifeSpanLabel.setText(lifeSpan);
     this.lifeSpanLabel.setTooltip(new Tooltip(lifeSpan));
   }
 
-  interface ClickListener {
+  private String formatDate(@NotNull CalendarDate date) {
+    if (date instanceof DateWithPrecision d) {
+      return (d.precision() == DatePrecision.EXACT ? "" : "~") + d.date().getYear();
+    } else if (date instanceof DateRange d) {
+      int startYear = d.startDate().getYear();
+      int endYear = d.endDate().getYear();
+      return startYear != endYear ? "%s~%s".formatted(startYear, endYear) : String.valueOf(startYear);
+    } else if (date instanceof DateAlternative d) {
+      int earliestYear = d.earliestDate().getYear();
+      int latestYear = d.latestDate().getYear();
+      return earliestYear != latestYear ? "%s/%s".formatted(earliestYear, latestYear) : String.valueOf(earliestYear);
+    }
+    throw new IllegalArgumentException("unexpected date type: " + date.getClass());
+  }
+
+  public interface ClickListener {
     void onClick(@NotNull PersonWidget personWidget, int clickCount);
   }
 }
