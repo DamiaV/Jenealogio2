@@ -124,6 +124,7 @@ public class AppController {
     this.undoMenuItem.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.SMALL));
     this.redoMenuItem.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.SMALL));
     this.addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
+    this.addPersonMenuItem.setOnAction(event -> this.onAddPersonAction());
     this.editPersonMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PERSON, Icon.Size.SMALL));
     this.editPersonMenuItem.setOnAction(event -> this.onEditPersonAction());
     this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PERSON, Icon.Size.SMALL));
@@ -150,6 +151,7 @@ public class AppController {
     this.undoToolbarButton.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.BIG));
     this.redoToolbarButton.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.BIG));
     this.addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
+    this.addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
     this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
     this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
     this.editParentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.BIG));
@@ -185,6 +187,10 @@ public class AppController {
     this.editPersonDialog.resultProperty().addListener((observable, oldValue, newValue) -> this.onPersonEdited());
 
     this.updateButtons(null);
+  }
+
+  private void onAddPersonAction() {
+    this.openEditPersonDialog(null);
   }
 
   private void onEditPersonAction() {

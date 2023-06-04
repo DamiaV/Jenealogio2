@@ -186,6 +186,14 @@ public class EditPersonDialog extends DialogBase<ButtonType> {
       this.lifeStatusCombo.setDisable(false);
       this.genderCombo.getSelectionModel().select(0);
       this.lifeEventsList.getItems().clear();
+      this.legalLastNameField.setText("");
+      this.publicLastNameField.setText("");
+      this.legalFirstNamesField.setText("");
+      this.publicFirstNamesField.setText("");
+      this.nicknamesField.setText("");
+      this.disambiguationIDField.setText("");
+      this.notesField.setText("");
+      this.sourcesField.setText("");
     }
   }
 
