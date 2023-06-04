@@ -24,10 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.Collator;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Result>> {
@@ -76,6 +73,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
    * that indicates death but reverts it later on.
    */
   private LifeStatus lifeStatusCache;
+  private boolean internalTypeChange;
 
   public EditPersonDialog() {
     super("edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
@@ -98,6 +96,11 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
         })
         .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
         .toList());
+    this.lifeStatusCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+      if (!this.internalTypeChange) {
+        this.lifeStatusCache = newValue.data();
+      }
+    });
     this.updateGendersList();
 
     // Only allow digits and empty text
@@ -151,8 +154,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       this.person = person;
       this.creating = false;
       this.setTitle(StringUtils.format(this.getTitle(), new FormatArg("person_name", person.toString())));
-      this.lifeStatusCache = person.lifeStatus();
-      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.lifeStatusCache));
+      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(person.lifeStatus()));
       this.genderCombo.getSelectionModel().select(new ComboBoxItem<>(person.gender().orElse(null)));
       this.legalLastNameField.setText(person.legalLastName().orElse(""));
       this.publicLastNameField.setText(person.publicLastName().orElse(""));
@@ -178,8 +180,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       this.person = new Person();
       this.creating = true;
       this.setTitle(App.config().language().translate("dialog.edit_person.title.create"));
-      this.lifeStatusCache = LifeStatus.LIVING;
-      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.lifeStatusCache));
+      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.LIVING));
       this.lifeStatusCombo.setDisable(false);
       this.genderCombo.getSelectionModel().select(0);
       this.lifeEventsList.getItems().clear();
@@ -192,12 +193,15 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     lifeEventView.getTypeListeners().add(t -> {
       boolean anyDeath = this.lifeEventsList.getItems().stream()
           .anyMatch(i -> i.selectedLifeEventType().indicatesDeath());
+      this.internalTypeChange = true;
       if (anyDeath) {
         this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
       } else {
         this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.lifeStatusCache));
       }
+      this.internalTypeChange = false;
       this.lifeStatusCombo.setDisable(anyDeath);
+      this.updateButtons();
     });
     this.lifeEventsList.getItems().add(lifeEventView);
   }
@@ -207,9 +211,21 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     boolean invalid = disambiguationID != null && disambiguationID == 0;
     this.disambiguationIDField.pseudoClassStateChanged(PseudoClasses.INVALID, invalid);
 
+    Map<LifeEventType, List<LifeEventView>> uniqueTypes = new HashMap<>();
     for (LifeEventView item : this.lifeEventsList.getItems()) {
+      item.pseudoClassStateChanged(PseudoClasses.INVALID, false);
       if (!item.checkValidity()) {
         invalid = true;
+      }
+      LifeEventType type = item.selectedLifeEventType();
+      if (type.isUnique()) {
+        if (!uniqueTypes.containsKey(type)) {
+          uniqueTypes.put(type, new LinkedList<>());
+        } else {
+          item.pseudoClassStateChanged(PseudoClasses.INVALID, true);
+          invalid = true;
+        }
+        uniqueTypes.get(type).add(item);
       }
     }
 
