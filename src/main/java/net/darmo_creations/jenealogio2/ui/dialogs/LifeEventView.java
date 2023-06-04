@@ -2,12 +2,15 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.VPos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.themes.Icon;
+import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import net.darmo_creations.jenealogio2.ui.components.DateField;
 import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
@@ -17,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import java.text.Collator;
 import java.util.*;
 
-// TODO witness list
 // TODO button to dissociate event from the person being edited
 class LifeEventView extends TitledPane {
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
@@ -25,6 +27,7 @@ class LifeEventView extends TitledPane {
   private final DateField dateField = new DateField();
   private final TextField placeField = new TextField();
   private final ComboBox<NotNullComboBoxItem<Person>> partnerCombo = new ComboBox<>();
+  private final ListView<Person> witnessesList = new ListView<>();
   private final TextArea notesField = new TextArea();
   private final TextArea sourcesField = new TextArea();
 
@@ -35,7 +38,7 @@ class LifeEventView extends TitledPane {
   private final List<UpdateListener> updateListeners = new LinkedList<>();
   private final List<TypeListener> typeListeners = new LinkedList<>();
 
-  public LifeEventView(@NotNull LifeEvent lifeEvent, @NotNull Person person, final @NotNull Collection<Person> persons) {
+  public LifeEventView(@NotNull LifeEvent lifeEvent, @NotNull Person person, final @NotNull Collection<Person> persons, boolean expanded) {
     this.lifeEvent = Objects.requireNonNull(lifeEvent);
     this.person = person;
     // Get all persons except the one we are currently editing and sort by name
@@ -44,7 +47,9 @@ class LifeEventView extends TitledPane {
         .sorted(Person.lastThenFirstNamesComparator())
         .toList();
     this.setAnimated(false);
+    this.setExpanded(expanded);
     Language language = App.config().language();
+    Theme theme = App.config().theme();
 
     AnchorPane anchorPane = new AnchorPane();
     this.setContent(anchorPane);
@@ -68,11 +73,11 @@ class LifeEventView extends TitledPane {
           this.dateField.setDateType(newValue.data());
           this.notifyListeners();
         });
-    HBox hBox = new HBox(4);
-    hBox.getChildren().add(this.datePrecisionCombo);
+    HBox dateHBox = new HBox(4);
+    dateHBox.getChildren().add(this.datePrecisionCombo);
     this.dateField.getUpdateListeners().add(this::notifyListeners);
-    hBox.getChildren().add(this.dateField);
-    gridPane.addRow(1, new Label(language.translate("life_event_view.date")), hBox);
+    dateHBox.getChildren().add(this.dateField);
+    gridPane.addRow(1, new Label(language.translate("life_event_view.date")), dateHBox);
 
     gridPane.addRow(2, new Label(language.translate("life_event_view.place")), this.placeField);
 
@@ -81,11 +86,29 @@ class LifeEventView extends TitledPane {
         .addListener((observable, oldValue, newValue) -> this.notifyListeners());
     gridPane.addRow(3, new Label(language.translate("life_event_view.partner")), this.partnerCombo);
 
+    VBox witnessesVBox = new VBox(4);
+    HBox buttonsHBox = new HBox(4);
+    witnessesVBox.getChildren().addAll(buttonsHBox, this.witnessesList);
+    Button addWitnessButton = new Button(language.translate("life_event_view.witnesses.add"),
+        theme.getIcon(Icon.ADD_WITNESS, Icon.Size.SMALL));
+    addWitnessButton.setOnAction(this::onAddWitness);
+    Button removeWitnessButton = new Button(language.translate("life_event_view.witnesses.remove"),
+        theme.getIcon(Icon.REMOVE_WITNESS, Icon.Size.SMALL));
+    removeWitnessButton.setOnAction(this::onRemoveWitness);
+    removeWitnessButton.setDisable(true);
+    Pane spacer = new Pane();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    buttonsHBox.getChildren().addAll(spacer, addWitnessButton, removeWitnessButton);
+    this.witnessesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+        removeWitnessButton.setDisable(this.witnessesList.getSelectionModel().getSelectedItems().isEmpty()));
+    this.witnessesList.setPrefHeight(100);
+    gridPane.addRow(4, new Label(language.translate("life_event_view.witnesses")), witnessesVBox);
+
     this.notesField.setPrefHeight(100);
-    gridPane.addRow(4, new Label(language.translate("life_event_view.notes")), this.notesField);
+    gridPane.addRow(5, new Label(language.translate("life_event_view.notes")), this.notesField);
 
     this.sourcesField.setPrefHeight(100);
-    gridPane.addRow(5, new Label(language.translate("life_event_view.sources")), this.sourcesField);
+    gridPane.addRow(6, new Label(language.translate("life_event_view.sources")), this.sourcesField);
 
     for (int i = 0; i < gridPane.getColumnCount(); i++) {
       gridPane.getColumnConstraints().add(new ColumnConstraints());
@@ -97,9 +120,26 @@ class LifeEventView extends TitledPane {
     ObservableList<RowConstraints> rowConstraints = gridPane.getRowConstraints();
     rowConstraints.get(4).setValignment(VPos.TOP);
     rowConstraints.get(5).setValignment(VPos.TOP);
-    rowConstraints.get(5).setVgrow(Priority.ALWAYS);
+    rowConstraints.get(6).setValignment(VPos.TOP);
+    rowConstraints.get(6).setVgrow(Priority.ALWAYS);
 
     this.populateFields();
+  }
+
+  private void onAddWitness(ActionEvent event) {
+    List<Person> potentialWitnesses = this.persons.stream()
+        .filter(p -> !this.witnessesList.getItems().contains(p))
+        .toList();
+    Optional<Person> result = Alerts.chooser(
+        "alert.choose_witness.header", "alert.choose_witness.title", potentialWitnesses);
+    result.ifPresent(person -> this.witnessesList.getItems().add(person));
+  }
+
+  private void onRemoveWitness(ActionEvent event) {
+    ObservableList<Person> selectedItem = this.witnessesList.getSelectionModel().getSelectedItems();
+    if (selectedItem != null) {
+      this.witnessesList.getItems().removeAll(selectedItem);
+    }
   }
 
   public LifeEventType selectedLifeEventType() {
@@ -136,6 +176,15 @@ class LifeEventView extends TitledPane {
     } else {
       this.updateActors();
       this.lifeEvent.setType(newType);
+    }
+    // Remove all witnesses and add back the selected ones
+    for (Person witness : this.lifeEvent.witnesses()) {
+      witness.removeLifeEvent(this.lifeEvent);
+      this.lifeEvent.removeWitness(witness);
+    }
+    for (Person witness : this.witnessesList.getItems()) {
+      this.lifeEvent.addWitness(witness);
+      witness.addLifeEvent(this.lifeEvent);
     }
 
     this.lifeEvent.setDate(this.dateField.getDate().orElseThrow(() -> new IllegalArgumentException("missing date")));
@@ -238,6 +287,7 @@ class LifeEventView extends TitledPane {
       }
       this.partnerCombo.setDisable(true);
     }
+    this.lifeEvent.witnesses().forEach(p -> this.witnessesList.getItems().add(p));
     this.notesField.setText(this.lifeEvent.notes().orElse(""));
     this.sourcesField.setText(this.lifeEvent.sources().orElse(""));
   }

@@ -115,7 +115,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     this.addEventButton.setOnAction(event -> {
       DateWithPrecision date = new DateWithPrecision(LocalDateTime.now(), DatePrecision.EXACT);
       LifeEventType birth = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
-      this.addEvent(new LifeEvent(this.person, date, birth));
+      this.addEvent(new LifeEvent(this.person, date, birth), true);
     });
     this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
 
@@ -166,8 +166,8 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       this.sourcesField.setText(person.sources().orElse(""));
 
       this.lifeEventsList.getItems().clear();
-      person.getLifeEventsAsActor().forEach(lifeEvent -> {
-        this.addEvent(lifeEvent);
+      person.getLifeEventsAsActor().stream().sorted().forEach(lifeEvent -> {
+        this.addEvent(lifeEvent, false);
         if (lifeEvent.type().indicatesDeath()) {
           this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
           this.lifeStatusCombo.setDisable(true);
@@ -187,8 +187,8 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     }
   }
 
-  private void addEvent(@NotNull LifeEvent lifeEvent) {
-    LifeEventView lifeEventView = new LifeEventView(lifeEvent, this.person, this.familyTree.persons());
+  private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
+    LifeEventView lifeEventView = new LifeEventView(lifeEvent, this.person, this.familyTree.persons(), expanded);
     lifeEventView.getUpdateListeners().add(this::updateButtons);
     lifeEventView.getTypeListeners().add(t -> {
       boolean anyDeath = this.lifeEventsList.getItems().stream()

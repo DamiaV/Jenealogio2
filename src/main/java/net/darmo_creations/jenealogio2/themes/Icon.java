@@ -39,6 +39,8 @@ public enum Icon {
   SYNC_TREE("arrow_refresh"),
 
   ADD_EVENT("plus"),
+  ADD_WITNESS("plus"),
+  REMOVE_WITNESS("delete"),
   ;
 
   private final String baseName;
