@@ -50,7 +50,7 @@ public class Person extends GenealogyObject<Person> {
 
   public void setLifeStatus(@NotNull LifeStatus lifeStatus) {
     boolean isDead = this.getLifeEventsAsActor().stream().anyMatch(e -> e.type().indicatesDeath());
-    if (isDead) {
+    if (isDead && lifeStatus != LifeStatus.DECEASED) {
       throw new IllegalArgumentException("cannot change status of a person with at least one event indicating death");
     }
     this.lifeStatus = Objects.requireNonNull(lifeStatus);
@@ -211,7 +211,6 @@ public class Person extends GenealogyObject<Person> {
       this.lifeEvents.add(event);
       this.lifeEvents.sort(null);
     }
-    this.updateLifeStatusFromEvents();
   }
 
   public void removeLifeEventAsActor(@NotNull LifeEvent event) {
@@ -222,13 +221,6 @@ public class Person extends GenealogyObject<Person> {
     // Remove event from this actor; may have been done by the event itself in previous branch
     if (!event.hasWitness(this)) {
       this.lifeEvents.remove(event);
-    }
-    this.updateLifeStatusFromEvents();
-  }
-
-  private void updateLifeStatusFromEvents() {
-    if (this.getLifeEventsAsActor().stream().anyMatch(lifeEvent -> lifeEvent.type().indicatesDeath())) {
-      this.lifeStatus = LifeStatus.DECEASED;
     }
   }
 
@@ -280,6 +272,23 @@ public class Person extends GenealogyObject<Person> {
       s += " (#%d)".formatted(this.disambiguationID);
     }
     return s;
+  }
+
+  public static Comparator<Person> lastThenFirstNamesComparator() {
+    return (p1, p2) -> {
+      int c1 = p1.getLastName().orElse("")
+          .compareTo(p2.getLastName().orElse(""));
+      if (c1 != 0) {
+        return c1;
+      }
+      int c2 = p1.getFirstNames().orElse("")
+          .compareTo(p2.getFirstNames().orElse(""));
+      if (c2 != 0) {
+        return c2;
+      }
+      return p1.disambiguationID().orElse(-1)
+          .compareTo(p2.disambiguationID().orElse(-1));
+    };
   }
 
   public record Child(@NotNull Person person, boolean adopted) {

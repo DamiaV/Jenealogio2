@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -19,6 +20,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   private final Set<Person> witnesses = new HashSet<>();
   private CalendarDate date;
   private LifeEventType type;
+  private String place;
 
   public LifeEvent(@NotNull Person actor, @NotNull CalendarDate date, @NotNull LifeEventType type) {
     this.date = Objects.requireNonNull(date);
@@ -46,6 +48,14 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
     this.type = type;
   }
 
+  public Optional<String> place() {
+    return Optional.ofNullable(this.place);
+  }
+
+  public void setPlace(String place) {
+    this.place = place;
+  }
+
   public int maxActors() {
     return this.type.maxActors();
   }
@@ -69,7 +79,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
       this.actors.add(actor);
     }
     // Add this event to actor if not yet done
-    if (actor.getLifeEventsAsActor().contains(this)) {
+    if (!actor.getLifeEventsAsActor().contains(this)) {
       actor.addLifeEventAsActor(this);
     }
   }
@@ -107,7 +117,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
       this.witnesses.add(witness);
     }
     // Add this event to witness if not yet done
-    if (witness.getLifeEventsAsWitness().contains(this)) {
+    if (!witness.getLifeEventsAsWitness().contains(this)) {
       witness.addLifeEventAsWitness(this);
     }
   }

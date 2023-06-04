@@ -1,7 +1,6 @@
 package net.darmo_creations.jenealogio2;
 
 import javafx.application.Platform;
-import javafx.beans.Observable;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
@@ -10,6 +9,7 @@ import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.FamilyTreeComponent;
 import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
 import net.darmo_creations.jenealogio2.ui.FamilyTreeView;
 import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
@@ -100,6 +100,7 @@ public class AppController {
 
   private final FamilyTreeView familyTreeView = new FamilyTreeView();
   private final FamilyTreePane familyTreePane = new FamilyTreePane();
+  private FamilyTreeComponent focusedComponent;
 
   private final EditPersonDialog editPersonDialog = new EditPersonDialog();
   private final SettingsDialog settingsDialog = new SettingsDialog();
@@ -116,12 +117,15 @@ public class AppController {
     this.saveMenuItem.setGraphic(theme.getIcon(Icon.SAVE, Icon.Size.SMALL));
     this.saveAsMenuItem.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.SMALL));
     this.settingsMenuItem.setGraphic(theme.getIcon(Icon.SETTINGS, Icon.Size.SMALL));
+    this.settingsMenuItem.setOnAction(event -> this.onSettingsAction());
     this.quitMenuItem.setGraphic(theme.getIcon(Icon.QUIT, Icon.Size.SMALL));
+    this.quitMenuItem.setOnAction(event -> this.onQuitAction());
 
     this.undoMenuItem.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.SMALL));
     this.redoMenuItem.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.SMALL));
     this.addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
     this.editPersonMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PERSON, Icon.Size.SMALL));
+    this.editPersonMenuItem.setOnAction(event -> this.onEditPersonAction());
     this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PERSON, Icon.Size.SMALL));
     this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
     this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
@@ -135,6 +139,7 @@ public class AppController {
     this.checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
 
     this.aboutMenuItem.setGraphic(theme.getIcon(Icon.ABOUT, Icon.Size.SMALL));
+    this.aboutMenuItem.setOnAction(event -> this.onAboutAction());
 
     // Toolbar buttons
     this.newToolbarButton.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.BIG));
@@ -177,12 +182,19 @@ public class AppController {
     this.familyTreeView.setFamilyTree(this.familyTree);
     this.familyTreePane.setFamilyTree(this.familyTree);
 
-    this.editPersonDialog.resultProperty().addListener(this::onPersonEdited);
+    this.editPersonDialog.resultProperty().addListener((observable, oldValue, newValue) -> this.onPersonEdited());
 
     this.updateButtons(null);
   }
 
+  private void onEditPersonAction() {
+    if (this.focusedComponent != null) {
+      this.focusedComponent.getSelectedPerson().ifPresent(this::openEditPersonDialog);
+    }
+  }
+
   private void onPersonClick(Person person, int clickCount, boolean inTree) {
+    this.focusedComponent = inTree ? this.familyTreeView : this.familyTreePane;
     if (App.config().shouldSyncTreeWithMainPane()) {
       if (inTree) {
         this.familyTreePane.selectPerson(person);
@@ -191,13 +203,17 @@ public class AppController {
       }
     }
     if (clickCount == 2) {
-      this.editPersonDialog.setPerson(person);
-      this.editPersonDialog.show();
+      this.openEditPersonDialog(person);
     }
     this.updateButtons(person);
   }
 
-  private void onPersonEdited(Observable observable) {
+  private void openEditPersonDialog(Person person) {
+    this.editPersonDialog.setPerson(person, this.familyTree);
+    this.editPersonDialog.show();
+  }
+
+  private void onPersonEdited() {
     this.editPersonDialog.getResult().ifPresent(result -> {
       if (result.isPersonCreated()) {
         this.familyTree.persons().add(result.person());
@@ -226,19 +242,16 @@ public class AppController {
     this.setPictureToolbarButton.setDisable(!selection);
   }
 
-  @FXML
-  public void onSettings() {
+  private void onSettingsAction() {
     this.settingsDialog.resetLocalConfig();
     this.settingsDialog.show();
   }
 
-  @FXML
-  public void onAbout() {
+  private void onAboutAction() {
     this.aboutDialog.show();
   }
 
-  @FXML
-  public void onQuit() {
+  private void onQuitAction() {
     Platform.exit();
   }
 }

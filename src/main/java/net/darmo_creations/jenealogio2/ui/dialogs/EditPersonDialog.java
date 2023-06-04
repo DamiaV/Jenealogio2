@@ -4,23 +4,29 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.model.calendar.DatePrecision;
+import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
+import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import net.darmo_creations.jenealogio2.ui.components.ComboBoxItem;
 import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.text.Collator;
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
@@ -60,28 +66,37 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
   @FXML
   private Button addEventButton;
   @FXML
-  private ListView<TitledPane> lifeEventsList;
+  private ListView<LifeEventView> lifeEventsList;
 
   private Person person;
+  private FamilyTree familyTree;
+  private boolean creating;
+  /**
+   * Stores the life status to be restored if the user selects an event type
+   * that indicates death but reverts it later on.
+   */
+  private LifeStatus lifeStatusCache;
 
   public EditPersonDialog() {
     super("edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
     Config config = App.config();
     Language language = config.language();
+    Theme theme = config.theme();
 
     //noinspection DataFlowIssue
-    this.legalLastNameHelpLabel.setGraphic(config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
-    this.legalFirstNamesHelpLabel.setGraphic(config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
-    this.publicLastNameHelpLabel.setGraphic(config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
-    this.publicFirstNamesHelpLabel.setGraphic(config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
-    this.disambiguationIDHelpLabel.setGraphic(config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
+    this.legalLastNameHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+    this.legalFirstNamesHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+    this.publicLastNameHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+    this.publicFirstNamesHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+    this.disambiguationIDHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
 
+    Collator collator = Collator.getInstance(language.locale());
     this.lifeStatusCombo.getItems().addAll(Arrays.stream(LifeStatus.values())
         .map(lifeStatus -> {
           String text = language.translate("life_status." + lifeStatus.name().toLowerCase());
           return new NotNullComboBoxItem<>(lifeStatus, text);
         })
-        .sorted(Comparator.comparing(NotNullComboBoxItem::text))
+        .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
         .toList());
     this.updateGendersList();
 
@@ -91,9 +106,15 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
         null,
         change -> change.getControlNewText().matches("^\\d*$") ? change : null
     ));
+    this.disambiguationIDField.textProperty().addListener((observable, oldValue, newValue) -> this.updateButtons());
 
-    this.addEventButton.setGraphic(config.theme().getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
-    this.lifeEventsList.setSelectionModel(new NoSelectionModel());
+    this.addEventButton.setGraphic(theme.getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
+    this.addEventButton.setOnAction(event -> {
+      DateWithPrecision date = new DateWithPrecision(LocalDateTime.now(), DatePrecision.EXACT);
+      LifeEventType birth = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
+      this.addEvent(new LifeEvent(this.person, date, birth));
+    });
+    this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
 
     Stage stage = this.stage();
     stage.setMinWidth(700);
@@ -101,9 +122,8 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
-        Person p = this.person == null ? new Person() : this.person;
-        this.updatePerson(p);
-        return Optional.of(new Result(p, this.person == null));
+        this.updatePerson(this.person);
+        return Optional.of(new Result(this.person, this.creating));
       }
       return Optional.empty();
     });
@@ -111,6 +131,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
 
   public void updateGendersList() {
     Language language = App.config().language();
+    Collator collator = Collator.getInstance(language.locale());
     this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("gender.unknown")));
     this.genderCombo.getItems().addAll(Registries.GENDERS.entries().stream()
         .map(gender -> {
@@ -120,15 +141,18 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
               : key.name();
           return new ComboBoxItem<>(gender, text);
         })
-        .sorted(Comparator.comparing(ComboBoxItem::text))
+        .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
         .toList());
   }
 
-  public void setPerson(final Person person) {
-    this.person = person;
+  public void setPerson(Person person, @NotNull FamilyTree familyTree) {
+    this.familyTree = Objects.requireNonNull(familyTree);
     if (person != null) {
+      this.person = person;
+      this.creating = false;
       this.setTitle(StringUtils.format(this.getTitle(), new FormatArg("person_name", person.toString())));
-      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(person.lifeStatus()));
+      this.lifeStatusCache = person.lifeStatus();
+      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.lifeStatusCache));
       this.genderCombo.getSelectionModel().select(new ComboBoxItem<>(person.gender().orElse(null)));
       this.legalLastNameField.setText(person.legalLastName().orElse(""));
       this.publicLastNameField.setText(person.publicLastName().orElse(""));
@@ -141,44 +165,84 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
 
       this.lifeEventsList.getItems().clear();
       person.getLifeEventsAsActor().forEach(lifeEvent -> {
-        TitledPane titledPane = new TitledPane();
-        titledPane.setAnimated(false);
-        titledPane.setContent(new GridPane());
-        this.lifeEventsList.getItems().add(titledPane);
+        this.addEvent(lifeEvent);
+        if (lifeEvent.type().indicatesDeath()) {
+          this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
+          this.lifeStatusCombo.setDisable(true);
+        }
       });
       if (!this.lifeEventsList.getItems().isEmpty()) {
         this.lifeEventsList.getItems().get(0).setExpanded(true);
       }
     } else {
+      this.person = new Person();
+      this.creating = true;
       this.setTitle(App.config().language().translate("dialog.edit_person.title.create"));
-      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.LIVING));
+      this.lifeStatusCache = LifeStatus.LIVING;
+      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.lifeStatusCache));
+      this.lifeStatusCombo.setDisable(false);
       this.genderCombo.getSelectionModel().select(0);
       this.lifeEventsList.getItems().clear();
     }
   }
 
+  private void addEvent(@NotNull LifeEvent lifeEvent) {
+    LifeEventView lifeEventView = new LifeEventView(lifeEvent, this.person, this.familyTree.persons());
+    lifeEventView.getUpdateListeners().add(this::updateButtons);
+    lifeEventView.getTypeListeners().add(t -> {
+      boolean anyDeath = this.lifeEventsList.getItems().stream()
+          .anyMatch(i -> i.selectedLifeEventType().indicatesDeath());
+      if (anyDeath) {
+        this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
+      } else {
+        this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.lifeStatusCache));
+      }
+      this.lifeStatusCombo.setDisable(anyDeath);
+    });
+    this.lifeEventsList.getItems().add(lifeEventView);
+  }
+
+  private void updateButtons() {
+    Integer disambiguationID = this.getDisambiguationID();
+    boolean invalid = disambiguationID != null && disambiguationID == 0;
+    this.disambiguationIDField.pseudoClassStateChanged(PseudoClasses.INVALID, invalid);
+
+    for (LifeEventView item : this.lifeEventsList.getItems()) {
+      if (!item.checkValidity()) {
+        invalid = true;
+      }
+    }
+
+    this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(invalid);
+  }
+
   private void updatePerson(@NotNull Person p) {
     // Profile
-    p.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
     p.setGender(this.genderCombo.getSelectionModel().getSelectedItem().data());
     p.setLegalLastName(this.getText(this.legalLastNameField));
     p.setPublicLastName(this.getText(this.publicLastNameField));
     p.setLegalFirstNames(this.splitText(this.legalFirstNamesField));
     p.setPublicFirstNames(this.splitText(this.publicFirstNamesField));
     p.setNicknames(this.splitText(this.nicknamesField));
-    p.setDisambiguationID((Integer) this.disambiguationIDField.getTextFormatter().getValue());
+    p.setDisambiguationID(this.getDisambiguationID());
     p.setNotes(this.getText(this.notesField));
     p.setSources(this.getText(this.sourcesField));
-
     // Life events
-    // TODO
+    this.lifeEventsList.getItems().forEach(LifeEventView::applyChanges);
+    // Update life status after events to avoid assertion error
+    p.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
   }
 
-  private String getText(final TextInputControl textInput) {
+  private @Nullable Integer getDisambiguationID() {
+    String text = this.disambiguationIDField.getText();
+    return text.isEmpty() ? null : Integer.parseInt(text);
+  }
+
+  private @Nullable String getText(final @NotNull TextInputControl textInput) {
     return StringUtils.stripNullable(textInput.getText()).orElse(null);
   }
 
-  private List<String> splitText(final TextInputControl textInput) {
+  private List<String> splitText(final @NotNull TextInputControl textInput) {
     return Arrays.stream(textInput.getText().split("\\s+"))
         .map(String::strip)
         .filter(s -> !s.isEmpty())
@@ -188,14 +252,14 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
   /**
    * Custom selection model to prevent item selection.
    */
-  private static class NoSelectionModel extends MultipleSelectionModel<TitledPane> {
+  private static class NoSelectionModel<T> extends MultipleSelectionModel<T> {
     @Override
     public ObservableList<Integer> getSelectedIndices() {
       return FXCollections.emptyObservableList();
     }
 
     @Override
-    public ObservableList<TitledPane> getSelectedItems() {
+    public ObservableList<T> getSelectedItems() {
       return FXCollections.emptyObservableList();
     }
 
@@ -224,7 +288,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     }
 
     @Override
-    public void select(TitledPane obj) {
+    public void select(T obj) {
     }
 
     @Override

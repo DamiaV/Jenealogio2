@@ -1,6 +1,5 @@
 package net.darmo_creations.jenealogio2.ui;
 
-import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
@@ -23,7 +22,7 @@ import java.util.List;
  * A JavaFX component representing a single person in a family tree.
  */
 // TODO add icon to indicate parents/children if they are not shown
-public class PersonWidget extends AnchorPane {
+class PersonWidget extends AnchorPane {
   private static final String EMPTY_LABEL_VALUE = "-";
   @SuppressWarnings("DataFlowIssue")
   public static final Image DEFAULT_IMAGE =
@@ -107,7 +106,7 @@ public class PersonWidget extends AnchorPane {
    */
   public void setSelected(boolean selected) {
     this.selected = selected;
-    this.pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), selected);
+    this.pseudoClassStateChanged(PseudoClasses.SELECTED, selected);
   }
 
   /**

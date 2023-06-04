@@ -36,12 +36,12 @@
                   </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem/>
-                <MenuItem fx:id="settingsMenuItem" onAction="#onSettings" text="%menu.file.settings">
+                <MenuItem fx:id="settingsMenuItem" text="%menu.file.settings">
                   <accelerator>
                     <KeyCodeCombination alt="DOWN" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
                   </accelerator>
                 </MenuItem>
-                <MenuItem fx:id="quitMenuItem" onAction="#onQuit" text="%menu.file.quit">
+                <MenuItem fx:id="quitMenuItem" text="%menu.file.quit">
                   <accelerator>
                     <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
                   </accelerator>
@@ -132,7 +132,7 @@
             </Menu>
             <Menu text="%menu.help">
               <items>
-                <MenuItem fx:id="aboutMenuItem" onAction="#onAbout" text="%menu.help.about"/>
+                <MenuItem fx:id="aboutMenuItem" text="%menu.help.about"/>
               </items>
             </Menu>
           </menus>

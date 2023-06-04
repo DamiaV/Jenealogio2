@@ -28,7 +28,7 @@ public final class Registries {
           new BuiltinEntry<>("marriage", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Mariage
           new BuiltinEntry<>("marriage_bann", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Bans de mariage
           new BuiltinEntry<>("marriage_contract", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Contrat de mariage
-          new BuiltinEntry<>("marriage_licence", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Licence de mariage
+          new BuiltinEntry<>("marriage_license", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Licence de mariage
           new BuiltinEntry<>("partners", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Couple non marié
           new BuiltinEntry<>("separation", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Séparation
 

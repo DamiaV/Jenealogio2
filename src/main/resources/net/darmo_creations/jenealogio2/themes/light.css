@@ -1,3 +1,8 @@
+/* Make background of title panes opaque for better integration in list views */
+.titled-pane {
+    -fx-background: -fx-base;
+}
+
 /* Custom components */
 .person-widget {
     -fx-padding: 0.5em;
@@ -24,4 +29,8 @@
 
 .tree-cell:search-match {
     -fx-background: #ffcc80;
+}
+
+*:invalid {
+    -fx-border-color: red;
 }

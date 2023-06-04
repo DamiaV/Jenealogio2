@@ -5,7 +5,6 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
-import javafx.css.PseudoClass;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -114,23 +113,18 @@ public class FamilyTreeView extends FamilyTreeComponent {
     this.searchField.clear();
     this.familyTree().ifPresent(familyTree -> {
       familyTree.persons().stream()
-          .sorted((p1, p2) -> {
-            int c1 = p1.getLastName().orElse("")
-                .compareTo(p2.getLastName().orElse(""));
-            if (c1 != 0) {
-              return c1;
-            }
-            int c2 = p1.getFirstNames().orElse("")
-                .compareTo(p2.getFirstNames().orElse(""));
-            if (c2 != 0) {
-              return c2;
-            }
-            return p1.disambiguationID().orElse(-1)
-                .compareTo(p2.disambiguationID().orElse(-1));
-          })
+          .sorted(Person.lastThenFirstNamesComparator())
           .forEach(person -> this.personsItem.getChildren().add(new TreeItem<>(person)));
       this.personsItem.setExpanded(true);
     });
+  }
+
+  @Override
+  public Optional<Person> getSelectedPerson() {
+    TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
+    return selectedItem != null && selectedItem.getValue() instanceof Person person
+        ? Optional.of(person)
+        : Optional.empty();
   }
 
   @Override
@@ -181,14 +175,13 @@ public class FamilyTreeView extends FamilyTreeComponent {
     private final BooleanBinding matchesSearch;
 
     public SearchHighlightingTreeCell(ObservableSet<TreeItem<Object>> searchMatches) {
-      PseudoClass searchMatch = PseudoClass.getPseudoClass("search-match");
       this.matchesSearch = Bindings.createBooleanBinding(
           () -> searchMatches.contains(this.getTreeItem()),
           this.treeItemProperty(),
           searchMatches
       );
       this.matchesSearch.addListener((obs, didMatchSearch, nowMatchesSearch) ->
-          this.pseudoClassStateChanged(searchMatch, nowMatchesSearch));
+          this.pseudoClassStateChanged(PseudoClasses.SEARCH_MATCH, nowMatchesSearch));
     }
 
     @Override

@@ -55,6 +55,11 @@ public abstract class FamilyTreeComponent extends AnchorPane {
   protected abstract void refresh();
 
   /**
+   * Get the currently selected person.
+   */
+  public abstract Optional<Person> getSelectedPerson();
+
+  /**
    * Clear all person component selection.
    */
   protected abstract void deselectAll();

@@ -9,6 +9,7 @@ import net.darmo_creations.jenealogio2.model.Person;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * JavaFX component displaying a part of a family tree’s graph.
@@ -47,6 +48,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
       w.clickListeners().add(this::onPersonWidgetClick);
       y += 100;
     }
+  }
+
+  @Override
+  public Optional<Person> getSelectedPerson() {
+    return this.personWidgets.stream()
+        .filter(PersonWidget::isSelected)
+        .findFirst()
+        .map(PersonWidget::person);
   }
 
   @Override

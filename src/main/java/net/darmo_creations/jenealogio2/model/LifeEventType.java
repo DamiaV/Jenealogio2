@@ -75,10 +75,10 @@ public final class LifeEventType extends RegistryEntry {
   }
 
   public enum Group {
+    LIFESPAN,
     ADMIN,
     DISTINCTION,
     EDUCATION,
-    LIFESPAN,
     MEDICAL,
     MILITARY,
     RELATIONSHIP,

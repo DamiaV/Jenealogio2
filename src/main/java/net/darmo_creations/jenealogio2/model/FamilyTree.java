@@ -19,7 +19,7 @@ public class FamilyTree {
     person.setLegalLastName("Doe");
     person.setGender(Registries.GENDERS.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "male")));
     person.setLifeStatus(LifeStatus.MAYBE_LIVING);
-    person.addLifeEventAsActor(new LifeEvent(person, new DateWithPrecision(LocalDateTime.now(), DatePrecision.EXACT),
+    this.lifeEvents.add(new LifeEvent(person, new DateWithPrecision(LocalDateTime.now(), DatePrecision.EXACT),
         Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"))));
     this.persons.add(person);
 

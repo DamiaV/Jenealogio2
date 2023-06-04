@@ -40,6 +40,11 @@
     -fx-prompt-text-fill: transparent;
 }
 
+/* Make background of title panes opaque for better integration in list views */
+.titled-pane {
+    -fx-background: -fx-base;
+}
+
 /* Fix scroll bar buttons arrows colors */
 .scroll-bar > .increment-button > .increment-arrow,
 .scroll-bar > .decrement-button > .decrement-arrow {
@@ -82,4 +87,8 @@
 
 .tree-cell:search-match {
     -fx-background: #cc7a00;
+}
+
+*:invalid {
+    -fx-border-color: red;
 }
