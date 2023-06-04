@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @SuppressWarnings("unused")
-public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Result>> {
+public class EditPersonDialog extends DialogBase<ButtonType> {
   @FXML
   private Label legalLastNameHelpLabel;
   @FXML
@@ -74,6 +74,7 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
    */
   private LifeStatus lifeStatusCache;
   private boolean internalTypeChange;
+  private final Set<LifeEventView> eventsToDelete = new HashSet<>();
 
   public EditPersonDialog() {
     super("edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
@@ -81,7 +82,6 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     Language language = config.language();
     Theme theme = config.theme();
 
-    //noinspection DataFlowIssue
     this.legalLastNameHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
     this.legalFirstNamesHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
     this.publicLastNameHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
@@ -126,9 +126,11 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
         this.updatePerson(this.person);
-        return Optional.of(new Result(this.person, this.creating));
+        if (this.creating) {
+          this.familyTree.persons().add(this.person);
+        }
       }
-      return Optional.empty();
+      return buttonType;
     });
   }
 
@@ -188,7 +190,8 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
   }
 
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
-    LifeEventView lifeEventView = new LifeEventView(lifeEvent, this.person, this.familyTree.persons(), expanded);
+    LifeEventView lifeEventView = new LifeEventView(lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
+    lifeEventView.getDeletionListeners().add(this::onEventDelete);
     lifeEventView.getUpdateListeners().add(this::updateButtons);
     lifeEventView.getTypeListeners().add(t -> {
       boolean anyDeath = this.lifeEventsList.getItems().stream()
@@ -203,6 +206,16 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
       this.lifeStatusCombo.setDisable(anyDeath);
     });
     this.lifeEventsList.getItems().add(lifeEventView);
+  }
+
+  private void onEventDelete(@NotNull LifeEventView lifeEventView) {
+    String prefix = "alert.delete_life_event.";
+    boolean delete = Alerts.confirmation(prefix + "header", prefix + "content", prefix + "title");
+    if (delete) {
+      this.eventsToDelete.add(lifeEventView);
+      this.lifeEventsList.getItems().remove(lifeEventView);
+      this.updateButtons();
+    }
   }
 
   private void updateButtons() {
@@ -243,7 +256,20 @@ public class EditPersonDialog extends DialogBase<Optional<EditPersonDialog.Resul
     p.setNotes(this.getText(this.notesField));
     p.setSources(this.getText(this.sourcesField));
     // Life events
-    this.lifeEventsList.getItems().forEach(LifeEventView::applyChanges);
+    this.lifeEventsList.getItems().forEach(w -> {
+      w.applyChanges();
+      this.familyTree.lifeEvents().add(w.lifeEvent());
+    });
+    for (LifeEventView lifeEventView : this.eventsToDelete) {
+      LifeEvent event = lifeEventView.lifeEvent();
+      if (event.actors().size() == event.type().minActors()) {
+        event.actors().forEach(a -> a.removeLifeEvent(event));
+        event.witnesses().forEach(w -> w.removeLifeEvent(event));
+        this.familyTree.lifeEvents().remove(event);
+      } else {
+        p.removeLifeEvent(event);
+      }
+    }
     // Update life status after events to avoid assertion error
     p.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
   }

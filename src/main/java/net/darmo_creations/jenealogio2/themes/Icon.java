@@ -39,6 +39,7 @@ public enum Icon {
   SYNC_TREE("arrow_refresh"),
 
   ADD_EVENT("plus"),
+  DELETE_EVENT("cross"),
   ADD_WITNESS("plus"),
   REMOVE_WITNESS("delete"),
   ;

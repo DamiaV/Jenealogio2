@@ -3,6 +3,7 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -35,10 +36,18 @@ class LifeEventView extends TitledPane {
   private final Person person;
   private final List<Person> persons;
 
+  private final List<DeletionListener> deletionListeners = new LinkedList<>();
   private final List<UpdateListener> updateListeners = new LinkedList<>();
   private final List<TypeListener> typeListeners = new LinkedList<>();
+  private final Label titleLabel = new Label();
 
-  public LifeEventView(@NotNull LifeEvent lifeEvent, @NotNull Person person, final @NotNull Collection<Person> persons, boolean expanded) {
+  public LifeEventView(
+      @NotNull LifeEvent lifeEvent,
+      @NotNull Person person,
+      final @NotNull Collection<Person> persons,
+      boolean expanded,
+      final @NotNull ListView<LifeEventView> parent
+  ) {
     this.lifeEvent = Objects.requireNonNull(lifeEvent);
     this.person = person;
     // Get all persons except the one we are currently editing and sort by name
@@ -50,6 +59,16 @@ class LifeEventView extends TitledPane {
     this.setExpanded(expanded);
     Language language = App.config().language();
     Theme theme = App.config().theme();
+
+    BorderPane borderPane = new BorderPane();
+    Button deleteButton = new Button("", theme.getIcon(Icon.DELETE_EVENT, Icon.Size.SMALL));
+    deleteButton.setTooltip(new Tooltip(language.translate("life_event_view.delete")));
+    deleteButton.setOnAction(this::onDelete);
+    BorderPane.setAlignment(this.titleLabel, Pos.CENTER_LEFT);
+    borderPane.setLeft(this.titleLabel);
+    borderPane.setRight(deleteButton);
+    borderPane.prefWidthProperty().bind(parent.widthProperty().subtract(70));
+    this.setGraphic(borderPane);
 
     AnchorPane anchorPane = new AnchorPane();
     this.setContent(anchorPane);
@@ -71,11 +90,11 @@ class LifeEventView extends TitledPane {
     this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> {
           this.dateField.setDateType(newValue.data());
-          this.notifyListeners();
+          this.notifyUpdateListeners();
         });
     HBox dateHBox = new HBox(4);
     dateHBox.getChildren().add(this.datePrecisionCombo);
-    this.dateField.getUpdateListeners().add(this::notifyListeners);
+    this.dateField.getUpdateListeners().add(this::notifyUpdateListeners);
     dateHBox.getChildren().add(this.dateField);
     gridPane.addRow(1, new Label(language.translate("life_event_view.date")), dateHBox);
 
@@ -83,7 +102,7 @@ class LifeEventView extends TitledPane {
 
     this.populatePartnerCombo();
     this.partnerCombo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.notifyListeners());
+        .addListener((observable, oldValue, newValue) -> this.notifyUpdateListeners());
     gridPane.addRow(3, new Label(language.translate("life_event_view.partner")), this.partnerCombo);
 
     VBox witnessesVBox = new VBox(4);
@@ -126,6 +145,10 @@ class LifeEventView extends TitledPane {
     this.populateFields();
   }
 
+  private void onDelete(ActionEvent event) {
+    this.deletionListeners.forEach(l -> l.onDelete(this));
+  }
+
   private void onAddWitness(ActionEvent event) {
     List<Person> potentialWitnesses = this.persons.stream()
         .filter(p -> !this.witnessesList.getItems().contains(p))
@@ -140,6 +163,10 @@ class LifeEventView extends TitledPane {
     if (selectedItem != null) {
       this.witnessesList.getItems().removeAll(selectedItem);
     }
+  }
+
+  public LifeEvent lifeEvent() {
+    return this.lifeEvent;
   }
 
   public LifeEventType selectedLifeEventType() {
@@ -169,14 +196,20 @@ class LifeEventView extends TitledPane {
   }
 
   public void applyChanges() {
-    LifeEventType newType = this.eventTypeCombo.getSelectionModel().getSelectedItem().data();
-    if (this.lifeEvent.type().maxActors() < newType.maxActors()) {
-      this.lifeEvent.setType(newType);
-      this.updateActors();
-    } else {
-      this.updateActors();
-      this.lifeEvent.setType(newType);
+    this.lifeEvent.setType(this.eventTypeCombo.getSelectionModel().getSelectedItem().data());
+    // Remove all actors that are not the edited person and add back the selected ones
+    for (Person actor : this.lifeEvent.actors()) {
+      if (actor != this.person) {
+        this.lifeEvent.removeActor(actor);
+        actor.removeLifeEvent(this.lifeEvent);
+      }
     }
+    if (!this.partnerCombo.isDisabled()) {
+      Person actor = this.partnerCombo.getSelectionModel().getSelectedItem().data();
+      this.lifeEvent.addActor(actor);
+      actor.addLifeEvent(this.lifeEvent);
+    }
+
     // Remove all witnesses and add back the selected ones
     for (Person witness : this.lifeEvent.witnesses()) {
       witness.removeLifeEvent(this.lifeEvent);
@@ -196,26 +229,15 @@ class LifeEventView extends TitledPane {
     }
   }
 
-  private void updateActors() {
-    // Remove all actors that are not the edited person and add back the selected ones
-    for (Person actor : this.lifeEvent.actors()) {
-      if (actor != this.person) {
-        this.lifeEvent.removeActor(actor);
-        actor.removeLifeEvent(this.lifeEvent);
-      }
-    }
-    if (!this.partnerCombo.isDisabled()) {
-      Person actor = this.partnerCombo.getSelectionModel().getSelectedItem().data();
-      this.lifeEvent.addActor(actor);
-      actor.addLifeEvent(this.lifeEvent);
-    }
+  public List<DeletionListener> getDeletionListeners() {
+    return this.deletionListeners;
   }
 
   public List<UpdateListener> getUpdateListeners() {
     return this.updateListeners;
   }
 
-  private void notifyListeners() {
+  private void notifyUpdateListeners() {
     this.updateListeners.forEach(UpdateListener::onUpdate);
   }
 
@@ -227,9 +249,9 @@ class LifeEventView extends TitledPane {
       ObservableValue<? extends NotNullComboBoxItem<LifeEventType>> observable,
       NotNullComboBoxItem<LifeEventType> oldValue,
       NotNullComboBoxItem<LifeEventType> newValue) {
-    this.setText(newValue.text());
+    this.titleLabel.setText(newValue.text());
     this.partnerCombo.setDisable(newValue.data().maxActors() == 1);
-    this.notifyListeners();
+    this.notifyUpdateListeners();
     this.typeListeners.forEach(listener -> listener.onTypeUpdate(newValue.data()));
   }
 
@@ -290,6 +312,11 @@ class LifeEventView extends TitledPane {
     this.lifeEvent.witnesses().forEach(p -> this.witnessesList.getItems().add(p));
     this.notesField.setText(this.lifeEvent.notes().orElse(""));
     this.sourcesField.setText(this.lifeEvent.sources().orElse(""));
+  }
+
+  @FunctionalInterface
+  public interface DeletionListener {
+    void onDelete(@NotNull LifeEventView lifeEventView);
   }
 
   @FunctionalInterface

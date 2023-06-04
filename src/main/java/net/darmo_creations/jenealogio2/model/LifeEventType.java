@@ -7,16 +7,24 @@ import java.util.Objects;
 public final class LifeEventType extends RegistryEntry {
   private final Group group;
   private final boolean indicatesDeath;
+  private final int minActors;
   private final int maxActors;
   private final boolean unique;
 
-  LifeEventType(@NotNull RegistryEntryKey key, @NotNull Group group, boolean indicatesDeath, int maxActors, boolean unique) {
+  LifeEventType(@NotNull RegistryEntryKey key, @NotNull Group group, boolean indicatesDeath, int minActors, int maxActors, boolean unique) {
     super(key);
+    if (minActors <= 0) {
+      throw new IllegalArgumentException("minActors must be > 0");
+    }
     if (maxActors <= 0) {
-      throw new IllegalArgumentException("maxActors must be > 0");
+      throw new IllegalArgumentException("actors must be > 0");
+    }
+    if (minActors > maxActors) {
+      throw new IllegalArgumentException("minActors > actors");
     }
     this.group = Objects.requireNonNull(group);
     this.indicatesDeath = indicatesDeath;
+    this.minActors = minActors;
     this.maxActors = maxActors;
     this.unique = unique;
   }
@@ -33,6 +41,13 @@ public final class LifeEventType extends RegistryEntry {
    */
   public boolean indicatesDeath() {
     return this.indicatesDeath;
+  }
+
+  /**
+   * The minimum number of actors allowed for this event type.
+   */
+  public int minActors() {
+    return this.minActors;
   }
 
   /**
@@ -87,11 +102,11 @@ public final class LifeEventType extends RegistryEntry {
     OTHER
   }
 
-  public record RegistryArgs(@NotNull Group group, boolean indicatesDeath, int maxActors, boolean isUnique) {
+  public record RegistryArgs(@NotNull Group group, boolean indicatesDeath, int actors, boolean isUnique) {
     public RegistryArgs {
       Objects.requireNonNull(group);
-      if (maxActors <= 0) {
-        throw new IllegalArgumentException("maxActors should be > 0");
+      if (actors <= 0) {
+        throw new IllegalArgumentException("actors should be > 0");
       }
     }
 

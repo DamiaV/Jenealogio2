@@ -42,10 +42,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   }
 
   public void setType(@NotNull LifeEventType type) {
-    if (type.maxActors() < this.actors.size()) {
-      throw new IllegalArgumentException("new life event accepts too few actors");
-    }
-    this.type = type;
+    this.type = Objects.requireNonNull(type);
   }
 
   public Optional<String> place() {

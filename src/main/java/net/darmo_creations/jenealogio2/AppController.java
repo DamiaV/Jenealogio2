@@ -214,13 +214,8 @@ public class AppController {
   }
 
   private void onPersonEdited() {
-    this.editPersonDialog.getResult().ifPresent(result -> {
-      if (result.isPersonCreated()) {
-        this.familyTree.persons().add(result.person());
-      }
-      this.familyTreeView.refresh();
-      this.familyTreePane.refresh();
-    });
+    this.familyTreeView.refresh();
+    this.familyTreePane.refresh();
   }
 
   private void updateButtons(final Person selectedPerson) {
