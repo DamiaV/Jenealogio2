@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.ui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -29,22 +30,23 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
   private final ObservableList<PersonWidget> personWidgets = FXCollections.observableList(new ArrayList<>());
   private final Pane pane = new Pane();
+  private final ScrollPane scrollPane = new ScrollPane(this.pane);
 
   private Person targettedPerson;
+  private boolean internalClick;
 
   /**
    * Create an empty family tree pane.
    */
   public FamilyTreePane() {
     this.setOnMouseClicked(this::onBackgroundClicked);
-    ScrollPane scrollPane = new ScrollPane(this.pane);
-    scrollPane.setPannable(true);
-    scrollPane.getStyleClass().add("tree-scroll-pane");
-    AnchorPane.setTopAnchor(scrollPane, 0.0);
-    AnchorPane.setBottomAnchor(scrollPane, 0.0);
-    AnchorPane.setLeftAnchor(scrollPane, 0.0);
-    AnchorPane.setRightAnchor(scrollPane, 0.0);
-    this.getChildren().add(scrollPane);
+    this.scrollPane.setPannable(true);
+    this.scrollPane.getStyleClass().add("tree-scroll-pane");
+    AnchorPane.setTopAnchor(this.scrollPane, 0.0);
+    AnchorPane.setBottomAnchor(this.scrollPane, 0.0);
+    AnchorPane.setLeftAnchor(this.scrollPane, 0.0);
+    AnchorPane.setRightAnchor(this.scrollPane, 0.0);
+    this.getChildren().add(this.scrollPane);
   }
 
   @Override
@@ -137,6 +139,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
     });
 
     // TODO display direct children, all spouses and all siblings
+
+    this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
   }
 
   private Line newLine(double x1, double y1, double x2, double y2) {
@@ -174,14 +178,22 @@ public class FamilyTreePane extends FamilyTreeComponent {
     }
     this.refresh();
     this.personWidgets.forEach(w -> w.setSelected(w.person().isPresent() && person == w.person().get()));
+    if (!this.internalClick) {
+      this.personWidgets.stream()
+          .filter(w -> w.person().orElse(null) == person)
+          .findFirst()
+          .ifPresent(this::centerNodeInScrollPane);
+    }
   }
 
   private void onPersonWidgetClick(@NotNull PersonWidget personWidget, int clickCount, MouseButton button) {
     Optional<Person> person = personWidget.person();
     if (person.isPresent()) {
+      this.internalClick = true;
       this.select(person.get(), button == AppController.TARGET_UPDATE_BUTTON);
       // Prevent double-click when right-clicking to avoid double-click action to miss the widget
       this.firePersonClickEvent(person.get(), button == AppController.TARGET_UPDATE_BUTTON ? 1 : clickCount, button);
+      this.internalClick = false;
     } else {
       personWidget.childInfo().ifPresent(this::fireNewParentClickEvent);
     }
@@ -192,5 +204,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
     this.deselectAll();
     this.firePersonClickEvent(null, event.getClickCount(), MouseButton.PRIMARY);
     this.pane.requestFocus();
+  }
+
+  private void centerNodeInScrollPane(@NotNull Node node) {
+    double w = this.pane.getWidth();
+    double h = this.pane.getHeight();
+    double x = node.getBoundsInParent().getMaxX();
+    double y = node.getBoundsInParent().getMaxY();
+    this.scrollPane.setHvalue(x / w);
+    this.scrollPane.setVvalue(y / h);
   }
 }
