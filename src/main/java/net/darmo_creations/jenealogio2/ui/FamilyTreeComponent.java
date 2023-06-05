@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.ui;
 
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
@@ -40,13 +41,14 @@ public abstract class FamilyTreeComponent extends AnchorPane {
    * <p>
    * If null, current selection will be cleared.
    *
-   * @param person A person object.
+   * @param person       A person object.
+   * @param updateTarget Whether to update the targetted person (center the view around it).
    */
-  public final void selectPerson(Person person) {
+  public final void selectPerson(Person person, boolean updateTarget) {
     if (person == null) {
       this.deselectAll();
     } else {
-      this.select(person);
+      this.select(person, updateTarget);
     }
   }
 
@@ -68,9 +70,10 @@ public abstract class FamilyTreeComponent extends AnchorPane {
   /**
    * Select the component corresponding to the given person object.
    *
-   * @param person A person object.
+   * @param person       A person object.
+   * @param updateTarget Whether to update the targetted person.
    */
-  protected abstract void select(@NotNull Person person);
+  protected abstract void select(@NotNull Person person, boolean updateTarget);
 
   /**
    * The list of all listeners to person components click.
@@ -85,8 +88,8 @@ public abstract class FamilyTreeComponent extends AnchorPane {
    * @param person     The person object wrapped by the component.
    * @param clickCount Number of clicks.
    */
-  protected final void firePersonClickEvent(Person person, int clickCount) {
-    this.personClickListeners.forEach(listener -> listener.onClick(person, clickCount));
+  protected final void firePersonClickEvent(Person person, int clickCount, MouseButton button) {
+    this.personClickListeners.forEach(listener -> listener.onClick(person, clickCount, button));
   }
 
   /**
@@ -114,8 +117,9 @@ public abstract class FamilyTreeComponent extends AnchorPane {
      *
      * @param person     The person object wrapped by the clicked component.
      * @param clickCount Number of clicks.
+     * @param button     The mouse button that was clicked.
      */
-    void onClick(Person person, int clickCount);
+    void onClick(Person person, int clickCount, MouseButton button);
   }
 
   public interface NewParentClickListener {

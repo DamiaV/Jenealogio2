@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -157,7 +158,8 @@ public class PersonWidget extends AnchorPane {
   }
 
   private void onClick(@NotNull MouseEvent mouseEvent) {
-    this.clickListeners.forEach(clickListener -> clickListener.onClick(this, mouseEvent.getClickCount()));
+    this.clickListeners.forEach(
+        clickListener -> clickListener.onClick(this, mouseEvent.getClickCount(), mouseEvent.getButton()));
     mouseEvent.consume();
   }
 
@@ -204,6 +206,6 @@ public class PersonWidget extends AnchorPane {
   }
 
   public interface ClickListener {
-    void onClick(@NotNull PersonWidget personWidget, int clickCount);
+    void onClick(@NotNull PersonWidget personWidget, int clickCount, MouseButton button);
   }
 }

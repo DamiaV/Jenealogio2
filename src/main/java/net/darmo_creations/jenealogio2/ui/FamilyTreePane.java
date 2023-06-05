@@ -2,10 +2,12 @@ package net.darmo_creations.jenealogio2.ui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
+import net.darmo_creations.jenealogio2.AppController;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
@@ -164,17 +166,20 @@ public class FamilyTreePane extends FamilyTreeComponent {
   }
 
   @Override
-  protected void select(@NotNull Person person) {
-    this.targettedPerson = person;
+  protected void select(@NotNull Person person, boolean updateTarget) {
+    if (updateTarget) {
+      this.targettedPerson = person;
+    }
     this.refresh();
     this.personWidgets.forEach(w -> w.setSelected(w.person().isPresent() && person == w.person().get()));
   }
 
-  private void onPersonWidgetClick(@NotNull PersonWidget personWidget, int clickCount) {
+  private void onPersonWidgetClick(@NotNull PersonWidget personWidget, int clickCount, MouseButton button) {
     Optional<Person> person = personWidget.person();
     if (person.isPresent()) {
-      this.select(person.get());
-      this.firePersonClickEvent(person.get(), clickCount);
+      this.select(person.get(), button == AppController.TARGET_UPDATE_BUTTON);
+      // Prevent double-click when right-clicking to avoid double-click action to miss the widget
+      this.firePersonClickEvent(person.get(), button == AppController.TARGET_UPDATE_BUTTON ? 1 : clickCount, button);
     } else {
       personWidget.childInfo().ifPresent(this::fireNewParentClickEvent);
     }
@@ -183,7 +188,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
   private void onBackgroundClicked(MouseEvent event) {
     this.deselectAll();
-    this.firePersonClickEvent(null, event.getClickCount());
+    this.firePersonClickEvent(null, event.getClickCount(), MouseButton.PRIMARY);
     this.pane.requestFocus();
   }
 }

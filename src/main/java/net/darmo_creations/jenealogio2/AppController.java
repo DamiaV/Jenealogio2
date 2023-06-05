@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.LifeEvent;
@@ -26,6 +27,8 @@ import java.util.Optional;
 
 // TODO add right panel to display summary of selected person’s data
 public class AppController {
+  public static final MouseButton TARGET_UPDATE_BUTTON = MouseButton.SECONDARY;
+
   @FXML
   private MenuItem newFileMenuItem;
   @FXML
@@ -191,7 +194,7 @@ public class AppController {
     AnchorPane.setRightAnchor(this.familyTreeView, 0.0);
     this.sideTreeView.getChildren().add(this.familyTreeView);
     this.familyTreeView.personClickListeners()
-        .add((person, clickCount) -> this.onPersonClick(person, clickCount, true));
+        .add((person, clickCount, button) -> this.onPersonClick(person, clickCount, button, true));
 
     AnchorPane.setTopAnchor(this.familyTreePane, 0.0);
     AnchorPane.setBottomAnchor(this.familyTreePane, 0.0);
@@ -199,7 +202,7 @@ public class AppController {
     AnchorPane.setRightAnchor(this.familyTreePane, 0.0);
     this.mainPane.getChildren().add(this.familyTreePane);
     this.familyTreePane.personClickListeners()
-        .add((person, clickCount) -> this.onPersonClick(person, clickCount, false));
+        .add((person, clickCount, button) -> this.onPersonClick(person, clickCount, button, false));
     this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
 
     // TEMP
@@ -290,13 +293,13 @@ public class AppController {
     this.openEditPersonDialog(null, childInfo, EditPersonDialog.TAB_PROFILE);
   }
 
-  private void onPersonClick(Person person, int clickCount, boolean inTree) {
+  private void onPersonClick(Person person, int clickCount, MouseButton button, boolean inTree) {
     this.focusedComponent = inTree ? this.familyTreeView : this.familyTreePane;
     if (App.config().shouldSyncTreeWithMainPane()) {
       if (inTree) {
-        this.familyTreePane.selectPerson(person);
+        this.familyTreePane.selectPerson(person, button == TARGET_UPDATE_BUTTON);
       } else {
-        this.familyTreeView.selectPerson(person);
+        this.familyTreeView.selectPerson(person, button == TARGET_UPDATE_BUTTON);
       }
     }
     if (clickCount == 2) {
@@ -313,7 +316,7 @@ public class AppController {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
       if (person == null && childInfo == null) {
-        this.familyTreePane.selectPerson(person_.get());
+        this.familyTreePane.selectPerson(person_.get(), false);
       }
       this.updateButtons();
     }

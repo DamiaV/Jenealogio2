@@ -6,6 +6,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -97,13 +98,13 @@ public class FamilyTreeView extends FamilyTreeComponent {
     this.treeView.setRoot(root);
     this.treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
       if (!this.internalSelectionChange && newValue != null && newValue.getValue() instanceof Person person) {
-        this.firePersonClickEvent(person, 1);
+        this.firePersonClickEvent(person, 1, MouseButton.PRIMARY);
       }
     });
     this.treeView.setOnMouseClicked(event -> {
       TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
-      if (event.getClickCount() != 1 && selectedItem != null && selectedItem.getValue() instanceof Person person) {
-        this.firePersonClickEvent(person, event.getClickCount());
+      if (selectedItem != null && selectedItem.getValue() instanceof Person person) {
+        this.firePersonClickEvent(person, event.getClickCount(), event.getButton());
       }
     });
   }
@@ -136,7 +137,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
   }
 
   @Override
-  protected void select(@NotNull Person person) {
+  protected void select(@NotNull Person person, boolean updateTarget) {
     for (int i = 0; i < this.personsItem.getChildren().size(); i++) {
       TreeItem<Object> item = this.personsItem.getChildren().get(i);
       if (item.getValue() == person) {
