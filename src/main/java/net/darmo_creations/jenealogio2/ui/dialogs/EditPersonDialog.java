@@ -219,7 +219,6 @@ public class EditPersonDialog extends DialogBase<Person> {
       this.addEvent(lifeEvent, false);
       if (lifeEvent.type().indicatesDeath()) {
         this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
-        this.lifeStatusCombo.setDisable(true);
       }
     });
     if (!this.lifeEventsList.getItems().isEmpty()) {
@@ -260,6 +259,8 @@ public class EditPersonDialog extends DialogBase<Person> {
       list.setPersons(this.person.getRelatives(type));
       list.setPotentialRelatives(potentialRelatives);
     }
+
+    this.updateButtons();
   }
 
   public void selectTab(int index) {
@@ -301,8 +302,12 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.disambiguationIDField.pseudoClassStateChanged(PseudoClasses.INVALID, invalid);
 
     Map<LifeEventType, List<LifeEventView>> uniqueTypes = new HashMap<>();
+    boolean anyDeath = false;
     for (LifeEventView item : this.lifeEventsList.getItems()) {
       item.pseudoClassStateChanged(PseudoClasses.INVALID, false);
+      if (item.lifeEvent().type().indicatesDeath()) {
+        anyDeath = true;
+      }
       if (!item.checkValidity()) {
         invalid = true;
       }
@@ -317,6 +322,7 @@ public class EditPersonDialog extends DialogBase<Person> {
         uniqueTypes.get(type).add(item);
       }
     }
+    this.lifeStatusCombo.setDisable(anyDeath);
 
     ComboBoxItem<Person> selectedParent1 = this.parent1Combo.getSelectionModel().getSelectedItem();
     ComboBoxItem<Person> selectedParent2 = this.parent2Combo.getSelectionModel().getSelectedItem();
