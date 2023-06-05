@@ -20,7 +20,7 @@ import java.util.Optional;
  * JavaFX component displaying a part of a family tree’s graph.
  */
 public class FamilyTreePane extends FamilyTreeComponent {
-  private static final int MAX_LEVEL = 3;
+  private static final int MAX_LEVEL = 4;
   private static final int HGAP = 10;
   private static final int VGAP = 20;
 
@@ -92,7 +92,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
         widgets.add(null);
       }
       if (widgets.stream().allMatch(Objects::isNull)) {
-        // We keep fully null level for next step
+        levels.remove(i);
         break;
       }
     }
@@ -132,7 +132,6 @@ public class FamilyTreePane extends FamilyTreeComponent {
       }
     });
 
-    // TODO display level 4 with narrower cards
     // TODO display direct children and all spouses
   }
 

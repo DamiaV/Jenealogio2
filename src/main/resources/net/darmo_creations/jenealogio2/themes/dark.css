@@ -81,6 +81,14 @@
     -fx-border-color: derive(-fx-base, 50%);
 }
 
+.person-widget.add-parent {
+    -fx-background-color: derive(-fx-base, 30%);
+}
+
+.person-widget.add-parent:hover {
+    -fx-background-color: derive(-fx-base, 40%);
+}
+
 .person-widget .person-data {
     -fx-padding: 0 0 0 0.5em;
 }

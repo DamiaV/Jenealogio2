@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
@@ -8,7 +9,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.model.Gender;
@@ -27,13 +27,16 @@ import java.util.Optional;
  */
 // TODO add icon to indicate parents/children if they are not shown
 public class PersonWidget extends AnchorPane {
-  public static final int WIDTH = 200;
-  public static final int HEIGHT = 70;
+  public static final int WIDTH = 100;
+  public static final int HEIGHT = 130;
 
   private static final String EMPTY_LABEL_VALUE = "-";
   @SuppressWarnings("DataFlowIssue")
   public static final Image DEFAULT_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_person_image.png"));
+  @SuppressWarnings("DataFlowIssue")
+  public static final Image ADD_IMAGE =
+      new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "add_person_image.png"));
 
   private final List<ClickListener> clickListeners = new LinkedList<>();
 
@@ -66,19 +69,21 @@ public class PersonWidget extends AnchorPane {
     this.setMinWidth(this.getPrefWidth());
     this.setMaxWidth(this.getPrefWidth());
 
-    HBox hBox = new HBox();
-    AnchorPane.setTopAnchor(hBox, 0.0);
-    AnchorPane.setBottomAnchor(hBox, 0.0);
-    AnchorPane.setLeftAnchor(hBox, 0.0);
-    AnchorPane.setRightAnchor(hBox, 0.0);
-    this.getChildren().add(hBox);
+    VBox pane = new VBox();
+    AnchorPane.setTopAnchor(pane, 0.0);
+    AnchorPane.setBottomAnchor(pane, 0.0);
+    AnchorPane.setLeftAnchor(pane, 0.0);
+    AnchorPane.setRightAnchor(pane, 0.0);
+    this.getChildren().add(pane);
 
-    hBox.getChildren().add(this.imagePane);
     int size = 54;
     this.imagePane.setPrefSize(size, size);
     this.imagePane.setMinSize(size, size);
     this.imagePane.setMaxSize(size, size);
     this.imagePane.setPadding(new Insets(2));
+    HBox imageBox = new HBox(this.imagePane);
+    imageBox.setAlignment(Pos.CENTER);
+    pane.getChildren().add(imageBox);
     AnchorPane.setTopAnchor(this.imageView, 0.0);
     AnchorPane.setBottomAnchor(this.imageView, 0.0);
     AnchorPane.setLeftAnchor(this.imageView, 0.0);
@@ -88,12 +93,11 @@ public class PersonWidget extends AnchorPane {
     this.imageView.setFitWidth(50);
     this.imagePane.getChildren().add(this.imageView);
 
-    VBox vBox = new VBox();
-    vBox.getStyleClass().add("person-data");
-    hBox.getChildren().add(vBox);
-    HBox.setHgrow(vBox, Priority.ALWAYS);
+    VBox infoPane = new VBox();
+    infoPane.getStyleClass().add("person-data");
+    pane.getChildren().add(infoPane);
 
-    vBox.getChildren().addAll(this.firstNameLabel, this.lastNameLabel, this.lifeSpanLabel);
+    infoPane.getChildren().addAll(this.firstNameLabel, this.lastNameLabel, this.lifeSpanLabel);
 
     this.setOnMouseClicked(this::onClick);
 
@@ -159,7 +163,9 @@ public class PersonWidget extends AnchorPane {
 
   private void populateFields() {
     if (this.person == null) {
-      return; // TODO display specific image
+      this.imageView.setImage(ADD_IMAGE);
+      this.getStyleClass().add("add-parent");
+      return;
     }
 
     this.imageView.setImage(this.person.getImage().orElse(DEFAULT_IMAGE));
