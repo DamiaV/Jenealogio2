@@ -302,7 +302,7 @@ public class AppController {
         this.familyTreeView.selectPerson(person, button == TARGET_UPDATE_BUTTON);
       }
     }
-    if (clickCount == 2) {
+    if (clickCount == 2 && button == MouseButton.PRIMARY) {
       this.openEditPersonDialog(person, null, EditPersonDialog.TAB_PROFILE);
     }
     this.updateButtons();
