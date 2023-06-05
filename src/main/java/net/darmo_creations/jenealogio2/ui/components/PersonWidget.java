@@ -14,7 +14,10 @@ import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.model.Gender;
 import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.model.calendar.*;
+import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
+import net.darmo_creations.jenealogio2.model.calendar.DateAlternative;
+import net.darmo_creations.jenealogio2.model.calendar.DateRange;
+import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
 import net.darmo_creations.jenealogio2.ui.ChildInfo;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
@@ -29,14 +32,17 @@ import java.util.Optional;
 // TODO add icon to indicate parents/children if they are not shown
 public class PersonWidget extends AnchorPane {
   public static final int WIDTH = 100;
-  public static final int HEIGHT = 130;
+  public static final int HEIGHT = 140;
 
   private static final String EMPTY_LABEL_VALUE = "-";
+  private static final String BIRTH_SYMBOL = "°";
+  private static final String DEATH_SYMBOL = "†";
+
   @SuppressWarnings("DataFlowIssue")
-  public static final Image DEFAULT_IMAGE =
+  private static final Image DEFAULT_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_person_image.png"));
   @SuppressWarnings("DataFlowIssue")
-  public static final Image ADD_IMAGE =
+  private static final Image ADD_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "add_person_image.png"));
 
   private final List<ClickListener> clickListeners = new LinkedList<>();
@@ -50,7 +56,8 @@ public class PersonWidget extends AnchorPane {
   private final ImageView imageView = new ImageView();
   private final Label firstNameLabel = new Label();
   private final Label lastNameLabel = new Label();
-  private final Label lifeSpanLabel = new Label();
+  private final Label birthDateLabel = new Label();
+  private final Label deathDateLabel = new Label();
 
   private boolean selected;
 
@@ -94,11 +101,9 @@ public class PersonWidget extends AnchorPane {
     this.imageView.setFitWidth(50);
     this.imagePane.getChildren().add(this.imageView);
 
-    VBox infoPane = new VBox();
+    VBox infoPane = new VBox(this.firstNameLabel, this.lastNameLabel, this.birthDateLabel, this.deathDateLabel);
     infoPane.getStyleClass().add("person-data");
     pane.getChildren().add(infoPane);
-
-    infoPane.getChildren().addAll(this.firstNameLabel, this.lastNameLabel, this.lifeSpanLabel);
 
     this.setOnMouseClicked(this::onClick);
 
@@ -182,17 +187,27 @@ public class PersonWidget extends AnchorPane {
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
-    String lifeSpan = this.person.getBirthDate().map(this::formatDate).orElse("?");
+    String birthDate = this.person.getBirthDate().map(this::formatDate).orElse("?");
+    this.birthDateLabel.setText("%s %s".formatted(BIRTH_SYMBOL, birthDate));
+    this.birthDateLabel.setTooltip(new Tooltip(birthDate));
+
     if (this.person.lifeStatus().isConsideredDeceased()) {
-      lifeSpan += " - " + this.person.getDeathDate().map(this::formatDate).orElse("?");
+      String deathDate = this.person.getDeathDate().map(this::formatDate).orElse("?");
+      this.deathDateLabel.setText("%s %s".formatted(DEATH_SYMBOL, deathDate));
+      this.deathDateLabel.setTooltip(new Tooltip(deathDate));
     }
-    this.lifeSpanLabel.setText(lifeSpan);
-    this.lifeSpanLabel.setTooltip(new Tooltip(lifeSpan));
   }
 
   private String formatDate(@NotNull CalendarDate date) {
     if (date instanceof DateWithPrecision d) {
-      return (d.precision() == DatePrecision.EXACT ? "" : "~") + d.date().getYear();
+      int year = d.date().getYear();
+      return switch (d.precision()) {
+        case EXACT -> String.valueOf(year);
+        case ABOUT -> "~ " + year;
+        case POSSIBLY -> year + " ?";
+        case BEFORE -> "< " + year;
+        case AFTER -> "> " + year;
+      };
     } else if (date instanceof DateRange d) {
       int startYear = d.startDate().getYear();
       int endYear = d.endDate().getYear();
