@@ -258,15 +258,6 @@ public class AppController {
         );
         return;
       }
-      if (!person.children().isEmpty()) {
-        Alerts.warning(
-            "alert.cannot_delete_person_with_children.header",
-            "alert.cannot_delete_person_with_children.content",
-            null,
-            new FormatArg("person", person)
-        );
-        return;
-      }
       boolean delete = Alerts.confirmation(
           "alert.delete_person.header", null, "alert.delete_person.title");
       if (delete) {
@@ -333,11 +324,10 @@ public class AppController {
     boolean selection = selectedPerson.isPresent();
     boolean hasBothParents = selection && selectedPerson.get().hasBothParents();
     boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
-    boolean selectedHasChildren = selection && !selectedPerson.get().children().isEmpty();
 
     this.setAsRootMenuItem.setDisable(!selection || selectedIsRoot);
     this.editPersonMenuItem.setDisable(!selection);
-    this.removePersonMenuItem.setDisable(!selection || selectedIsRoot || selectedHasChildren);
+    this.removePersonMenuItem.setDisable(!selection || selectedIsRoot);
     this.addChildMenuItem.setDisable(!selection);
     this.addSiblingMenuItem.setDisable(!hasBothParents);
     this.editParentsMenuItem.setDisable(!selection);
