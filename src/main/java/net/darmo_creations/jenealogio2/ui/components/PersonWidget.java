@@ -14,17 +14,22 @@ import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.model.Gender;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.model.calendar.*;
+import net.darmo_creations.jenealogio2.ui.ChildInfo;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A JavaFX component representing a single person in a family tree.
  */
 // TODO add icon to indicate parents/children if they are not shown
 public class PersonWidget extends AnchorPane {
+  public static final int WIDTH = 200;
+  public static final int HEIGHT = 70;
+
   private static final String EMPTY_LABEL_VALUE = "-";
   @SuppressWarnings("DataFlowIssue")
   public static final Image DEFAULT_IMAGE =
@@ -33,6 +38,9 @@ public class PersonWidget extends AnchorPane {
   private final List<ClickListener> clickListeners = new LinkedList<>();
 
   private final Person person;
+  private final ChildInfo childInfo;
+  private PersonWidget parentWidget1;
+  private PersonWidget parentWidget2;
 
   private final AnchorPane imagePane = new AnchorPane();
   private final ImageView imageView = new ImageView();
@@ -45,13 +53,16 @@ public class PersonWidget extends AnchorPane {
   /**
    * Create a component for the given person.
    *
-   * @param person A person object.
+   * @param person    A person object.
+   * @param childInfo Information about the displayed child this widget is a parent of.
    */
-  public PersonWidget(final @NotNull Person person) {
+  public PersonWidget(final Person person, final ChildInfo childInfo) {
     this.person = person;
+    this.childInfo = childInfo;
     this.getStyleClass().add("person-widget");
 
-    this.setPrefWidth(200);
+    this.setPrefWidth(WIDTH);
+    this.setPrefHeight(HEIGHT);
     this.setMinWidth(this.getPrefWidth());
     this.setMaxWidth(this.getPrefWidth());
 
@@ -86,14 +97,37 @@ public class PersonWidget extends AnchorPane {
 
     this.setOnMouseClicked(this::onClick);
 
-    this.refresh();
+    this.populateFields();
   }
 
   /**
    * The person object wrapped by this component.
    */
-  public Person person() {
-    return this.person;
+  public Optional<Person> person() {
+    return Optional.ofNullable(this.person);
+  }
+
+  /**
+   * Information about the visible child this widget is a parent of.
+   */
+  public Optional<ChildInfo> childInfo() {
+    return Optional.ofNullable(this.childInfo);
+  }
+
+  public Optional<PersonWidget> parentWidget1() {
+    return Optional.ofNullable(this.parentWidget1);
+  }
+
+  public void setParentWidget1(PersonWidget parentWidget1) {
+    this.parentWidget1 = parentWidget1;
+  }
+
+  public Optional<PersonWidget> parentWidget2() {
+    return Optional.ofNullable(this.parentWidget2);
+  }
+
+  public void setParentWidget2(PersonWidget parentWidget2) {
+    this.parentWidget2 = parentWidget2;
   }
 
   /**
@@ -123,7 +157,11 @@ public class PersonWidget extends AnchorPane {
     mouseEvent.consume();
   }
 
-  public void refresh() {
+  private void populateFields() {
+    if (this.person == null) {
+      return; // TODO display specific image
+    }
+
     this.imageView.setImage(this.person.getImage().orElse(DEFAULT_IMAGE));
     String genderColor = this.person.gender().map(Gender::color).orElse(Gender.MISSING_COLOR);
     this.imagePane.setStyle("-fx-background-color: " + genderColor);

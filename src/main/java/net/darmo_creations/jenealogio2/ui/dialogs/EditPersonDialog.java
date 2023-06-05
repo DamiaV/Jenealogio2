@@ -15,6 +15,7 @@ import net.darmo_creations.jenealogio2.model.calendar.DatePrecision;
 import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.ChildInfo;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import net.darmo_creations.jenealogio2.ui.components.ComboBoxItem;
 import net.darmo_creations.jenealogio2.ui.components.LifeEventView;
@@ -30,7 +31,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @SuppressWarnings("unused")
-public class EditPersonDialog extends DialogBase<Boolean> {
+public class EditPersonDialog extends DialogBase<Person> {
   public static final int TAB_PROFILE = 0;
   public static final int TAB_EVENTS = 1;
   public static final int TAB_PARENTS = 2;
@@ -85,6 +86,7 @@ public class EditPersonDialog extends DialogBase<Boolean> {
   private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
 
   private Person person;
+  private ChildInfo childInfo;
   private FamilyTree familyTree;
   private boolean creating;
   /**
@@ -158,10 +160,13 @@ public class EditPersonDialog extends DialogBase<Boolean> {
         this.updatePerson(this.person);
         if (this.creating) {
           this.familyTree.addPerson(this.person);
+          if (this.childInfo != null) {
+            this.childInfo.child().setParent(this.childInfo.parentIndex(), this.person);
+          }
         }
-        return true;
+        return this.person;
       }
-      return false;
+      return null;
     });
   }
 
@@ -181,7 +186,8 @@ public class EditPersonDialog extends DialogBase<Boolean> {
         .toList());
   }
 
-  public void setPerson(Person person, @NotNull FamilyTree familyTree) {
+  public void setPerson(Person person, ChildInfo childInfo, @NotNull FamilyTree familyTree) {
+    this.childInfo = childInfo;
     this.familyTree = Objects.requireNonNull(familyTree);
     Language language = App.config().language();
 

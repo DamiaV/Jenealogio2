@@ -14,6 +14,7 @@ import java.util.Optional;
  */
 public abstract class FamilyTreeComponent extends AnchorPane {
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
+  private final List<NewParentClickListener> newParentClickListeners = new LinkedList<>();
 
   private FamilyTree familyTree;
 
@@ -89,6 +90,22 @@ public abstract class FamilyTreeComponent extends AnchorPane {
   }
 
   /**
+   * The list of all listeners to new parent click.
+   */
+  public final List<NewParentClickListener> newParentClickListeners() {
+    return this.newParentClickListeners;
+  }
+
+  /**
+   * Fire a new parent click event.
+   *
+   * @param childInfo Information about the child of the parent to create.
+   */
+  protected final void fireNewParentClickEvent(@NotNull ChildInfo childInfo) {
+    this.newParentClickListeners.forEach(listener -> listener.onClick(childInfo));
+  }
+
+  /**
    * Interface representing a listener to person component clicks.
    */
   public interface PersonClickListener {
@@ -99,5 +116,9 @@ public abstract class FamilyTreeComponent extends AnchorPane {
      * @param clickCount Number of clicks.
      */
     void onClick(Person person, int clickCount);
+  }
+
+  public interface NewParentClickListener {
+    void onClick(@NotNull ChildInfo childInfo);
   }
 }

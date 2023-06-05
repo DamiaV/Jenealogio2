@@ -31,6 +31,10 @@
     -fx-background: #ffcc80;
 }
 
+.tree-line {
+    -fx-stroke: derive(-fx-base, -20%);
+}
+
 *:invalid {
     -fx-border-color: red;
 }

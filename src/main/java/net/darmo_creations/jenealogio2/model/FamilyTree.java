@@ -28,6 +28,8 @@ public class FamilyTree {
     person2.setLegalLastName("Yo");
     person2.setGender(Registries.GENDERS.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "non_binary")));
     this.addPerson(person2);
+
+    person.setParent(0, person2);
   }
 
   public Set<Person> persons() {

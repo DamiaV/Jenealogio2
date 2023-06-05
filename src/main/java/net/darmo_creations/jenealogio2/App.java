@@ -67,6 +67,7 @@ public class App extends Application {
     stage.setTitle(NAME);
     stage.setScene(scene);
     stage.show();
+    loader.<AppController>getController().onShown();
   }
 
   public static void main(String[] args) {

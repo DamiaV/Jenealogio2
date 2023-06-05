@@ -5,19 +5,29 @@ import javafx.collections.ObservableList;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Line;
+import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
  * JavaFX component displaying a part of a family tree’s graph.
  */
 public class FamilyTreePane extends FamilyTreeComponent {
+  private static final int MAX_LEVEL = 3;
+  private static final int HGAP = 10;
+  private static final int VGAP = 20;
+
   private final ObservableList<PersonWidget> personWidgets = FXCollections.observableList(new ArrayList<>());
   private final Pane pane = new Pane();
+
+  private Person targettedPerson;
 
   /**
    * Create an empty family tree pane.
@@ -32,24 +42,113 @@ public class FamilyTreePane extends FamilyTreeComponent {
   }
 
   @Override
+  public void setFamilyTree(FamilyTree familyTree) {
+    if (familyTree != null) {
+      this.targettedPerson = familyTree.root().orElse(null);
+    }
+    super.setFamilyTree(familyTree);
+  }
+
+  @Override
   public void refresh() {
     this.pane.getChildren().clear();
     this.personWidgets.clear();
     if (this.familyTree().isEmpty()) {
       return;
     }
-
-    // TODO draw proper tree
-    int y = 20;
-    for (Person person : this.familyTree().get().persons()) {
-      PersonWidget w = new PersonWidget(person);
-      this.pane.getChildren().add(w);
-      this.personWidgets.add(w);
-      w.setLayoutX(20);
-      w.setLayoutY(y);
-      w.clickListeners().add(this::onPersonWidgetClick);
-      y += 100;
+    if (!this.familyTree().get().persons().contains(this.targettedPerson)) {
+      Optional<Person> root = this.familyTree().get().root();
+      if (root.isEmpty()) {
+        return;
+      }
+      this.targettedPerson = root.get();
     }
+
+    List<List<PersonWidget>> levels = new ArrayList<>();
+    PersonWidget root = this.createWidget(this.targettedPerson, null);
+    levels.add(List.of(root));
+    // Build levels breadth-first
+    for (int i = 1; i <= MAX_LEVEL; i++) {
+      List<PersonWidget> widgets = new ArrayList<>();
+      levels.add(widgets);
+      for (PersonWidget childWidget : levels.get(i - 1)) {
+        if (childWidget != null) {
+          Optional<Person> child = childWidget.person();
+          if (child.isPresent()) {
+            Person c = child.get();
+            var parents = c.parents();
+            PersonWidget parent1Widget = this.createWidget(parents.left().orElse(null),
+                new ChildInfo(c, 0));
+            PersonWidget parent2Widget = this.createWidget(parents.right().orElse(null),
+                new ChildInfo(c, 1));
+            widgets.add(parent1Widget);
+            widgets.add(parent2Widget);
+            childWidget.setParentWidget1(parent1Widget);
+            childWidget.setParentWidget2(parent2Widget);
+            continue;
+          }
+        }
+        widgets.add(null);
+        widgets.add(null);
+      }
+      if (widgets.stream().allMatch(Objects::isNull)) {
+        // We keep fully null level for next step
+        break;
+      }
+    }
+
+    double w = this.getWidth();
+    // Widgets positioning
+    for (int level = levels.size() - 1, row = 0; level >= 0; level--, row++) {
+      List<PersonWidget> widgets = levels.get(level);
+      double y = VGAP + (VGAP + PersonWidget.HEIGHT) * row;
+      int cardsNb = (int) Math.pow(2, level);
+      int betweenCardsGad = HGAP + ((int) Math.pow(2, row) - 1) * (PersonWidget.WIDTH + HGAP);
+      double rowWidth = cardsNb * PersonWidget.WIDTH + (cardsNb - 1) * betweenCardsGad;
+      double x = (w - rowWidth) / 2;
+      for (PersonWidget widget : widgets) {
+        if (widget != null) {
+          widget.setLayoutX(x);
+          widget.setLayoutY(y);
+        }
+        x += PersonWidget.WIDTH + betweenCardsGad;
+      }
+    }
+
+    // Draw lines
+    this.personWidgets.forEach(personWidget -> {
+      Optional<PersonWidget> parent1 = personWidget.parentWidget1();
+      Optional<PersonWidget> parent2 = personWidget.parentWidget2();
+      if (parent1.isPresent() && parent2.isPresent()) {
+        double cx = personWidget.getLayoutX() + PersonWidget.WIDTH / 2.0;
+        double cy = personWidget.getLayoutY();
+        double p1x = parent1.get().getLayoutX() + PersonWidget.WIDTH;
+        double p1y = parent1.get().getLayoutY() + PersonWidget.HEIGHT / 2.0;
+        double p2x = parent2.get().getLayoutX();
+        double p2y = parent2.get().getLayoutY() + PersonWidget.HEIGHT / 2.0;
+        // Insert at the start to render them underneath the cards
+        this.pane.getChildren().add(0, this.newLine(p1x, p1y, p2x, p2y)); // Line between parents
+        this.pane.getChildren().add(0, this.newLine(cx, cy, (p1x + p2x) / 2, p1y)); // Child to parents line
+      }
+    });
+
+    // TODO display level 4 with narrower cards
+    // TODO display direct children and all spouses
+  }
+
+  private Line newLine(double x1, double y1, double x2, double y2) {
+    Line line = new Line(x1, y1, x2, y2);
+    line.getStyleClass().add("tree-line");
+    line.setStrokeWidth(2);
+    return line;
+  }
+
+  private PersonWidget createWidget(final Person person, final ChildInfo childInfo) {
+    PersonWidget w = new PersonWidget(person, childInfo);
+    this.pane.getChildren().add(w);
+    this.personWidgets.add(w);
+    w.clickListeners().add(this::onPersonWidgetClick);
+    return w;
   }
 
   @Override
@@ -57,7 +156,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
     return this.personWidgets.stream()
         .filter(PersonWidget::isSelected)
         .findFirst()
-        .map(PersonWidget::person);
+        .flatMap(PersonWidget::person);
   }
 
   @Override
@@ -67,26 +166,19 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
   @Override
   protected void select(@NotNull Person person) {
-    this.personWidgets.forEach(w -> w.setSelected(person == w.person()));
-  }
-
-  /**
-   * Return the person widget to display in the center.
-   */
-  private Optional<PersonWidget> getCentralWidget() {
-    if (this.familyTree().isEmpty()) {
-      return Optional.empty();
-    }
-    Optional<Person> root = this.familyTree().get().root();
-    return this.personWidgets.stream()
-        .filter(PersonWidget::isSelected)
-        .findFirst()
-        .or(() -> root.flatMap(person -> this.personWidgets.stream().filter(w -> w.person() == person).findFirst()));
+    this.targettedPerson = person;
+    this.refresh();
+    this.personWidgets.forEach(w -> w.setSelected(w.person().isPresent() && person == w.person().get()));
   }
 
   private void onPersonWidgetClick(@NotNull PersonWidget personWidget, int clickCount) {
-    this.select(personWidget.person());
-    this.firePersonClickEvent(personWidget.person(), clickCount);
+    Optional<Person> person = personWidget.person();
+    if (person.isPresent()) {
+      this.select(person.get());
+      this.firePersonClickEvent(person.get(), clickCount);
+    } else {
+      personWidget.childInfo().ifPresent(this::fireNewParentClickEvent);
+    }
     this.pane.requestFocus();
   }
 
