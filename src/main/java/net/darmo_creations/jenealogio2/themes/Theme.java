@@ -100,8 +100,15 @@ public final class Theme {
     return new ImageView(new Image(stream));
   }
 
-  public Optional<URL> getStyleSheet() {
-    String path = "%s%s.css".formatted(BUILTIN_THEMES_PATH, this.id);
+  public List<URL> getStyleSheets() {
+    List<URL> urls = new LinkedList<>();
+    this.getStyleSheet("common").ifPresent(urls::add);
+    this.getStyleSheet(this.id).ifPresent(urls::add);
+    return urls;
+  }
+
+  private Optional<URL> getStyleSheet(@NotNull String name) {
+    String path = "%s%s.css".formatted(BUILTIN_THEMES_PATH, name);
     return Optional.ofNullable(this.getClass().getResource(path));
   }
 

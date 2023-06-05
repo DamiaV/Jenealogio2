@@ -75,8 +75,8 @@ public final class Alerts {
       throw new IllegalArgumentException(type.name());
     }
     Alert alert = new Alert(type);
-    App.config().theme().getStyleSheet()
-        .ifPresent(url -> alert.getDialogPane().getStylesheets().add(url.toExternalForm()));
+    App.config().theme().getStyleSheets()
+        .forEach(url -> alert.getDialogPane().getStylesheets().add(url.toExternalForm()));
     if (titleKey == null) {
       titleKey = "alert.%s.title".formatted(type.name().toLowerCase());
     }

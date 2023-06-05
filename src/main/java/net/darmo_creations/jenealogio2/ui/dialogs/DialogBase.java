@@ -22,8 +22,8 @@ public abstract class DialogBase<T> extends Dialog<T> {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    App.config().theme().getStyleSheet()
-        .ifPresent(styleSheet -> this.stage().getScene().getStylesheets().add(styleSheet.toExternalForm()));
+    App.config().theme().getStyleSheets()
+        .forEach(url -> this.stage().getScene().getStylesheets().add(url.toExternalForm()));
     this.initModality(Modality.APPLICATION_MODAL);
     this.setResizable(resizable);
     this.setTitle(loader.getResources().getString("dialog.%s.title".formatted(name)));

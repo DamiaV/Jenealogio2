@@ -61,7 +61,8 @@ public class App extends Application {
     }
     FXMLLoader loader = getFxmlLoader("main-window");
     Scene scene = new Scene(loader.load());
-    config.theme().getStyleSheet().ifPresent(css -> scene.getStylesheets().add(css.toExternalForm()));
+    config.theme().getStyleSheets()
+        .forEach(url -> scene.getStylesheets().add(url.toExternalForm()));
     stage.setMinWidth(300);
     stage.setMinHeight(200);
     stage.setTitle(NAME);

@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.ui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -36,11 +37,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
    */
   public FamilyTreePane() {
     this.setOnMouseClicked(this::onBackgroundClicked);
-    AnchorPane.setTopAnchor(this.pane, 0.0);
-    AnchorPane.setBottomAnchor(this.pane, 0.0);
-    AnchorPane.setLeftAnchor(this.pane, 0.0);
-    AnchorPane.setRightAnchor(this.pane, 0.0);
-    this.getChildren().add(this.pane);
+    ScrollPane scrollPane = new ScrollPane(this.pane);
+    scrollPane.setPannable(true);
+    scrollPane.getStyleClass().add("tree-scroll-pane");
+    AnchorPane.setTopAnchor(scrollPane, 0.0);
+    AnchorPane.setBottomAnchor(scrollPane, 0.0);
+    AnchorPane.setLeftAnchor(scrollPane, 0.0);
+    AnchorPane.setRightAnchor(scrollPane, 0.0);
+    this.getChildren().add(scrollPane);
   }
 
   @Override
@@ -99,21 +103,19 @@ public class FamilyTreePane extends FamilyTreeComponent {
       }
     }
 
-    double w = this.getWidth();
     // Widgets positioning
     for (int level = levels.size() - 1, row = 0; level >= 0; level--, row++) {
       List<PersonWidget> widgets = levels.get(level);
       double y = VGAP + (VGAP + PersonWidget.HEIGHT) * row;
-      int cardsNb = (int) Math.pow(2, level);
-      int betweenCardsGad = HGAP + ((int) Math.pow(2, row) - 1) * (PersonWidget.WIDTH + HGAP);
-      double rowWidth = cardsNb * PersonWidget.WIDTH + (cardsNb - 1) * betweenCardsGad;
-      double x = (w - rowWidth) / 2;
+      double gap = (Math.pow(2, row) - 1) * (PersonWidget.WIDTH + HGAP);
+      double betweenCardsGap = HGAP + gap;
+      double x = HGAP + 0.5 * gap;
       for (PersonWidget widget : widgets) {
         if (widget != null) {
           widget.setLayoutX(x);
           widget.setLayoutY(y);
         }
-        x += PersonWidget.WIDTH + betweenCardsGad;
+        x += PersonWidget.WIDTH + betweenCardsGap;
       }
     }
 
@@ -134,7 +136,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       }
     });
 
-    // TODO display direct children and all spouses
+    // TODO display direct children, all spouses and all siblings
   }
 
   private Line newLine(double x1, double y1, double x2, double y2) {

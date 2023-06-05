@@ -89,10 +89,6 @@
     -fx-background-color: derive(-fx-base, 40%);
 }
 
-.person-widget .person-data {
-    -fx-padding: 0 0 0 0.5em;
-}
-
 .tree-cell:search-match {
     -fx-background: #cc7a00;
 }
