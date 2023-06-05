@@ -108,6 +108,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
     });
   }
 
+  @Override
   public void refresh() {
     this.personsItem.getChildren().clear();
     this.searchField.clear();

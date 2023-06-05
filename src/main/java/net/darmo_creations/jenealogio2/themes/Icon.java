@@ -17,6 +17,7 @@ public enum Icon {
 
   UNDO("undo"),
   REDO("redo"),
+  SET_AS_ROOT("anchor"),
   ADD_PERSON("user_add"),
   EDIT_PERSON("user_edit"),
   REMOVE_PERSON("user_delete"),

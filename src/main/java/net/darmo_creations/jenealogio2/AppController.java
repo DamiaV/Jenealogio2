@@ -17,6 +17,7 @@ import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
 import net.darmo_creations.jenealogio2.ui.dialogs.EditPersonDialog;
 import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
+import net.darmo_creations.jenealogio2.utils.FormatArg;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -39,6 +40,8 @@ public class AppController {
   private MenuItem undoMenuItem;
   @FXML
   private MenuItem redoMenuItem;
+  @FXML
+  private MenuItem setAsRootMenuItem;
   @FXML
   private MenuItem addPersonMenuItem;
   @FXML
@@ -78,6 +81,8 @@ public class AppController {
   private Button undoToolbarButton;
   @FXML
   private Button redoToolbarButton;
+  @FXML
+  private Button setAsRootToolbarButton;
   @FXML
   private Button addPersonToolbarButton;
   @FXML
@@ -129,6 +134,8 @@ public class AppController {
 
     this.undoMenuItem.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.SMALL));
     this.redoMenuItem.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.SMALL));
+    this.setAsRootMenuItem.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.SMALL));
+    this.setAsRootMenuItem.setOnAction(event -> this.onSetAsRootAction());
     this.addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
     this.addPersonMenuItem.setOnAction(event -> this.onAddPersonAction());
     this.editPersonMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PERSON, Icon.Size.SMALL));
@@ -159,6 +166,8 @@ public class AppController {
 
     this.undoToolbarButton.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.BIG));
     this.redoToolbarButton.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.BIG));
+    this.setAsRootToolbarButton.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.BIG));
+    this.setAsRootToolbarButton.setOnAction(event -> this.onSetAsRootAction());
     this.addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
     this.addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
     this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
@@ -195,7 +204,21 @@ public class AppController {
     this.familyTreeView.setFamilyTree(this.familyTree);
     this.familyTreePane.setFamilyTree(this.familyTree);
 
-    this.updateButtons(null);
+    this.updateButtons();
+  }
+
+  private Optional<Person> getSelectedPerson() {
+    if (this.focusedComponent != null) {
+      return this.focusedComponent.getSelectedPerson();
+    }
+    return Optional.empty();
+  }
+
+  private void onSetAsRootAction() {
+    this.getSelectedPerson().ifPresent(root -> {
+      this.familyTree.setRoot(root);
+      this.updateButtons();
+    });
   }
 
   private void onAddPersonAction() {
@@ -203,57 +226,57 @@ public class AppController {
   }
 
   private void onEditPersonAction() {
-    if (this.focusedComponent != null) {
-      this.focusedComponent.getSelectedPerson()
-          .ifPresent(person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_PROFILE));
-    }
+    this.getSelectedPerson().ifPresent(
+        person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_PROFILE));
   }
 
   private void onEditParentsAction() {
-    if (this.focusedComponent != null) {
-      this.focusedComponent.getSelectedPerson()
-          .ifPresent(person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_PARENTS));
-    }
+    this.getSelectedPerson().ifPresent(
+        person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_PARENTS));
   }
 
   private void onEditLifeEventsAction() {
-    if (this.focusedComponent != null) {
-      this.focusedComponent.getSelectedPerson()
-          .ifPresent(person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_EVENTS));
-    }
+    this.getSelectedPerson().ifPresent(
+        person -> this.openEditPersonDialog(person, EditPersonDialog.TAB_EVENTS));
   }
 
   private void onRemovePersonAction() {
-    if (this.focusedComponent != null) {
-      this.focusedComponent.getSelectedPerson().ifPresent(person -> {
-        boolean delete = Alerts.confirmation(
-            "alert.delete_person.header", null, "alert.delete_person.title");
-        if (delete) {
-          for (LifeEvent lifeEvent : person.getLifeEventsAsActor()) {
-            if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
-              lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
-              lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
-              this.familyTree.lifeEvents().remove(lifeEvent);
-            } else {
-              person.removeLifeEvent(lifeEvent);
-            }
+    this.getSelectedPerson().ifPresent(person -> {
+      if (this.familyTree.isRoot(person)) {
+        Alerts.warning(
+            "alert.cannot_delete_root.header",
+            "alert.cannot_delete_root.content",
+            null,
+            new FormatArg("person", person)
+        );
+        return;
+      }
+      boolean delete = Alerts.confirmation(
+          "alert.delete_person.header", null, "alert.delete_person.title");
+      if (delete) {
+        for (LifeEvent lifeEvent : person.getLifeEventsAsActor()) {
+          if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
+            lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
+            lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
+          } else {
+            person.removeLifeEvent(lifeEvent);
           }
-          for (LifeEvent lifeEvent : person.getLifeEventsAsWitness()) {
-            lifeEvent.removeWitness(person);
-          }
-          for (Person child : new HashSet<>(person.children())) {
-            for (Person.RelativeType type : Person.RelativeType.values()) {
-              child.removeRelative(person, type);
-            }
-            child.removeParent(person);
-          }
-          this.familyTree.persons().remove(person);
-          this.familyTreePane.refresh();
-          this.familyTreeView.refresh();
-          this.updateButtons(null);
         }
-      });
-    }
+        for (LifeEvent lifeEvent : person.getLifeEventsAsWitness()) {
+          lifeEvent.removeWitness(person);
+        }
+        for (Person child : new HashSet<>(person.children())) {
+          for (Person.RelativeType type : Person.RelativeType.values()) {
+            child.removeRelative(person, type);
+          }
+          child.removeParent(person);
+        }
+        this.familyTree.removePerson(person);
+        this.familyTreePane.refresh();
+        this.familyTreeView.refresh();
+        this.updateButtons();
+      }
+    });
   }
 
   private void onPersonClick(Person person, int clickCount, boolean inTree) {
@@ -268,7 +291,7 @@ public class AppController {
     if (clickCount == 2) {
       this.openEditPersonDialog(person, EditPersonDialog.TAB_PROFILE);
     }
-    this.updateButtons(person);
+    this.updateButtons();
   }
 
   private void openEditPersonDialog(Person person, int tabIndex) {
@@ -278,13 +301,17 @@ public class AppController {
     if (refresh.isPresent() && refresh.get()) {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
+      this.updateButtons();
     }
   }
 
-  private void updateButtons(final Person selectedPerson) {
-    boolean selection = selectedPerson != null;
-    boolean hasParents = selection && selectedPerson.hasBothParents();
+  private void updateButtons() {
+    Optional<Person> selectedPerson = this.getSelectedPerson();
+    boolean selection = selectedPerson.isPresent();
+    boolean hasParents = selection && selectedPerson.get().hasBothParents();
+    boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
 
+    this.setAsRootMenuItem.setDisable(!selection || selectedIsRoot);
     this.editPersonMenuItem.setDisable(!selection);
     this.removePersonMenuItem.setDisable(!selection);
     this.addChildMenuItem.setDisable(!selection);
@@ -293,6 +320,7 @@ public class AppController {
     this.editLifeEventsMenuItem.setDisable(!selection);
     this.setPictureMenuItem.setDisable(!selection);
 
+    this.setAsRootToolbarButton.setDisable(!selection || selectedIsRoot);
     this.addChildToolbarButton.setDisable(!selection);
     this.addSiblingToolbarButton.setDisable(!hasParents);
     this.editParentsToolbarButton.setDisable(!selection);

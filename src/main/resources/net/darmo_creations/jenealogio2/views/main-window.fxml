@@ -61,6 +61,11 @@
                   </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem/>
+                <MenuItem fx:id="setAsRootMenuItem" text="%menu.edit.set_as_root">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
                 <MenuItem fx:id="addPersonMenuItem" text="%menu.edit.add_person">
                   <accelerator>
                     <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
@@ -174,6 +179,11 @@
                   </tooltip>
                 </Button>
                 <Separator orientation="VERTICAL"/>
+                <Button fx:id="setAsRootToolbarButton">
+                  <tooltip>
+                    <Tooltip text="%toolbar.set_as_root"/>
+                  </tooltip>
+                </Button>
                 <Button fx:id="addPersonToolbarButton">
                   <tooltip>
                     <Tooltip text="%toolbar.add_person"/>

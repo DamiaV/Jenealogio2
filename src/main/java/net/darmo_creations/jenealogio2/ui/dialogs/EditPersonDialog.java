@@ -157,7 +157,7 @@ public class EditPersonDialog extends DialogBase<Boolean> {
       if (!buttonType.getButtonData().isCancelButton()) {
         this.updatePerson(this.person);
         if (this.creating) {
-          this.familyTree.persons().add(this.person);
+          this.familyTree.addPerson(this.person);
         }
         return true;
       }
@@ -339,16 +339,12 @@ public class EditPersonDialog extends DialogBase<Boolean> {
     person.setSources(this.getText(this.sourcesField));
 
     // Life events
-    this.lifeEventsList.getItems().forEach(w -> {
-      w.applyChanges();
-      this.familyTree.lifeEvents().add(w.lifeEvent());
-    });
+    this.lifeEventsList.getItems().forEach(LifeEventView::applyChanges);
     for (LifeEventView lifeEventView : this.eventsToDelete) {
       LifeEvent event = lifeEventView.lifeEvent();
       if (event.actors().size() <= event.type().minActors()) {
         event.actors().forEach(a -> a.removeLifeEvent(event));
         event.witnesses().forEach(w -> w.removeLifeEvent(event));
-        this.familyTree.lifeEvents().remove(event);
       } else {
         person.removeLifeEvent(event);
       }

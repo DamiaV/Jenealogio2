@@ -31,6 +31,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
     this.getChildren().add(this.pane);
   }
 
+  @Override
   public void refresh() {
     this.pane.getChildren().clear();
     this.personWidgets.clear();
@@ -64,8 +65,23 @@ public class FamilyTreePane extends FamilyTreeComponent {
     this.personWidgets.forEach(w -> w.setSelected(false));
   }
 
+  @Override
   protected void select(@NotNull Person person) {
     this.personWidgets.forEach(w -> w.setSelected(person == w.person()));
+  }
+
+  /**
+   * Return the person widget to display in the center.
+   */
+  private Optional<PersonWidget> getCentralWidget() {
+    if (this.familyTree().isEmpty()) {
+      return Optional.empty();
+    }
+    Optional<Person> root = this.familyTree().get().root();
+    return this.personWidgets.stream()
+        .filter(PersonWidget::isSelected)
+        .findFirst()
+        .or(() -> root.flatMap(person -> this.personWidgets.stream().filter(w -> w.person() == person).findFirst()));
   }
 
   private void onPersonWidgetClick(@NotNull PersonWidget personWidget, int clickCount) {
