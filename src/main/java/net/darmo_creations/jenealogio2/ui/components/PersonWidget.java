@@ -18,6 +18,7 @@ import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
 import net.darmo_creations.jenealogio2.model.calendar.DateAlternative;
 import net.darmo_creations.jenealogio2.model.calendar.DateRange;
 import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
+import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.ui.ChildInfo;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
@@ -31,12 +32,10 @@ import java.util.Optional;
  */
 // TODO add icon to indicate parents/children if they are not shown
 public class PersonWidget extends AnchorPane {
-  public static final int WIDTH = 100;
+  public static final int WIDTH = 120;
   public static final int HEIGHT = 140;
 
-  private static final String EMPTY_LABEL_VALUE = "-";
-  private static final String BIRTH_SYMBOL = "°";
-  private static final String DEATH_SYMBOL = "†";
+  private static final String EMPTY_LABEL_VALUE = "?";
 
   @SuppressWarnings("DataFlowIssue")
   private static final Image DEFAULT_IMAGE =
@@ -187,13 +186,15 @@ public class PersonWidget extends AnchorPane {
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
-    String birthDate = this.person.getBirthDate().map(this::formatDate).orElse("?");
-    this.birthDateLabel.setText("%s %s".formatted(BIRTH_SYMBOL, birthDate));
+    String birthDate = this.person.getBirthDate().map(this::formatDate).orElse(EMPTY_LABEL_VALUE);
+    this.birthDateLabel.setText(birthDate);
+    this.birthDateLabel.setGraphic(App.config().theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
     this.birthDateLabel.setTooltip(new Tooltip(birthDate));
 
     if (this.person.lifeStatus().isConsideredDeceased()) {
-      String deathDate = this.person.getDeathDate().map(this::formatDate).orElse("?");
-      this.deathDateLabel.setText("%s %s".formatted(DEATH_SYMBOL, deathDate));
+      String deathDate = this.person.getDeathDate().map(this::formatDate).orElse(EMPTY_LABEL_VALUE);
+      this.deathDateLabel.setText(deathDate);
+      this.deathDateLabel.setGraphic(App.config().theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.deathDateLabel.setTooltip(new Tooltip(deathDate));
     }
   }
@@ -211,7 +212,7 @@ public class PersonWidget extends AnchorPane {
     } else if (date instanceof DateRange d) {
       int startYear = d.startDate().getYear();
       int endYear = d.endDate().getYear();
-      return startYear != endYear ? "%s~%s".formatted(startYear, endYear) : String.valueOf(startYear);
+      return startYear != endYear ? "%s-%s".formatted(startYear, endYear) : String.valueOf(startYear);
     } else if (date instanceof DateAlternative d) {
       int earliestYear = d.earliestDate().getYear();
       int latestYear = d.latestDate().getYear();

@@ -39,6 +39,9 @@ public enum Icon {
   CLEAR_TEXT("draw_eraser"),
   SYNC_TREE("arrow_refresh"),
 
+  BIRTH("emotion_baby"),
+  DEATH("emotion_flower_dead"),
+
   ADD_EVENT("plus"),
   DELETE_EVENT("cross"),
   ADD_WITNESS("plus"),
