@@ -13,23 +13,30 @@ public class FamilyTree {
 
   public FamilyTree() {
     // TEMP
-    Person person = new Person();
-    person.setLegalFirstNames(List.of("John", "Jack"));
-    person.setLegalLastName("Doe");
-    person.setGender(Registries.GENDERS.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "male")));
-    person.setLifeStatus(LifeStatus.MAYBE_LIVING);
-    LifeEvent birth = new LifeEvent(person, new DateWithPrecision(LocalDateTime.now(), DatePrecision.EXACT),
+    Person root = new Person();
+    root.setLegalFirstNames(List.of("C", "D"));
+    root.setLegalLastName("B");
+    root.setGender(Registries.GENDERS.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "male")));
+    root.setLifeStatus(LifeStatus.MAYBE_LIVING);
+    LifeEvent birth = new LifeEvent(root, new DateWithPrecision(LocalDateTime.now(), DatePrecision.EXACT),
         Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth")));
-    person.addLifeEvent(birth);
-    this.addPerson(person);
+    root.addLifeEvent(birth);
+    this.addPerson(root);
 
-    Person person2 = new Person();
-    person2.setLegalFirstNames(List.of("John"));
-    person2.setLegalLastName("Yo");
-    person2.setGender(Registries.GENDERS.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "non_binary")));
-    this.addPerson(person2);
+    Person rootParent1 = new Person();
+    rootParent1.setLegalFirstNames(List.of("Y"));
+    rootParent1.setLegalLastName("C");
+    rootParent1.setGender(Registries.GENDERS.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "non_binary")));
+    this.addPerson(rootParent1);
 
-    person.setParent(0, person2);
+    Person rootParent2 = new Person();
+    rootParent2.setLegalFirstNames(List.of("A"));
+    rootParent2.setLegalLastName("B");
+    rootParent2.setGender(Registries.GENDERS.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "female")));
+    this.addPerson(rootParent2);
+
+    root.setParent(0, rootParent1);
+    root.setParent(1, rootParent2);
   }
 
   public Set<Person> persons() {
