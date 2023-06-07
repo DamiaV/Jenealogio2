@@ -284,6 +284,7 @@ public class EditPersonDialog extends DialogBase<Person> {
       this.lifeStatusCombo.setDisable(anyDeath);
     });
     this.lifeEventsList.getItems().add(lifeEventView);
+    this.updateButtons();
   }
 
   private void onEventDelete(@NotNull LifeEventView lifeEventView) {
