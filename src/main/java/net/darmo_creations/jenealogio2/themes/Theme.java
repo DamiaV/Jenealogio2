@@ -39,13 +39,6 @@ public final class Theme {
 
   public static void loadThemes() throws IOException {
     THEMES.clear();
-    loadBuiltinThemes();
-    if (THEMES.isEmpty()) {
-      throw new IOException("no themes found");
-    }
-  }
-
-  private static void loadBuiltinThemes() {
     for (String themeID : THEME_IDS) {
       try (InputStream stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
         if (stream != null) {
@@ -54,6 +47,9 @@ public final class Theme {
       } catch (Exception e) {
         App.LOGGER.exception(e);
       }
+    }
+    if (THEMES.isEmpty()) {
+      throw new IOException("no themes found");
     }
   }
 
