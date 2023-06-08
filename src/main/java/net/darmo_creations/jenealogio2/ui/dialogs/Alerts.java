@@ -1,16 +1,16 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
+import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public final class Alerts {
@@ -45,12 +45,37 @@ public final class Alerts {
     ComboBox<T> choicesCombo = new ComboBox<>();
     choicesCombo.getItems().addAll(choices);
     choicesCombo.getSelectionModel().select(0);
+    // TODO add label
     hBox.getChildren().add(choicesCombo);
     hBox.setAlignment(Pos.CENTER);
     alert.getDialogPane().setContent(hBox);
     Optional<ButtonType> buttonType = alert.showAndWait();
     if (buttonType.isPresent() && !buttonType.get().getButtonData().isCancelButton()) {
       return Optional.of(choicesCombo.getSelectionModel().getSelectedItem());
+    }
+    return Optional.empty();
+  }
+
+  public static Optional<String> textInput(
+      @NotNull String headerKey,
+      @NotNull String labelKey,
+      String titleKey,
+      String defaultText,
+      final FormatArg @NotNull ... contentArgs
+  ) {
+    Alert alert = getAlert(Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
+    HBox hBox = new HBox(4);
+    TextField textField = new TextField();
+    textField.textProperty().addListener((observable, oldValue, newValue) ->
+        alert.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(StringUtils.stripNullable(newValue).isEmpty()));
+    textField.setText(defaultText);
+    Label label = new Label(App.config().language().translate(labelKey, contentArgs));
+    hBox.getChildren().addAll(label, textField);
+    hBox.setAlignment(Pos.CENTER);
+    alert.getDialogPane().setContent(hBox);
+    Optional<ButtonType> buttonType = alert.showAndWait();
+    if (buttonType.isPresent() && !buttonType.get().getButtonData().isCancelButton()) {
+      return StringUtils.stripNullable(textField.getText());
     }
     return Optional.empty();
   }
@@ -75,6 +100,12 @@ public final class Alerts {
       throw new IllegalArgumentException(type.name());
     }
     Alert alert = new Alert(type);
+    // Replace default buttons to have proper translations
+    alert.getDialogPane().getButtonTypes().setAll(switch (type) {
+      case INFORMATION, WARNING, ERROR -> List.of(ButtonTypes.OK);
+      case CONFIRMATION -> List.of(ButtonTypes.OK, ButtonTypes.CANCEL);
+      case NONE -> throw new IllegalArgumentException(type.name()); // Should never happen
+    });
     App.config().theme().getStyleSheets()
         .forEach(url -> alert.getDialogPane().getStylesheets().add(url.toExternalForm()));
     if (titleKey == null) {

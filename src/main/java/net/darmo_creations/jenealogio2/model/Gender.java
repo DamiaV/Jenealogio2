@@ -2,6 +2,8 @@ package net.darmo_creations.jenealogio2.model;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * This class represents the gender of a {@link Person}.
  */
@@ -12,7 +14,7 @@ public final class Gender extends RegistryEntry {
 
   Gender(@NotNull RegistryEntryKey key, @NotNull String color) {
     super(key);
-    this.color = color;
+    this.color = Objects.requireNonNull(color);
   }
 
   /**

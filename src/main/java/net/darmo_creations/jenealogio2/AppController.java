@@ -6,6 +6,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+import net.darmo_creations.jenealogio2.io.TreeFileReader;
+import net.darmo_creations.jenealogio2.io.TreeFileWriter;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.LifeEvent;
 import net.darmo_creations.jenealogio2.model.Person;
@@ -15,19 +18,21 @@ import net.darmo_creations.jenealogio2.ui.ChildInfo;
 import net.darmo_creations.jenealogio2.ui.FamilyTreeComponent;
 import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
 import net.darmo_creations.jenealogio2.ui.FamilyTreeView;
-import net.darmo_creations.jenealogio2.ui.dialogs.AboutDialog;
-import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
-import net.darmo_creations.jenealogio2.ui.dialogs.EditPersonDialog;
-import net.darmo_creations.jenealogio2.ui.dialogs.SettingsDialog;
+import net.darmo_creations.jenealogio2.ui.dialogs.*;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 
 // TODO add right panel to display summary of selected person’s data
 public class AppController {
   public static final MouseButton TARGET_UPDATE_BUTTON = MouseButton.SECONDARY;
+
+  private Stage stage;
 
   @FXML
   private MenuItem newFileMenuItem;
@@ -45,6 +50,8 @@ public class AppController {
   private MenuItem undoMenuItem;
   @FXML
   private MenuItem redoMenuItem;
+  @FXML
+  private MenuItem renameTreeMenuItem;
   @FXML
   private MenuItem setAsRootMenuItem;
   @FXML
@@ -114,6 +121,9 @@ public class AppController {
   @FXML
   private AnchorPane mainPane;
 
+  private final TreeFileReader treeFileReader = new TreeFileReader();
+  private final TreeFileWriter treeFileWriter = new TreeFileWriter();
+
   private final FamilyTreeView familyTreeView = new FamilyTreeView();
   private final FamilyTreePane familyTreePane = new FamilyTreePane();
   private FamilyTreeComponent focusedComponent;
@@ -123,15 +133,22 @@ public class AppController {
   private final AboutDialog aboutDialog = new AboutDialog();
 
   private FamilyTree familyTree;
+  private File loadedFile;
+  private boolean unsavedChanges;
+  private boolean defaultEmptyTree;
 
   public void initialize() {
     Theme theme = App.config().theme();
 
     // Menu items
     this.newFileMenuItem.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.SMALL));
+    this.newFileMenuItem.setOnAction(event -> this.onNewFileAction());
     this.openFileMenuItem.setGraphic(theme.getIcon(Icon.OPEN_FILE, Icon.Size.SMALL));
+    this.openFileMenuItem.setOnAction(event -> this.onOpenFileAction());
     this.saveMenuItem.setGraphic(theme.getIcon(Icon.SAVE, Icon.Size.SMALL));
+    this.saveMenuItem.setOnAction(event -> this.onSaveAction());
     this.saveAsMenuItem.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.SMALL));
+    this.saveAsMenuItem.setOnAction(event -> this.onSaveAsAction());
     this.settingsMenuItem.setGraphic(theme.getIcon(Icon.SETTINGS, Icon.Size.SMALL));
     this.settingsMenuItem.setOnAction(event -> this.onSettingsAction());
     this.quitMenuItem.setGraphic(theme.getIcon(Icon.QUIT, Icon.Size.SMALL));
@@ -139,6 +156,8 @@ public class AppController {
 
     this.undoMenuItem.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.SMALL));
     this.redoMenuItem.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.SMALL));
+    this.renameTreeMenuItem.setGraphic(theme.getIcon(Icon.RENAME_TREE, Icon.Size.SMALL));
+    this.renameTreeMenuItem.setOnAction(event -> this.onRenameTreeAction());
     this.setAsRootMenuItem.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.SMALL));
     this.setAsRootMenuItem.setOnAction(event -> this.onSetAsRootAction());
     this.addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
@@ -165,9 +184,13 @@ public class AppController {
 
     // Toolbar buttons
     this.newToolbarButton.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.BIG));
+    this.newToolbarButton.setOnAction(event -> this.onNewFileAction());
     this.openToolbarButton.setGraphic(theme.getIcon(Icon.OPEN_FILE, Icon.Size.BIG));
+    this.openToolbarButton.setOnAction(event -> this.onOpenFileAction());
     this.saveToolbarButton.setGraphic(theme.getIcon(Icon.SAVE, Icon.Size.BIG));
+    this.saveToolbarButton.setOnAction(event -> this.onSaveAction());
     this.saveAsToolbarButton.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.BIG));
+    this.saveAsToolbarButton.setOnAction(event -> this.onSaveAsAction());
 
     this.undoToolbarButton.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.BIG));
     this.redoToolbarButton.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.BIG));
@@ -204,17 +227,151 @@ public class AppController {
     this.familyTreePane.personClickListeners()
         .add((person, clickCount, button) -> this.onPersonClick(person, clickCount, button, false));
     this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
-
-    // TEMP
-    this.familyTree = new FamilyTree();
-    this.familyTreeView.setFamilyTree(this.familyTree);
-    this.familyTreePane.setFamilyTree(this.familyTree);
-
-    this.updateButtons();
   }
 
-  public void onShown() {
+  public void onShown(@NotNull Stage stage, File file) {
+    this.stage = Objects.requireNonNull(stage);
+    stage.setOnCloseRequest(event -> {
+      event.consume();
+      this.onQuitAction();
+    });
+    if (file != null && this.loadFile(file)) {
+      return;
+    }
+    this.defaultEmptyTree = true;
+    String defaultName = App.config().language().translate("app_title.undefined_tree_name");
+    this.setFamilyTree(new FamilyTree(defaultName), null);
+  }
+
+  private void setFamilyTree(@NotNull FamilyTree tree, File file) {
+    this.familyTree = tree;
+    this.familyTreeView.setFamilyTree(this.familyTree);
+    this.familyTreePane.setFamilyTree(this.familyTree);
+    this.familyTreeView.refresh();
     this.familyTreePane.refresh();
+    this.loadedFile = file;
+    this.unsavedChanges = file == null;
+    this.updateUI();
+  }
+
+  private void onRenameTreeAction() {
+    Optional<String> name = Alerts.textInput(
+        "alert.tree_name.header", "alert.tree_name.label", null, null);
+    if (name.isEmpty()) {
+      return;
+    }
+    this.familyTree.setName(name.get());
+    this.defaultEmptyTree = false;
+    this.unsavedChanges = true;
+    this.updateUI();
+  }
+
+  private void onNewFileAction() {
+    if (!this.defaultEmptyTree && this.unsavedChanges) {
+      boolean open = Alerts.confirmation(
+          "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+      if (!open) {
+        return;
+      }
+    }
+    Optional<String> name = Alerts.textInput(
+        "alert.tree_name.header", "alert.tree_name.label", null, null);
+    if (name.isEmpty()) {
+      return;
+    }
+    this.defaultEmptyTree = false;
+    this.setFamilyTree(new FamilyTree(name.get()), null);
+  }
+
+  private void onOpenFileAction() {
+    if (!this.defaultEmptyTree && this.unsavedChanges) {
+      boolean open = Alerts.confirmation(
+          "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+      if (!open) {
+        return;
+      }
+    }
+    Optional<File> f = FileChoosers.showTreeFileChooser(this.stage);
+    if (f.isEmpty()) {
+      return;
+    }
+    this.loadFile(f.get());
+  }
+
+  private boolean loadFile(@NotNull File file) {
+    App.LOGGER.info("Loading tree from %s…".formatted(file));
+    FamilyTree familyTree;
+    try {
+      familyTree = this.treeFileReader.loadFile(file);
+    } catch (IOException e) {
+      App.LOGGER.exception(e);
+      Alerts.error(
+          "alert.load_error.header",
+          "alert.load_error.content",
+          "alert.load_error.title",
+          new FormatArg("trace", e.getMessage())
+      );
+      return false;
+    }
+    App.LOGGER.info("Done");
+
+    this.defaultEmptyTree = false;
+    this.setFamilyTree(familyTree, file);
+    return true;
+  }
+
+  private void onSaveAction() {
+    File file;
+    if (this.loadedFile == null) {
+      Optional<File> f = FileChoosers.showTreeFileSaver(this.stage);
+      if (f.isEmpty()) {
+        return;
+      }
+      file = f.get();
+      // File existence is already checked by file chooser
+    } else {
+      file = this.loadedFile;
+    }
+    if (!this.saveFile(file)) {
+      return;
+    }
+    if (this.loadedFile == null) {
+      this.loadedFile = file;
+    }
+    this.unsavedChanges = false;
+    this.updateUI();
+  }
+
+  private void onSaveAsAction() {
+    Optional<File> f = FileChoosers.showTreeFileSaver(this.stage);
+    if (f.isEmpty()) {
+      return;
+    }
+    File file = f.get();
+    if (!this.saveFile(file)) {
+      return;
+    }
+    this.loadedFile = file;
+    this.unsavedChanges = false;
+    this.updateUI();
+  }
+
+  private boolean saveFile(@NotNull File file) {
+    App.LOGGER.info("Saving tree to %s…".formatted(file));
+    try {
+      this.treeFileWriter.saveToFile(this.familyTree, file);
+    } catch (IOException e) {
+      App.LOGGER.exception(e);
+      Alerts.error(
+          "alert.save_error.header",
+          "alert.save_error.content",
+          "alert.save_error.title",
+          new FormatArg("trace", e.getMessage())
+      );
+      return false;
+    }
+    App.LOGGER.info("Done");
+    return true;
   }
 
   private Optional<Person> getSelectedPerson() {
@@ -227,7 +384,9 @@ public class AppController {
   private void onSetAsRootAction() {
     this.getSelectedPerson().ifPresent(root -> {
       this.familyTree.setRoot(root);
-      this.updateButtons();
+      this.defaultEmptyTree = false;
+      this.unsavedChanges = true;
+      this.updateUI();
     });
   }
 
@@ -284,7 +443,9 @@ public class AppController {
         this.familyTree.removePerson(person);
         this.familyTreePane.refresh();
         this.familyTreeView.refresh();
-        this.updateButtons();
+        this.defaultEmptyTree = false;
+        this.unsavedChanges = true;
+        this.updateUI();
       }
     });
   }
@@ -305,7 +466,7 @@ public class AppController {
     if (clickCount == 2 && button == MouseButton.PRIMARY) {
       this.openEditPersonDialog(person, null, EditPersonDialog.TAB_PROFILE);
     }
-    this.updateButtons();
+    this.updateUI();
   }
 
   private void openEditPersonDialog(Person person, ChildInfo childInfo, int tabIndex) {
@@ -318,16 +479,23 @@ public class AppController {
       if (person == null && childInfo == null) {
         this.familyTreePane.selectPerson(person_.get(), false);
       }
-      this.updateButtons();
+      this.defaultEmptyTree = false;
+      this.unsavedChanges = true;
+      this.updateUI();
     }
   }
 
-  private void updateButtons() {
+  private void updateUI() {
+    this.stage.setTitle("%s – %s%s".formatted(App.NAME, this.familyTree.name(), this.unsavedChanges ? "*" : ""));
+
+    boolean emptyTree = this.familyTree.persons().isEmpty();
     Optional<Person> selectedPerson = this.getSelectedPerson();
     boolean selection = selectedPerson.isPresent();
     boolean hasBothParents = selection && selectedPerson.get().hasBothParents();
     boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
 
+    this.saveMenuItem.setDisable(!this.unsavedChanges || emptyTree);
+    this.saveAsMenuItem.setDisable(emptyTree);
     this.setAsRootMenuItem.setDisable(!selection || selectedIsRoot);
     this.editPersonMenuItem.setDisable(!selection);
     this.removePersonMenuItem.setDisable(!selection || selectedIsRoot);
@@ -337,6 +505,8 @@ public class AppController {
     this.editLifeEventsMenuItem.setDisable(!selection);
     this.setPictureMenuItem.setDisable(!selection);
 
+    this.saveToolbarButton.setDisable(!this.unsavedChanges || emptyTree);
+    this.saveAsToolbarButton.setDisable(emptyTree);
     this.setAsRootToolbarButton.setDisable(!selection || selectedIsRoot);
     this.addChildToolbarButton.setDisable(!selection);
     this.addSiblingToolbarButton.setDisable(!hasBothParents);
@@ -355,6 +525,13 @@ public class AppController {
   }
 
   private void onQuitAction() {
+    if (!this.defaultEmptyTree && this.unsavedChanges) {
+      boolean close = Alerts.confirmation(
+          "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+      if (!close) {
+        return;
+      }
+    }
     Platform.exit();
   }
 }

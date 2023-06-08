@@ -51,6 +51,9 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public void setDisambiguationID(Integer disambiguationID) {
+    if (disambiguationID != null && disambiguationID < 1) {
+      throw new IllegalArgumentException("Disambiguation ID must be > 0");
+    }
     this.disambiguationID = disambiguationID;
   }
 
@@ -75,7 +78,6 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public void setLegalFirstNames(final @NotNull List<String> legalFirstNames) {
-    this.ensureNoDuplicates(legalFirstNames);
     this.legalFirstNames.clear();
     this.legalFirstNames.addAll(this.filterOutEmptyStrings(legalFirstNames));
   }
@@ -97,7 +99,6 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public void setPublicFirstNames(final @NotNull List<String> publicFirstNames) {
-    this.ensureNoDuplicates(publicFirstNames);
     this.publicFirstNames.clear();
     this.publicFirstNames.addAll(this.filterOutEmptyStrings(publicFirstNames));
   }
@@ -127,7 +128,6 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public void setNicknames(final @NotNull List<String> nicknames) {
-    this.ensureNoDuplicates(nicknames);
     this.nicknames.clear();
     this.nicknames.addAll(this.filterOutEmptyStrings(nicknames));
   }
@@ -246,16 +246,6 @@ public class Person extends GenealogyObject<Person> {
 
   public void removeLifeEvent(final LifeEvent event) {
     this.lifeEvents.remove(event);
-  }
-
-  private <T> void ensureNoDuplicates(final @NotNull List<T> values) {
-    Set<T> seen = new HashSet<>();
-    for (T value : values) {
-      if (seen.contains(value)) {
-        throw new IllegalArgumentException("duplicate value %s".formatted(value));
-      }
-      seen.add(value);
-    }
   }
 
   private List<String> filterOutEmptyStrings(final @NotNull List<String> values) {

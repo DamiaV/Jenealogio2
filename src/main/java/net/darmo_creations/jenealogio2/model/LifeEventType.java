@@ -16,11 +16,11 @@ public final class LifeEventType extends RegistryEntry {
     if (minActors <= 0) {
       throw new IllegalArgumentException("minActors must be > 0");
     }
-    if (maxActors <= 0) {
-      throw new IllegalArgumentException("actors must be > 0");
+    if (maxActors > 2) {
+      throw new IllegalArgumentException("maxActors must be > 2");
     }
     if (minActors > maxActors) {
-      throw new IllegalArgumentException("minActors > actors");
+      throw new IllegalArgumentException("minActors > minActors");
     }
     this.group = Objects.requireNonNull(group);
     this.indicatesDeath = indicatesDeath;
@@ -102,20 +102,14 @@ public final class LifeEventType extends RegistryEntry {
     OTHER
   }
 
-  public record RegistryArgs(@NotNull Group group, boolean indicatesDeath, int actors, boolean isUnique) {
-    public RegistryArgs {
-      Objects.requireNonNull(group);
-      if (actors <= 0) {
-        throw new IllegalArgumentException("actors should be > 0");
-      }
-    }
-
+  public record RegistryArgs(
+      @NotNull Group group, boolean indicatesDeath, int minActors, int maxActors, boolean isUnique) {
     public RegistryArgs(@NotNull Group group, boolean indicatesDeath) {
-      this(group, indicatesDeath, 1, false);
+      this(group, indicatesDeath, 1, 1, false);
     }
 
     public RegistryArgs(@NotNull Group group, boolean indicatesDeath, boolean isUnique) {
-      this(group, indicatesDeath, 1, isUnique);
+      this(group, indicatesDeath, 1, 1, isUnique);
     }
   }
 }

@@ -25,6 +25,16 @@ public final class StringUtils {
     return pattern;
   }
 
+  /**
+   * Replace by an underscore any illegal Windows path character
+   *
+   * @param path Path to sanitize.
+   * @return The path with each illegal character replaced by an underscore.
+   */
+  public static String stripWindowsIllegalChars(String path) {
+    return path.replaceAll("[\0<>:\"/|?*\\\\]", "_");
+  }
+
   private StringUtils() {
   }
 }

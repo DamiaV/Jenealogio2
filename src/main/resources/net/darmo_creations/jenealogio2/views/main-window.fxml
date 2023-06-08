@@ -61,6 +61,11 @@
                   </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem/>
+                <MenuItem fx:id="renameTreeMenuItem" text="%menu.edit.rename_tree">
+                  <accelerator>
+                    <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                  </accelerator>
+                </MenuItem>
                 <MenuItem fx:id="setAsRootMenuItem" text="%menu.edit.set_as_root">
                   <accelerator>
                     <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>

@@ -10,6 +10,22 @@ public record RegistryEntryKey(@NotNull String namespace, @NotNull String name) 
     Objects.requireNonNull(name);
   }
 
+  public RegistryEntryKey(@NotNull String key) {
+    this(splitKey(key));
+  }
+
+  // Convenience constructor to avoid calling splitKey() method twice in above constructor
+  private RegistryEntryKey(@NotNull String[] key) {
+    this(key[0], key[1]);
+  }
+
+  private static String[] splitKey(@NotNull String key) {
+    if (!key.contains(":")) {
+      return new String[] {Registry.BUILTIN_NS, key};
+    }
+    return key.split(":", 2);
+  }
+
   public String fullName() {
     return this.namespace + ":" + this.name;
   }

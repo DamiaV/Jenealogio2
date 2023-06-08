@@ -65,6 +65,7 @@ public class RelativesListView extends VBox {
     List<Person> potentialRelatives = this.persons.stream()
         .filter(p -> !this.personsListView.getItems().contains(p))
         .toList();
+    // FIXME empty choices -> disable button
     Optional<Person> result = Alerts.chooser(
         "alert.choose_relative.header", "alert.choose_relative.title", potentialRelatives);
     result.ifPresent(person -> this.personsListView.getItems().add(person));

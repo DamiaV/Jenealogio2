@@ -10,10 +10,12 @@ import net.darmo_creations.jenealogio2.utils.DateTimeUtils;
 import net.darmo_creations.jenealogio2.utils.Logger;
 import org.apache.commons.cli.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringJoiner;
 
@@ -42,6 +44,8 @@ public class App extends Application {
     return resourceBundle;
   }
 
+  private static File file;
+
   public static FXMLLoader getFxmlLoader(@NotNull String fileName) {
     FXMLLoader loader = new FXMLLoader(App.class.getResource(VIEWS_PATH + fileName + ".fxml"));
     loader.setResources(getResourceBundle());
@@ -68,18 +72,22 @@ public class App extends Application {
     stage.setTitle(NAME);
     stage.setScene(scene);
     stage.show();
-    loader.<AppController>getController().onShown();
+    loader.<AppController>getController().onShown(stage, file);
   }
 
   public static void main(String[] args) {
+    Args parsedArgs;
     try {
-      config = Config.loadConfig(parseArgs(args).debug());
+      parsedArgs = parseArgs(args);
+      config = Config.loadConfig(parsedArgs.debug());
     } catch (IOException | ParseException | ConfigException e) {
       generateCrashReport(e);
       System.exit(1);
+      return; // To shut up compiler errors
     }
+    file = parsedArgs.file();
     try {
-      launch(args);
+      launch();
     } catch (Exception e) {
       generateCrashReport(e.getCause()); // JavaFX wraps exceptions into a RuntimeException
       System.exit(2);
@@ -94,7 +102,14 @@ public class App extends Application {
         .longOpt("debug")
         .build());
     CommandLine commandLine = parser.parse(options, args);
-    return new Args(commandLine.hasOption('d'));
+    List<String> argList = commandLine.getArgList();
+    File file;
+    if (argList.isEmpty()) {
+      file = null;
+    } else {
+      file = new File(argList.get(0));
+    }
+    return new Args(commandLine.hasOption('d'), file);
   }
 
   public static void generateCrashReport(@NotNull Throwable e) {
@@ -154,6 +169,6 @@ public class App extends Application {
     return systemProperties.toString();
   }
 
-  private record Args(boolean debug) {
+  private record Args(boolean debug, @Nullable File file) {
   }
 }

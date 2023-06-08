@@ -8,7 +8,7 @@ import java.util.Objects;
  * Enumeration of all icons used throughout the app.
  */
 public enum Icon {
-  NEW_FILE("chart_organisation_add"),
+  NEW_FILE("tree_add"),
   OPEN_FILE("folder_vertical_open"),
   SAVE("diskette"),
   SAVE_AS("save_as"),
@@ -17,6 +17,7 @@ public enum Icon {
 
   UNDO("undo"),
   REDO("redo"),
+  RENAME_TREE("tree_textfield"),
   SET_AS_ROOT("anchor"),
   ADD_PERSON("user_add"),
   EDIT_PERSON("user_edit"),

@@ -69,12 +69,11 @@ public class Registry<E extends RegistryEntry, A> {
    *
    * @param key  Key of the entry to register.
    * @param args Additional arguments to pass to the new entry’s constructor.
-   * @return The newly created instance.
    * @throws IllegalArgumentException If the specified key is already used
    *                                  or the key is in the builtin namespace.
    */
-  public E registerEntry(@NotNull RegistryEntryKey key, A args) {
-    return this.registerEntry(key, args, false);
+  public void registerEntry(@NotNull RegistryEntryKey key, A args) {
+    this.registerEntry(key, args, false);
   }
 
   /**
@@ -108,10 +107,6 @@ public class Registry<E extends RegistryEntry, A> {
   public record BuiltinEntry<A>(@NotNull String name, A args) {
     public BuiltinEntry {
       Objects.requireNonNull(name);
-    }
-
-    public BuiltinEntry(@NotNull String name) {
-      this(name, null);
     }
   }
 
