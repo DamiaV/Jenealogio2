@@ -185,7 +185,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     }
 
     Stage stage = this.stage();
-    stage.setMinWidth(700);
+    stage.setMinWidth(850);
     stage.setMinHeight(600);
 
     this.setResultConverter(buttonType -> {
