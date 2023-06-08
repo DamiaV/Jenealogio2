@@ -20,6 +20,7 @@ import net.darmo_creations.jenealogio2.model.calendar.DateRange;
 import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.ui.ChildInfo;
+import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A JavaFX component representing a single person in a family tree.
+ * A JavaFX component representing a single person in the {@link FamilyTreePane}.
  */
 // TODO add icon to indicate parents/children if they are not shown
 public class PersonWidget extends AnchorPane {
@@ -123,18 +124,34 @@ public class PersonWidget extends AnchorPane {
     return Optional.ofNullable(this.childInfo);
   }
 
+  /**
+   * The widget representing the parent 1 of this wrapped person.
+   */
   public Optional<PersonWidget> parentWidget1() {
     return Optional.ofNullable(this.parentWidget1);
   }
 
+  /**
+   * Set the widget representing the parent 1 of this wrapped person.
+   *
+   * @param parentWidget1 The widget.
+   */
   public void setParentWidget1(PersonWidget parentWidget1) {
     this.parentWidget1 = parentWidget1;
   }
 
+  /**
+   * The widget representing the parent 1 of this wrapped person.
+   */
   public Optional<PersonWidget> parentWidget2() {
     return Optional.ofNullable(this.parentWidget2);
   }
 
+  /**
+   * Set the widget representing the parent 2 of this wrapped person.
+   *
+   * @param parentWidget2 The widget.
+   */
   public void setParentWidget2(PersonWidget parentWidget2) {
     this.parentWidget2 = parentWidget2;
   }
@@ -161,12 +178,20 @@ public class PersonWidget extends AnchorPane {
     return this.clickListeners;
   }
 
+  /**
+   * Called when this widget is clicked. Notifies all {@link ClickListener}s.
+   *
+   * @param mouseEvent The mouse event.
+   */
   private void onClick(@NotNull MouseEvent mouseEvent) {
     this.clickListeners.forEach(
         clickListener -> clickListener.onClick(this, mouseEvent.getClickCount(), mouseEvent.getButton()));
     mouseEvent.consume();
   }
 
+  /**
+   * Populate labels with data from the wrapped person object.
+   */
   private void populateFields() {
     if (this.person == null) {
       this.imageView.setImage(ADD_IMAGE);
@@ -199,6 +224,9 @@ public class PersonWidget extends AnchorPane {
     }
   }
 
+  /**
+   * Format a date’s year.
+   */
   private String formatDate(@NotNull CalendarDate date) {
     if (date instanceof DateWithPrecision d) {
       int year = d.date().getYear();
@@ -221,6 +249,9 @@ public class PersonWidget extends AnchorPane {
     throw new IllegalArgumentException("unexpected date type: " + date.getClass());
   }
 
+  /**
+   * Interface for click listeners.
+   */
   public interface ClickListener {
     void onClick(@NotNull PersonWidget personWidget, int clickCount, MouseButton button);
   }

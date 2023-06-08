@@ -19,24 +19,48 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringJoiner;
 
+/**
+ * Application’s main class.
+ */
 public class App extends Application {
   public static final String NAME = "Jenealogio";
   public static final String VERSION = "2.0-SNAPSHOT";
 
   public static final Logger LOGGER = new Logger(NAME);
 
+  /**
+   * Jar path to the resources’ root directory.
+   */
   public static final String RESOURCES_ROOT = "/net/darmo_creations/jenealogio2/";
+  /**
+   * Jar path to the images directory.
+   */
   public static final String IMAGES_PATH = RESOURCES_ROOT + "images/";
+  /**
+   * Jar path to the directory containing FXML files.
+   */
   private static final String VIEWS_PATH = RESOURCES_ROOT + "views/";
 
+  /**
+   * App’s global configuration object.
+   */
   private static Config config;
 
+  /**
+   * Return the application’s configuration object.
+   */
   public static Config config() {
     return config;
   }
 
+  /**
+   * Application’s resource bundlo for the currently selected language.
+   */
   private static ResourceBundle resourceBundle;
 
+  /**
+   * Return the resource bundle of the currently selected language.
+   */
   public static ResourceBundle getResourceBundle() {
     if (resourceBundle == null) {
       resourceBundle = config().language().resources();
@@ -46,12 +70,25 @@ public class App extends Application {
 
   private static File file;
 
+  /**
+   * Return a FXML loader for the given in-jar file name.
+   *
+   * @param fileName Name of the FXML file, without the extension.
+   * @return The FXML loader.
+   */
   public static FXMLLoader getFxmlLoader(@NotNull String fileName) {
     FXMLLoader loader = new FXMLLoader(App.class.getResource(VIEWS_PATH + fileName + ".fxml"));
     loader.setResources(getResourceBundle());
     return loader;
   }
 
+  /**
+   * Update the current configuration object with the given one.
+   * <p>
+   * Only the options that do <b>not</b> need a restart are copied.
+   *
+   * @param localConfig Configuration object to copy from.
+   */
   public static void updateConfig(@NotNull Config localConfig) {
     // TODO
   }
@@ -94,6 +131,13 @@ public class App extends Application {
     }
   }
 
+  /**
+   * Parse the CLI arguments.
+   *
+   * @param args Raw CLI arguments.
+   * @return An object containing parsed arguments.
+   * @throws ParseException If arguments could not be parsed.
+   */
   private static Args parseArgs(@NotNull String[] args) throws ParseException {
     CommandLineParser parser = new DefaultParser();
     Options options = new Options();
@@ -112,6 +156,11 @@ public class App extends Application {
     return new Args(commandLine.hasOption('d'), file);
   }
 
+  /**
+   * Generate a crash report from the given throwable object.
+   *
+   * @param e The throwable object that caused the unrecoverable crash.
+   */
   public static void generateCrashReport(@NotNull Throwable e) {
     LocalDateTime date = LocalDateTime.now();
     StringWriter out = new StringWriter();
@@ -151,6 +200,9 @@ public class App extends Application {
     }
   }
 
+  /**
+   * Return a list of some system properties.
+   */
   public static String getSystemProperties() {
     StringJoiner systemProperties = new StringJoiner("\n");
     System.getProperties().entrySet().stream()
@@ -169,6 +221,12 @@ public class App extends Application {
     return systemProperties.toString();
   }
 
+  /**
+   * Class holding parsed CLI arguments.
+   *
+   * @param debug Whether to run the app in debug mode.
+   * @param file  Optional file to load.
+   */
   private record Args(boolean debug, @Nullable File file) {
   }
 }

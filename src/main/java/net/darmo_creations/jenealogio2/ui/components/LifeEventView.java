@@ -1,8 +1,6 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.*;
@@ -21,6 +19,9 @@ import org.jetbrains.annotations.NotNull;
 import java.text.Collator;
 import java.util.*;
 
+/**
+ * JavaFX component that presents a form to edit a {@link LifeEvent} object.
+ */
 public class LifeEventView extends TitledPane {
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<DateField.DateType>> datePrecisionCombo = new ComboBox<>();
@@ -40,6 +41,15 @@ public class LifeEventView extends TitledPane {
   private final List<TypeListener> typeListeners = new LinkedList<>();
   private final Label titleLabel = new Label();
 
+  /**
+   * Create a new {@link LifeEvent} editing form.
+   *
+   * @param lifeEvent Life event object to edit.
+   * @param person    Person object that acts in the life event object.
+   * @param persons   List of persons that may be co-actors or witnesses.
+   * @param expanded  Whether to expand this form by default.
+   * @param parent    Parent {@link ListView} component.
+   */
   public LifeEventView(
       @NotNull LifeEvent lifeEvent,
       @NotNull Person person,
@@ -62,7 +72,7 @@ public class LifeEventView extends TitledPane {
     BorderPane borderPane = new BorderPane();
     Button deleteButton = new Button("", theme.getIcon(Icon.DELETE_EVENT, Icon.Size.SMALL));
     deleteButton.setTooltip(new Tooltip(language.translate("life_event_view.delete")));
-    deleteButton.setOnAction(this::onDelete);
+    deleteButton.setOnAction(event -> this.onDelete());
     BorderPane.setAlignment(this.titleLabel, Pos.CENTER_LEFT);
     borderPane.setLeft(this.titleLabel);
     borderPane.setRight(deleteButton);
@@ -81,11 +91,12 @@ public class LifeEventView extends TitledPane {
     AnchorPane.setRightAnchor(gridPane, 10.0);
     anchorPane.getChildren().add(gridPane);
 
-    this.populateEventTypeCombo(language);
-    this.eventTypeCombo.getSelectionModel().selectedItemProperty().addListener(this::onEventTypeChange);
+    this.populateEventTypeCombo();
+    this.eventTypeCombo.getSelectionModel().selectedItemProperty()
+        .addListener((observable, oldValue, newValue) -> this.onEventTypeChange(newValue));
     gridPane.addRow(0, new Label(language.translate("life_event_view.type")), this.eventTypeCombo);
 
-    this.populateDatePrecisionCombo(language);
+    this.populateDatePrecisionCombo();
     this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> {
           this.dateField.setDateType(newValue.data());
@@ -109,7 +120,7 @@ public class LifeEventView extends TitledPane {
     witnessesVBox.getChildren().addAll(buttonsHBox, this.witnessesList);
     Button addWitnessButton = new Button(language.translate("life_event_view.witnesses.add"),
         theme.getIcon(Icon.ADD_WITNESS, Icon.Size.SMALL));
-    addWitnessButton.setOnAction(this::onAddWitness);
+    addWitnessButton.setOnAction(event -> this.onAddWitness());
     Button removeWitnessButton = new Button(language.translate("life_event_view.witnesses.remove"),
         theme.getIcon(Icon.REMOVE_WITNESS, Icon.Size.SMALL));
     removeWitnessButton.setOnAction(event -> this.onRemoveWitness());
@@ -149,11 +160,18 @@ public class LifeEventView extends TitledPane {
     this.populateFields();
   }
 
-  private void onDelete(ActionEvent event) {
+  /**
+   * Called when delete button is clicked.
+   * Notifies all {@link DeletionListener}s.
+   */
+  private void onDelete() {
     this.deletionListeners.forEach(l -> l.onDelete(this));
   }
 
-  private void onAddWitness(ActionEvent event) {
+  /**
+   * Called when the add witness button is clicked.
+   */
+  private void onAddWitness() {
     List<Person> potentialWitnesses = this.persons.stream()
         .filter(p -> !this.witnessesList.getItems().contains(p))
         .toList();
@@ -162,15 +180,24 @@ public class LifeEventView extends TitledPane {
     result.ifPresent(person -> this.witnessesList.getItems().add(person));
   }
 
+  /**
+   * Called when the remove witness action (button or keyboard key) is fired.
+   */
   private void onRemoveWitness() {
     ObservableList<Person> selectedItem = this.witnessesList.getSelectionModel().getSelectedItems();
     this.witnessesList.getItems().removeAll(new LinkedList<>(selectedItem));
   }
 
+  /**
+   * The life event object being edited.
+   */
   public LifeEvent lifeEvent() {
     return this.lifeEvent;
   }
 
+  /**
+   * The currently selected life event type.
+   */
   public LifeEventType selectedLifeEventType() {
     return this.eventTypeCombo.getSelectionModel().getSelectedItem().data();
   }
@@ -197,6 +224,9 @@ public class LifeEventView extends TitledPane {
     return valid;
   }
 
+  /**
+   * Update the wrapped life event object with this form’s data.
+   */
   public void applyChanges() {
     this.lifeEvent.setType(this.eventTypeCombo.getSelectionModel().getSelectedItem().data());
     // Remove all actors that are not the edited person and add back the selected ones
@@ -231,33 +261,53 @@ public class LifeEventView extends TitledPane {
     }
   }
 
+  /**
+   * Return the list of all {@link DeletionListener}s.
+   * They are notified whenever the delete button is clicked.
+   */
   public List<DeletionListener> getDeletionListeners() {
     return this.deletionListeners;
   }
 
+  /**
+   * Return the list of all {@link UpdateListener}s.
+   * They are notified whenever the event type, date precision, date fields or partner is updated.
+   */
   public List<UpdateListener> getUpdateListeners() {
     return this.updateListeners;
   }
 
+  /**
+   * Notify all {@link UpdateListener}s.
+   */
   private void notifyUpdateListeners() {
     this.updateListeners.forEach(UpdateListener::onUpdate);
   }
 
+  /**
+   * Return the list of all {@link TypeListener}s.
+   * They are notified whenever the event type is updated.
+   */
   public List<TypeListener> getTypeListeners() {
     return this.typeListeners;
   }
 
-  private void onEventTypeChange(
-      ObservableValue<? extends NotNullComboBoxItem<LifeEventType>> observable,
-      NotNullComboBoxItem<LifeEventType> oldValue,
-      NotNullComboBoxItem<LifeEventType> newValue) {
-    this.titleLabel.setText(newValue.text());
-    this.partnerCombo.setDisable(newValue.data().maxActors() == 1);
+  /**
+   * Called when the event type is changed.
+   *
+   * @param item The selected type item.
+   */
+  private void onEventTypeChange(@NotNull NotNullComboBoxItem<LifeEventType> item) {
+    this.titleLabel.setText(item.text());
+    this.partnerCombo.setDisable(item.data().maxActors() == 1);
     this.notifyUpdateListeners();
-    this.typeListeners.forEach(listener -> listener.onTypeUpdate(newValue.data()));
+    this.typeListeners.forEach(listener -> listener.onTypeUpdate(item.data()));
   }
 
-  private void populateEventTypeCombo(@NotNull Language language) {
+  /**
+   * Populate the event type combobox.
+   */
+  private void populateEventTypeCombo() {
     Map<LifeEventType.Group, List<LifeEventType>> groups = new HashMap<>();
     for (LifeEventType eventType : Registries.LIFE_EVENT_TYPES.entries()) {
       LifeEventType.Group group = eventType.group();
@@ -267,6 +317,7 @@ public class LifeEventView extends TitledPane {
       groups.get(group).add(eventType);
     }
 
+    Language language = App.config().language();
     Collator collator = Collator.getInstance(language.locale());
     for (LifeEventType.Group group : LifeEventType.Group.values()) {
       List<LifeEventType> types = groups.get(group);
@@ -282,18 +333,28 @@ public class LifeEventView extends TitledPane {
     }
   }
 
-  private void populateDatePrecisionCombo(@NotNull Language language) {
+  /**
+   * Populate the date precision combobox.
+   */
+  private void populateDatePrecisionCombo() {
     for (DateField.DateType dateType : DateField.DateType.values()) {
-      this.datePrecisionCombo.getItems().add(new NotNullComboBoxItem<>(dateType, language.translate(dateType.key())));
+      this.datePrecisionCombo.getItems()
+          .add(new NotNullComboBoxItem<>(dateType, App.config().language().translate(dateType.key())));
     }
   }
 
+  /**
+   * Populate the partner combobox from the {@link #persons} field.
+   */
   private void populatePartnerCombo() {
     for (Person person : this.persons) {
       this.partnerCombo.getItems().add(new NotNullComboBoxItem<>(person, person.toString()));
     }
   }
 
+  /**
+   * Populate this form’s fields with data from the wrapped life event object.
+   */
   private void populateFields() {
     this.eventTypeCombo.getSelectionModel()
         .select(new NotNullComboBoxItem<>(this.lifeEvent.type()));
@@ -316,16 +377,25 @@ public class LifeEventView extends TitledPane {
     this.sourcesField.setText(this.lifeEvent.sources().orElse(""));
   }
 
+  /**
+   * Deletion listeners are notified whenever the delete button is clicked.
+   */
   @FunctionalInterface
   public interface DeletionListener {
     void onDelete(@NotNull LifeEventView lifeEventView);
   }
 
+  /**
+   * Update listeners are notifies whenever the event type, date precision, date fields or partner is updated.
+   */
   @FunctionalInterface
   public interface UpdateListener {
     void onUpdate();
   }
 
+  /**
+   * Type listeners are notified whenever the event type is updated.
+   */
   @FunctionalInterface
   public interface TypeListener {
     void onTypeUpdate(@NotNull LifeEventType lifeEventType);

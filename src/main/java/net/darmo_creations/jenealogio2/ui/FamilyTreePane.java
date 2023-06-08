@@ -143,6 +143,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
     this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
   }
 
+  /**
+   * Create a {@link Line} object with the given coordinates, with the {@code .tree-line} CSS class.
+   */
   private Line newLine(double x1, double y1, double x2, double y2) {
     Line line = new Line(x1, y1, x2, y2);
     line.getStyleClass().add("tree-line");
@@ -150,6 +153,13 @@ public class FamilyTreePane extends FamilyTreeComponent {
     return line;
   }
 
+  /**
+   * Create a new {@link PersonWidget}.
+   *
+   * @param person    Person to create a widget for.
+   * @param childInfo Information about the relation to its visible child.
+   * @return The new component.
+   */
   private PersonWidget createWidget(final Person person, final ChildInfo childInfo) {
     PersonWidget w = new PersonWidget(person, childInfo);
     this.pane.getChildren().add(w);
@@ -186,6 +196,16 @@ public class FamilyTreePane extends FamilyTreeComponent {
     }
   }
 
+  /**
+   * Called when a {@link PersonWidget} is clicked.
+   * <p>
+   * Calls upon {@link #firePersonClickEvent(Person, int, MouseButton)} if the widget contains a person object,
+   * calls upon {@link #fireNewParentClickEvent(ChildInfo)} otherwise.
+   *
+   * @param personWidget The clicked widget.
+   * @param clickCount   Number of clicks.
+   * @param button       Clicked mouse button.
+   */
   private void onPersonWidgetClick(@NotNull PersonWidget personWidget, int clickCount, MouseButton button) {
     Optional<Person> person = personWidget.person();
     if (person.isPresent()) {
@@ -200,12 +220,22 @@ public class FamilyTreePane extends FamilyTreeComponent {
     this.pane.requestFocus();
   }
 
+  /**
+   * Called when the pane’s background is clicked.
+   *
+   * @param event The mouse event.
+   */
   private void onBackgroundClicked(MouseEvent event) {
     this.deselectAll();
     this.firePersonClickEvent(null, event.getClickCount(), MouseButton.PRIMARY);
     this.pane.requestFocus();
   }
 
+  /**
+   * Scroll the scrollpane to make the given node visible.
+   *
+   * @param node Node to make visible.
+   */
   private void centerNodeInScrollPane(@NotNull Node node) {
     double w = this.pane.getWidth();
     double h = this.pane.getHeight();

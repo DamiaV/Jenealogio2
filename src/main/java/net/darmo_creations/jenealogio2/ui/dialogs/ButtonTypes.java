@@ -5,6 +5,9 @@ import net.darmo_creations.jenealogio2.App;
 
 import java.util.ResourceBundle;
 
+/**
+ * Custom button types that use translation strings from the app’s resource bundles.
+ */
 @SuppressWarnings("unused")
 public final class ButtonTypes {
   private static final ResourceBundle RES = App.getResourceBundle();

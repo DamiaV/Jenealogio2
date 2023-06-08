@@ -4,6 +4,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+/**
+ * A registry is a container that holds any number of {@link RegistryEntry} objects.
+ * <p>
+ * Two types of entries can be registered: builtin und user defined.
+ *
+ * @param <E> Type of registry entries.
+ * @param <A> Type of arguments to pass to {@link #registerEntry(RegistryEntryKey, Object)}
+ *            to build and register a new {@link RegistryEntry} object.
+ */
 public class Registry<E extends RegistryEntry, A> {
   public static final String BUILTIN_NS = "builtin";
   public static final String USER_NS = "user";
@@ -13,6 +22,13 @@ public class Registry<E extends RegistryEntry, A> {
   private final List<E> defaults;
   private final EntryFactory<E, A> entryFactory;
 
+  /**
+   * Create a new registry.
+   *
+   * @param name         Registry’s name.
+   * @param entryFactory Function that takes a registry key and argument object to create a new {@link RegistryEntry}.
+   * @param defaults     List of default entries’ data to be registered.
+   */
   @SafeVarargs
   Registry(@NotNull String name, @NotNull EntryFactory<E, A> entryFactory, final @NotNull BuiltinEntry<A>... defaults) {
     this.name = Objects.requireNonNull(name);
@@ -23,14 +39,14 @@ public class Registry<E extends RegistryEntry, A> {
   }
 
   /**
-   * The name of this registry.
+   * Name of this registry.
    */
   public String name() {
     return this.name;
   }
 
   /**
-   * A list of this registry’s entries, in no particular order.
+   * A copy of the list of this registry’s entries, in no particular order.
    */
   public List<E> entries() {
     return new LinkedList<>(this.entries.values());
@@ -102,7 +118,7 @@ public class Registry<E extends RegistryEntry, A> {
    * Wrapper class to provide builtin entries when creating a registry.
    *
    * @param name Entry’s internal name.
-   * @param args Entry’s additonal arguments.
+   * @param args Entry’s additonal constructor arguments.
    */
   public record BuiltinEntry<A>(@NotNull String name, A args) {
     public BuiltinEntry {
@@ -110,6 +126,13 @@ public class Registry<E extends RegistryEntry, A> {
     }
   }
 
+  /**
+   * A factory that takes in a registry key and an object containing arguments
+   * to be passed to the registry entry’s concreet constructor.
+   *
+   * @param <E> Type of registry entries.
+   * @param <A> Type of arguments to pass to the registry entry’s concrete constructor.
+   */
   @FunctionalInterface
   public interface EntryFactory<E extends RegistryEntry, A> {
     E apply(@NotNull RegistryEntryKey key, A args);

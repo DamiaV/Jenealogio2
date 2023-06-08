@@ -28,10 +28,19 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Application’s main controller.
+ */
 // TODO add right panel to display summary of selected person’s data
 public class AppController {
+  /**
+   * Mouse button used to select the target in the tree pane.
+   */
   public static final MouseButton TARGET_UPDATE_BUTTON = MouseButton.SECONDARY;
 
+  /**
+   * The stage associated to this controller.
+   */
   private Stage stage;
 
   @FXML
@@ -121,22 +130,42 @@ public class AppController {
   @FXML
   private AnchorPane mainPane;
 
+  // File managers
   private final TreeFileReader treeFileReader = new TreeFileReader();
   private final TreeFileWriter treeFileWriter = new TreeFileWriter();
 
+  // Tree components
+  private FamilyTreeComponent focusedComponent;
   private final FamilyTreeView familyTreeView = new FamilyTreeView();
   private final FamilyTreePane familyTreePane = new FamilyTreePane();
-  private FamilyTreeComponent focusedComponent;
 
+  // Dialogs
   private final EditPersonDialog editPersonDialog = new EditPersonDialog();
   private final SettingsDialog settingsDialog = new SettingsDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
 
+  /**
+   * Currently loaded family tree.
+   */
   private FamilyTree familyTree;
+  /**
+   * File the current tree has been loaded from, will be null for new trees.
+   */
   private File loadedFile;
+  /**
+   * Indicate whether there are any unsaved changes.
+   */
   private boolean unsavedChanges;
+  /**
+   * Indicate whether the current tree is the default one.
+   */
   private boolean defaultEmptyTree;
 
+  /**
+   * Initialize this controller.
+   * <p>
+   * Automatically called by JavaFX.
+   */
   public void initialize() {
     Theme theme = App.config().theme();
 
@@ -229,6 +258,14 @@ public class AppController {
     this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
   }
 
+  /**
+   * Called when the app’s main stage is shown.
+   * <p>
+   * Hooks callbacks to the stage’s close event and load the specified tree or the default one.
+   *
+   * @param stage App’s main stage.
+   * @param file  File to load. May be null.
+   */
   public void onShown(@NotNull Stage stage, File file) {
     this.stage = Objects.requireNonNull(stage);
     stage.setOnCloseRequest(event -> {
@@ -243,6 +280,12 @@ public class AppController {
     this.setFamilyTree(new FamilyTree(defaultName), null);
   }
 
+  /**
+   * Set the current family tree.
+   *
+   * @param tree Family tree to use.
+   * @param file Optional file the tree has been loaded from.
+   */
   private void setFamilyTree(@NotNull FamilyTree tree, File file) {
     this.familyTree = tree;
     this.familyTreeView.setFamilyTree(this.familyTree);
@@ -254,6 +297,9 @@ public class AppController {
     this.updateUI();
   }
 
+  /**
+   * Open an alert dialog to rename the current tree.
+   */
   private void onRenameTreeAction() {
     Optional<String> name = Alerts.textInput(
         "alert.tree_name.header", "alert.tree_name.label", null, null);
@@ -266,6 +312,11 @@ public class AppController {
     this.updateUI();
   }
 
+  /**
+   * Open an alert dialog to create a new tree.
+   * <p>
+   * Checks for any unsaved changes.
+   */
   private void onNewFileAction() {
     if (!this.defaultEmptyTree && this.unsavedChanges) {
       boolean open = Alerts.confirmation(
@@ -283,6 +334,11 @@ public class AppController {
     this.setFamilyTree(new FamilyTree(name.get()), null);
   }
 
+  /**
+   * Open a file chooser dialog to open a tree file.
+   * <p>
+   * Checks for any unsaved changes.
+   */
   private void onOpenFileAction() {
     if (!this.defaultEmptyTree && this.unsavedChanges) {
       boolean open = Alerts.confirmation(
@@ -298,6 +354,12 @@ public class AppController {
     this.loadFile(f.get());
   }
 
+  /**
+   * Load a tree from a file.
+   *
+   * @param file File to read.
+   * @return The tree read from the file.
+   */
   private boolean loadFile(@NotNull File file) {
     App.LOGGER.info("Loading tree from %s…".formatted(file));
     FamilyTree familyTree;
@@ -320,6 +382,11 @@ public class AppController {
     return true;
   }
 
+  /**
+   * Save the current tree.
+   * <p>
+   * If the tree has not yet been saved, a file saver dialog is shown.
+   */
   private void onSaveAction() {
     File file;
     if (this.loadedFile == null) {
@@ -342,6 +409,9 @@ public class AppController {
     this.updateUI();
   }
 
+  /**
+   * Open a file saver dialog to save the current tree to.
+   */
   private void onSaveAsAction() {
     Optional<File> f = FileChoosers.showTreeFileSaver(this.stage);
     if (f.isEmpty()) {
@@ -356,6 +426,12 @@ public class AppController {
     this.updateUI();
   }
 
+  /**
+   * Save the current tree to a file.
+   *
+   * @param file File to save to.
+   * @return True if save succeeded, false otherwise.
+   */
   private boolean saveFile(@NotNull File file) {
     App.LOGGER.info("Saving tree to %s…".formatted(file));
     try {
@@ -374,6 +450,9 @@ public class AppController {
     return true;
   }
 
+  /**
+   * Return the currently selected person in the focused tree component.
+   */
   private Optional<Person> getSelectedPerson() {
     if (this.focusedComponent != null) {
       return this.focusedComponent.getSelectedPerson();
@@ -381,6 +460,9 @@ public class AppController {
     return Optional.empty();
   }
 
+  /**
+   * Set the selected person as the root of the current tree.
+   */
   private void onSetAsRootAction() {
     this.getSelectedPerson().ifPresent(root -> {
       this.familyTree.setRoot(root);
@@ -390,25 +472,42 @@ public class AppController {
     });
   }
 
+  /**
+   * Open person edit dialog to create a new person.
+   */
   private void onAddPersonAction() {
     this.openEditPersonDialog(null, null, EditPersonDialog.TAB_PROFILE);
   }
 
+  /**
+   * Open person edit dialog to edit the selected person.
+   */
   private void onEditPersonAction() {
     this.getSelectedPerson().ifPresent(
         person -> this.openEditPersonDialog(person, null, EditPersonDialog.TAB_PROFILE));
   }
 
+  /**
+   * Open person edit dialog to edit the parents of the selected person.
+   */
   private void onEditParentsAction() {
     this.getSelectedPerson().ifPresent(
         person -> this.openEditPersonDialog(person, null, EditPersonDialog.TAB_PARENTS));
   }
 
+  /**
+   * Open person edit dialog to edit the life events of the selected person.
+   */
   private void onEditLifeEventsAction() {
     this.getSelectedPerson().ifPresent(
         person -> this.openEditPersonDialog(person, null, EditPersonDialog.TAB_EVENTS));
   }
 
+  /**
+   * Delete the currently selected person.
+   * <p>
+   * Person is removed from any life event it is an actor or witness of.
+   */
   private void onRemovePersonAction() {
     this.getSelectedPerson().ifPresent(person -> {
       if (this.familyTree.isRoot(person)) {
@@ -450,10 +549,24 @@ public class AppController {
     });
   }
 
+  /**
+   * Open person edit dialog to create a parent of the given child.
+   *
+   * @param childInfo Information about the child of the parent to create.
+   */
   private void onNewParentClick(@NotNull ChildInfo childInfo) {
     this.openEditPersonDialog(null, childInfo, EditPersonDialog.TAB_PROFILE);
   }
 
+  /**
+   * Update display when a person is clicked.
+   *
+   * @param person     Person that was clicked. May be null if none was.
+   * @param clickCount Number of clicks.
+   * @param button     Clicked mouse button.
+   * @param inTree     True if the click occured inside the side tree view;
+   *                   false if it occured inside the pane view.
+   */
   private void onPersonClick(Person person, int clickCount, MouseButton button, boolean inTree) {
     this.focusedComponent = inTree ? this.familyTreeView : this.familyTreePane;
     if (App.config().shouldSyncTreeWithMainPane()) {
@@ -469,15 +582,22 @@ public class AppController {
     this.updateUI();
   }
 
+  /**
+   * Open person edit dialog.
+   *
+   * @param person    Person to edit. Null to create a new person.
+   * @param childInfo Optional information about the person’s currently visible child.
+   * @param tabIndex  Index of the tab to show.
+   */
   private void openEditPersonDialog(Person person, ChildInfo childInfo, int tabIndex) {
     this.editPersonDialog.setPerson(person, childInfo, this.familyTree);
     this.editPersonDialog.selectTab(tabIndex);
-    Optional<Person> person_ = this.editPersonDialog.showAndWait();
-    if (person_.isPresent()) {
+    Optional<Person> p = this.editPersonDialog.showAndWait();
+    if (p.isPresent()) {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
       if (person == null && childInfo == null) {
-        this.familyTreePane.selectPerson(person_.get(), false);
+        this.familyTreePane.selectPerson(p.get(), false);
       }
       this.defaultEmptyTree = false;
       this.unsavedChanges = true;
@@ -485,6 +605,9 @@ public class AppController {
     }
   }
 
+  /**
+   * Update the UI, i.e. menu items, toolbar buttons and stage’s title.
+   */
   private void updateUI() {
     this.stage.setTitle("%s – %s%s".formatted(App.NAME, this.familyTree.name(), this.unsavedChanges ? "*" : ""));
 
@@ -515,15 +638,24 @@ public class AppController {
     this.setPictureToolbarButton.setDisable(!selection);
   }
 
+  /**
+   * Open settings dialog.
+   */
   private void onSettingsAction() {
     this.settingsDialog.resetLocalConfig();
     this.settingsDialog.showAndWait();
   }
 
+  /**
+   * Open about dialog.
+   */
   private void onAboutAction() {
     this.aboutDialog.showAndWait();
   }
 
+  /**
+   * Open alert dialog in there are any unsaved changes before closing the app.
+   */
   private void onQuitAction() {
     if (!this.defaultEmptyTree && this.unsavedChanges) {
       boolean close = Alerts.confirmation(

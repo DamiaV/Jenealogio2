@@ -58,12 +58,24 @@ public enum Icon {
     this.baseName = Objects.requireNonNull(baseName);
   }
 
+  /**
+   * The base name of this icon.
+   */
   public String baseName() {
     return this.baseName;
   }
 
+  /**
+   * Enumeration of possible icon sizes.
+   */
   public enum Size {
+    /**
+     * 16x16 pixels size.
+     */
     SMALL(16),
+    /**
+     * 32x32 pixels size.
+     */
     BIG(32),
     ;
 
@@ -73,6 +85,9 @@ public enum Icon {
       this.pixels = pixels;
     }
 
+    /**
+     * The width/height in pixels.
+     */
     public int pixels() {
       return this.pixels;
     }

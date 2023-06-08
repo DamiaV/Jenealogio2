@@ -30,10 +30,22 @@ import java.text.Collator;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Dialog to edit a {@link Person} object and its {@link LifeEvent}s.
+ */
 @SuppressWarnings("unused")
 public class EditPersonDialog extends DialogBase<Person> {
+  /**
+   * Index of the profile tab.
+   */
   public static final int TAB_PROFILE = 0;
+  /**
+   * Index of the life events tab.
+   */
   public static final int TAB_EVENTS = 1;
+  /**
+   * Index of the parents and relatives tab.
+   */
   public static final int TAB_PARENTS = 2;
 
   @FXML
@@ -85,18 +97,39 @@ public class EditPersonDialog extends DialogBase<Person> {
 
   private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
 
+  /**
+   * The person object being edited.
+   */
   private Person person;
+  /**
+   * If not null, indicates the person the one being edited should be a parent of.
+   */
   private ChildInfo childInfo;
+  /**
+   * The family tree the person belongs to..
+   */
   private FamilyTree familyTree;
+  /**
+   * Whether the person is being created.
+   */
   private boolean creating;
   /**
    * Stores the life status to be restored if the user selects an event type
    * that indicates death but reverts it later on.
    */
   private LifeStatus lifeStatusCache;
-  private boolean internalTypeChange;
+  /**
+   * Indicates whether an update event from the {@link #lifeStatusCombo} is internal or from the user.
+   */
+  private boolean internalLifeStatusChange;
+  /**
+   * Set of life events to delete.
+   */
   private final Set<LifeEventView> eventsToDelete = new HashSet<>();
 
+  /**
+   * Create a person edit dialog.
+   */
   public EditPersonDialog() {
     super("edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
     Config config = App.config();
@@ -118,7 +151,7 @@ public class EditPersonDialog extends DialogBase<Person> {
         .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
         .toList());
     this.lifeStatusCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-      if (!this.internalTypeChange) {
+      if (!this.internalLifeStatusChange) {
         this.lifeStatusCache = newValue.data();
       }
     });
@@ -170,9 +203,13 @@ public class EditPersonDialog extends DialogBase<Person> {
     });
   }
 
+  /**
+   * Update the gender entries in the genders combobox.
+   */
   public void updateGendersList() {
     Language language = App.config().language();
     Collator collator = Collator.getInstance(language.locale());
+    this.genderCombo.getItems().clear();
     this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("gender.unknown")));
     this.genderCombo.getItems().addAll(Registries.GENDERS.entries().stream()
         .map(gender -> {
@@ -186,6 +223,13 @@ public class EditPersonDialog extends DialogBase<Person> {
         .toList());
   }
 
+  /**
+   * Set the person to edit.
+   *
+   * @param person     The person to edit. A null value indicates to create a new person.
+   * @param childInfo  If not null, indicates the person the one being created should be a parent of.
+   * @param familyTree The family tree the person belongs or should belong to.
+   */
   public void setPerson(Person person, ChildInfo childInfo, @NotNull FamilyTree familyTree) {
     this.childInfo = childInfo;
     this.familyTree = Objects.requireNonNull(familyTree);
@@ -200,6 +244,8 @@ public class EditPersonDialog extends DialogBase<Person> {
       this.person = new Person();
       this.setTitle(language.translate("dialog.edit_person.title.create"));
     }
+
+    this.updateGendersList();
 
     // Profile
     this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.person.lifeStatus()));
@@ -263,10 +309,21 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.updateButtons();
   }
 
+  /**
+   * Select the tab at the given index.
+   *
+   * @param index Tab’s index.
+   */
   public void selectTab(int index) {
     this.tabPane.getSelectionModel().select(index);
   }
 
+  /**
+   * Add a {@link LifeEventView} form for the given {@link LifeEvent} object.
+   *
+   * @param lifeEvent The life event to create a form for.
+   * @param expanded  Whether to expand the created form.
+   */
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
     LifeEventView lifeEventView = new LifeEventView(lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
     lifeEventView.getDeletionListeners().add(this::onEventDelete);
@@ -274,19 +331,25 @@ public class EditPersonDialog extends DialogBase<Person> {
     lifeEventView.getTypeListeners().add(t -> {
       boolean anyDeath = this.lifeEventsList.getItems().stream()
           .anyMatch(i -> i.selectedLifeEventType().indicatesDeath());
-      this.internalTypeChange = true;
+      this.internalLifeStatusChange = true;
       if (anyDeath) {
         this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
       } else {
         this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.lifeStatusCache));
       }
-      this.internalTypeChange = false;
+      this.internalLifeStatusChange = false;
       this.lifeStatusCombo.setDisable(anyDeath);
     });
     this.lifeEventsList.getItems().add(lifeEventView);
     this.updateButtons();
   }
 
+  /**
+   * Called when a {@link LifeEventView} has been set for deletion.
+   * Adds it to the {@link #eventsToDelete} set.
+   *
+   * @param lifeEventView Component to delete.
+   */
   private void onEventDelete(@NotNull LifeEventView lifeEventView) {
     String prefix = "alert.delete_life_event.";
     boolean delete = Alerts.confirmation(prefix + "header", prefix + "content", prefix + "title");
@@ -297,6 +360,9 @@ public class EditPersonDialog extends DialogBase<Person> {
     }
   }
 
+  /**
+   * Updates this dialog’s buttons.
+   */
   private void updateButtons() {
     Integer disambiguationID = this.getDisambiguationID();
     boolean invalid = disambiguationID != null && disambiguationID == 0;
@@ -339,6 +405,11 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(invalid);
   }
 
+  /**
+   * Update the given person object with data from this dialog’s fields.
+   *
+   * @param person The person to update.
+   */
   private void updatePerson(@NotNull Person person) {
     // Profile
     person.setGender(this.genderCombo.getSelectionModel().getSelectedItem().data());
@@ -379,15 +450,30 @@ public class EditPersonDialog extends DialogBase<Person> {
     }
   }
 
+  /**
+   * Get the disambiguation ID from the corresponding text field.
+   */
   private @Nullable Integer getDisambiguationID() {
     String text = this.disambiguationIDField.getText();
     return text.isEmpty() ? null : Integer.parseInt(text);
   }
 
+  /**
+   * Strip the text of the given text input.
+   *
+   * @param textInput Text input to get the text from.
+   * @return The stripped text.
+   */
   private @Nullable String getText(final @NotNull TextInputControl textInput) {
     return StringUtils.stripNullable(textInput.getText()).orElse(null);
   }
 
+  /**
+   * Split the text of the given text input according to whitespace.
+   *
+   * @param textInput Text input to get the text from.
+   * @return A list of the split text’s tokens.
+   */
   private List<String> splitText(final @NotNull TextInputControl textInput) {
     return Arrays.stream(textInput.getText().split("\\s+"))
         .map(String::strip)
@@ -396,7 +482,7 @@ public class EditPersonDialog extends DialogBase<Person> {
   }
 
   /**
-   * Custom selection model to prevent item selection.
+   * Custom selection model that prevents item selection.
    */
   private static class NoSelectionModel<T> extends MultipleSelectionModel<T> {
     @Override
@@ -461,24 +547,6 @@ public class EditPersonDialog extends DialogBase<Person> {
 
     @Override
     public void selectNext() {
-    }
-  }
-
-  public static final class Result {
-    private final Person person;
-    private final boolean created;
-
-    private Result(@NotNull Person person, boolean created) {
-      this.person = person;
-      this.created = created;
-    }
-
-    public Person person() {
-      return this.person;
-    }
-
-    public boolean isPersonCreated() {
-      return this.created;
     }
   }
 }

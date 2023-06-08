@@ -10,10 +10,22 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
+/**
+ * Base class for this app’s dialogs.
+ *
+ * @param <T> Type of returned values.
+ */
 public abstract class DialogBase<T> extends Dialog<T> {
   private final String name;
 
-  public DialogBase(@NotNull String name, boolean resizable, @NotNull ButtonType... buttonTypes) {
+  /**
+   * Create a dialog.
+   *
+   * @param name        Dialog’s name. Used for the title’s translation key.
+   * @param resizable   Whether the dialog should be resizable.
+   * @param buttonTypes The dialog’s button types.
+   */
+  public DialogBase(@NotNull String name, boolean resizable, ButtonType @NotNull ... buttonTypes) {
     this.name = name;
     FXMLLoader loader = App.getFxmlLoader(name.replace('_', '-') + "-dialog");
     loader.setController(this);
@@ -30,11 +42,17 @@ public abstract class DialogBase<T> extends Dialog<T> {
     this.getDialogPane().getButtonTypes().addAll(buttonTypes);
   }
 
+  /**
+   * This dialog’s name.
+   */
   public String name() {
     return this.name;
   }
 
-  public Stage stage() {
+  /**
+   * This dialog’s stage.
+   */
+  protected Stage stage() {
     return (Stage) this.getDialogPane().getScene().getWindow();
   }
 }

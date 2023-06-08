@@ -5,8 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
- * A registry entry has an internal unique ID, a name and a boolean indicating
- * whether it is built-in or user-defined.
+ * A registry entry has an internal unique key in a {@link Registry}.
  */
 public abstract class RegistryEntry {
   private final RegistryEntryKey key;

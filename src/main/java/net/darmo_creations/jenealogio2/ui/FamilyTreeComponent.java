@@ -122,6 +122,9 @@ public abstract class FamilyTreeComponent extends AnchorPane {
     void onClick(Person person, int clickCount, MouseButton button);
   }
 
+  /**
+   * A function that takes in some {@link ChildInfo} and is called when a parent should be created for a given person.
+   */
   public interface NewParentClickListener {
     void onClick(@NotNull ChildInfo childInfo);
   }

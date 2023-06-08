@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
  * A calendar date is either a date with a precision, a date alternative or a date range.
  * <p>
  * Instances of this interface are comparable.
+ * Their natural ordering is based on the value returned by {@link #date()}.
  */
 public sealed interface CalendarDate extends Comparable<CalendarDate>
     permits DateAlternative, DateRange, DateWithPrecision {

@@ -3,7 +3,13 @@ package net.darmo_creations.jenealogio2.model;
 import net.darmo_creations.jenealogio2.model.LifeEventType.RegistryArgs;
 import net.darmo_creations.jenealogio2.model.Registry.BuiltinEntry;
 
+/**
+ * This class declares all registries used throughout the app.
+ */
 public final class Registries {
+  /**
+   * Registry declaring all available person genders.
+   */
   public static final Registry<Gender, String> GENDERS =
       new Registry<>(
           "genders",
@@ -16,6 +22,9 @@ public final class Registries {
           new BuiltinEntry<>("non_binary", "#fff430")
       );
 
+  /**
+   * Registry declaring all available life event types.
+   */
   public static final Registry<LifeEventType, RegistryArgs> LIFE_EVENT_TYPES =
       new Registry<>(
           "life_event_types",

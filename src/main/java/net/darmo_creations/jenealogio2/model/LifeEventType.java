@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * This class represents a type of {@link LifeEvent}.
+ */
 public final class LifeEventType extends RegistryEntry {
   private final Group group;
   private final boolean indicatesDeath;
@@ -11,7 +14,24 @@ public final class LifeEventType extends RegistryEntry {
   private final int maxActors;
   private final boolean unique;
 
-  LifeEventType(@NotNull RegistryEntryKey key, @NotNull Group group, boolean indicatesDeath, int minActors, int maxActors, boolean unique) {
+  /**
+   * Create a life event type.
+   *
+   * @param key            Type’s registry key.
+   * @param group          Type’s group.
+   * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
+   * @param minActors      Minimum allowed number of actor allowed to be attached to the event.
+   * @param maxActors      Maximum allowed number of actor allowed to be attached to the event.
+   * @param unique         Whether events with this type can appear multiple times in an actor’s timeline.
+   */
+  LifeEventType(
+      @NotNull RegistryEntryKey key,
+      @NotNull Group group,
+      boolean indicatesDeath,
+      int minActors,
+      int maxActors,
+      boolean unique
+  ) {
     super(key);
     if (minActors <= 0) {
       throw new IllegalArgumentException("minActors must be > 0");
@@ -89,6 +109,9 @@ public final class LifeEventType extends RegistryEntry {
     return "LifeEventType{key='%s', group=%s}".formatted(this.key(), this.group);
   }
 
+  /**
+   * Enumeration of available life event type groups.
+   */
   public enum Group {
     LIFESPAN,
     ADMIN,
@@ -102,12 +125,34 @@ public final class LifeEventType extends RegistryEntry {
     OTHER
   }
 
+  /**
+   * Wrapper class used to declare new {@link LifeEventType} entries.
+   *
+   * @param group          Type’s group.
+   * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
+   * @param minActors      Minimum allowed number of actor allowed to be attached to the event.
+   * @param maxActors      Maximum allowed number of actor allowed to be attached to the event.
+   * @param isUnique       Whether events with this type can appear multiple times in an actor’s timeline.
+   */
   public record RegistryArgs(
       @NotNull Group group, boolean indicatesDeath, int minActors, int maxActors, boolean isUnique) {
+    /**
+     * Create a new registry wrapper with an minimum and maximum number of actors of 1 and no unicity constraint.
+     *
+     * @param group          Type’s group.
+     * @param indicatesDeath Whether events with this type can appear multiple times in an actor’s timeline.
+     */
     public RegistryArgs(@NotNull Group group, boolean indicatesDeath) {
       this(group, indicatesDeath, 1, 1, false);
     }
 
+    /**
+     * Create a new registry wrapper with an minimum and maximum number of actors of 1.
+     *
+     * @param group          Type’s group.
+     * @param indicatesDeath Whether events with the created type can appear multiple times in an actor’s timeline.
+     * @param isUnique       Whether events with the created type can appear multiple times in an actor’s timeline.
+     */
     public RegistryArgs(@NotNull Group group, boolean indicatesDeath, boolean isUnique) {
       this(group, indicatesDeath, 1, 1, isUnique);
     }

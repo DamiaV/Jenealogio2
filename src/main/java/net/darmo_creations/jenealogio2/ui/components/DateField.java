@@ -17,6 +17,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * A JavaFX component containing two date fields.
+ * It returns a {@link CalendarDate} from the fields’ values.
+ */
+// FIXME avoid the need to press enter after editing fields without date picker
 public class DateField extends HBox {
   private final DatePicker datePicker = new DatePicker();
   private final Label label = new Label();
@@ -26,6 +31,9 @@ public class DateField extends HBox {
 
   private final List<UpdateListener> updateListeners = new LinkedList<>();
 
+  /**
+   * Create a field with the type {@link DateType#EXACT}.
+   */
   public DateField() {
     super(4);
     this.getChildren().addAll(this.datePicker, this.label, this.secondDatePicker);
@@ -35,16 +43,22 @@ public class DateField extends HBox {
     this.secondDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> this.notifyListeners());
   }
 
+  /**
+   * Return the list of all {@link UpdateListener}s.
+   */
   public List<UpdateListener> getUpdateListeners() {
     return this.updateListeners;
   }
 
+  /**
+   * Notify all {@link UpdateListener}s of an update.
+   */
   private void notifyListeners() {
     this.updateListeners.forEach(UpdateListener::onUpdate);
   }
 
   /**
-   * Check whether there is any invalid data in this form.
+   * Check whether there is any invalid data in this component.
    *
    * @return True if there is none, false otherwise.
    */
@@ -66,6 +80,9 @@ public class DateField extends HBox {
     return !invalid;
   }
 
+  /**
+   * Return a {@link CalendarDate} object from the date fields.
+   */
   public Optional<CalendarDate> getDate() {
     LocalDate date = this.datePicker.getValue();
     LocalDate secondDate = this.secondDatePicker.getValue();
@@ -95,6 +112,12 @@ public class DateField extends HBox {
     });
   }
 
+  /**
+   * Set the value of date fields from the given {@link CalendarDate}.
+   *
+   * @param date Date object to extract data from.
+   * @throws IllegalArgumentException If the date’s concrete type is not compatible with the currently set date type.
+   */
   public void setDate(CalendarDate date) {
     if (date == null) {
       this.datePicker.setValue(null);
@@ -115,6 +138,11 @@ public class DateField extends HBox {
     }
   }
 
+  /**
+   * Set the date type.
+   *
+   * @param dateType The date type.
+   */
   public void setDateType(@NotNull DateType dateType) {
     this.dateType = Objects.requireNonNull(dateType);
     Language language = App.config().language();
@@ -132,13 +160,37 @@ public class DateField extends HBox {
     }
   }
 
+  /**
+   * The type of date this field represents.
+   */
   public enum DateType {
+    /**
+     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#EXACT}.
+     */
     EXACT(false),
+    /**
+     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#ABOUT}.
+     */
     ABOUT(false),
+    /**
+     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#POSSIBLY}.
+     */
     POSSIBLY(false),
+    /**
+     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#BEFORE}.
+     */
     BEFORE(false),
+    /**
+     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#AFTER}.
+     */
     AFTER(false),
+    /**
+     * Setup fields for {@link DateAlternative} class.
+     */
     OR(true),
+    /**
+     * Setup fields for {@link DateRange} class.
+     */
     BETWEEN(true),
     ;
 
@@ -150,14 +202,26 @@ public class DateField extends HBox {
       this.key = "date_field.precision." + this.name().toLowerCase();
     }
 
+    /**
+     * The translation key.
+     */
     public String key() {
       return this.key;
     }
 
+    /**
+     * Indicates whether this date type requires two date fields.
+     */
     public boolean requiresTwoFields() {
       return this.requiresTwoFields;
     }
 
+    /**
+     * Return the date type corresponding to the given concrete date class.
+     *
+     * @param date A date object.
+     * @return The corresponding date type.
+     */
     public static DateType fromDate(@NotNull CalendarDate date) {
       Objects.requireNonNull(date);
       if (date instanceof DateWithPrecision d) {
@@ -179,6 +243,9 @@ public class DateField extends HBox {
     }
   }
 
+  /**
+   * Interface for listeners to date field updates.
+   */
   @FunctionalInterface
   public interface UpdateListener {
     void onUpdate();

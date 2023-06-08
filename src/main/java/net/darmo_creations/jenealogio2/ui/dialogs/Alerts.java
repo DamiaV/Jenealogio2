@@ -13,28 +13,73 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This class provides methods to open alert dialogs.
+ */
 public final class Alerts {
+  /**
+   * Open an alert dialog to show some information.
+   *
+   * @param headerKey   Header text key.
+   * @param contentKey  Content text key.
+   * @param titleKey    Title key.
+   * @param contentArgs Format arguments to apply to the header, content and title.
+   */
   public static void info(
       @NotNull String headerKey, String contentKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
     alert(Alert.AlertType.INFORMATION, headerKey, contentKey, titleKey, contentArgs);
   }
 
+  /**
+   * Open an alert dialog to show a warning message.
+   *
+   * @param headerKey   Header text key.
+   * @param contentKey  Content text key.
+   * @param titleKey    Title key.
+   * @param contentArgs Format arguments to apply to the header, content and title.
+   */
   public static void warning(
       @NotNull String headerKey, String contentKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
     alert(Alert.AlertType.WARNING, headerKey, contentKey, titleKey, contentArgs);
   }
 
+  /**
+   * Open an alert dialog to show an error message.
+   *
+   * @param headerKey   Header text key.
+   * @param contentKey  Content text key.
+   * @param titleKey    Title key.
+   * @param contentArgs Format arguments to apply to the header, content and title.
+   */
   public static void error(
       @NotNull String headerKey, String contentKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
     alert(Alert.AlertType.ERROR, headerKey, contentKey, titleKey, contentArgs);
   }
 
+  /**
+   * Open an alert dialog to prompt the user for confirmation.
+   *
+   * @param headerKey   Header text key.
+   * @param contentKey  Content text key.
+   * @param titleKey    Title key.
+   * @param contentArgs Format arguments to apply to the header, content and title.
+   * @return True if the user clicked OK, false if they clicked CANCEL or dismissed the dialog.
+   */
   public static boolean confirmation(
       @NotNull String headerKey, String contentKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
     Optional<ButtonType> result = alert(Alert.AlertType.CONFIRMATION, headerKey, contentKey, titleKey, contentArgs);
     return result.isPresent() && !result.get().getButtonData().isCancelButton();
   }
 
+  /**
+   * Open an alert dialog to ask the user to choose an option from a combobox.
+   *
+   * @param headerKey   Header text key.
+   * @param titleKey    Title key.
+   * @param choices     The choices for the combobox.
+   * @param contentArgs Format arguments to apply to the header and title.
+   * @return The selected item.
+   */
   public static <T> Optional<T> chooser(
       @NotNull String headerKey, String titleKey, final Collection<T> choices, final FormatArg @NotNull ... contentArgs) {
     if (choices.isEmpty()) {
@@ -56,6 +101,16 @@ public final class Alerts {
     return Optional.empty();
   }
 
+  /**
+   * Open an alert dialog to prompt the use to input some text.
+   *
+   * @param headerKey   Header text key.
+   * @param labelKey    Text field label text key.
+   * @param titleKey    Title key.
+   * @param defaultText Text to put into the text field.
+   * @param contentArgs Format arguments to apply to the header, label and title.
+   * @return The selected item.
+   */
   public static Optional<String> textInput(
       @NotNull String headerKey,
       @NotNull String labelKey,
@@ -94,6 +149,15 @@ public final class Alerts {
     return alert.showAndWait();
   }
 
+  /**
+   * Create a basic alert dialog.
+   *
+   * @param type        Alert type. {@link Alert.AlertType#NONE} is not allowed.
+   * @param headerKey   Header text key.
+   * @param titleKey    Title key.
+   * @param contentArgs Format arguments to apply to the header and title.
+   * @return The alert dialog.
+   */
   private static Alert getAlert(
       @NotNull Alert.AlertType type, @NotNull String headerKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
     if (type == Alert.AlertType.NONE) {

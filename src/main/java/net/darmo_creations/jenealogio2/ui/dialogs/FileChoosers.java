@@ -10,15 +10,38 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This class provides methods to open file saver/chooser dialogs.
+ */
 public final class FileChoosers {
+  /**
+   * Open a dialog to save a .jtree file.
+   *
+   * @param stage The parent stage object.
+   * @return The selected file.
+   */
   public static Optional<File> showTreeFileSaver(final @NotNull Stage stage) {
     return getFile(stage, "dialog.tree_file_saver.title", true);
   }
 
+  /**
+   * Open a dialog to choose a .jtree file.
+   *
+   * @param stage The parent stage object.
+   * @return The selected file.
+   */
   public static Optional<File> showTreeFileChooser(final @NotNull Stage stage) {
     return getFile(stage, "dialog.tree_file_chooser.title", false);
   }
 
+  /**
+   * Open a .jtree file chooser/saver.
+   *
+   * @param stage    The parent stage object.
+   * @param titleKey Title translation key.
+   * @param saver    True to open a file saver, false for file chooser.
+   * @return The selected file.
+   */
   private static Optional<File> getFile(@NotNull Stage stage, @NotNull String titleKey, boolean saver) {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle(App.config().language().translate(titleKey));

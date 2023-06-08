@@ -12,6 +12,12 @@ public final class Gender extends RegistryEntry {
 
   private final String color;
 
+  /**
+   * Create a new gender object.
+   *
+   * @param key   Gender’s registry key.
+   * @param color Color to use in the GUI. Must be hex CSS color code.
+   */
   Gender(@NotNull RegistryEntryKey key, @NotNull String color) {
     super(key);
     this.color = Objects.requireNonNull(color);

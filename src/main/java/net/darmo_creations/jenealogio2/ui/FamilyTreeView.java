@@ -2,7 +2,6 @@ package net.darmo_creations.jenealogio2.ui;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 import javafx.scene.control.*;
@@ -58,7 +57,8 @@ public class FamilyTreeView extends FamilyTreeComponent {
     vBox.getChildren().add(hBox);
 
     this.searchField.setPromptText(language.translate("treeview.search"));
-    this.searchField.textProperty().addListener(this::onSearchFilterChange);
+    this.searchField.textProperty().addListener(
+        (observable, oldValue, newValue) -> this.onSearchFilterChange(newValue));
     HBox.setHgrow(this.searchField, Priority.ALWAYS);
     hBox.getChildren().add(this.searchField);
 
@@ -89,7 +89,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
     VBox.setVgrow(this.treeView, Priority.ALWAYS);
     vBox.getChildren().add(this.treeView);
-    this.treeView.setCellFactory(tree -> new SearchHighlightingTreeCell(this.searchMatches));
+    this.treeView.setCellFactory(tree -> new SearchHighlightingTreeCell());
     this.treeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     this.treeView.setShowRoot(false);
     TreeItem<Object> root = new TreeItem<>();
@@ -149,9 +149,14 @@ public class FamilyTreeView extends FamilyTreeComponent {
     }
   }
 
-  private void onSearchFilterChange(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+  /**
+   * Called whenever the search filter changes.
+   *
+   * @param text The filter text.
+   */
+  private void onSearchFilterChange(String text) {
     this.searchMatches.clear();
-    Optional<String> filter = StringUtils.stripNullable(newValue);
+    Optional<String> filter = StringUtils.stripNullable(text);
     this.clearButton.setDisable(filter.isEmpty());
     if (filter.isEmpty()) {
       return;
@@ -161,26 +166,37 @@ public class FamilyTreeView extends FamilyTreeComponent {
     this.searchMatches.addAll(matches);
   }
 
+  /**
+   * Search for tree items matching the given search query.
+   *
+   * @param searchNode   Tree item to search children of.
+   * @param matches      Set to populate with matches.
+   * @param searchFilter Search filter.
+   */
   private void searchMatchingItems(
-      @NotNull TreeItem<Object> searchNode, @NotNull Set<TreeItem<Object>> matches, @NotNull String searchValue) {
+      @NotNull TreeItem<Object> searchNode, @NotNull Set<TreeItem<Object>> matches, @NotNull String searchFilter) {
     for (TreeItem<Object> item : searchNode.getChildren()) {
-      if (item.getValue().toString().toLowerCase().contains(searchValue.toLowerCase())) {
+      if (item.getValue().toString().toLowerCase().contains(searchFilter.toLowerCase())) {
         matches.add(item);
       }
     }
   }
 
-  // From https://stackoverflow.com/a/34914538/3779986
-  private static class SearchHighlightingTreeCell extends TreeCell<Object> {
+  /**
+   * Tree cell class that allows highlighting of tree items matching a query filter.
+   * <p>
+   * From https://stackoverflow.com/a/34914538/3779986
+   */
+  private class SearchHighlightingTreeCell extends TreeCell<Object> {
     // Cannot be local or else it would be garbage-collected
     @SuppressWarnings("FieldCanBeLocal")
     private final BooleanBinding matchesSearch;
 
-    public SearchHighlightingTreeCell(ObservableSet<TreeItem<Object>> searchMatches) {
+    public SearchHighlightingTreeCell() {
       this.matchesSearch = Bindings.createBooleanBinding(
-          () -> searchMatches.contains(this.getTreeItem()),
+          () -> FamilyTreeView.this.searchMatches.contains(this.getTreeItem()),
           this.treeItemProperty(),
-          searchMatches
+          FamilyTreeView.this.searchMatches
       );
       this.matchesSearch.addListener((obs, didMatchSearch, nowMatchesSearch) ->
           this.pseudoClassStateChanged(PseudoClasses.SEARCH_MATCH, nowMatchesSearch));

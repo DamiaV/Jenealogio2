@@ -1,11 +1,11 @@
 package net.darmo_creations.jenealogio2.themes;
 
 import com.google.gson.Gson;
-import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import net.darmo_creations.jenealogio2.App;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +36,11 @@ public final class Theme {
 
   private static final Map<String, Theme> THEMES = new HashMap<>();
 
+  /**
+   * Load all available themes.
+   *
+   * @throws IOException If no themes were found.
+   */
   public static void loadThemes() throws IOException {
     THEMES.clear();
     for (String themeID : THEME_IDS) {
@@ -55,10 +60,19 @@ public final class Theme {
     }
   }
 
+  /**
+   * Return the theme with the given ID.
+   *
+   * @param id ID of the theme to fetch.
+   * @return The theme.
+   */
   public static Optional<Theme> getTheme(@NotNull String id) {
     return Optional.ofNullable(THEMES.get(id));
   }
 
+  /**
+   * Return a list of all available themes.
+   */
   public static List<Theme> themes() {
     return THEMES.values().stream().sorted(Comparator.comparing(Theme::name)).toList();
   }
@@ -66,20 +80,39 @@ public final class Theme {
   private final String id;
   private final String name;
 
+  /**
+   * Create a theme.
+   *
+   * @param id   Theme’s ID.
+   * @param name Theme’s name.
+   */
   private Theme(@NotNull String id, @NotNull String name) {
     this.id = Objects.requireNonNull(id);
     this.name = Objects.requireNonNull(name);
   }
 
+  /**
+   * Theme’s ID.
+   */
   public String id() {
     return this.id;
   }
 
+  /**
+   * Theme’s name.
+   */
   public String name() {
     return this.name;
   }
 
-  public Node getIcon(@NotNull Icon icon, @NotNull Icon.Size size) {
+  /**
+   * Return an {@link ImageView} for the given icon.
+   *
+   * @param icon The icon to load.
+   * @param size Icon’s size.
+   * @return An {@link ImageView} object or null if the icon could not be loaded.
+   */
+  public @Nullable ImageView getIcon(@NotNull Icon icon, @NotNull Icon.Size size) {
     InputStream stream = this.getClass().getResourceAsStream(
         "%s%s_%d.png".formatted(ICONS_PATH, icon.baseName(), size.pixels()));
     if (stream == null) {
@@ -88,6 +121,9 @@ public final class Theme {
     return new ImageView(new Image(stream));
   }
 
+  /**
+   * Return the URLs of this theme’s stylesheets.
+   */
   public List<URL> getStyleSheets() {
     List<URL> urls = new LinkedList<>();
     this.getStyleSheet("common").ifPresent(urls::add);
@@ -95,6 +131,12 @@ public final class Theme {
     return urls;
   }
 
+  /**
+   * Get the URL of a stylesheet.
+   *
+   * @param name Stylesheet’s name.
+   * @return The URL.
+   */
   private Optional<URL> getStyleSheet(@NotNull String name) {
     String path = "%s%s.css".formatted(THEMES_PATH, name);
     return Optional.ofNullable(this.getClass().getResource(path));

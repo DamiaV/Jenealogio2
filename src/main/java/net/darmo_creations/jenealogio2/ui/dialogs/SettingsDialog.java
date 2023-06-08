@@ -10,6 +10,9 @@ import net.darmo_creations.jenealogio2.themes.Theme;
 
 import java.io.IOException;
 
+/**
+ * Dialog to update the app’s settings. It is not resizable.
+ */
 public class SettingsDialog extends DialogBase<ButtonType> {
   @FXML
   @SuppressWarnings("unused")
@@ -21,6 +24,9 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   private Config initialConfig;
   private Config localConfig;
 
+  /**
+   * Create a settings dialog.
+   */
   public SettingsDialog() {
     super("settings", false, ButtonTypes.OK, ButtonTypes.CANCEL);
     //noinspection DataFlowIssue
@@ -46,6 +52,9 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     });
   }
 
+  /**
+   * Reset the local {@link Config} object of this dialog.
+   */
   public void resetLocalConfig() {
     this.localConfig = App.config().clone();
     this.initialConfig = this.localConfig.clone();
@@ -56,11 +65,19 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.updateState();
   }
 
+  /**
+   * Update the state of this dialog’s buttons.
+   */
   private void updateState() {
     boolean configChanged = this.configChanged().changed();
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(!configChanged);
   }
 
+  /**
+   * Indicate whether the local config object has changed.
+   *
+   * @return The type of change.
+   */
   private ChangeType configChanged() {
     if (!this.localConfig.language().equals(this.initialConfig.language())
         || !this.localConfig.theme().equals(this.initialConfig.theme())) {
@@ -83,9 +100,21 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.updateState();
   }
 
+  /**
+   * Enumeration of the differente types of config changes.
+   */
   private enum ChangeType {
+    /**
+     * No changes.
+     */
     NONE(false, false),
+    /**
+     * Some changes were made. No need to restart the app to apply them.
+     */
     NO_RESTART_NEEDED(true, false),
+    /**
+     * Some changes were made. Some require to restart the app to apply them.
+     */
     NEEDS_RESTART(true, true),
     ;
 
@@ -97,10 +126,16 @@ public class SettingsDialog extends DialogBase<ButtonType> {
       this.needsRestart = needsRestart;
     }
 
+    /**
+     * Indicate whether this change type indicates changes were made.
+     */
     public boolean changed() {
       return this.changed;
     }
 
+    /**
+     * Indicate whether this change type requires the app to restart to apply fully.
+     */
     public boolean needsRestart() {
       return this.needsRestart;
     }
