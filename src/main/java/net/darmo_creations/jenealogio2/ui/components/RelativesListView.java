@@ -24,10 +24,11 @@ import java.util.Optional;
  * JavaFX component that presents a form to edit the relatives of a person.
  */
 public class RelativesListView extends VBox {
+  private final Button addWitnessButton;
   private final Button removeRelativeButton;
   private final ListView<Person> personsListView = new ListView<>();
 
-  private Collection<Person> persons;
+  private Collection<Person> persons = List.of();
 
   /**
    * Create a new component.
@@ -39,16 +40,16 @@ public class RelativesListView extends VBox {
 
     HBox buttonsHBox = new HBox(4);
 
-    Button addWitnessButton = new Button(language.translate("relatives_list.add"),
+    this.addWitnessButton = new Button(language.translate("relatives_list.add"),
         theme.getIcon(Icon.ADD_PARENT, Icon.Size.SMALL));
-    addWitnessButton.setOnAction(event -> this.onAdd());
+    this.addWitnessButton.setOnAction(event -> this.onAdd());
     this.removeRelativeButton = new Button(language.translate("relatives_list.remove"),
         theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
     this.removeRelativeButton.setOnAction(event -> this.onRemove());
     this.removeRelativeButton.setDisable(true);
     Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
-    buttonsHBox.getChildren().addAll(spacer, addWitnessButton, this.removeRelativeButton);
+    buttonsHBox.getChildren().addAll(spacer, this.addWitnessButton, this.removeRelativeButton);
 
     VBox.setVgrow(this.personsListView, Priority.ALWAYS);
     this.personsListView.setPrefHeight(50);
@@ -61,6 +62,7 @@ public class RelativesListView extends VBox {
     });
 
     this.getChildren().addAll(buttonsHBox, this.personsListView);
+    this.updateButtons();
   }
 
   /**
@@ -75,13 +77,12 @@ public class RelativesListView extends VBox {
    * Opens an alert dialog to choose a person.
    */
   private void onAdd() {
-    List<Person> potentialRelatives = this.persons.stream()
-        .filter(p -> !this.personsListView.getItems().contains(p))
-        .toList();
-    // FIXME empty choices -> disable button
     Optional<Person> result = Alerts.chooser(
-        "alert.choose_relative.header", "alert.choose_relative.title", potentialRelatives);
-    result.ifPresent(person -> this.personsListView.getItems().add(person));
+        "alert.choose_relative.header", "alert.choose_relative.title", this.getPotentialRelatives());
+    result.ifPresent(person -> {
+      this.personsListView.getItems().add(person);
+      this.updateButtons();
+    });
   }
 
   /**
@@ -90,6 +91,7 @@ public class RelativesListView extends VBox {
   private void onRemove() {
     this.personsListView.getItems()
         .removeAll(new LinkedList<>(this.personsListView.getSelectionModel().getSelectedItems()));
+    this.updateButtons();
   }
 
   /**
@@ -101,6 +103,7 @@ public class RelativesListView extends VBox {
     this.persons = persons.stream()
         .sorted(Person.lastThenFirstNamesComparator())
         .toList();
+    this.updateButtons();
   }
 
   /**
@@ -118,5 +121,23 @@ public class RelativesListView extends VBox {
   public void setPersons(final @NotNull Collection<Person> persons) {
     this.personsListView.getItems().clear();
     this.personsListView.getItems().addAll(persons.stream().sorted().toList());
+    this.updateButtons();
+  }
+
+  /**
+   * Update the add witness button.
+   */
+  private void updateButtons() {
+    this.addWitnessButton.setDisable(this.getPotentialRelatives().isEmpty());
+  }
+
+  /**
+   * Return a list of potential relatives by removing all persons
+   * in the {@link #personsListView} from the {@link #persons} list.
+   */
+  private List<Person> getPotentialRelatives() {
+    return this.persons.stream()
+        .filter(p -> !this.personsListView.getItems().contains(p))
+        .toList();
   }
 }
