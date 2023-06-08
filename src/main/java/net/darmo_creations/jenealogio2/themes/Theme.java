@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
 import java.util.*;
 
@@ -40,25 +39,20 @@ public final class Theme {
   public static void loadThemes() throws IOException {
     THEMES.clear();
     for (String themeID : THEME_IDS) {
-      try (InputStream stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
+      try (var stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
         if (stream != null) {
-          loadTheme(themeID, new InputStreamReader(stream));
+          try (var reader = new InputStreamReader(stream)) {
+            var data = new Gson().fromJson(reader, Map.class);
+            THEMES.put(themeID, new Theme(themeID, (String) data.get("name")));
+          }
         }
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         App.LOGGER.exception(e);
       }
     }
     if (THEMES.isEmpty()) {
       throw new IOException("no themes found");
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static void loadTheme(@NotNull String id, @NotNull Reader reader) {
-    Gson parser = new Gson();
-    Map<String, Object> data = (Map<String, Object>) parser.fromJson(reader, HashMap.class);
-    String name = (String) data.get("name");
-    THEMES.put(id, new Theme(id, name));
   }
 
   public static Optional<Theme> getTheme(@NotNull String id) {
