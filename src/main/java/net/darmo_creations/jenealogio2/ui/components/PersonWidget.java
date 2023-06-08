@@ -31,7 +31,7 @@ import java.util.Optional;
 /**
  * A JavaFX component representing a single person in the {@link FamilyTreePane}.
  */
-// TODO add icon to indicate parents/children if they are not shown
+// TODO add icon to indicate that person has parents/children/siblings/spouses hidden from view
 public class PersonWidget extends AnchorPane {
   public static final int WIDTH = 120;
   public static final int HEIGHT = 140;
