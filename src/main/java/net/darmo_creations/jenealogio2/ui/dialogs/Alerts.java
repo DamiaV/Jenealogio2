@@ -75,23 +75,29 @@ public final class Alerts {
    * Open an alert dialog to ask the user to choose an option from a combobox.
    *
    * @param headerKey   Header text key.
+   * @param labelKey    Combobox label text key.
    * @param titleKey    Title key.
    * @param choices     The choices for the combobox.
    * @param contentArgs Format arguments to apply to the header and title.
    * @return The selected item.
    */
   public static <T> Optional<T> chooser(
-      @NotNull String headerKey, String titleKey, final Collection<T> choices, final FormatArg @NotNull ... contentArgs) {
+      @NotNull String headerKey,
+      @NotNull String labelKey,
+      String titleKey,
+      final Collection<T> choices,
+      final FormatArg @NotNull ... contentArgs
+  ) {
     if (choices.isEmpty()) {
       throw new IllegalArgumentException("empty choices");
     }
     Alert alert = getAlert(Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
-    HBox hBox = new HBox();
+    HBox hBox = new HBox(4);
     ComboBox<T> choicesCombo = new ComboBox<>();
     choicesCombo.getItems().addAll(choices);
     choicesCombo.getSelectionModel().select(0);
-    // TODO add label
-    hBox.getChildren().add(choicesCombo);
+    Label label = new Label(App.config().language().translate(labelKey, contentArgs));
+    hBox.getChildren().addAll(label, choicesCombo);
     hBox.setAlignment(Pos.CENTER);
     alert.getDialogPane().setContent(hBox);
     Optional<ButtonType> buttonType = alert.showAndWait();

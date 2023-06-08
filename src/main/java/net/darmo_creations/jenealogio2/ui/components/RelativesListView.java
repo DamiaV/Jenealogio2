@@ -78,7 +78,11 @@ public class RelativesListView extends VBox {
    */
   private void onAdd() {
     Optional<Person> result = Alerts.chooser(
-        "alert.choose_relative.header", "alert.choose_relative.title", this.getPotentialRelatives());
+        "alert.choose_relative.header",
+        "alert.choose_relative.label",
+        "alert.choose_relative.title",
+        this.getPotentialRelatives()
+    );
     result.ifPresent(person -> {
       this.personsListView.getItems().add(person);
       this.updateButtons();

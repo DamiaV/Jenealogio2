@@ -176,7 +176,11 @@ public class LifeEventView extends TitledPane {
         .filter(p -> !this.witnessesList.getItems().contains(p))
         .toList();
     Optional<Person> result = Alerts.chooser(
-        "alert.choose_witness.header", "alert.choose_witness.title", potentialWitnesses);
+        "alert.choose_witness.header",
+        "alert.choose_witness.label",
+        "alert.choose_witness.title",
+        potentialWitnesses
+    );
     result.ifPresent(person -> this.witnessesList.getItems().add(person));
   }
 
