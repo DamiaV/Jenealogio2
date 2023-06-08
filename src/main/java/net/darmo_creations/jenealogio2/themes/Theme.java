@@ -7,18 +7,31 @@ import javafx.scene.image.ImageView;
 import net.darmo_creations.jenealogio2.App;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
 import java.util.*;
 
+/**
+ * A theme defines the appearence of the application.
+ * A theme is declared by a JSON file, whose name is the theme’s ID, containing its displayed name.
+ * Themes may define a custom CSS file to apply to the app’s GUI. The CSS file’s name should also be the theme’s ID.
+ */
 public final class Theme {
-  private static final String BUILTIN_THEMES_PATH = App.RESOURCES_ROOT + "themes/";
-  private static final String[] BUILTIN_THEME_IDS = {
+  /**
+   * Jar path to the directory containing theme files.
+   */
+  private static final String THEMES_PATH = App.RESOURCES_ROOT + "themes/";
+  /**
+   * Array of available themes IDs.
+   */
+  private static final String[] THEME_IDS = {
       "dark",
       "light",
   };
-  public static final String DEFAULT_THEME_ID = BUILTIN_THEME_IDS[0];
-  private static final File USER_THEMES_DIR = new File("themes");
+  public static final String DEFAULT_THEME_ID = THEME_IDS[0];
 
   private static final String ICONS_PATH = App.IMAGES_PATH + "icons/";
 
@@ -27,32 +40,17 @@ public final class Theme {
   public static void loadThemes() throws IOException {
     THEMES.clear();
     loadBuiltinThemes();
-    loadUserThemes();
     if (THEMES.isEmpty()) {
       throw new IOException("no themes found");
     }
   }
 
   private static void loadBuiltinThemes() {
-    for (String themeID : BUILTIN_THEME_IDS) {
-      try (InputStream stream = Theme.class.getResourceAsStream(BUILTIN_THEMES_PATH + themeID + ".json")) {
+    for (String themeID : THEME_IDS) {
+      try (InputStream stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
         if (stream != null) {
           loadTheme(themeID, new InputStreamReader(stream));
         }
-      } catch (Exception e) {
-        App.LOGGER.exception(e);
-      }
-    }
-  }
-
-  private static void loadUserThemes() {
-    File[] files = USER_THEMES_DIR.listFiles((directory, fileName) -> fileName.endsWith(".json"));
-    if (files == null) {
-      return;
-    }
-    for (File file : files) {
-      try (FileReader reader = new FileReader(file)) {
-        loadTheme(file.getName().split("\\.(?=[^.]+$)")[0], reader);
       } catch (Exception e) {
         App.LOGGER.exception(e);
       }
@@ -108,7 +106,7 @@ public final class Theme {
   }
 
   private Optional<URL> getStyleSheet(@NotNull String name) {
-    String path = "%s%s.css".formatted(BUILTIN_THEMES_PATH, name);
+    String path = "%s%s.css".formatted(THEMES_PATH, name);
     return Optional.ofNullable(this.getClass().getResource(path));
   }
 
