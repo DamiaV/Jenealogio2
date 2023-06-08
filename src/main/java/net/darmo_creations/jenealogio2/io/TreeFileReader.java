@@ -21,7 +21,6 @@ import java.util.function.Supplier;
 /**
  * Reads .jtree files.
  */
-// TODO use constants instead of hard-coded element/attribute names
 public class TreeFileReader extends TreeFileManager {
   /**
    * Read a family tree object from a .jtree file.
@@ -38,23 +37,23 @@ public class TreeFileReader extends TreeFileManager {
       throw new IOException("Parse error");
     }
     Element familyTreeElement = (Element) childNodes.item(0);
-    if (!familyTreeElement.getTagName().equals("FamilyTree")) {
+    if (!familyTreeElement.getTagName().equals(FAMILY_TREE_TAG)) {
       throw new IOException("Missing root element");
     }
-    int version = this.getAttr(familyTreeElement, "version", Integer::parseInt, () -> 1, false);
+    int version = this.getAttr(familyTreeElement, FAMILY_TREE_VERSION_ATTR, Integer::parseInt, () -> 1, false);
     if (version != 1) {
       throw new IOException("Unsupported XML file version: " + version);
     }
-    String name = this.getAttr(familyTreeElement, "name", s -> s, null, true);
-    int rootID = this.getAttr(familyTreeElement, "root", Integer::parseInt, null, false);
+    String name = this.getAttr(familyTreeElement, FAMILY_TREE_NAME_ATTR, s -> s, null, true);
+    int rootID = this.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, null, false);
 
-    Optional<Element> registriesElement = this.getChildElement(familyTreeElement, "Registries", true);
+    Optional<Element> registriesElement = this.getChildElement(familyTreeElement, REGISTRIES_TAG, true);
     if (registriesElement.isPresent()) {
       this.loadUserRegistries(registriesElement.get());
     }
 
     //noinspection OptionalGetWithoutIsPresent
-    Element peopleElement = this.getChildElement(familyTreeElement, "People", false).get();
+    Element peopleElement = this.getChildElement(familyTreeElement, PEOPLE_TAG, false).get();
     FamilyTree familyTree = new FamilyTree(name);
     List<Person> persons = this.readPersons(peopleElement, familyTree);
     try {
@@ -62,7 +61,7 @@ public class TreeFileReader extends TreeFileManager {
     } catch (IndexOutOfBoundsException e) {
       throw new IOException(e);
     }
-    Optional<Element> eventsElement = this.getChildElement(familyTreeElement, "LifeEvents", true);
+    Optional<Element> eventsElement = this.getChildElement(familyTreeElement, LIFE_EVENTS_TAG, true);
     if (eventsElement.isPresent()) {
       this.readLifeEvents(eventsElement.get(), persons);
     }
@@ -78,11 +77,11 @@ public class TreeFileReader extends TreeFileManager {
    */
   private void loadUserRegistries(@NotNull Element registriesElement) throws IOException {
     Registries.GENDERS.reset();
-    Optional<Element> gendersElement = this.getChildElement(registriesElement, "Genders", true);
+    Optional<Element> gendersElement = this.getChildElement(registriesElement, GENDERS_TAG, true);
     if (gendersElement.isPresent()) {
-      for (Element entryElement : this.getChildElements(gendersElement.get(), "Entry")) {
-        String name = this.getAttr(entryElement, "name", s -> s, null, true);
-        String color = this.getAttr(entryElement, "color", s -> s, null, false);
+      for (Element entryElement : this.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
+        String name = this.getAttr(entryElement, REGISTRY_ENTRY_NAME_ATTR, s -> s, null, true);
+        String color = this.getAttr(entryElement, GENDER_COLOR_ATTR, s -> s, null, false);
         if (!color.matches("^#[\\da-fA-F]{6}$")) {
           throw new IOException("Invalid color code: " + color);
         }
@@ -91,21 +90,21 @@ public class TreeFileReader extends TreeFileManager {
     }
 
     Registries.LIFE_EVENT_TYPES.reset();
-    Optional<Element> eventTypeElement = this.getChildElement(registriesElement, "LifeEventTypes", true);
+    Optional<Element> eventTypeElement = this.getChildElement(registriesElement, LIFE_EVENT_TYPES_TAG, true);
     if (eventTypeElement.isPresent()) {
-      for (Element entryElement : this.getChildElements(eventTypeElement.get(), "Entry")) {
-        String name = this.getAttr(entryElement, "name", s -> s, null, true);
-        int groupOrdinal = this.getAttr(entryElement, "group", Integer::parseInt, null, false);
+      for (Element entryElement : this.getChildElements(eventTypeElement.get(), REGISTRY_ENTRY_TAG)) {
+        String name = this.getAttr(entryElement, REGISTRY_ENTRY_NAME_ATTR, s -> s, null, true);
+        int groupOrdinal = this.getAttr(entryElement, LIFE_EVENT_TYPE_GROUP_ATTR, Integer::parseInt, null, false);
         LifeEventType.Group group;
         try {
           group = LifeEventType.Group.values()[groupOrdinal];
         } catch (IndexOutOfBoundsException e) {
           throw new IOException(e);
         }
-        boolean indicatesDeath = this.getAttr(entryElement, "indicatesDeath", Boolean::parseBoolean, null, false);
-        int minActors = this.getAttr(entryElement, "minActors", Integer::parseInt, null, false);
-        int maxActors = this.getAttr(entryElement, "maxActors", Integer::parseInt, null, false);
-        boolean unique = this.getAttr(entryElement, "unique", Boolean::parseBoolean, null, false);
+        boolean indicatesDeath = this.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR, Boolean::parseBoolean, null, false);
+        int minActors = this.getAttr(entryElement, LIFE_EVENT_TYPE_MIN_ACTORS_ATTR, Integer::parseInt, null, false);
+        int maxActors = this.getAttr(entryElement, LIFE_EVENT_TYPE_MAX_ACTORS_ATTR, Integer::parseInt, null, false);
+        boolean unique = this.getAttr(entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, Boolean::parseBoolean, null, false);
         var args = new LifeEventType.RegistryArgs(group, indicatesDeath, minActors, maxActors, unique);
         try {
           Registries.LIFE_EVENT_TYPES.registerEntry(new RegistryEntryKey(Registry.USER_NS, name), args);
@@ -132,14 +131,16 @@ public class TreeFileReader extends TreeFileManager {
     Map<Person, Pair<Integer, Integer>> parentIDS = new HashMap<>();
     Map<Person, Map<Person.RelativeType, List<Integer>>> relativesIDs = new HashMap<>();
 
-    for (Element personElement : this.getChildElements(peopleElement, "Person")) {
+    for (Element personElement : this.getChildElements(peopleElement, PERSON_TAG)) {
       Person person = new Person();
 
+      // TODO load image
+
       // Disambiguation ID
-      Optional<Element> disambIDElement = this.getChildElement(personElement, "DisambiguationID", true);
+      Optional<Element> disambIDElement = this.getChildElement(personElement, DISAMBIGUATION_ID_TAG, true);
       if (disambIDElement.isPresent()) {
         try {
-          person.setDisambiguationID(this.getAttr(disambIDElement.get(), "value", Integer::parseInt, () -> null, false));
+          person.setDisambiguationID(this.getAttr(disambIDElement.get(), DISAMBIG_ID_VALUE_ATTR, Integer::parseInt, () -> null, false));
         } catch (IllegalArgumentException e) {
           throw new IOException(e);
         }
@@ -147,34 +148,34 @@ public class TreeFileReader extends TreeFileManager {
 
       // Life status
       //noinspection OptionalGetWithoutIsPresent
-      Element lifeStatusElement = this.getChildElement(personElement, "LifeStatus", false).get();
+      Element lifeStatusElement = this.getChildElement(personElement, LIFE_STATUS_TAG, false).get();
       try {
-        int ordinal = this.getAttr(lifeStatusElement, "ordinal", Integer::parseInt, null, false);
+        int ordinal = this.getAttr(lifeStatusElement, LIFE_STATUS_ORDINAL_ATTR, Integer::parseInt, null, false);
         person.setLifeStatus(LifeStatus.values()[ordinal]);
       } catch (IndexOutOfBoundsException e) {
         throw new IOException(e);
       }
 
       // Legal last name
-      this.readName(personElement, "LegalLastName", person::setLegalLastName);
+      this.readName(personElement, LEGAL_LAST_NAME_TAG, person::setLegalLastName);
 
       // Legal first names
-      this.readNames(personElement, "LegalFirstNames", person::setLegalFirstNames);
+      this.readNames(personElement, LEGAL_FIRST_NAMES_TAG, person::setLegalFirstNames);
 
       // Public last name
-      this.readName(personElement, "PublicLastName", person::setPublicLastName);
+      this.readName(personElement, PUBLIC_LAST_NAME_TAG, person::setPublicLastName);
 
       // Public first names
-      this.readNames(personElement, "PublicFirstNames", person::setPublicFirstNames);
+      this.readNames(personElement, PUBLIC_FIRST_NAMES_TAG, person::setPublicFirstNames);
 
       // Nicknames
-      this.readNames(personElement, "Nicknames", person::setNicknames);
+      this.readNames(personElement, NICKNAMES_TAG, person::setNicknames);
 
       // Gender
-      Optional<Element> genderElement = this.getChildElement(personElement, "Gender", true);
+      Optional<Element> genderElement = this.getChildElement(personElement, GENDER_TAG, true);
       if (genderElement.isPresent()) {
         try {
-          RegistryEntryKey key = new RegistryEntryKey(this.getAttr(genderElement.get(), "key", s -> s, null, false));
+          RegistryEntryKey key = new RegistryEntryKey(this.getAttr(genderElement.get(), GENDER_KEY_ATTR, s -> s, null, false));
           Gender gender = Registries.GENDERS.getEntry(key);
           if (gender == null) {
             throw new IOException("Undefined gender registry key: " + key.fullName());
@@ -186,10 +187,10 @@ public class TreeFileReader extends TreeFileManager {
       }
 
       // Parents
-      Optional<Element> parentsElement = this.getChildElement(personElement, "Parents", true);
+      Optional<Element> parentsElement = this.getChildElement(personElement, PARENTS_TAG, true);
       if (parentsElement.isPresent()) {
-        Integer id1 = this.getAttr(parentsElement.get(), "id1", Integer::parseInt, () -> null, false);
-        Integer id2 = this.getAttr(parentsElement.get(), "id2", Integer::parseInt, () -> null, false);
+        Integer id1 = this.getAttr(parentsElement.get(), PARENT_ID_1_ATTR, Integer::parseInt, () -> null, false);
+        Integer id2 = this.getAttr(parentsElement.get(), PARENT_ID_2_ATTR, Integer::parseInt, () -> null, false);
         if (id1 != null && id2 != null && id1.intValue() == id2.intValue()) {
           throw new IOException("Parents cannot be identical");
         }
@@ -198,12 +199,12 @@ public class TreeFileReader extends TreeFileManager {
       }
 
       // Relatives
-      Optional<Element> relativesElement = this.getChildElement(personElement, "Relatives", true);
+      Optional<Element> relativesElement = this.getChildElement(personElement, RELATIVES_TAG, true);
       if (relativesElement.isPresent()) {
         HashMap<Person.RelativeType, List<Integer>> groupsMap = new HashMap<>();
         relativesIDs.put(person, groupsMap);
-        for (Element groupElement : this.getChildElements(relativesElement.get(), "Group")) {
-          int ordinal = this.getAttr(groupElement, "ordinal", Integer::parseInt, null, false);
+        for (Element groupElement : this.getChildElements(relativesElement.get(), GROUP_TAG)) {
+          int ordinal = this.getAttr(groupElement, GROUP_ORDINAL_ATTR, Integer::parseInt, null, false);
           Person.RelativeType relativeType;
           try {
             relativeType = Person.RelativeType.values()[ordinal];
@@ -212,19 +213,19 @@ public class TreeFileReader extends TreeFileManager {
           }
           LinkedList<Integer> relativesList = new LinkedList<>();
           groupsMap.put(relativeType, relativesList);
-          for (Element relativeElement : this.getChildElements(groupElement, "Relative")) {
+          for (Element relativeElement : this.getChildElements(groupElement, RELATIVE_TAG)) {
             // Defer setting relatives to when all person objects have been deserialized
-            relativesList.add(this.getAttr(relativeElement, "id", Integer::parseInt, null, false));
+            relativesList.add(this.getAttr(relativeElement, RELATIVE_ID_ATTR, Integer::parseInt, null, false));
           }
         }
       }
 
       // Notes
-      Optional<Element> notesElement = this.getChildElement(personElement, "Notes", true);
+      Optional<Element> notesElement = this.getChildElement(personElement, NOTES_TAG, true);
       notesElement.ifPresent(element -> person.setNotes(element.getTextContent().strip()));
 
       // Sources
-      Optional<Element> sourcesElement = this.getChildElement(personElement, "Sources", true);
+      Optional<Element> sourcesElement = this.getChildElement(personElement, SOURCES_TAG, true);
       sourcesElement.ifPresent(element -> person.setSources(element.getTextContent().strip()));
 
       familyTree.addPerson(person);
@@ -286,7 +287,7 @@ public class TreeFileReader extends TreeFileManager {
     Optional<Element> nameElement = this.getChildElement(personElement, elementName, true);
     if (nameElement.isPresent()) {
       try {
-        consumer.accept(this.getAttr(nameElement.get(), "value", s -> s, null, true));
+        consumer.accept(this.getAttr(nameElement.get(), NAME_VALUE_ATTR, s -> s, null, true));
       } catch (IllegalArgumentException e) {
         throw new IOException(e);
       }
@@ -309,9 +310,9 @@ public class TreeFileReader extends TreeFileManager {
     Optional<Element> namesElement = this.getChildElement(personElement, elementName, true);
     if (namesElement.isPresent()) {
       List<String> names = new LinkedList<>();
-      for (Element nameElement : this.getChildElements(namesElement.get(), "Name")) {
+      for (Element nameElement : this.getChildElements(namesElement.get(), NAME_TAG)) {
         try {
-          names.add(this.getAttr(nameElement, "value", s -> s, null, true));
+          names.add(this.getAttr(nameElement, NAME_VALUE_ATTR, s -> s, null, true));
         } catch (IllegalArgumentException e) {
           throw new IOException(e);
         }
@@ -331,31 +332,31 @@ public class TreeFileReader extends TreeFileManager {
       final @NotNull Element eventsElement,
       final @NotNull List<Person> persons
   ) throws IOException {
-    for (Element eventElement : this.getChildElements(eventsElement, "LifeEvent")) {
+    for (Element eventElement : this.getChildElements(eventsElement, LIFE_EVENT_TAG)) {
       // Date
       //noinspection OptionalGetWithoutIsPresent
-      Element dateElement = this.getChildElement(eventElement, "Date", false).get();
-      String dateType = this.getAttr(dateElement, "type", s -> s, null, false);
+      Element dateElement = this.getChildElement(eventElement, DATE_TAG, false).get();
+      String dateType = this.getAttr(dateElement, DATE_TYPE_ATTR, s -> s, null, false);
       CalendarDate date = switch (dateType) {
-        case "with_precision" -> {
-          int ordinal = this.getAttr(dateElement, "precision", Integer::parseInt, null, false);
+        case DATE_WITH_PRECISION -> {
+          int ordinal = this.getAttr(dateElement, DATE_PRECISION_ATTR, Integer::parseInt, null, false);
           DatePrecision precision;
           try {
             precision = DatePrecision.values()[ordinal];
           } catch (IndexOutOfBoundsException e) {
             throw new IOException(e);
           }
-          LocalDateTime d = this.getAttr(dateElement, "date", LocalDateTime::parse, null, false);
+          LocalDateTime d = this.getAttr(dateElement, DATE_DATE_ATTR, LocalDateTime::parse, null, false);
           yield new DateWithPrecision(d, precision);
         }
-        case "range" -> {
-          LocalDateTime startDate = this.getAttr(dateElement, "start", LocalDateTime::parse, null, false);
-          LocalDateTime endDate = this.getAttr(dateElement, "end", LocalDateTime::parse, null, false);
+        case DATE_RANGE -> {
+          LocalDateTime startDate = this.getAttr(dateElement, DATE_START_ATTR, LocalDateTime::parse, null, false);
+          LocalDateTime endDate = this.getAttr(dateElement, DATE_END_ATTR, LocalDateTime::parse, null, false);
           yield new DateRange(startDate, endDate);
         }
-        case "alternative" -> {
-          LocalDateTime earliestDate = this.getAttr(dateElement, "earliest", LocalDateTime::parse, null, false);
-          LocalDateTime latestDate = this.getAttr(dateElement, "latest", LocalDateTime::parse, null, false);
+        case DATE_ALTERNATIVE -> {
+          LocalDateTime earliestDate = this.getAttr(dateElement, DATE_EARLIEST_ATTR, LocalDateTime::parse, null, false);
+          LocalDateTime latestDate = this.getAttr(dateElement, DATE_LATEST_ATTR, LocalDateTime::parse, null, false);
           yield new DateAlternative(earliestDate, latestDate);
         }
         default -> throw new IOException("Undefined date type " + dateType);
@@ -364,9 +365,9 @@ public class TreeFileReader extends TreeFileManager {
       // Type
       LifeEventType type;
       //noinspection OptionalGetWithoutIsPresent
-      Element typeElement = this.getChildElement(eventElement, "Type", false).get();
+      Element typeElement = this.getChildElement(eventElement, TYPE_TAG, false).get();
       try {
-        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(typeElement, "key", s -> s, null, false));
+        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(typeElement, TYPE_KEY_ATTR, s -> s, null, false));
         type = Registries.LIFE_EVENT_TYPES.getEntry(key);
         if (type == null) {
           throw new IOException("Undefined life event type registry key: " + key.fullName());
@@ -377,7 +378,7 @@ public class TreeFileReader extends TreeFileManager {
 
       List<Person> actors = new LinkedList<>();
 
-      this.readPersons(eventElement, "Actors", persons, actors::add, false);
+      this.readPersons(eventElement, ACTORS_TAG, persons, actors::add, false);
       int actorsNb = actors.size();
       if (actorsNb < type.minActors() || actorsNb > type.maxActors()) {
         throw new IOException("Wrong number of minActors for event type %s: %d".formatted(type.key().fullName(), actorsNb));
@@ -400,21 +401,21 @@ public class TreeFileReader extends TreeFileManager {
       }
 
       // Witnesses
-      this.readPersons(eventElement, "Witnesses", persons, lifeEvent::addWitness, true);
+      this.readPersons(eventElement, WITNESSES_TAG, persons, lifeEvent::addWitness, true);
 
       // Place
-      Optional<Element> placeElement = this.getChildElement(eventElement, "Place", true);
+      Optional<Element> placeElement = this.getChildElement(eventElement, PLACE_TAG, true);
       placeElement.ifPresent(element -> lifeEvent.setPlace(element.getTextContent().strip()));
       if (placeElement.isPresent()) {
-        lifeEvent.setPlace(this.getAttr(placeElement.get(), "value", s -> s, null, true));
+        lifeEvent.setPlace(this.getAttr(placeElement.get(), PLACE_VALUE_ATTR, s -> s, null, true));
       }
 
       // Notes
-      Optional<Element> notesElement = this.getChildElement(eventElement, "Notes", true);
+      Optional<Element> notesElement = this.getChildElement(eventElement, NOTES_TAG, true);
       notesElement.ifPresent(element -> lifeEvent.setNotes(element.getTextContent().strip()));
 
       // Sources
-      Optional<Element> sourcesElement = this.getChildElement(eventElement, "Sources", true);
+      Optional<Element> sourcesElement = this.getChildElement(eventElement, SOURCES_TAG, true);
       sourcesElement.ifPresent(element -> lifeEvent.setSources(element.getTextContent().strip()));
     }
   }
@@ -441,8 +442,8 @@ public class TreeFileReader extends TreeFileManager {
     if (personsElement.isEmpty()) {
       return;
     }
-    for (Element actorElement : this.getChildElements(personsElement.get(), "Person")) {
-      int id = this.getAttr(actorElement, "id", Integer::parseInt, null, false);
+    for (Element actorElement : this.getChildElements(personsElement.get(), PERSON_TAG)) {
+      int id = this.getAttr(actorElement, PERSON_ID_ATTR, Integer::parseInt, null, false);
       try {
         consumer.accept(persons.get(id));
       } catch (IndexOutOfBoundsException e) {
