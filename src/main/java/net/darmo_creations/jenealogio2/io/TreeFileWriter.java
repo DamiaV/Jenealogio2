@@ -10,7 +10,6 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -35,12 +34,7 @@ public class TreeFileWriter extends TreeFileManager {
    * @throws IOException If any error occurs.
    */
   public void saveToFile(final @NotNull FamilyTree familyTree, @NotNull File file) throws IOException {
-    Document document;
-    try {
-      document = this.newDocumentBuilder().newDocument();
-    } catch (ParserConfigurationException e) {
-      throw new RuntimeException(e);
-    }
+    Document document = this.newDocumentBuilder().newDocument();
 
     Element familyTreeElement = (Element) document.appendChild(document.createElement("FamilyTree"));
     this.setAttr(document, familyTreeElement, "name", familyTree.name());
