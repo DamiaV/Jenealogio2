@@ -21,16 +21,16 @@ public final class Registries {
           "life_event_types",
           (key, args) -> new LifeEventType(key, args.group(), args.indicatesDeath(), args.minActors(), args.minActors(), args.isUnique()),
 
-          new BuiltinEntry<>("annulment", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Annulation
-          new BuiltinEntry<>("civil_solidarity_pact", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // PACS
-          new BuiltinEntry<>("divorce", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Divorce
-          new BuiltinEntry<>("engagement", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Fiançailles
-          new BuiltinEntry<>("marriage", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Mariage
-          new BuiltinEntry<>("marriage_bann", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Bans de mariage
-          new BuiltinEntry<>("marriage_contract", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Contrat de mariage
-          new BuiltinEntry<>("marriage_license", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Licence de mariage
-          new BuiltinEntry<>("partners", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Couple non marié
-          new BuiltinEntry<>("separation", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, false)), // Séparation
+          new BuiltinEntry<>("annulment", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Annulation
+          new BuiltinEntry<>("civil_solidarity_pact", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // PACS
+          new BuiltinEntry<>("divorce", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Divorce
+          new BuiltinEntry<>("engagement", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Fiançailles
+          new BuiltinEntry<>("marriage", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Mariage
+          new BuiltinEntry<>("marriage_bann", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Bans de mariage
+          new BuiltinEntry<>("marriage_contract", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Contrat de mariage
+          new BuiltinEntry<>("marriage_license", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Licence de mariage
+          new BuiltinEntry<>("partners", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Couple non marié
+          new BuiltinEntry<>("separation", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, 2, 2, false)), // Séparation
 
           new BuiltinEntry<>("acquisition", new RegistryArgs(LifeEventType.Group.ADMIN, false)), // Acquisition
           new BuiltinEntry<>("census", new RegistryArgs(LifeEventType.Group.ADMIN, false)), // Recensement
