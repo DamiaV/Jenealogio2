@@ -24,8 +24,8 @@ import java.util.*;
  */
 public class LifeEventView extends TitledPane {
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
-  private final ComboBox<NotNullComboBoxItem<DateField.DateType>> datePrecisionCombo = new ComboBox<>();
-  private final DateField dateField = new DateField();
+  private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
+  private final CalendarDateField dateField = new CalendarDateField();
   private final TextField placeField = new TextField();
   private final ComboBox<NotNullComboBoxItem<Person>> partnerCombo = new ComboBox<>();
   private final ListView<Person> witnessesList = new ListView<>();
@@ -337,7 +337,7 @@ public class LifeEventView extends TitledPane {
    * Populate the date precision combobox.
    */
   private void populateDatePrecisionCombo() {
-    for (DateField.DateType dateType : DateField.DateType.values()) {
+    for (CalendarDateField.DateType dateType : CalendarDateField.DateType.values()) {
       this.datePrecisionCombo.getItems()
           .add(new NotNullComboBoxItem<>(dateType, App.config().language().translate(dateType.key())));
     }
@@ -359,7 +359,7 @@ public class LifeEventView extends TitledPane {
     this.eventTypeCombo.getSelectionModel()
         .select(new NotNullComboBoxItem<>(this.lifeEvent.type()));
     this.datePrecisionCombo.getSelectionModel()
-        .select(new NotNullComboBoxItem<>(DateField.DateType.fromDate(this.lifeEvent.date())));
+        .select(new NotNullComboBoxItem<>(CalendarDateField.DateType.fromDate(this.lifeEvent.date())));
     this.dateField.setDate(this.lifeEvent.date());
     this.placeField.setText(this.lifeEvent.place().orElse(""));
     Optional<Person> otherActor = this.lifeEvent.actors().stream().filter(p -> p != this.person).findFirst();

@@ -1,7 +1,6 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
 import javafx.geometry.Insets;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import net.darmo_creations.jenealogio2.App;
@@ -10,7 +9,6 @@ import net.darmo_creations.jenealogio2.model.calendar.*;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,11 +19,10 @@ import java.util.Optional;
  * A JavaFX component containing two date fields.
  * It returns a {@link CalendarDate} from the fields’ values.
  */
-// FIXME avoid the need to press enter after editing fields without date picker
-public class DateField extends HBox {
-  private final DatePicker datePicker = new DatePicker();
+public class CalendarDateField extends HBox {
+  private final DateTimeField dateTimeField = new DateTimeField();
+  private final DateTimeField secondDateTimeField = new DateTimeField();
   private final Label label = new Label();
-  private final DatePicker secondDatePicker = new DatePicker();
 
   private DateType dateType;
 
@@ -34,13 +31,13 @@ public class DateField extends HBox {
   /**
    * Create a field with the type {@link DateType#EXACT}.
    */
-  public DateField() {
+  public CalendarDateField() {
     super(4);
-    this.getChildren().addAll(this.datePicker, this.label, this.secondDatePicker);
+    this.getChildren().addAll(this.dateTimeField, this.label, this.secondDateTimeField);
     HBox.setMargin(this.label, new Insets(4, 0, 0, 0));
     this.setDateType(DateType.EXACT);
-    this.datePicker.valueProperty().addListener((observable, oldValue, newValue) -> this.notifyListeners());
-    this.secondDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> this.notifyListeners());
+    this.dateTimeField.getUpdateListeners().add(this::notifyListeners);
+    this.secondDateTimeField.getUpdateListeners().add(this::notifyListeners);
   }
 
   /**
@@ -63,17 +60,17 @@ public class DateField extends HBox {
    * @return True if there is none, false otherwise.
    */
   public boolean checkValidity() {
-    this.datePicker.pseudoClassStateChanged(PseudoClasses.INVALID, false);
-    this.secondDatePicker.pseudoClassStateChanged(PseudoClasses.INVALID, false);
-    LocalDate date = this.datePicker.getValue();
-    LocalDate secondDate = this.secondDatePicker.getValue();
+    this.dateTimeField.pseudoClassStateChanged(PseudoClasses.INVALID, false);
+    this.secondDateTimeField.pseudoClassStateChanged(PseudoClasses.INVALID, false);
+    LocalDateTime date = this.dateTimeField.getDate();
+    LocalDateTime secondDate = this.secondDateTimeField.getDate();
     boolean invalid = false;
     if (this.dateType.requiresTwoFields()) {
       if (date == null && secondDate != null) {
-        this.datePicker.pseudoClassStateChanged(PseudoClasses.INVALID, true);
+        this.dateTimeField.pseudoClassStateChanged(PseudoClasses.INVALID, true);
         invalid = true;
       } else if (date != null && secondDate == null) {
-        this.secondDatePicker.pseudoClassStateChanged(PseudoClasses.INVALID, true);
+        this.secondDateTimeField.pseudoClassStateChanged(PseudoClasses.INVALID, true);
         invalid = true;
       }
     }
@@ -84,8 +81,8 @@ public class DateField extends HBox {
    * Return a {@link CalendarDate} object from the date fields.
    */
   public Optional<CalendarDate> getDate() {
-    LocalDate date = this.datePicker.getValue();
-    LocalDate secondDate = this.secondDatePicker.getValue();
+    LocalDateTime date = this.dateTimeField.getDate();
+    LocalDateTime secondDate = this.secondDateTimeField.getDate();
     if ((date == null ^ secondDate == null) && this.dateType.requiresTwoFields()) {
       throw new IllegalArgumentException("missing date");
     }
@@ -94,21 +91,20 @@ public class DateField extends HBox {
     }
     if (secondDate != null && date.isAfter(secondDate)) {
       // Swap dates if wrong way around
-      LocalDate d = date;
+      LocalDateTime d = date;
       date = secondDate;
       secondDate = d;
     }
-    final LocalDateTime dateTime = date.atStartOfDay();
     return Optional.of(switch (this.dateType) {
-      case EXACT -> new DateWithPrecision(dateTime, DatePrecision.EXACT);
-      case ABOUT -> new DateWithPrecision(dateTime, DatePrecision.ABOUT);
-      case POSSIBLY -> new DateWithPrecision(dateTime, DatePrecision.POSSIBLY);
-      case BEFORE -> new DateWithPrecision(dateTime, DatePrecision.BEFORE);
-      case AFTER -> new DateWithPrecision(dateTime, DatePrecision.AFTER);
+      case EXACT -> new DateWithPrecision(date, DatePrecision.EXACT);
+      case ABOUT -> new DateWithPrecision(date, DatePrecision.ABOUT);
+      case POSSIBLY -> new DateWithPrecision(date, DatePrecision.POSSIBLY);
+      case BEFORE -> new DateWithPrecision(date, DatePrecision.BEFORE);
+      case AFTER -> new DateWithPrecision(date, DatePrecision.AFTER);
       case OR -> //noinspection DataFlowIssue
-          new DateAlternative(dateTime, secondDate.atStartOfDay());
+          new DateAlternative(date, secondDate);
       case BETWEEN -> //noinspection DataFlowIssue
-          new DateRange(dateTime, secondDate.atStartOfDay());
+          new DateRange(date, secondDate);
     });
   }
 
@@ -120,21 +116,21 @@ public class DateField extends HBox {
    */
   public void setDate(CalendarDate date) {
     if (date == null) {
-      this.datePicker.setValue(null);
-      this.secondDatePicker.setValue(null);
+      this.dateTimeField.setDate(null);
+      this.secondDateTimeField.setDate(null);
       return;
     }
     DateType type = DateType.fromDate(date);
     if (type != this.dateType) {
       throw new IllegalArgumentException("expected date of type %s, got %s".formatted(this.dateType, type));
     }
-    this.datePicker.setValue(date.date().toLocalDate());
+    this.dateTimeField.setDate(date.date());
     if (date instanceof DateAlternative d) {
-      this.secondDatePicker.setValue(d.latestDate().toLocalDate());
+      this.secondDateTimeField.setDate(d.latestDate());
     } else if (date instanceof DateRange d) {
-      this.secondDatePicker.setValue(d.endDate().toLocalDate());
+      this.secondDateTimeField.setDate(d.endDate());
     } else {
-      this.secondDatePicker.setValue(null);
+      this.secondDateTimeField.setDate(null);
     }
   }
 
@@ -149,14 +145,14 @@ public class DateField extends HBox {
     if (dateType == DateType.OR) {
       this.label.setText(language.translate("date_field.or"));
       this.label.setVisible(true);
-      this.secondDatePicker.setVisible(true);
+      this.secondDateTimeField.setVisible(true);
     } else if (dateType == DateType.BETWEEN) {
       this.label.setText(language.translate("date_field.and"));
       this.label.setVisible(true);
-      this.secondDatePicker.setVisible(true);
+      this.secondDateTimeField.setVisible(true);
     } else {
       this.label.setVisible(false);
-      this.secondDatePicker.setVisible(false);
+      this.secondDateTimeField.setVisible(false);
     }
   }
 
