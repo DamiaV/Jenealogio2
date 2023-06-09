@@ -125,11 +125,26 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
    * @param actor The actor to remove.
    * @throws IllegalArgumentException If the number of actors is already at the allowed minimum.
    */
-  public void removeActor(final Person actor) {
+  public void removeActor(final @NotNull Person actor) {
     if (this.actors.size() == this.type.minActors() && this.hasActor(actor)) {
       throw new IllegalStateException("cannot remove any more actors");
     }
     this.actors.remove(actor);
+  }
+
+  /**
+   * Replace all current actors by the given ones.
+   *
+   * @param actors Persons to set as actors of this life event.
+   * @throws IllegalArgumentException If the number of new actors is not within the allowed bounds.
+   */
+  public void setActors(final @NotNull Set<Person> actors) {
+    if (actors.size() < this.type.minActors() || actors.size() > this.type.maxActors()) {
+      throw new IllegalStateException("invalid actors number: expected between %d and %d, got %d"
+          .formatted(this.type.minActors(), this.type.maxActors(), actors.size()));
+    }
+    this.actors.clear();
+    this.actors.addAll(actors);
   }
 
   /**

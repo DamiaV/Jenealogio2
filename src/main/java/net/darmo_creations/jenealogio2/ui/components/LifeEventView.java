@@ -233,18 +233,17 @@ public class LifeEventView extends TitledPane {
    */
   public void applyChanges() {
     this.lifeEvent.setType(this.eventTypeCombo.getSelectionModel().getSelectedItem().data());
-    // Remove all actors that are not the edited person and add back the selected ones
-    for (Person actor : this.lifeEvent.actors()) {
-      if (actor != this.person) {
-        this.lifeEvent.removeActor(actor);
-        actor.removeLifeEvent(this.lifeEvent);
-      }
-    }
+    // Remove life event from all current actors before resetting them
+    this.lifeEvent.actors().forEach(p -> p.removeLifeEvent(this.lifeEvent));
+    Set<Person> actors = new HashSet<>();
+    actors.add(this.person);
+    this.person.addLifeEvent(this.lifeEvent);
     if (!this.partnerCombo.isDisabled()) {
       Person actor = this.partnerCombo.getSelectionModel().getSelectedItem().data();
-      this.lifeEvent.addActor(actor);
+      actors.add(actor);
       actor.addLifeEvent(this.lifeEvent);
     }
+    this.lifeEvent.setActors(actors);
 
     // Remove all witnesses and add back the selected ones
     for (Person witness : this.lifeEvent.witnesses()) {
@@ -260,9 +259,6 @@ public class LifeEventView extends TitledPane {
     this.lifeEvent.setPlace(StringUtils.stripNullable(this.placeField.getText()).orElse(null));
     this.lifeEvent.setNotes(StringUtils.stripNullable(this.notesField.getText()).orElse(null));
     this.lifeEvent.setSources(StringUtils.stripNullable(this.sourcesField.getText()).orElse(null));
-    if (!this.person.getLifeEventsAsActor().contains(this.lifeEvent)) {
-      this.person.addLifeEvent(this.lifeEvent);
-    }
   }
 
   /**
