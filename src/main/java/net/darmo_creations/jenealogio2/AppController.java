@@ -24,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -519,9 +518,11 @@ public class AppController {
         );
         return;
       }
+
       boolean delete = Alerts.confirmation(
           "alert.delete_person.header", null, "alert.delete_person.title");
       if (delete) {
+        // Unlink life events from person
         for (LifeEvent lifeEvent : person.getLifeEventsAsActor()) {
           if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
             lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
@@ -530,16 +531,32 @@ public class AppController {
             person.removeLifeEvent(lifeEvent);
           }
         }
+        // Unlink person from life events
         for (LifeEvent lifeEvent : person.getLifeEventsAsWitness()) {
           lifeEvent.removeWitness(person);
         }
-        for (Person child : new HashSet<>(person.children())) {
-          for (Person.RelativeType type : Person.RelativeType.values()) {
-            child.removeRelative(person, type);
-          }
+
+        // Unlink person’s parents
+        person.setParent(0, null);
+        person.setParent(1, null);
+        // Unlink person’s children
+        for (Person child : person.children()) {
           child.removeParent(person);
         }
+
+        // Unlink person’s non-biological children and parents
+        for (Person.RelativeType type : Person.RelativeType.values()) {
+          for (Person nonBiologicalChild : person.nonBiologicalChildren(type)) {
+            nonBiologicalChild.removeRelative(person, type);
+          }
+          for (Person relative : person.getRelatives(type)) {
+            person.removeRelative(relative, type);
+          }
+        }
+        // Remove person from tree
         this.familyTree.removePerson(person);
+
+        // Update UI
         this.familyTreePane.refresh();
         this.familyTreeView.refresh();
         this.defaultEmptyTree = false;
