@@ -78,7 +78,6 @@ public class FamilyTreePane extends FamilyTreeComponent {
     PersonWidget root = this.buildParentsTree();
     this.drawChildToParentsLines();
     double xOffset = this.buildChildrenAndSiblingsAndPartnersTree(root);
-    System.out.println(xOffset);
     if (xOffset <= 0) {
       this.pane.getChildren().forEach(w -> w.setLayoutX(w.getLayoutX() - xOffset + HGAP));
     }
