@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -195,6 +196,7 @@ public class AppController {
     this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PERSON, Icon.Size.SMALL));
     this.removePersonMenuItem.setOnAction(event -> this.onRemovePersonAction());
     this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
+    this.addChildMenuItem.setOnAction(event -> this.onAddChildAction());
     this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
     this.addSiblingMenuItem.setOnAction(event -> this.onAddSiblingAction());
     this.editParentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.SMALL));
@@ -228,6 +230,7 @@ public class AppController {
     this.addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
     this.addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
     this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
+    this.addChildToolbarButton.setOnAction(event -> this.onAddChildAction());
     this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
     this.addSiblingToolbarButton.setOnAction(event -> this.onAddSiblingAction());
     this.editParentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.BIG));
@@ -303,7 +306,7 @@ public class AppController {
    */
   private void onRenameTreeAction() {
     Optional<String> name = Alerts.textInput(
-        "alert.tree_name.header", "alert.tree_name.label", null, null);
+        "alert.tree_name.header", "alert.tree_name.label", null, this.familyTree.name());
     if (name.isEmpty()) {
       return;
     }
@@ -577,6 +580,30 @@ public class AppController {
       Person parent1 = parents.left().orElse(null);
       Person parent2 = parents.right().orElse(null);
       this.openEditPersonDialog(null, null, parent1, parent2, EditPersonDialog.TAB_PROFILE);
+    });
+  }
+
+  /**
+   * Open person edit dialog to create a new child of the selected person.
+   * <p>
+   * Prompts the user to select the partner with whom the selected person had the child with.
+   */
+  private void onAddChildAction() {
+    this.getSelectedPerson().ifPresent(person -> {
+      List<Person> persons = this.familyTree.persons().stream()
+          .filter(p -> p != person)
+          .sorted(Person.lastThenFirstNamesComparator())
+          .toList();
+      Person partner = null;
+      if (!persons.isEmpty()) {
+        Optional<Person> selection = Alerts.chooser("alert.partner_chooser.header",
+            "alert.partner_chooser.label", "alert.partner_chooser.title", persons);
+        if (selection.isEmpty()) {
+          return;
+        }
+        partner = selection.get();
+      }
+      this.openEditPersonDialog(null, null, person, partner, EditPersonDialog.TAB_PROFILE);
     });
   }
 

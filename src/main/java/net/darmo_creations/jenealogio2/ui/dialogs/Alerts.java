@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -100,6 +101,10 @@ public final class Alerts {
     hBox.getChildren().addAll(label, choicesCombo);
     hBox.setAlignment(Pos.CENTER);
     alert.getDialogPane().setContent(hBox);
+    alert.setOnShown(e -> {
+      Platform.runLater(choicesCombo::requestFocus);
+      e.consume();
+    });
     Optional<ButtonType> buttonType = alert.showAndWait();
     if (buttonType.isPresent() && !buttonType.get().getButtonData().isCancelButton()) {
       return Optional.of(choicesCombo.getSelectionModel().getSelectedItem());
@@ -134,6 +139,10 @@ public final class Alerts {
     hBox.getChildren().addAll(label, textField);
     hBox.setAlignment(Pos.CENTER);
     alert.getDialogPane().setContent(hBox);
+    alert.setOnShown(e -> {
+      Platform.runLater(textField::requestFocus);
+      e.consume();
+    });
     Optional<ButtonType> buttonType = alert.showAndWait();
     if (buttonType.isPresent() && !buttonType.get().getButtonData().isCancelButton()) {
       return StringUtils.stripNullable(textField.getText());
