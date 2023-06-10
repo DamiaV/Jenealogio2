@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -400,9 +401,15 @@ public class FamilyTreePane extends FamilyTreeComponent {
     w.clickListeners().add(this::onPersonWidgetClick);
     if (showMoreIcon) {
       Label moreIcon = new Label("", App.config().theme().getIcon(Icon.MORE, Icon.Size.SMALL));
+      moreIcon.getStyleClass().add("more-icon");
+      moreIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.more_icon.tooltip")));
       this.pane.getChildren().add(moreIcon);
-      moreIcon.layoutXProperty().bind(w.layoutXProperty());
-      moreIcon.layoutYProperty().bind(w.layoutYProperty().subtract(moreIcon.getPrefHeight()));
+      moreIcon.layoutXProperty().bind(w.layoutXProperty().add(4));
+      moreIcon.layoutYProperty().bind(w.layoutYProperty().subtract(-3));
+      moreIcon.setOnMouseClicked(event -> {
+        this.onPersonWidgetClick(w, event.getClickCount(), event.getButton());
+        event.consume();
+      });
     }
     return w;
   }
@@ -466,7 +473,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
    */
   private void onBackgroundClicked(MouseEvent event) {
     this.deselectAll();
-    this.firePersonClickEvent(null, event.getClickCount(), MouseButton.PRIMARY);
+    if (event.getButton() == MouseButton.PRIMARY) {
+      this.firePersonClickEvent(null, event.getClickCount(), event.getButton());
+    }
     this.pane.requestFocus();
   }
 
