@@ -66,10 +66,13 @@ public class PersonWidget extends AnchorPane {
    * @param person    A person object.
    * @param childInfo Information about the displayed child this widget is a parent of.
    */
-  public PersonWidget(final Person person, final ChildInfo childInfo) {
+  public PersonWidget(final Person person, final ChildInfo childInfo, boolean isCenter) {
     this.person = person;
     this.childInfo = childInfo;
     this.getStyleClass().add("person-widget");
+    if (isCenter) {
+      this.getStyleClass().add("center");
+    }
 
     this.setPrefWidth(WIDTH);
     this.setPrefHeight(HEIGHT);

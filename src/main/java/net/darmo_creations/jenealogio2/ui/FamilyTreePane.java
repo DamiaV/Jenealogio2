@@ -88,7 +88,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @return The widget for the tree’s root.
    */
   private PersonWidget buildParentsTree() {
-    PersonWidget root = this.createWidget(this.targettedPerson, null, false);
+    PersonWidget root = this.createWidget(this.targettedPerson, null, false, true);
 
     List<List<PersonWidget>> levels = new ArrayList<>();
     levels.add(List.of(root));
@@ -105,11 +105,11 @@ public class FamilyTreePane extends FamilyTreeComponent {
             boolean hasHiddenParents = i == MAX_LEVEL && parents.left().map(Person::hasAnyParents).orElse(false);
             boolean hasHiddenChildren = i > 1 && parents.left().map(p -> p.children().stream().anyMatch(p_ -> p_ != c)).orElse(false);
             PersonWidget parent1Widget = this.createWidget(parents.left().orElse(null),
-                new ChildInfo(c, 0), hasHiddenParents || hasHiddenChildren);
+                new ChildInfo(c, 0), hasHiddenParents || hasHiddenChildren, false);
             hasHiddenParents = i == MAX_LEVEL && parents.right().map(Person::hasAnyParents).orElse(false);
             hasHiddenChildren = i > 1 && parents.right().map(p -> p.children().stream().anyMatch(p_ -> p_ != c)).orElse(false);
             PersonWidget parent2Widget = this.createWidget(parents.right().orElse(null),
-                new ChildInfo(c, 1), hasHiddenParents || hasHiddenChildren);
+                new ChildInfo(c, 1), hasHiddenParents || hasHiddenChildren, false);
             widgets.add(parent1Widget);
             widgets.add(parent2Widget);
             childWidget.setParentWidget1(parent1Widget);
@@ -250,7 +250,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       x -= personW + HGAP;
       Person sibling = olderSiblings.get(i);
       boolean hasHiddenChildren = !sibling.children().isEmpty();
-      PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren);
+      PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren, false);
       widget.setLayoutX(x);
       widget.setLayoutY(rootY);
       widget.setParentWidget1(root.parentWidget1().orElse(null));
@@ -269,7 +269,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       x += HGAP + personW;
 
       boolean hasHiddenParents = partner.hasAnyParents();
-      PersonWidget partnerWidget = this.createWidget(partner, null, hasHiddenParents);
+      PersonWidget partnerWidget = this.createWidget(partner, null, hasHiddenParents, false);
       partnerWidget.setLayoutX(x);
       partnerWidget.setLayoutY(rootY);
 
@@ -293,7 +293,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       final double childY = rootY + VGAP + personH;
       for (Person child : children) {
         boolean hasHiddenChildren = !child.children().isEmpty();
-        PersonWidget childWidget = this.createWidget(child, null, hasHiddenChildren);
+        PersonWidget childWidget = this.createWidget(child, null, hasHiddenChildren, false);
         childWidget.setLayoutX(childX);
         childWidget.setLayoutY(childY);
         childWidget.setParentWidget1(root);
@@ -314,7 +314,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       x += HGAP + personW;
       Person sibling = youngerSiblings.get(i);
       boolean hasHiddenChildren = !sibling.children().isEmpty();
-      PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren);
+      PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren, false);
       widget.setLayoutX(x);
       widget.setLayoutY(rootY);
       widget.setParentWidget1(root.parentWidget1().orElse(null));
@@ -356,8 +356,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @param childInfo Information about the relation to its visible child.
    * @return The new component.
    */
-  private PersonWidget createWidget(final Person person, final ChildInfo childInfo, boolean showMoreIcon) {
-    PersonWidget w = new PersonWidget(person, childInfo);
+  private PersonWidget createWidget(final Person person, final ChildInfo childInfo, boolean showMoreIcon, boolean isCenter) {
+    PersonWidget w = new PersonWidget(person, childInfo, isCenter);
     this.pane.getChildren().add(w);
     this.personWidgets.add(w);
     w.clickListeners().add(this::onPersonWidgetClick);

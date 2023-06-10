@@ -14,9 +14,17 @@
     -fx-cursor: hand;
 }
 
+.person-widget.center {
+    -fx-background-color: lightgreen;
+}
+
 .person-widget:hover {
     -fx-background-color: derive(-fx-base, -15%);
     -fx-border-color: derive(-fx-base, -25%);
+}
+
+.person-widget.center:hover {
+    -fx-background-color: derive(lightgreen, -15%);
 }
 
 .person-widget:selected {
