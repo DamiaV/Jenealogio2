@@ -9,6 +9,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
@@ -33,7 +34,7 @@ import java.util.Optional;
  */
 public class PersonWidget extends AnchorPane {
   public static final int WIDTH = 120;
-  public static final int HEIGHT = 140;
+  public static final int HEIGHT = 164;
 
   private static final String EMPTY_LABEL_VALUE = "?";
 
@@ -66,7 +67,7 @@ public class PersonWidget extends AnchorPane {
    * @param person    A person object.
    * @param childInfo Information about the displayed child this widget is a parent of.
    */
-  public PersonWidget(final Person person, final ChildInfo childInfo, boolean isCenter) {
+  public PersonWidget(final Person person, final ChildInfo childInfo, boolean hiddenRelatives, boolean isCenter) {
     this.person = person;
     this.childInfo = childInfo;
     this.getStyleClass().add("person-widget");
@@ -85,6 +86,22 @@ public class PersonWidget extends AnchorPane {
     AnchorPane.setLeftAnchor(pane, 0.0);
     AnchorPane.setRightAnchor(pane, 0.0);
     this.getChildren().add(pane);
+
+    BorderPane iconsBox = new BorderPane();
+    if (person != null && person.disambiguationID().isPresent()) {
+      int id = person.disambiguationID().get();
+      Label idLabel = new Label("#" + id);
+      iconsBox.setLeft(idLabel);
+    } else {
+      iconsBox.setLeft(new Label()); // Empty label for proper alignment
+    }
+    if (hiddenRelatives) {
+      Label moreIcon = new Label("", App.config().theme().getIcon(Icon.MORE, Icon.Size.SMALL));
+      moreIcon.getStyleClass().add("more-icon");
+      moreIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.more_icon.tooltip")));
+      iconsBox.setRight(moreIcon);
+    }
+    pane.getChildren().add(iconsBox);
 
     int size = 54;
     this.imagePane.setPrefSize(size, size);

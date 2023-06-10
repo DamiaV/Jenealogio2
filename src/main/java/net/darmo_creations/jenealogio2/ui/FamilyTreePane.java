@@ -3,20 +3,16 @@ package net.darmo_creations.jenealogio2.ui;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
-import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.AppController;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
-import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
 import org.jetbrains.annotations.NotNull;
 
@@ -395,22 +391,10 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @return The new component.
    */
   private PersonWidget createWidget(final Person person, final ChildInfo childInfo, boolean showMoreIcon, boolean isCenter) {
-    PersonWidget w = new PersonWidget(person, childInfo, isCenter);
+    PersonWidget w = new PersonWidget(person, childInfo, showMoreIcon, isCenter);
     this.pane.getChildren().add(w);
     this.personWidgets.add(w);
     w.clickListeners().add(this::onPersonWidgetClick);
-    if (showMoreIcon) {
-      Label moreIcon = new Label("", App.config().theme().getIcon(Icon.MORE, Icon.Size.SMALL));
-      moreIcon.getStyleClass().add("more-icon");
-      moreIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.more_icon.tooltip")));
-      this.pane.getChildren().add(moreIcon);
-      moreIcon.layoutXProperty().bind(w.layoutXProperty().add(4));
-      moreIcon.layoutYProperty().bind(w.layoutYProperty().subtract(-3));
-      moreIcon.setOnMouseClicked(event -> {
-        this.onPersonWidgetClick(w, event.getClickCount(), event.getButton());
-        event.consume();
-      });
-    }
     return w;
   }
 
