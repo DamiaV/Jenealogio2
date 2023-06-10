@@ -77,7 +77,11 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
     PersonWidget root = this.buildParentsTree();
     this.drawChildToParentsLines();
-    this.buildChildrenAndSiblingsAndPartnersTree(root);
+    double xOffset = this.buildChildrenAndSiblingsAndPartnersTree(root);
+    System.out.println(xOffset);
+    if (xOffset <= 0) {
+      this.pane.getChildren().forEach(w -> w.setLayoutX(w.getLayoutX() - xOffset + HGAP));
+    }
 
     this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
 
@@ -172,8 +176,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * Build the tree of partners, siblings and direct children of the tree’s root.
    *
    * @param root Tree’s root.
+   * @return X amount to move every widgets by.
    */
-  private void buildChildrenAndSiblingsAndPartnersTree(@NotNull PersonWidget root) {
+  private double buildChildrenAndSiblingsAndPartnersTree(@NotNull PersonWidget root) {
     // Get root’s partners sorted by birth date and name
     //noinspection OptionalGetWithoutIsPresent
     final Person rootPerson = root.person().get(); // Always present
@@ -246,9 +251,12 @@ public class FamilyTreePane extends FamilyTreeComponent {
         .sorted(personComparator.apply(false))
         .toList()));
 
+    // Used to detect whether any widget have a negative x coordinate
+    double minX = rootX;
+
     // Render older siblings to the left of root
     double x = rootX;
-    for (int i = olderSiblings.size() - 1; i >= 0; i--) { // FIXME may have negative x
+    for (int i = olderSiblings.size() - 1; i >= 0; i--) {
       x -= personW + HGAP;
       Person sibling = olderSiblings.get(i);
       boolean hasHiddenChildren = !sibling.children().isEmpty();
@@ -261,6 +269,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
       double lineY = rootY - VGAP / 2.0;
       this.drawLine(lineX, rootY, lineX, lineY);
       this.drawLine(lineX, lineY, rootX + personW / 2.0, lineY);
+      if (x < minX) {
+        minX = x;
+      }
     }
 
     x = rootX;
@@ -293,6 +304,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
       double rightParentX = partnerWidget.getLayoutX() - HGAP / 2.0;
       double childX = x - halfChildrenWidth - HGAP / 2.0;
       final double childY = rootY + VGAP + personH;
+      if (childX < minX) {
+        minX = childX;
+      }
       for (Person child : children) {
         boolean hasHiddenChildren = !child.children().isEmpty();
         PersonWidget childWidget = this.createWidget(child, null, hasHiddenChildren, false);
@@ -326,6 +340,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
       this.drawLine(lineX, rootY, lineX, lineY);
       this.drawLine(lineX, lineY, rootX + personW / 2.0, lineY);
     }
+
+    return minX;
   }
 
   /**
