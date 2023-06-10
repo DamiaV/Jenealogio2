@@ -310,6 +310,25 @@ public class EditPersonDialog extends DialogBase<Person> {
   }
 
   /**
+   * Set the value of the parents fields.
+   *
+   * @param parent1 Person to set as parent 1.
+   * @param parent2 Person to set as parent 2.
+   */
+  public void setParents(Person parent1, Person parent2) {
+    if (parent1 != null) {
+      this.parent1Combo.getSelectionModel().select(new ComboBoxItem<>(parent1));
+    } else {
+      this.parent1Combo.getSelectionModel().select(0);
+    }
+    if (parent2 != null) {
+      this.parent2Combo.getSelectionModel().select(new ComboBoxItem<>(parent2));
+    } else {
+      this.parent2Combo.getSelectionModel().select(0);
+    }
+  }
+
+  /**
    * Select the tab at the given index.
    *
    * @param index Tab’s index.

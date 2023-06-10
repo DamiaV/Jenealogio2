@@ -196,6 +196,7 @@ public class AppController {
     this.removePersonMenuItem.setOnAction(event -> this.onRemovePersonAction());
     this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
     this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
+    this.addSiblingMenuItem.setOnAction(event -> this.onAddSiblingAction());
     this.editParentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.SMALL));
     this.editParentsMenuItem.setOnAction(event -> this.onEditParentsAction());
     this.editLifeEventsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.SMALL));
@@ -228,6 +229,7 @@ public class AppController {
     this.addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
     this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
     this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
+    this.addSiblingToolbarButton.setOnAction(event -> this.onAddSiblingAction());
     this.editParentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.BIG));
     this.editParentsToolbarButton.setOnAction(event -> this.onEditParentsAction());
     this.editLifeEventsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.BIG));
@@ -475,7 +477,7 @@ public class AppController {
    * Open person edit dialog to create a new person.
    */
   private void onAddPersonAction() {
-    this.openEditPersonDialog(null, null, EditPersonDialog.TAB_PROFILE);
+    this.openEditPersonDialog(null, null, null, null, EditPersonDialog.TAB_PROFILE);
   }
 
   /**
@@ -483,7 +485,7 @@ public class AppController {
    */
   private void onEditPersonAction() {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, null, EditPersonDialog.TAB_PROFILE));
+        person -> this.openEditPersonDialog(person, null, null, null, EditPersonDialog.TAB_PROFILE));
   }
 
   /**
@@ -491,7 +493,7 @@ public class AppController {
    */
   private void onEditParentsAction() {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, null, EditPersonDialog.TAB_PARENTS));
+        person -> this.openEditPersonDialog(person, null, null, null, EditPersonDialog.TAB_PARENTS));
   }
 
   /**
@@ -499,7 +501,7 @@ public class AppController {
    */
   private void onEditLifeEventsAction() {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, null, EditPersonDialog.TAB_EVENTS));
+        person -> this.openEditPersonDialog(person, null, null, null, EditPersonDialog.TAB_EVENTS));
   }
 
   /**
@@ -567,12 +569,24 @@ public class AppController {
   }
 
   /**
+   * Open person edit dialog to create a new sibling of the selected person.
+   */
+  private void onAddSiblingAction() {
+    this.getSelectedPerson().ifPresent(person -> {
+      var parents = person.parents();
+      Person parent1 = parents.left().orElse(null);
+      Person parent2 = parents.right().orElse(null);
+      this.openEditPersonDialog(null, null, parent1, parent2, EditPersonDialog.TAB_PROFILE);
+    });
+  }
+
+  /**
    * Open person edit dialog to create a parent of the given child.
    *
    * @param childInfo Information about the child of the parent to create.
    */
   private void onNewParentClick(@NotNull ChildInfo childInfo) {
-    this.openEditPersonDialog(null, childInfo, EditPersonDialog.TAB_PROFILE);
+    this.openEditPersonDialog(null, childInfo, null, null, EditPersonDialog.TAB_PROFILE);
   }
 
   /**
@@ -594,7 +608,7 @@ public class AppController {
       }
     }
     if (clickCount == 2 && button == MouseButton.PRIMARY) {
-      this.openEditPersonDialog(person, null, EditPersonDialog.TAB_PROFILE);
+      this.openEditPersonDialog(person, null, null, null, EditPersonDialog.TAB_PROFILE);
     }
     this.updateUI();
   }
@@ -606,8 +620,11 @@ public class AppController {
    * @param childInfo Optional information about the person’s currently visible child.
    * @param tabIndex  Index of the tab to show.
    */
-  private void openEditPersonDialog(Person person, ChildInfo childInfo, int tabIndex) {
+  private void openEditPersonDialog(Person person, ChildInfo childInfo, Person parent1, Person parent2, int tabIndex) {
     this.editPersonDialog.setPerson(person, childInfo, this.familyTree);
+    if (parent1 != null || parent2 != null) {
+      this.editPersonDialog.setParents(parent1, parent2);
+    }
     this.editPersonDialog.selectTab(tabIndex);
     Optional<Person> p = this.editPersonDialog.showAndWait();
     if (p.isPresent()) {
