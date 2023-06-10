@@ -182,28 +182,32 @@ public class FamilyTreePane extends FamilyTreeComponent {
     final double rootY = root.getLayoutY();
 
     // Compare birth dates if available, names otherwise
-    Function<Boolean, Comparator<Person>> personComparator = inverseDates -> (p1, p2) -> {
+    Function<Boolean, Comparator<Person>> personComparator = inverse -> (p1, p2) -> {
       Optional<CalendarDate> birthDate1 = p1.getBirthDate();
       Optional<CalendarDate> birthDate2 = p2.getBirthDate();
       if (birthDate1.isPresent() && birthDate2.isPresent()) {
         int c = birthDate1.get().compareTo(birthDate2.get());
-        if (inverseDates) {
+        if (inverse) {
           c = -c;
         }
         if (c != 0) {
           return c;
         }
       }
-      return Person.lastThenFirstNamesComparator().compare(p1, p2);
+      int c = Person.lastThenFirstNamesComparator().compare(p1, p2);
+      if (inverse) {
+        c = -c;
+      }
+      return c;
     };
 
     List<Person> siblings = this.getSiblings(rootPerson);
     List<Person> olderSiblings = siblings.stream()
-        .filter(p -> personComparator.apply(true).compare(p, rootPerson) > 0)
+        .filter(p -> personComparator.apply(false).compare(p, rootPerson) < 0)
         .sorted(personComparator.apply(false))
         .toList();
     List<Person> youngerSiblings = siblings.stream()
-        .filter(p -> personComparator.apply(true).compare(p, rootPerson) <= 0)
+        .filter(p -> personComparator.apply(false).compare(p, rootPerson) >= 0)
         .sorted(personComparator.apply(true))
         .toList();
 
@@ -242,7 +246,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
     // Render older siblings to the left of root
     double x = rootX;
-    for (int i = olderSiblings.size() - 1; i >= 0; i--) {
+    for (int i = olderSiblings.size() - 1; i >= 0; i--) { // FIXME may have negative x
       x -= personW + HGAP;
       Person sibling = olderSiblings.get(i);
       boolean hasHiddenChildren = !sibling.children().isEmpty();
