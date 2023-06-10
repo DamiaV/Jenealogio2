@@ -50,6 +50,8 @@ public enum Icon {
 
   ADD_PARENT("plus"),
   REMOVE_PARENT("delete"),
+
+  MORE("plus"),
   ;
 
   private final String baseName;

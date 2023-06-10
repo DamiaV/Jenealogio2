@@ -3,16 +3,19 @@ package net.darmo_creations.jenealogio2.ui;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
+import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.AppController;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
+import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
 import org.jetbrains.annotations.NotNull;
 
@@ -84,7 +87,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @return The widget for the tree’s root.
    */
   private PersonWidget buildParentsTree() {
-    PersonWidget root = this.createWidget(this.targettedPerson, null);
+    PersonWidget root = this.createWidget(this.targettedPerson, null, false);
 
     List<List<PersonWidget>> levels = new ArrayList<>();
     levels.add(List.of(root));
@@ -98,10 +101,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
           if (child.isPresent()) {
             Person c = child.get();
             var parents = c.parents();
+            boolean hasHiddenParents = i == MAX_LEVEL && parents.left().map(Person::hasAnyParents).orElse(false);
+            boolean hasHiddenChildren = i > 1 && parents.left().map(p -> p.children().stream().anyMatch(p_ -> p_ != c)).orElse(false);
             PersonWidget parent1Widget = this.createWidget(parents.left().orElse(null),
-                new ChildInfo(c, 0));
+                new ChildInfo(c, 0), hasHiddenParents || hasHiddenChildren);
+            hasHiddenParents = i == MAX_LEVEL && parents.right().map(Person::hasAnyParents).orElse(false);
+            hasHiddenChildren = i > 1 && parents.right().map(p -> p.children().stream().anyMatch(p_ -> p_ != c)).orElse(false);
             PersonWidget parent2Widget = this.createWidget(parents.right().orElse(null),
-                new ChildInfo(c, 1));
+                new ChildInfo(c, 1), hasHiddenParents || hasHiddenChildren);
             widgets.add(parent1Widget);
             widgets.add(parent2Widget);
             childWidget.setParentWidget1(parent1Widget);
@@ -189,10 +196,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       return Person.lastThenFirstNamesComparator().compare(p1, p2);
     };
 
-    //noinspection OptionalGetWithoutIsPresent
-    List<Person> siblings = this.familyTree().get().persons().stream()
-        .filter(p -> p != rootPerson && p.hasSameParents(rootPerson))
-        .toList();
+    List<Person> siblings = this.getSiblings(rootPerson);
     List<Person> olderSiblings = siblings.stream()
         .filter(p -> personComparator.apply(true).compare(p, rootPerson) > 0)
         .sorted(personComparator.apply(false))
@@ -222,7 +226,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
     double x = rootX;
     for (int i = olderSiblings.size() - 1; i >= 0; i--) {
       x -= personW + HGAP;
-      PersonWidget widget = this.createWidget(olderSiblings.get(i), null);
+      Person sibling = olderSiblings.get(i);
+      boolean hasHiddenChildren = !sibling.children().isEmpty();
+      PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren);
       widget.setLayoutX(x);
       widget.setLayoutY(rootY);
       widget.setParentWidget1(root.parentWidget1().orElse(null));
@@ -239,7 +245,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
     for (int i = 0; i < partnersNb; i++) {
       Person partner = partners.get(i);
       x += HGAP + personW;
-      PersonWidget partnerWidget = this.createWidget(partner, null);
+
+      boolean hasHiddenParents = partner.hasAnyParents();
+      PersonWidget partnerWidget = this.createWidget(partner, null, hasHiddenParents);
       partnerWidget.setLayoutX(x);
       partnerWidget.setLayoutY(rootY);
 
@@ -262,7 +270,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
       double childX = x - halfChildrenWidth - HGAP / 2.0;
       final double childY = rootY + VGAP + personH;
       for (Person child : children) {
-        PersonWidget childWidget = this.createWidget(child, null);
+        boolean hasHiddenChildren = !child.children().isEmpty();
+        PersonWidget childWidget = this.createWidget(child, null, hasHiddenChildren);
         childWidget.setLayoutX(childX);
         childWidget.setLayoutY(childY);
         childWidget.setParentWidget1(root);
@@ -281,7 +290,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
     // Render younger sibling to the right of root’s partners
     for (int i = youngerSiblings.size() - 1; i >= 0; i--) {
       x += HGAP + personW;
-      PersonWidget widget = this.createWidget(youngerSiblings.get(i), null);
+      Person sibling = youngerSiblings.get(i);
+      boolean hasHiddenChildren = !sibling.children().isEmpty();
+      PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren);
       widget.setLayoutX(x);
       widget.setLayoutY(rootY);
       widget.setParentWidget1(root.parentWidget1().orElse(null));
@@ -304,17 +315,36 @@ public class FamilyTreePane extends FamilyTreeComponent {
   }
 
   /**
+   * Get the list of persons that have the same parents as the given person.
+   *
+   * @param person Person to get siblings of.
+   * @return List of the person’s siblings.
+   */
+  private List<Person> getSiblings(final @NotNull Person person) {
+    //noinspection OptionalGetWithoutIsPresent
+    return this.familyTree().get().persons().stream()
+        .filter(p -> p != person && p.hasSameParents(person))
+        .toList();
+  }
+
+  /**
    * Create a new {@link PersonWidget}.
    *
    * @param person    Person to create a widget for.
    * @param childInfo Information about the relation to its visible child.
    * @return The new component.
    */
-  private PersonWidget createWidget(final Person person, final ChildInfo childInfo) {
+  private PersonWidget createWidget(final Person person, final ChildInfo childInfo, boolean showMoreIcon) {
     PersonWidget w = new PersonWidget(person, childInfo);
     this.pane.getChildren().add(w);
     this.personWidgets.add(w);
     w.clickListeners().add(this::onPersonWidgetClick);
+    if (showMoreIcon) {
+      Label moreIcon = new Label("", App.config().theme().getIcon(Icon.MORE, Icon.Size.SMALL));
+      this.pane.getChildren().add(moreIcon);
+      moreIcon.layoutXProperty().bind(w.layoutXProperty());
+      moreIcon.layoutYProperty().bind(w.layoutYProperty().subtract(moreIcon.getPrefHeight()));
+    }
     return w;
   }
 
