@@ -3,10 +3,12 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 import javafx.fxml.FXML;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Spinner;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.themes.Theme;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -20,6 +22,9 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   @FXML
   @SuppressWarnings("unused")
   private ComboBox<Theme> themeCombo;
+  @FXML
+  @SuppressWarnings("unused")
+  private Spinner<Integer> maxTreeHeightField;
 
   private Config initialConfig;
   private Config localConfig;
@@ -31,7 +36,13 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     super("settings", false, ButtonTypes.OK, ButtonTypes.CANCEL);
     //noinspection DataFlowIssue
     this.languageCombo.getItems().addAll(Config.languages());
+    this.languageCombo.getSelectionModel().selectedItemProperty()
+        .addListener((observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
     this.themeCombo.getItems().addAll(Theme.themes());
+    this.themeCombo.getSelectionModel().selectedItemProperty()
+        .addListener((observable, oldValue, newValue) -> this.onThemeSelect(newValue));
+    this.maxTreeHeightField.valueProperty()
+        .addListener((observable, oldValue, newValue) -> this.onMaxTreeHeightUpdate(newValue));
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
         ChangeType changeType = this.configChanged();
@@ -61,6 +72,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
 
     this.languageCombo.getSelectionModel().select(this.localConfig.language());
     this.themeCombo.getSelectionModel().select(this.localConfig.theme());
+    this.maxTreeHeightField.getValueFactory().setValue(this.localConfig.maxTreeHeight());
 
     this.updateState();
   }
@@ -86,17 +98,18 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     return !this.localConfig.equals(this.initialConfig) ? ChangeType.NO_RESTART_NEEDED : ChangeType.NONE;
   }
 
-  @FXML
-  @SuppressWarnings("unused")
-  public void onLanguageSelect() {
-    this.localConfig = this.localConfig.withLanguage(this.languageCombo.getSelectionModel().getSelectedItem());
+  private void onLanguageSelect(@NotNull Language newValue) {
+    this.localConfig = this.localConfig.withLanguage(newValue);
     this.updateState();
   }
 
-  @FXML
-  @SuppressWarnings("unused")
-  public void onThemeSelect() {
-    this.localConfig = this.localConfig.withTheme(this.themeCombo.getSelectionModel().getSelectedItem());
+  private void onThemeSelect(@NotNull Theme newValue) {
+    this.localConfig = this.localConfig.withTheme(newValue);
+    this.updateState();
+  }
+
+  private void onMaxTreeHeightUpdate(int newValue) {
+    this.localConfig.setMaxTreeHeight(newValue);
     this.updateState();
   }
 

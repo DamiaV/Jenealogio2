@@ -27,7 +27,10 @@ import java.util.stream.Collectors;
  * JavaFX component displaying a part of a family tree’s graph.
  */
 public class FamilyTreePane extends FamilyTreeComponent {
-  private static final int MAX_LEVEL = 4;
+  public static final int MIN_ALLOWED_HEIGHT = 1;
+  public static final int MAX_ALLOWED_HEIGHT = 7;
+  public static final int DEFAULT_MAX_HEIGHT = 4;
+
   private static final int HGAP = 10;
   private static final int VGAP = 20;
 
@@ -37,6 +40,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
   private Person targettedPerson;
   private boolean internalClick;
+  private int maxHeight;
 
   /**
    * Create an empty family tree pane.
@@ -60,6 +64,18 @@ public class FamilyTreePane extends FamilyTreeComponent {
     super.setFamilyTree(familyTree);
   }
 
+  /**
+   * Set the maximum number of levels to display above the center widget.
+   *
+   * @param height The new maximum height.
+   */
+  public void setMaxHeight(int height) {
+    if (height < MIN_ALLOWED_HEIGHT || height > MAX_ALLOWED_HEIGHT) {
+      throw new IllegalArgumentException("invalid max height");
+    }
+    this.maxHeight = height;
+  }
+
   @Override
   public void refresh() {
     this.pane.getChildren().clear();
@@ -79,7 +95,11 @@ public class FamilyTreePane extends FamilyTreeComponent {
     this.drawChildToParentsLines();
     double xOffset = this.buildChildrenAndSiblingsAndPartnersTree(root);
     if (xOffset <= 0) {
-      this.pane.getChildren().forEach(w -> w.setLayoutX(w.getLayoutX() - xOffset + HGAP));
+      this.pane.getChildren().forEach(w -> {
+        if (!w.layoutXProperty().isBound()) {
+          w.setLayoutX(w.getLayoutX() - xOffset + HGAP);
+        }
+      });
     }
 
     this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
@@ -98,7 +118,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
     List<List<PersonWidget>> levels = new ArrayList<>();
     levels.add(List.of(root));
     // Build levels breadth-first
-    for (int i = 1; i <= MAX_LEVEL; i++) {
+    for (int i = 1; i <= this.maxHeight; i++) {
       List<PersonWidget> widgets = new ArrayList<>();
       levels.add(widgets);
       for (PersonWidget childWidget : levels.get(i - 1)) {
@@ -107,11 +127,11 @@ public class FamilyTreePane extends FamilyTreeComponent {
           if (child.isPresent()) {
             Person c = child.get();
             var parents = c.parents();
-            boolean hasHiddenParents = i == MAX_LEVEL && parents.left().map(Person::hasAnyParents).orElse(false);
+            boolean hasHiddenParents = i == this.maxHeight && parents.left().map(Person::hasAnyParents).orElse(false);
             boolean hasHiddenChildren = i > 1 && parents.left().map(p -> p.children().stream().anyMatch(p_ -> p_ != c)).orElse(false);
             PersonWidget parent1Widget = this.createWidget(parents.left().orElse(null),
                 new ChildInfo(c, 0), hasHiddenParents || hasHiddenChildren, false);
-            hasHiddenParents = i == MAX_LEVEL && parents.right().map(Person::hasAnyParents).orElse(false);
+            hasHiddenParents = i == this.maxHeight && parents.right().map(Person::hasAnyParents).orElse(false);
             hasHiddenChildren = i > 1 && parents.right().map(p -> p.children().stream().anyMatch(p_ -> p_ != c)).orElse(false);
             PersonWidget parent2Widget = this.createWidget(parents.right().orElse(null),
                 new ChildInfo(c, 1), hasHiddenParents || hasHiddenChildren, false);

@@ -33,6 +33,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
   private final TreeView<Object> treeView = new TreeView<>();
   private final TreeItem<Object> personsItem;
   private final Button clearButton;
+  private final ToggleButton syncTreeButton;
 
   private boolean internalSelectionChange;
 
@@ -71,10 +72,10 @@ public class FamilyTreeView extends FamilyTreeComponent {
     this.clearButton.setDisable(true);
     hBox.getChildren().add(this.clearButton);
 
-    ToggleButton syncTreeButton = new ToggleButton("", theme.getIcon(Icon.SYNC_TREE, Icon.Size.SMALL));
-    syncTreeButton.setTooltip(new Tooltip(language.translate("treeview.sync_tree")));
-    syncTreeButton.setSelected(config.shouldSyncTreeWithMainPane());
-    syncTreeButton.selectedProperty().addListener(
+    this.syncTreeButton = new ToggleButton("", theme.getIcon(Icon.SYNC_TREE, Icon.Size.SMALL));
+    this.syncTreeButton.setTooltip(new Tooltip(language.translate("treeview.sync_tree")));
+    this.syncTreeButton.setSelected(config.shouldSyncTreeWithMainPane());
+    this.syncTreeButton.selectedProperty().addListener(
         (observable, oldValue, newValue) -> {
           config.setShouldSyncTreeWithMainPane(newValue);
           try {
@@ -83,7 +84,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
             App.LOGGER.exception(e);
           }
         });
-    hBox.getChildren().add(syncTreeButton);
+    hBox.getChildren().add(this.syncTreeButton);
 
     // Tree view
 
@@ -123,6 +124,8 @@ public class FamilyTreeView extends FamilyTreeComponent {
           .forEach(person -> this.personsItem.getChildren().add(new TreeItem<>(person)));
       this.personsItem.setExpanded(true);
     });
+    // Option may have been updated from elsewhere
+    this.syncTreeButton.setSelected(App.config().shouldSyncTreeWithMainPane());
   }
 
   @Override

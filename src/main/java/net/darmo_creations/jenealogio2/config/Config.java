@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.config;
 
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.ini4j.Wini;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,7 @@ public final class Config implements Cloneable {
   private static final String LANGUAGE_OPTION = "language";
   private static final String THEME_OPTION = "theme";
   private static final String SYNC_TREE_OPTION = "sync_tree";
+  private static final String MAX_TREE_HEIGHT = "max_tree_height";
 
   /**
    * Load the configuration from the settings file.
@@ -55,11 +57,16 @@ public final class Config implements Cloneable {
     }
     String themeID = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION)).orElse(Theme.DEFAULT_THEME_ID);
     Theme theme = Theme.getTheme(themeID).orElseThrow(() -> new ConfigException("undefined theme: " + themeID));
-    Boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
+    boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
+    Integer maxTreeHeight = ini.get(APP_SECTION, MAX_TREE_HEIGHT, Integer.class);
+    if (maxTreeHeight == null) {
+      maxTreeHeight = FamilyTreePane.DEFAULT_MAX_HEIGHT;
+    }
     return new Config(
         LANGUAGES.get(langCode),
         theme,
-        syncTree != null && syncTree,
+        syncTree,
+        maxTreeHeight,
         debug
     );
   }
@@ -109,6 +116,7 @@ public final class Config implements Cloneable {
   private final Theme theme;
   private final boolean debug;
   private boolean syncTreeWithMainPane;
+  private int maxTreeHeight;
 
   /**
    * Create a configuration object.
@@ -116,12 +124,14 @@ public final class Config implements Cloneable {
    * @param language             Language to use.
    * @param theme                Theme to use.
    * @param syncTreeWithMainPane Whether the tree pane and view should be synchronized.
+   * @param maxTreeHeight        Maximum number of levels to display above the center widget in the tree panel.
    * @param debug                Whether to run the app in debug mode.
    */
-  public Config(@NotNull Language language, @NotNull Theme theme, boolean syncTreeWithMainPane, boolean debug) {
+  public Config(@NotNull Language language, @NotNull Theme theme, boolean syncTreeWithMainPane, int maxTreeHeight, boolean debug) {
     this.language = Objects.requireNonNull(language);
     this.theme = Objects.requireNonNull(theme);
     this.syncTreeWithMainPane = syncTreeWithMainPane;
+    this.maxTreeHeight = maxTreeHeight;
     this.debug = debug;
   }
 
@@ -156,6 +166,25 @@ public final class Config implements Cloneable {
   }
 
   /**
+   * The maximum number of levels to display above the center widget in the tree panel.
+   */
+  public int maxTreeHeight() {
+    return this.maxTreeHeight;
+  }
+
+  /**
+   * Set the maximum number of levels to display above the center widget in the tree panel.
+   *
+   * @param height The new maximum height.
+   */
+  public void setMaxTreeHeight(int height) {
+    if (height < FamilyTreePane.MIN_ALLOWED_HEIGHT || height > FamilyTreePane.MAX_ALLOWED_HEIGHT) {
+      throw new IllegalArgumentException("invalid max tree height");
+    }
+    this.maxTreeHeight = height;
+  }
+
+  /**
    * Whether the app is in debug mode.
    */
   public boolean isDebug() {
@@ -172,7 +201,9 @@ public final class Config implements Cloneable {
     return new Config(
         language,
         this.theme,
-        this.syncTreeWithMainPane, this.debug
+        this.syncTreeWithMainPane,
+        this.maxTreeHeight,
+        this.debug
     );
   }
 
@@ -186,7 +217,9 @@ public final class Config implements Cloneable {
     return new Config(
         this.language,
         theme,
-        this.syncTreeWithMainPane, this.debug
+        this.syncTreeWithMainPane,
+        this.maxTreeHeight,
+        this.debug
     );
   }
 
@@ -213,6 +246,7 @@ public final class Config implements Cloneable {
     ini.put(APP_SECTION, LANGUAGE_OPTION, this.language.code());
     ini.put(APP_SECTION, THEME_OPTION, this.theme.id());
     ini.put(APP_SECTION, SYNC_TREE_OPTION, this.syncTreeWithMainPane);
+    ini.put(APP_SECTION, MAX_TREE_HEIGHT, this.maxTreeHeight);
     ini.store();
     App.LOGGER.info("Done.");
   }
@@ -226,11 +260,13 @@ public final class Config implements Cloneable {
       return false;
     }
     Config config = (Config) o;
-    return this.debug == config.debug && Objects.equals(this.language, config.language) && Objects.equals(this.theme, config.theme);
+    return this.debug == config.debug && this.syncTreeWithMainPane == config.syncTreeWithMainPane
+        && this.maxTreeHeight == config.maxTreeHeight && Objects.equals(this.language, config.language)
+        && Objects.equals(this.theme, config.theme);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.language, this.theme, this.debug);
+    return Objects.hash(this.language, this.theme, this.debug, this.syncTreeWithMainPane, this.maxTreeHeight);
   }
 }

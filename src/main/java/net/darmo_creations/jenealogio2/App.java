@@ -42,6 +42,11 @@ public class App extends Application {
   private static final String VIEWS_PATH = RESOURCES_ROOT + "views/";
 
   /**
+   * Application’s controller.
+   */
+  private static AppController controller;
+
+  /**
    * App’s global configuration object.
    */
   private static Config config;
@@ -90,7 +95,9 @@ public class App extends Application {
    * @param localConfig Configuration object to copy from.
    */
   public static void updateConfig(@NotNull Config localConfig) {
-    // TODO
+    config.setShouldSyncTreeWithMainPane(localConfig.shouldSyncTreeWithMainPane());
+    config.setMaxTreeHeight(localConfig.maxTreeHeight());
+    controller.onConfigUpdate();
   }
 
   @Override
@@ -109,7 +116,8 @@ public class App extends Application {
     stage.setTitle(NAME);
     stage.setScene(scene);
     stage.show();
-    loader.<AppController>getController().onShown(stage, file);
+    controller = loader.getController();
+    controller.onShown(stage, file);
   }
 
   public static void main(String[] args) {

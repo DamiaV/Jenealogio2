@@ -7,6 +7,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.io.TreeFileReader;
 import net.darmo_creations.jenealogio2.io.TreeFileWriter;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
@@ -167,7 +168,8 @@ public class AppController {
    * Automatically called by JavaFX.
    */
   public void initialize() {
-    Theme theme = App.config().theme();
+    Config config = App.config();
+    Theme theme = config.theme();
 
     // Menu items
     this.newFileMenuItem.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.SMALL));
@@ -260,6 +262,8 @@ public class AppController {
     this.familyTreePane.personClickListeners()
         .add((person, clickCount, button) -> this.onPersonClick(person, clickCount, button, false));
     this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
+
+    this.familyTreePane.setMaxHeight(config.maxTreeHeight());
   }
 
   /**
@@ -282,6 +286,13 @@ public class AppController {
     this.defaultEmptyTree = true;
     String defaultName = App.config().language().translate("app_title.undefined_tree_name");
     this.setFamilyTree(new FamilyTree(defaultName), null);
+  }
+
+  public void onConfigUpdate() {
+    Config config = App.config();
+    this.familyTreePane.setMaxHeight(config.maxTreeHeight());
+    this.familyTreePane.refresh();
+    this.familyTreeView.refresh();
   }
 
   /**
