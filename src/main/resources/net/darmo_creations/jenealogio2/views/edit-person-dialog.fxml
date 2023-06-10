@@ -88,7 +88,8 @@
                     </HBox>
                     <Label text="%dialog.edit_person.profile.nicknames" GridPane.rowIndex="6"/>
                     <Label text="%dialog.edit_person.profile.gender" GridPane.rowIndex="7"/>
-                    <HBox GridPane.rowIndex="8">
+                    <Label text="%dialog.edit_person.profile.main_occupation" GridPane.rowIndex="8"/>
+                    <HBox GridPane.rowIndex="9">
                       <children>
                         <Label text="%dialog.edit_person.profile.disambiguation_id"/>
                         <Label fx:id="disambiguationIDHelpLabel">
@@ -101,12 +102,12 @@
                         </Label>
                       </children>
                     </HBox>
-                    <Label text="%dialog.edit_person.profile.notes" GridPane.rowIndex="9">
+                    <Label text="%dialog.edit_person.profile.notes" GridPane.rowIndex="10">
                       <GridPane.margin>
                         <Insets top="5.0"/>
                       </GridPane.margin>
                     </Label>
-                    <Label text="%dialog.edit_person.profile.sources" GridPane.rowIndex="10">
+                    <Label text="%dialog.edit_person.profile.sources" GridPane.rowIndex="11">
                       <GridPane.margin>
                         <Insets top="5.0"/>
                       </GridPane.margin>
@@ -118,9 +119,10 @@
                     <TextField fx:id="publicFirstNamesField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
                     <TextField fx:id="nicknamesField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
                     <ComboBox fx:id="genderCombo" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-                    <TextField fx:id="disambiguationIDField" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
-                    <TextArea fx:id="notesField" prefHeight="100.0" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
-                    <TextArea fx:id="sourcesField" prefHeight="100.0" GridPane.columnIndex="1" GridPane.rowIndex="10"/>
+                    <TextField fx:id="mainOccupationField" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+                    <TextField fx:id="disambiguationIDField" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+                    <TextArea fx:id="notesField" prefHeight="100.0" GridPane.columnIndex="1" GridPane.rowIndex="10"/>
+                    <TextArea fx:id="sourcesField" prefHeight="100.0" GridPane.columnIndex="1" GridPane.rowIndex="11"/>
                   </children>
                 </GridPane>
               </children>

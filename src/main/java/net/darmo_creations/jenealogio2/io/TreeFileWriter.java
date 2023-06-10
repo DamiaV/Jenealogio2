@@ -176,6 +176,12 @@ public class TreeFileWriter extends TreeFileManager {
         this.setAttr(document, genderElement, GENDER_KEY_ATTR, gender.key().fullName());
       });
 
+      // Main occupation
+      person.mainOccupation().ifPresent(occupation -> {
+        Element occupationElement = (Element) personElement.appendChild(document.createElement(MAIN_OCCUPATION_TAG));
+        this.setAttr(document, occupationElement, MAIN_OCCUPATION_VALUE_ATTR, occupation);
+      });
+
       // Parents
       var parents = person.parents();
       Element parentsElement = document.createElement(PARENTS_TAG);

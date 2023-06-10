@@ -77,6 +77,8 @@ public class EditPersonDialog extends DialogBase<Person> {
   @FXML
   private ComboBox<ComboBoxItem<Gender>> genderCombo;
   @FXML
+  private TextField mainOccupationField;
+  @FXML
   private TextField disambiguationIDField;
   @FXML
   private TextArea notesField;
@@ -255,6 +257,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.legalFirstNamesField.setText(this.person.getJoinedLegalFirstNames().orElse(""));
     this.publicFirstNamesField.setText(this.person.getJoinedPublicFirstNames().orElse(""));
     this.nicknamesField.setText(this.person.getJoinedNicknames().orElse(""));
+    this.mainOccupationField.setText(this.person.mainOccupation().orElse(""));
     this.disambiguationIDField.setText(this.person.disambiguationID().map(String::valueOf).orElse(""));
     this.notesField.setText(this.person.notes().orElse(""));
     this.sourcesField.setText(this.person.sources().orElse(""));
@@ -437,6 +440,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     person.setLegalFirstNames(this.splitText(this.legalFirstNamesField));
     person.setPublicFirstNames(this.splitText(this.publicFirstNamesField));
     person.setNicknames(this.splitText(this.nicknamesField));
+    person.setMainOccupation(this.getText(this.mainOccupationField));
     person.setDisambiguationID(this.getDisambiguationID());
     person.setNotes(this.getText(this.notesField));
     person.setSources(this.getText(this.sourcesField));

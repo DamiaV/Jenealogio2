@@ -23,6 +23,7 @@ public class Person extends GenealogyObject<Person> {
   private String publicLastName;
   private final List<String> nicknames = new ArrayList<>();
   private Gender gender;
+  private String mainOccupation;
   /**
    * We assume exactly two parents per person.
    */
@@ -265,6 +266,22 @@ public class Person extends GenealogyObject<Person> {
   public Person setGender(Gender gender) {
     this.gender = gender;
     return this;
+  }
+
+  /**
+   * This person’s main occupation during its life.
+   */
+  public Optional<String> mainOccupation() {
+    return Optional.ofNullable(this.mainOccupation);
+  }
+
+  /**
+   * Set this person’s main occupation during its life.
+   *
+   * @param mainOccupation The occupation.
+   */
+  public void setMainOccupation(String mainOccupation) {
+    this.mainOccupation = mainOccupation;
   }
 
   /**

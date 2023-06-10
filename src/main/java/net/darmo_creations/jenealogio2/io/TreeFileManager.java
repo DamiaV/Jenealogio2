@@ -38,6 +38,8 @@ public abstract class TreeFileManager {
   public static final String NICKNAMES_TAG = "Nicknames";
   public static final String NAME_TAG = "Name";
   public static final String NAME_VALUE_ATTR = "value";
+  public static final String MAIN_OCCUPATION_TAG = "MainOccupation";
+  public static final String MAIN_OCCUPATION_VALUE_ATTR = "value";
   public static final String GENDER_TAG = "Gender";
   public static final String GENDER_KEY_ATTR = "key";
   public static final String PARENTS_TAG = "Parents";

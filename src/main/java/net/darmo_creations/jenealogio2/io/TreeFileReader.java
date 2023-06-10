@@ -187,6 +187,12 @@ public class TreeFileReader extends TreeFileManager {
         }
       }
 
+      Optional<Element> occupationElement = this.getChildElement(personElement, MAIN_OCCUPATION_TAG, true);
+      if (occupationElement.isPresent()) {
+        String occupation = this.getAttr(occupationElement.get(), MAIN_OCCUPATION_VALUE_ATTR, s -> s, null, true);
+        person.setMainOccupation(occupation);
+      }
+
       // Parents
       Optional<Element> parentsElement = this.getChildElement(personElement, PARENTS_TAG, true);
       if (parentsElement.isPresent()) {
