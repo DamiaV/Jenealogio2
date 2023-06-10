@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * JavaFX component displaying a part of a family tree’s graph.
@@ -206,17 +207,34 @@ public class FamilyTreePane extends FamilyTreeComponent {
         .sorted(personComparator.apply(true))
         .toList();
 
+    Set<Person> rootsChildren = rootPerson.children(); // Make only one copy
     //noinspection OptionalGetWithoutIsPresent
-    List<Person> partners = rootPerson.getLifeEventsAsActor().stream()
+    Set<Person> partnersSet = rootPerson.getLifeEventsAsActor().stream()
         .filter(e -> e.type().indicatesUnion())
         // Partner always present in unions
         .map(e -> e.actors().stream().filter(p -> p != rootPerson).findFirst().get())
+        .collect(Collectors.toSet());
+    // Add persons that had a child with root but are not linked by a life event
+    for (Person rootsChild : rootsChildren) {
+      var parents = rootsChild.parents();
+      parents.left().ifPresent(p -> {
+        if (p != rootPerson) {
+          partnersSet.add(p);
+        }
+      });
+      parents.right().ifPresent(p -> {
+        if (p != rootPerson) {
+          partnersSet.add(p);
+        }
+      });
+    }
+
+    List<Person> partners = partnersSet.stream()
         .sorted(personComparator.apply(false))
         .toList();
 
     // Get children for each relation with root, sorted by birth date and name
     Map<Person, List<Person>> childrenMap = new HashMap<>();
-    Set<Person> rootsChildren = rootPerson.children(); // Make only one copy
     partners.forEach(partner -> childrenMap.put(partner, rootsChildren.stream()
         .filter(child -> child.hasParent(partner))
         .sorted(personComparator.apply(false))
