@@ -97,8 +97,12 @@ public class FamilyTreeView extends FamilyTreeComponent {
     root.getChildren().add(this.personsItem);
     this.treeView.setRoot(root);
     this.treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-      if (!this.internalSelectionChange && newValue != null && newValue.getValue() instanceof Person person) {
-        this.firePersonClickEvent(person, 1, MouseButton.PRIMARY);
+      if (!this.internalSelectionChange) {
+        if (newValue != null && newValue.getValue() instanceof Person person) {
+          this.firePersonClickEvent(person, 1, MouseButton.PRIMARY);
+        } else {
+          this.firePersonClickEvent(null, 1, MouseButton.PRIMARY);
+        }
       }
     });
     this.treeView.setOnMouseClicked(event -> {
