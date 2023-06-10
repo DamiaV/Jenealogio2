@@ -97,7 +97,6 @@ public class PersonWidget extends AnchorPane {
     }
     if (hiddenRelatives) {
       Label moreIcon = new Label("", App.config().theme().getIcon(Icon.MORE, Icon.Size.SMALL));
-      moreIcon.getStyleClass().add("more-icon");
       moreIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.more_icon.tooltip")));
       iconsBox.setRight(moreIcon);
     }
