@@ -185,7 +185,7 @@ public class TreeFileWriter extends TreeFileManager {
       Optional<Person> rightParent = parents.right();
       writeParent.apply(1).accept(leftParent);
       writeParent.apply(2).accept(rightParent);
-      if (leftParent.isPresent() && rightParent.isPresent()) {
+      if (leftParent.isPresent() || rightParent.isPresent()) {
         personElement.appendChild(parentsElement);
       }
 
