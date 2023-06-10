@@ -80,6 +80,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
     this.buildChildrenAndSiblingsAndPartnersTree(root);
 
     this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
+
+    this.centerNodeInScrollPane(root);
   }
 
   /**
@@ -387,8 +389,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
   protected void select(@NotNull Person person, boolean updateTarget) {
     if (updateTarget) {
       this.targettedPerson = person;
+      this.refresh();
     }
-    this.refresh();
     this.personWidgets.forEach(w -> w.setSelected(w.person().isPresent() && person == w.person().get()));
     if (!this.internalClick) {
       this.personWidgets.stream()

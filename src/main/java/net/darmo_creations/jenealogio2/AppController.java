@@ -658,7 +658,8 @@ public class AppController {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
       if (person == null && childInfo == null) {
-        this.familyTreePane.selectPerson(p.get(), false);
+        this.familyTreePane.selectPerson(p.get(), true);
+        this.focusedComponent = this.familyTreePane;
       }
       this.defaultEmptyTree = false;
       this.unsavedChanges = true;
