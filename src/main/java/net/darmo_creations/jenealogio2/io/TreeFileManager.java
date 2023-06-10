@@ -23,6 +23,7 @@ public abstract class TreeFileManager {
   public static final String LIFE_EVENT_TYPES_TAG = "LifeEventTypes";
   public static final String LIFE_EVENT_TYPE_GROUP_ATTR = "group";
   public static final String LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR = "indicatesDeath";
+  public static final String LIFE_EVENT_TYPE_INDICATES_UNION_ATTR = "indicatesUnion";
   public static final String LIFE_EVENT_TYPE_MIN_ACTORS_ATTR = "minActors";
   public static final String LIFE_EVENT_TYPE_MAX_ACTORS_ATTR = "maxActors";
   public static final String LIFE_EVENT_TYPE_UNIQUE_ATTR = "unique";

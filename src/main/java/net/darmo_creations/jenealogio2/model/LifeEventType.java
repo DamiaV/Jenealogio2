@@ -10,6 +10,7 @@ import java.util.Objects;
 public final class LifeEventType extends RegistryEntry {
   private final Group group;
   private final boolean indicatesDeath;
+  private final boolean indicatesUnion;
   private final int minActors;
   private final int maxActors;
   private final boolean unique;
@@ -20,6 +21,7 @@ public final class LifeEventType extends RegistryEntry {
    * @param key            Type’s registry key.
    * @param group          Type’s group.
    * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
+   * @param indicatesUnion Whether this type indicates the union (marriage, etc.) the associated event’s actors.
    * @param minActors      Minimum allowed number of actor allowed to be attached to the event.
    * @param maxActors      Maximum allowed number of actor allowed to be attached to the event.
    * @param unique         Whether events with this type can appear multiple times in an actor’s timeline.
@@ -28,6 +30,7 @@ public final class LifeEventType extends RegistryEntry {
       @NotNull RegistryEntryKey key,
       @NotNull Group group,
       boolean indicatesDeath,
+      boolean indicatesUnion,
       int minActors,
       int maxActors,
       boolean unique
@@ -44,6 +47,7 @@ public final class LifeEventType extends RegistryEntry {
     }
     this.group = Objects.requireNonNull(group);
     this.indicatesDeath = indicatesDeath;
+    this.indicatesUnion = indicatesUnion;
     this.minActors = minActors;
     this.maxActors = maxActors;
     this.unique = unique;
@@ -61,6 +65,13 @@ public final class LifeEventType extends RegistryEntry {
    */
   public boolean indicatesDeath() {
     return this.indicatesDeath;
+  }
+
+  /**
+   * Whether this life event type indicates that the actors it is associated with are in a union (marriage, etc.).
+   */
+  public boolean indicatesUnion() {
+    return this.indicatesUnion;
   }
 
   /**
@@ -130,31 +141,40 @@ public final class LifeEventType extends RegistryEntry {
    *
    * @param group          Type’s group.
    * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
+   * @param indicatesUnion Whether this type indicates the union (marriage, etc.) the associated event’s actors.
    * @param minActors      Minimum allowed number of actor allowed to be attached to the event.
    * @param maxActors      Maximum allowed number of actor allowed to be attached to the event.
    * @param isUnique       Whether events with this type can appear multiple times in an actor’s timeline.
    */
   public record RegistryArgs(
-      @NotNull Group group, boolean indicatesDeath, int minActors, int maxActors, boolean isUnique) {
+      @NotNull Group group,
+      boolean indicatesDeath,
+      boolean indicatesUnion,
+      int minActors,
+      int maxActors,
+      boolean isUnique
+  ) {
     /**
      * Create a new registry wrapper with an minimum and maximum number of actors of 1 and no unicity constraint.
      *
      * @param group          Type’s group.
-     * @param indicatesDeath Whether events with this type can appear multiple times in an actor’s timeline.
+     * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
+     * @param indicatesUnion Whether events with this type indicate the union (marriage, etc.) the associated event’s actors.
      */
-    public RegistryArgs(@NotNull Group group, boolean indicatesDeath) {
-      this(group, indicatesDeath, 1, 1, false);
+    public RegistryArgs(@NotNull Group group, boolean indicatesDeath, boolean indicatesUnion) {
+      this(group, indicatesDeath, indicatesUnion, 1, 1, false);
     }
 
     /**
      * Create a new registry wrapper with an minimum and maximum number of actors of 1.
      *
      * @param group          Type’s group.
-     * @param indicatesDeath Whether events with the created type can appear multiple times in an actor’s timeline.
+     * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
+     * @param indicatesUnion Whether events with this type indicate the union (marriage, etc.) the associated event’s actors.
      * @param isUnique       Whether events with the created type can appear multiple times in an actor’s timeline.
      */
-    public RegistryArgs(@NotNull Group group, boolean indicatesDeath, boolean isUnique) {
-      this(group, indicatesDeath, 1, 1, isUnique);
+    public RegistryArgs(@NotNull Group group, boolean indicatesDeath, boolean indicatesUnion, boolean isUnique) {
+      this(group, indicatesDeath, indicatesUnion, 1, 1, isUnique);
     }
   }
 }

@@ -277,6 +277,35 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
+   * Check whether this person has the given person as a biological parent.
+   *
+   * @param person Person to check as parent.
+   * @return True if the passed person is a biological parent of this person, false otherwise.
+   */
+  public boolean hasParent(final Person person) {
+    return this.parents[0] == person || this.parents[1] == person;
+  }
+
+  /**
+   * Check if two persons have the same parents, regardless of order.
+   *
+   * @param person Person to check parents againts this.
+   * @return True if this and the other person have the same parents, false otherwise.
+   */
+  public boolean hasSameParents(final Person person) {
+    return this.hasAnyParents() && person.hasAnyParents() &&
+        (this.parents[0] == person.parents[0] && this.parents[1] == person.parents[1]
+            || this.parents[1] == person.parents[0] && this.parents[0] == person.parents[1]);
+  }
+
+  /**
+   * Indicate whether this person has any non-null parent.
+   */
+  public boolean hasAnyParents() {
+    return this.parents[0] != null || this.parents[1] != null;
+  }
+
+  /**
    * Indicate whether both of this person’s parents are non-null.
    */
   public boolean hasBothParents() {

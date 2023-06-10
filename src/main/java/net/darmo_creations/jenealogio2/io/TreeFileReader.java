@@ -102,10 +102,11 @@ public class TreeFileReader extends TreeFileManager {
           throw new IOException(e);
         }
         boolean indicatesDeath = this.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR, Boolean::parseBoolean, null, false);
+        boolean indicatesUnion = this.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_UNION_ATTR, Boolean::parseBoolean, null, false);
         int minActors = this.getAttr(entryElement, LIFE_EVENT_TYPE_MIN_ACTORS_ATTR, Integer::parseInt, null, false);
         int maxActors = this.getAttr(entryElement, LIFE_EVENT_TYPE_MAX_ACTORS_ATTR, Integer::parseInt, null, false);
         boolean unique = this.getAttr(entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, Boolean::parseBoolean, null, false);
-        var args = new LifeEventType.RegistryArgs(group, indicatesDeath, minActors, maxActors, unique);
+        var args = new LifeEventType.RegistryArgs(group, indicatesDeath, indicatesUnion, minActors, maxActors, unique);
         try {
           Registries.LIFE_EVENT_TYPES.registerEntry(new RegistryEntryKey(Registry.USER_NS, name), args);
         } catch (IllegalArgumentException e) {

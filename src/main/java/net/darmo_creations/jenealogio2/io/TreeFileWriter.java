@@ -93,6 +93,7 @@ public class TreeFileWriter extends TreeFileManager {
         this.setAttr(document, entryElement, REGISTRY_ENTRY_NAME_ATTR, lifeEventType.key().name());
         this.setAttr(document, entryElement, LIFE_EVENT_TYPE_GROUP_ATTR, String.valueOf(lifeEventType.group().ordinal()));
         this.setAttr(document, entryElement, LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR, String.valueOf(lifeEventType.indicatesDeath()));
+        this.setAttr(document, entryElement, LIFE_EVENT_TYPE_INDICATES_UNION_ATTR, String.valueOf(lifeEventType.indicatesUnion()));
         this.setAttr(document, entryElement, LIFE_EVENT_TYPE_MIN_ACTORS_ATTR, String.valueOf(lifeEventType.minActors()));
         this.setAttr(document, entryElement, LIFE_EVENT_TYPE_MAX_ACTORS_ATTR, String.valueOf(lifeEventType.maxActors()));
         this.setAttr(document, entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, String.valueOf(lifeEventType.isUnique()));

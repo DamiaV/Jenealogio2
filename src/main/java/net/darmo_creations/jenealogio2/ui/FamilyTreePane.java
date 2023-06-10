@@ -12,13 +12,12 @@ import javafx.scene.shape.Line;
 import net.darmo_creations.jenealogio2.AppController;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
+import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * JavaFX component displaying a part of a family tree’s graph.
@@ -72,8 +71,22 @@ public class FamilyTreePane extends FamilyTreeComponent {
       this.targettedPerson = root.get();
     }
 
-    List<List<PersonWidget>> levels = new ArrayList<>();
+    PersonWidget root = this.buildParentsTree();
+    this.drawChildToParentsLines();
+    this.buildChildrenAndSiblingsAndPartnersTree(root);
+
+    this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
+  }
+
+  /**
+   * Create and position widgets for each ascendant of the current root.
+   *
+   * @return The widget for the tree’s root.
+   */
+  private PersonWidget buildParentsTree() {
     PersonWidget root = this.createWidget(this.targettedPerson, null);
+
+    List<List<PersonWidget>> levels = new ArrayList<>();
     levels.add(List.of(root));
     // Build levels breadth-first
     for (int i = 1; i <= MAX_LEVEL; i++) {
@@ -121,7 +134,13 @@ public class FamilyTreePane extends FamilyTreeComponent {
       }
     }
 
-    // Draw lines
+    return root;
+  }
+
+  /**
+   * Draw lines from each person to their respective parents.
+   */
+  private void drawChildToParentsLines() {
     this.personWidgets.forEach(personWidget -> {
       Optional<PersonWidget> parent1 = personWidget.parentWidget1();
       Optional<PersonWidget> parent2 = personWidget.parentWidget2();
@@ -133,24 +152,155 @@ public class FamilyTreePane extends FamilyTreeComponent {
         double p2x = parent2.get().getLayoutX();
         double p2y = parent2.get().getLayoutY() + PersonWidget.HEIGHT / 2.0;
         // Insert at the start to render them underneath the cards
-        this.pane.getChildren().add(0, this.newLine(p1x, p1y, p2x, p2y)); // Line between parents
-        this.pane.getChildren().add(0, this.newLine(cx, cy, (p1x + p2x) / 2, p1y)); // Child to parents line
+        this.drawLine(p1x, p1y, p2x, p2y); // Line between parents
+        this.drawLine(cx, cy, (p1x + p2x) / 2, p1y); // Child to parents line
       }
     });
+  }
 
-    // TODO display direct children, all spouses and all siblings
+  /**
+   * Build the tree of partners, siblings and direct children of the tree’s root.
+   *
+   * @param root Tree’s root.
+   */
+  private void buildChildrenAndSiblingsAndPartnersTree(@NotNull PersonWidget root) {
+    // Get root’s partners sorted by birth date and name
+    //noinspection OptionalGetWithoutIsPresent
+    final Person rootPerson = root.person().get(); // Always present
 
-    this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
+    final double personW = PersonWidget.WIDTH;
+    final int personH = PersonWidget.HEIGHT;
+    final double rootX = root.getLayoutX();
+    final double rootY = root.getLayoutY();
+
+    // Compare birth dates if available, names otherwise
+    Function<Boolean, Comparator<Person>> personComparator = inverseDates -> (p1, p2) -> {
+      Optional<CalendarDate> birthDate1 = p1.getBirthDate();
+      Optional<CalendarDate> birthDate2 = p2.getBirthDate();
+      if (birthDate1.isPresent() && birthDate2.isPresent()) {
+        int c = birthDate1.get().compareTo(birthDate2.get());
+        if (inverseDates) {
+          c = -c;
+        }
+        if (c != 0) {
+          return c;
+        }
+      }
+      return Person.lastThenFirstNamesComparator().compare(p1, p2);
+    };
+
+    //noinspection OptionalGetWithoutIsPresent
+    List<Person> siblings = this.familyTree().get().persons().stream()
+        .filter(p -> p != rootPerson && p.hasSameParents(rootPerson))
+        .toList();
+    List<Person> olderSiblings = siblings.stream()
+        .filter(p -> personComparator.apply(true).compare(p, rootPerson) > 0)
+        .sorted(personComparator.apply(false))
+        .toList();
+    List<Person> youngerSiblings = siblings.stream()
+        .filter(p -> personComparator.apply(true).compare(p, rootPerson) <= 0)
+        .sorted(personComparator.apply(true))
+        .toList();
+
+    //noinspection OptionalGetWithoutIsPresent
+    List<Person> partners = rootPerson.getLifeEventsAsActor().stream()
+        .filter(e -> e.type().indicatesUnion())
+        // Partner always present in unions
+        .map(e -> e.actors().stream().filter(p -> p != rootPerson).findFirst().get())
+        .sorted(personComparator.apply(false))
+        .toList();
+
+    // Get children for each relation with root, sorted by birth date and name
+    Map<Person, List<Person>> childrenMap = new HashMap<>();
+    Set<Person> rootsChildren = rootPerson.children(); // Make only one copy
+    partners.forEach(partner -> childrenMap.put(partner, rootsChildren.stream()
+        .filter(child -> child.hasParent(partner))
+        .sorted(personComparator.apply(false))
+        .toList()));
+
+    // Render older siblings to the left of root
+    double x = rootX;
+    for (int i = olderSiblings.size() - 1; i >= 0; i--) {
+      x -= personW + HGAP;
+      PersonWidget widget = this.createWidget(olderSiblings.get(i), null);
+      widget.setLayoutX(x);
+      widget.setLayoutY(rootY);
+      widget.setParentWidget1(root.parentWidget1().orElse(null));
+      widget.setParentWidget2(root.parentWidget2().orElse(null));
+      double lineX = x + personW / 2;
+      double lineY = rootY - VGAP / 2.0;
+      this.drawLine(lineX, rootY, lineX, lineY);
+      this.drawLine(lineX, lineY, rootX + personW / 2.0, lineY);
+    }
+
+    x = rootX;
+    // Render partners with enough space for direct children
+    int partnersNb = partners.size();
+    for (int i = 0; i < partnersNb; i++) {
+      Person partner = partners.get(i);
+      x += HGAP + personW;
+      PersonWidget partnerWidget = this.createWidget(partner, null);
+      partnerWidget.setLayoutX(x);
+      partnerWidget.setLayoutY(rootY);
+
+      // Draw line from root to partner
+      double lineY = rootY + personH / 2.0 + (partnersNb - i * 8);
+      this.drawLine(rootX + personW, lineY, x, lineY);
+
+      List<Person> children = childrenMap.get(partner);
+      int childrenNb = children.size();
+      double halfChildrenWidth = (childrenNb * personW + (childrenNb - 1) * HGAP) / 2;
+      // Compute gap to fit children of this partner and the next
+      double nextXOffset = Math.max(0, halfChildrenWidth - personW);
+      if (i < partnersNb - 1) {
+        int nextChildrenNb = childrenMap.get(partners.get(i + 1)).size();
+        nextXOffset += (nextChildrenNb * personW + (nextChildrenNb - 1) * HGAP) / 2;
+      }
+
+      // Render children
+      double rightParentX = partnerWidget.getLayoutX() - HGAP / 2.0;
+      double childX = x - halfChildrenWidth - HGAP / 2.0;
+      final double childY = rootY + VGAP + personH;
+      for (Person child : children) {
+        PersonWidget childWidget = this.createWidget(child, null);
+        childWidget.setLayoutX(childX);
+        childWidget.setLayoutY(childY);
+        childWidget.setParentWidget1(root);
+        childWidget.setParentWidget2(partnerWidget);
+        double lineX = childX + personW / 2;
+        this.drawLine(lineX, childY, lineX, childY - VGAP / 2.0);
+        this.drawLine(lineX, childY - VGAP / 2.0, rightParentX, childY - VGAP / 2.0);
+        childX += personW + HGAP;
+      }
+      if (!children.isEmpty()) {
+        this.drawLine(rightParentX, childY - VGAP / 2.0, rightParentX, lineY);
+      }
+      x += nextXOffset;
+    }
+
+    // Render younger sibling to the right of root’s partners
+    for (int i = youngerSiblings.size() - 1; i >= 0; i--) {
+      x += HGAP + personW;
+      PersonWidget widget = this.createWidget(youngerSiblings.get(i), null);
+      widget.setLayoutX(x);
+      widget.setLayoutY(rootY);
+      widget.setParentWidget1(root.parentWidget1().orElse(null));
+      widget.setParentWidget2(root.parentWidget2().orElse(null));
+      double lineX = x + personW / 2;
+      double lineY = rootY - VGAP / 2.0;
+      this.drawLine(lineX, rootY, lineX, lineY);
+      this.drawLine(lineX, lineY, rootX + personW / 2.0, lineY);
+    }
   }
 
   /**
    * Create a {@link Line} object with the given coordinates, with the {@code .tree-line} CSS class.
    */
-  private Line newLine(double x1, double y1, double x2, double y2) {
+  private void drawLine(double x1, double y1, double x2, double y2) {
     Line line = new Line(x1, y1, x2, y2);
     line.getStyleClass().add("tree-line");
     line.setStrokeWidth(2);
-    return line;
+    this.pane.getChildren().add(0, line);
   }
 
   /**
