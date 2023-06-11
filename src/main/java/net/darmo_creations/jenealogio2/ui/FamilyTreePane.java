@@ -45,7 +45,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
   public FamilyTreePane() {
     this.setOnMouseClicked(this::onBackgroundClicked);
     this.scrollPane.setPannable(true);
-    this.scrollPane.getStyleClass().add("tree-scroll-pane");
+    this.scrollPane.getStyleClass().add("no-focus-scroll-pane");
     AnchorPane.setTopAnchor(this.scrollPane, 0.0);
     AnchorPane.setBottomAnchor(this.scrollPane, 0.0);
     AnchorPane.setLeftAnchor(this.scrollPane, 0.0);

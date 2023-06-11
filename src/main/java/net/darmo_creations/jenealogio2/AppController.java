@@ -15,10 +15,7 @@ import net.darmo_creations.jenealogio2.model.LifeEvent;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.ChildInfo;
-import net.darmo_creations.jenealogio2.ui.FamilyTreeComponent;
-import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
-import net.darmo_creations.jenealogio2.ui.FamilyTreeView;
+import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.dialogs.*;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +29,6 @@ import java.util.Optional;
 /**
  * Application’s main controller.
  */
-// TODO add right panel to display summary of selected person’s data
 public class AppController {
   /**
    * Mouse button used to select the target in the tree pane.
@@ -130,6 +126,8 @@ public class AppController {
   private AnchorPane sideTreeView;
   @FXML
   private AnchorPane mainPane;
+  @FXML
+  private AnchorPane detailsView;
 
   // File managers
   private final TreeFileReader treeFileReader = new TreeFileReader();
@@ -139,6 +137,8 @@ public class AppController {
   private FamilyTreeComponent focusedComponent;
   private final FamilyTreeView familyTreeView = new FamilyTreeView();
   private final FamilyTreePane familyTreePane = new FamilyTreePane();
+
+  private final PersonDetailsView personDetailsView = new PersonDetailsView();
 
   // Dialogs
   private final EditPersonDialog editPersonDialog = new EditPersonDialog();
@@ -262,8 +262,15 @@ public class AppController {
     this.familyTreePane.personClickListeners()
         .add((person, clickCount, button) -> this.onPersonClick(person, clickCount, button, false));
     this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
-
     this.familyTreePane.setMaxHeight(config.maxTreeHeight());
+
+    AnchorPane.setTopAnchor(this.personDetailsView, 0.0);
+    AnchorPane.setBottomAnchor(this.personDetailsView, 0.0);
+    AnchorPane.setLeftAnchor(this.personDetailsView, 0.0);
+    AnchorPane.setRightAnchor(this.personDetailsView, 0.0);
+    this.detailsView.getChildren().add(this.personDetailsView);
+    this.personDetailsView.personClickListeners()
+        .add(person -> this.onPersonClick(person, 1, TARGET_UPDATE_BUTTON, true));
   }
 
   /**
@@ -305,6 +312,7 @@ public class AppController {
     this.familyTree = tree;
     this.familyTreeView.setFamilyTree(this.familyTree);
     this.familyTreePane.setFamilyTree(this.familyTree);
+    this.personDetailsView.setPerson(null);
     this.familyTreeView.refresh();
     this.familyTreePane.refresh();
     this.loadedFile = file;
@@ -645,6 +653,7 @@ public class AppController {
         this.familyTreeView.selectPerson(person, button == TARGET_UPDATE_BUTTON);
       }
     }
+    this.personDetailsView.setPerson(person);
     if (clickCount == 2 && button == MouseButton.PRIMARY) {
       this.openEditPersonDialog(person, null, null, null, EditPersonDialog.TAB_PROFILE);
     }
@@ -672,6 +681,7 @@ public class AppController {
         this.familyTreePane.selectPerson(p.get(), true);
         this.focusedComponent = this.familyTreePane;
       }
+      this.personDetailsView.setPerson(person);
       this.defaultEmptyTree = false;
       this.unsavedChanges = true;
       this.updateUI();

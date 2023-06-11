@@ -52,6 +52,8 @@ public enum Icon {
   REMOVE_PARENT("delete"),
 
   MORE("plus"),
+
+  GO_TO("arrow_right"),
   ;
 
   private final String baseName;

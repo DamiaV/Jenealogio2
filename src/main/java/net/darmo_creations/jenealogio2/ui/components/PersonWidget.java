@@ -39,7 +39,7 @@ public class PersonWidget extends AnchorPane {
   private static final String EMPTY_LABEL_VALUE = "?";
 
   @SuppressWarnings("DataFlowIssue")
-  private static final Image DEFAULT_IMAGE =
+  public static final Image DEFAULT_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_person_image.png"));
   @SuppressWarnings("DataFlowIssue")
   private static final Image ADD_IMAGE =

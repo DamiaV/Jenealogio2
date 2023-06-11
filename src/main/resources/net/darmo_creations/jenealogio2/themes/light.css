@@ -1,3 +1,7 @@
+.root {
+    -fx-control-inner-background-alt: derive(-fx-control-inner-background, -10%);
+}
+
 /* Make background of title panes opaque for better integration in list views */
 .titled-pane {
     -fx-background: -fx-base;
@@ -45,6 +49,10 @@
 
 .tree-line {
     -fx-stroke: derive(-fx-base, -20%);
+}
+
+.person-details .person-details-header {
+    -fx-background-color: derive(-fx-base, -20%);
 }
 
 *:invalid {

@@ -1,7 +1,24 @@
 /*
  * This stylesheet is always loaded before any theme-specific stylesheet.
  */
-.tree-scroll-pane {
+.no-focus-scroll-pane {
     /* Disable focus border in main scroll pane by making the background invisible */
     -fx-background-color: rgba(0, 0, 0, 0);
+}
+
+.person-details > * {
+    -fx-padding: 4px;
+}
+
+.person-details .person-details-header .person-details-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 1.2em;
+}
+
+.person-details .person-details-header .person-details-occupation {
+    -fx-font-style: italic;
+}
+
+.person-details .life-events-list-item-header > Label {
+    -fx-font-weight: bold;
 }
