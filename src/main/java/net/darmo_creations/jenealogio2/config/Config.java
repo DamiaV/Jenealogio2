@@ -34,7 +34,9 @@ public final class Config implements Cloneable {
   private static final String LANGUAGE_OPTION = "language";
   private static final String THEME_OPTION = "theme";
   private static final String SYNC_TREE_OPTION = "sync_tree";
-  private static final String MAX_TREE_HEIGHT = "max_tree_height";
+  private static final String MAX_TREE_HEIGHT_OPTION = "max_tree_height";
+  private static final String DATE_FORMAT_OPTION = "date_format";
+  private static final String TIME_FORMAT_OPTION = "time_format";
 
   /**
    * Load the configuration from the settings file.
@@ -58,17 +60,33 @@ public final class Config implements Cloneable {
     String themeID = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION)).orElse(Theme.DEFAULT_THEME_ID);
     Theme theme = Theme.getTheme(themeID).orElseThrow(() -> new ConfigException("undefined theme: " + themeID));
     boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
-    Integer maxTreeHeight = ini.get(APP_SECTION, MAX_TREE_HEIGHT, Integer.class);
+    Integer maxTreeHeight = ini.get(APP_SECTION, MAX_TREE_HEIGHT_OPTION, Integer.class);
     if (maxTreeHeight == null) {
       maxTreeHeight = FamilyTreePane.DEFAULT_MAX_HEIGHT;
     }
-    return new Config(
-        LANGUAGES.get(langCode),
-        theme,
-        syncTree,
-        maxTreeHeight,
-        debug
-    );
+    int dateFormatOrdinal = ini.get(APP_SECTION, DATE_FORMAT_OPTION, int.class);
+    int timeFormatOrdinal = ini.get(APP_SECTION, TIME_FORMAT_OPTION, int.class);
+    DateFormat dateFormat;
+    TimeFormat timeFormat;
+    try {
+      dateFormat = DateFormat.values()[dateFormatOrdinal];
+      timeFormat = TimeFormat.values()[timeFormatOrdinal];
+    } catch (IndexOutOfBoundsException e) {
+      throw new ConfigException(e);
+    }
+    try {
+      return new Config(
+          LANGUAGES.get(langCode),
+          theme,
+          syncTree,
+          maxTreeHeight,
+          dateFormat,
+          timeFormat,
+          debug
+      );
+    } catch (IllegalArgumentException e) {
+      throw new ConfigException(e);
+    }
   }
 
   /**
@@ -117,6 +135,8 @@ public final class Config implements Cloneable {
   private final boolean debug;
   private boolean syncTreeWithMainPane;
   private int maxTreeHeight;
+  private DateFormat dateFormat;
+  private TimeFormat timeFormat;
 
   /**
    * Create a configuration object.
@@ -125,13 +145,25 @@ public final class Config implements Cloneable {
    * @param theme                Theme to use.
    * @param syncTreeWithMainPane Whether the tree pane and view should be synchronized.
    * @param maxTreeHeight        Maximum number of levels to display above the center widget in the tree panel.
+   * @param dateFormat           Date format.
+   * @param timeFormat           Time format.
    * @param debug                Whether to run the app in debug mode.
    */
-  public Config(@NotNull Language language, @NotNull Theme theme, boolean syncTreeWithMainPane, int maxTreeHeight, boolean debug) {
+  public Config(
+      @NotNull Language language,
+      @NotNull Theme theme,
+      boolean syncTreeWithMainPane,
+      int maxTreeHeight,
+      @NotNull DateFormat dateFormat,
+      @NotNull TimeFormat timeFormat,
+      boolean debug
+  ) {
     this.language = Objects.requireNonNull(language);
     this.theme = Objects.requireNonNull(theme);
-    this.syncTreeWithMainPane = syncTreeWithMainPane;
-    this.maxTreeHeight = maxTreeHeight;
+    this.setShouldSyncTreeWithMainPane(syncTreeWithMainPane);
+    this.setMaxTreeHeight(maxTreeHeight);
+    this.setDateFormat(dateFormat);
+    this.setTimeFormat(timeFormat);
     this.debug = debug;
   }
 
@@ -184,6 +216,22 @@ public final class Config implements Cloneable {
     this.maxTreeHeight = height;
   }
 
+  public DateFormat dateFormat() {
+    return this.dateFormat;
+  }
+
+  public void setDateFormat(@NotNull DateFormat dateFormat) {
+    this.dateFormat = Objects.requireNonNull(dateFormat);
+  }
+
+  public TimeFormat timeFormat() {
+    return this.timeFormat;
+  }
+
+  public void setTimeFormat(@NotNull TimeFormat timeFormat) {
+    this.timeFormat = Objects.requireNonNull(timeFormat);
+  }
+
   /**
    * Whether the app is in debug mode.
    */
@@ -203,7 +251,7 @@ public final class Config implements Cloneable {
         this.theme,
         this.syncTreeWithMainPane,
         this.maxTreeHeight,
-        this.debug
+        this.dateFormat, this.timeFormat, this.debug
     );
   }
 
@@ -219,7 +267,7 @@ public final class Config implements Cloneable {
         theme,
         this.syncTreeWithMainPane,
         this.maxTreeHeight,
-        this.debug
+        this.dateFormat, this.timeFormat, this.debug
     );
   }
 
@@ -246,7 +294,9 @@ public final class Config implements Cloneable {
     ini.put(APP_SECTION, LANGUAGE_OPTION, this.language.code());
     ini.put(APP_SECTION, THEME_OPTION, this.theme.id());
     ini.put(APP_SECTION, SYNC_TREE_OPTION, this.syncTreeWithMainPane);
-    ini.put(APP_SECTION, MAX_TREE_HEIGHT, this.maxTreeHeight);
+    ini.put(APP_SECTION, MAX_TREE_HEIGHT_OPTION, this.maxTreeHeight);
+    ini.put(APP_SECTION, DATE_FORMAT_OPTION, this.dateFormat.ordinal());
+    ini.put(APP_SECTION, TIME_FORMAT_OPTION, this.timeFormat.ordinal());
     ini.store();
     App.LOGGER.info("Done.");
   }
@@ -262,11 +312,13 @@ public final class Config implements Cloneable {
     Config config = (Config) o;
     return this.debug == config.debug && this.syncTreeWithMainPane == config.syncTreeWithMainPane
         && this.maxTreeHeight == config.maxTreeHeight && Objects.equals(this.language, config.language)
-        && Objects.equals(this.theme, config.theme);
+        && Objects.equals(this.theme, config.theme) && this.dateFormat == config.dateFormat
+        && this.timeFormat == config.timeFormat;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.language, this.theme, this.debug, this.syncTreeWithMainPane, this.maxTreeHeight);
+    return Objects.hash(this.language, this.theme, this.debug, this.syncTreeWithMainPane, this.maxTreeHeight,
+        this.dateFormat, this.timeFormat);
   }
 }

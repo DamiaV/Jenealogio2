@@ -22,15 +22,25 @@
               <rowConstraints>
                 <RowConstraints vgrow="SOMETIMES"/>
                 <RowConstraints vgrow="SOMETIMES"/>
+                <RowConstraints vgrow="SOMETIMES"/>
+                <RowConstraints vgrow="SOMETIMES"/>
               </rowConstraints>
               <children>
                 <Label text="%dialog.settings.interface_box.language.label" GridPane.halignment="RIGHT"/>
-                <ComboBox fx:id="languageCombo" prefWidth="200.0" GridPane.columnIndex="1"
+                <ComboBox fx:id="languageCombo" GridPane.columnIndex="1"
                           GridPane.halignment="LEFT"/>
                 <Label text="%dialog.settings.interface_box.theme.label" GridPane.halignment="RIGHT"
                        GridPane.rowIndex="1"/>
-                <ComboBox fx:id="themeCombo" prefWidth="200.0" GridPane.columnIndex="1"
+                <ComboBox fx:id="themeCombo" GridPane.columnIndex="1"
                           GridPane.halignment="LEFT" GridPane.rowIndex="1"/>
+                <Label text="%dialog.settings.interface_box.date_format.label" GridPane.halignment="RIGHT"
+                       GridPane.rowIndex="2"/>
+                <ComboBox fx:id="dateFormatCombo" GridPane.columnIndex="1"
+                          GridPane.halignment="LEFT" GridPane.rowIndex="2"/>
+                <Label text="%dialog.settings.interface_box.time_format.label" GridPane.halignment="RIGHT"
+                       GridPane.rowIndex="3"/>
+                <ComboBox fx:id="timeFormatCombo" GridPane.columnIndex="1"
+                          GridPane.halignment="LEFT" GridPane.rowIndex="3"/>
               </children>
               <padding>
                 <Insets bottom="10.0" top="10.0"/>
@@ -53,7 +63,7 @@
               </rowConstraints>
               <children>
                 <Label text="%dialog.settings.tree_box.max_height.label" GridPane.halignment="RIGHT"/>
-                <Spinner fx:id="maxTreeHeightField" min="1" max="7" prefWidth="200.0" GridPane.columnIndex="1"
+                <Spinner fx:id="maxTreeHeightField" min="1" max="7" GridPane.columnIndex="1"
                          GridPane.halignment="LEFT"/>
               </children>
               <padding>

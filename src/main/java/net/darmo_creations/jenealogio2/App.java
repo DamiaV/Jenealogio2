@@ -97,6 +97,8 @@ public class App extends Application {
   public static void updateConfig(@NotNull Config localConfig) {
     config.setShouldSyncTreeWithMainPane(localConfig.shouldSyncTreeWithMainPane());
     config.setMaxTreeHeight(localConfig.maxTreeHeight());
+    config.setDateFormat(localConfig.dateFormat());
+    config.setTimeFormat(localConfig.timeFormat());
     controller.onConfigUpdate();
   }
 

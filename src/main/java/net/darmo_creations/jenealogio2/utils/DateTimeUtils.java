@@ -1,9 +1,18 @@
 package net.darmo_creations.jenealogio2.utils;
 
+import net.darmo_creations.jenealogio2.App;
+import net.darmo_creations.jenealogio2.config.Config;
+import net.darmo_creations.jenealogio2.config.Language;
+import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
+import net.darmo_creations.jenealogio2.model.calendar.DateAlternative;
+import net.darmo_creations.jenealogio2.model.calendar.DateRange;
+import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Class providing methods to handle objects from the {@link java.time} package.
@@ -30,6 +39,47 @@ public final class DateTimeUtils {
    */
   public static String formatFileName(@NotNull LocalDateTime dateTime) {
     return dateTime.format(FILE_NAME_FORMATTER);
+  }
+
+  /**
+   * Format a {@link CalendarDate} object according to the current app configuration.
+   *
+   * @param date Date to format.
+   * @return The formatted date.
+   */
+  public static String formatCalendarDate(@NotNull CalendarDate date) {
+    Objects.requireNonNull(date);
+    Config config = App.config();
+    Language language = config.language();
+    String dateFormat = config.dateFormat().getFormat();
+    String timeFormat = config.timeFormat().getFormat();
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("%s %s".formatted(dateFormat, timeFormat));
+    DateTimeFormatter dateFormatterNoHour = DateTimeFormatter.ofPattern(dateFormat);
+    Function<LocalDateTime, String> formatter =
+        d -> (d.getHour() + d.getMinute() != 0 ? dateFormatter : dateFormatterNoHour).format(d);
+
+    if (date instanceof DateWithPrecision d) {
+      return language.translate(
+          "date_format." + d.precision().name().toLowerCase(),
+          new FormatArg("date", formatter.apply(d.date()))
+      );
+    }
+    if (date instanceof DateRange d) {
+      return language.translate(
+          "date_format.range",
+          new FormatArg("date1", formatter.apply(d.startDate())),
+          new FormatArg("date2", formatter.apply(d.endDate()))
+      );
+    }
+    if (date instanceof DateAlternative d) {
+      return language.translate(
+          "date_format.alternative",
+          new FormatArg("date1", formatter.apply(d.earliestDate())),
+          new FormatArg("date2", formatter.apply(d.latestDate()))
+      );
+    }
+
+    throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
   }
 
   private DateTimeUtils() {
