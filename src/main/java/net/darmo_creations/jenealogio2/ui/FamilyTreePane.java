@@ -12,12 +12,10 @@ import javafx.scene.shape.Line;
 import net.darmo_creations.jenealogio2.AppController;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -204,34 +202,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
     final double rootX = root.getLayoutX();
     final double rootY = root.getLayoutY();
 
-    // Compare birth dates if available, names otherwise
-    Function<Boolean, Comparator<Person>> personComparator = inverse -> (p1, p2) -> {
-      Optional<CalendarDate> birthDate1 = p1.getBirthDate();
-      Optional<CalendarDate> birthDate2 = p2.getBirthDate();
-      if (birthDate1.isPresent() && birthDate2.isPresent()) {
-        int c = birthDate1.get().compareTo(birthDate2.get());
-        if (inverse) {
-          c = -c;
-        }
-        if (c != 0) {
-          return c;
-        }
-      }
-      int c = Person.lastThenFirstNamesComparator().compare(p1, p2);
-      if (inverse) {
-        c = -c;
-      }
-      return c;
-    };
-
     List<Person> siblings = this.getSiblings(rootPerson);
     List<Person> olderSiblings = siblings.stream()
-        .filter(p -> personComparator.apply(false).compare(p, rootPerson) < 0)
-        .sorted(personComparator.apply(false))
+        .filter(p -> Person.birthDateThenNameComparator(false).compare(p, rootPerson) < 0)
+        .sorted(Person.birthDateThenNameComparator(false))
         .toList();
     List<Person> youngerSiblings = siblings.stream()
-        .filter(p -> personComparator.apply(false).compare(p, rootPerson) >= 0)
-        .sorted(personComparator.apply(true))
+        .filter(p -> Person.birthDateThenNameComparator(false).compare(p, rootPerson) >= 0)
+        .sorted(Person.birthDateThenNameComparator(true))
         .toList();
 
     Set<Person> rootsChildren = rootPerson.children(); // Make only one copy
@@ -257,14 +235,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
     }
 
     List<Person> partners = partnersSet.stream()
-        .sorted(personComparator.apply(false))
+        .sorted(Person.birthDateThenNameComparator(false))
         .toList();
 
     // Get children for each relation with root, sorted by birth date and name
     Map<Person, List<Person>> childrenMap = new HashMap<>();
     partners.forEach(partner -> childrenMap.put(partner, rootsChildren.stream()
         .filter(child -> child.hasParent(partner))
-        .sorted(personComparator.apply(false))
+        .sorted(Person.birthDateThenNameComparator(false))
         .toList()));
 
     // Used to detect whether any widget have a negative x coordinate

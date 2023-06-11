@@ -561,10 +561,31 @@ public class Person extends GenealogyObject<Person> {
     return s;
   }
 
+  public static Comparator<Person> birthDateThenNameComparator(boolean inverse) {
+    return (p1, p2) -> {
+      Optional<CalendarDate> birthDate1 = p1.getBirthDate();
+      Optional<CalendarDate> birthDate2 = p2.getBirthDate();
+      if (birthDate1.isPresent() && birthDate2.isPresent()) {
+        int c = birthDate1.get().compareTo(birthDate2.get());
+        if (inverse) {
+          c = -c;
+        }
+        if (c != 0) {
+          return c;
+        }
+      }
+      int c = lastThenFirstNamesComparator().compare(p1, p2);
+      if (inverse) {
+        c = -c;
+      }
+      return c;
+    };
+  }
+
   /**
    * Return a comparator of {@link Person} objects.
    * <p>
-   * Objects are sorted in the following property order:
+   * Objects are sorted according to the following property order:
    * <li>{@link #getLastName()}
    * <li>{@link #getFirstNames()}
    * <li>{@link #disambiguationID()}.

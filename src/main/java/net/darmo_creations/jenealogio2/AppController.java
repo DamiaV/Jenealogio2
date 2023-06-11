@@ -270,7 +270,7 @@ public class AppController {
     AnchorPane.setRightAnchor(this.personDetailsView, 0.0);
     this.detailsView.getChildren().add(this.personDetailsView);
     this.personDetailsView.personClickListeners()
-        .add(person -> this.onPersonClick(person, 1, TARGET_UPDATE_BUTTON, false));
+        .add((person, clickCount, mouseButton) -> this.onPersonClick(person, clickCount, mouseButton, false));
   }
 
   /**
