@@ -347,7 +347,8 @@ public class EditPersonDialog extends DialogBase<Person> {
    * @param expanded  Whether to expand the created form.
    */
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
-    LifeEventView lifeEventView = new LifeEventView(lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
+    LifeEventView lifeEventView = new LifeEventView(
+        this.familyTree, lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
     lifeEventView.getDeletionListeners().add(this::onEventDelete);
     lifeEventView.getUpdateListeners().add(this::updateButtons);
     lifeEventView.getTypeListeners().add(t -> {
@@ -449,12 +450,8 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.lifeEventsList.getItems().forEach(LifeEventView::applyChanges);
     for (LifeEventView lifeEventView : this.eventsToDelete) {
       LifeEvent event = lifeEventView.lifeEvent();
-      if (event.actors().size() <= event.type().minActors()) {
-        event.actors().forEach(a -> a.removeLifeEvent(event));
-        event.witnesses().forEach(w -> w.removeLifeEvent(event));
-      } else {
-        person.removeLifeEvent(event);
-      }
+      this.familyTree.removeLifeEventFromActor(event, person);
+      event.removeWitness(person);
     }
     // Update life status after events to avoid assertion error
     person.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
@@ -468,8 +465,7 @@ public class EditPersonDialog extends DialogBase<Person> {
         this.person.removeRelative(relative, type);
       }
       // Add back the selected relatives
-      this.relativesLists.get(type).getPersons()
-          .forEach(p -> this.person.addRelative(p, type));
+      this.relativesLists.get(type).getPersons().forEach(p -> this.person.addRelative(p, type));
     }
   }
 

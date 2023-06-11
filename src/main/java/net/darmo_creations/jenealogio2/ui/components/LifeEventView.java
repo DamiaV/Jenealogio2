@@ -32,6 +32,7 @@ public class LifeEventView extends TitledPane {
   private final TextArea notesField = new TextArea();
   private final TextArea sourcesField = new TextArea();
 
+  private final FamilyTree familyTree;
   private final LifeEvent lifeEvent;
   private final Person person;
   private final List<Person> persons;
@@ -51,12 +52,14 @@ public class LifeEventView extends TitledPane {
    * @param parent    Parent {@link ListView} component.
    */
   public LifeEventView(
+      @NotNull FamilyTree familyTree,
       @NotNull LifeEvent lifeEvent,
       @NotNull Person person,
       final @NotNull Collection<Person> persons,
       boolean expanded,
       final @NotNull ListView<LifeEventView> parent
   ) {
+    this.familyTree = familyTree;
     this.lifeEvent = Objects.requireNonNull(lifeEvent);
     this.person = person;
     // Get all persons except the one we are currently editing and sort by name
@@ -233,26 +236,19 @@ public class LifeEventView extends TitledPane {
    */
   public void applyChanges() {
     this.lifeEvent.setType(this.eventTypeCombo.getSelectionModel().getSelectedItem().data());
-    // Remove life event from all current actors before resetting them
-    this.lifeEvent.actors().forEach(p -> p.removeLifeEvent(this.lifeEvent));
     Set<Person> actors = new HashSet<>();
     actors.add(this.person);
-    this.person.addLifeEvent(this.lifeEvent);
     if (!this.partnerCombo.isDisabled()) {
-      Person actor = this.partnerCombo.getSelectionModel().getSelectedItem().data();
-      actors.add(actor);
-      actor.addLifeEvent(this.lifeEvent);
+      actors.add(this.partnerCombo.getSelectionModel().getSelectedItem().data());
     }
     this.lifeEvent.setActors(actors);
 
     // Remove all witnesses and add back the selected ones
     for (Person witness : this.lifeEvent.witnesses()) {
-      witness.removeLifeEvent(this.lifeEvent);
       this.lifeEvent.removeWitness(witness);
     }
     for (Person witness : this.witnessesList.getItems()) {
       this.lifeEvent.addWitness(witness);
-      witness.addLifeEvent(this.lifeEvent);
     }
 
     this.lifeEvent.setDate(this.dateField.getDate().orElseThrow(() -> new IllegalArgumentException("missing date")));

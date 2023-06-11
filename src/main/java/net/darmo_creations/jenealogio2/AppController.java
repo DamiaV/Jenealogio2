@@ -11,7 +11,6 @@ import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.io.TreeFileReader;
 import net.darmo_creations.jenealogio2.io.TreeFileWriter;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
-import net.darmo_creations.jenealogio2.model.LifeEvent;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
@@ -546,38 +545,6 @@ public class AppController {
       boolean delete = Alerts.confirmation(
           "alert.delete_person.header", null, "alert.delete_person.title");
       if (delete) {
-        // Unlink life events from person
-        for (LifeEvent lifeEvent : person.getLifeEventsAsActor()) {
-          if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
-            lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
-            lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
-          } else {
-            person.removeLifeEvent(lifeEvent);
-          }
-        }
-        // Unlink person from life events
-        for (LifeEvent lifeEvent : person.getLifeEventsAsWitness()) {
-          lifeEvent.removeWitness(person);
-        }
-
-        // Unlink person’s parents
-        person.setParent(0, null);
-        person.setParent(1, null);
-        // Unlink person’s children
-        for (Person child : person.children()) {
-          child.removeParent(person);
-        }
-
-        // Unlink person’s non-biological children and parents
-        for (Person.RelativeType type : Person.RelativeType.values()) {
-          for (Person nonBiologicalChild : person.nonBiologicalChildren(type)) {
-            nonBiologicalChild.removeRelative(person, type);
-          }
-          for (Person relative : person.getRelatives(type)) {
-            person.removeRelative(relative, type);
-          }
-        }
-        // Remove person from tree
         this.familyTree.removePerson(person);
 
         // Update UI

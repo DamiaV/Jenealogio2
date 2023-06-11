@@ -68,7 +68,44 @@ public class FamilyTree {
     if (person == this.root) {
       throw new IllegalArgumentException("cannot delete root");
     }
+    person.setParent(0, null);
+    person.setParent(1, null);
+    for (LifeEvent lifeEvent : person.lifeEvents()) {
+      this.removeLifeEventFromActor(lifeEvent, person);
+      lifeEvent.removeWitness(person);
+    }
+    for (Person child : person.children()) {
+      child.removeParent(person);
+    }
+    for (Person.RelativeType type : Person.RelativeType.values()) {
+      for (Person nonBiologicalChild : person.nonBiologicalChildren(type)) {
+        nonBiologicalChild.removeRelative(person, type);
+      }
+      for (Person relative : person.getRelatives(type)) {
+        person.removeRelative(relative, type);
+      }
+    }
     this.persons.remove(person);
+  }
+
+  /**
+   * Remove an actor from a life event. If the event is at its minimum allowed number of actors,
+   * all actors and witnesses are detached from the event.
+   *
+   * @param lifeEvent Life event to remove the actor from.
+   * @param actor     Actor to remove.
+   */
+  public void removeLifeEventFromActor(@NotNull LifeEvent lifeEvent, @NotNull Person actor) {
+    if (!lifeEvent.hasActor(actor)) {
+      return;
+    }
+    if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
+      lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
+      lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
+      actor.removeLifeEvent(lifeEvent);
+    } else {
+      lifeEvent.removeActor(actor);
+    }
   }
 
   /**

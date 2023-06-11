@@ -391,27 +391,16 @@ public class TreeFileReader extends TreeFileManager {
         throw new IOException("Wrong number of minActors for event type %s: %d".formatted(type.key().fullName(), actorsNb));
       }
 
-      LifeEvent lifeEvent = new LifeEvent(actors.get(0), date, type);
-
-      for (Person actor : actors) {
-        try {
-          if (!lifeEvent.hasActor(actor)) { // First actor has already been added above
-            lifeEvent.addActor(actor);
-          }
-          actor.addLifeEvent(lifeEvent);
-          if (lifeEvent.type().indicatesDeath()) {
-            actor.setLifeStatus(LifeStatus.DECEASED);
-          }
-        } catch (IllegalArgumentException e) {
-          throw new IOException(e);
-        }
+      LifeEvent lifeEvent;
+      try {
+        lifeEvent = new LifeEvent(actors.get(0), date, type);
+        lifeEvent.setActors(new HashSet<>(actors));
+      } catch (IllegalArgumentException e) {
+        throw new IOException(e);
       }
 
       // Witnesses
-      this.readPersons(eventElement, WITNESSES_TAG, persons, person -> {
-        person.addLifeEvent(lifeEvent);
-        lifeEvent.addWitness(person);
-      }, true);
+      this.readPersons(eventElement, WITNESSES_TAG, persons, lifeEvent::addWitness, true);
 
       // Place
       Optional<Element> placeElement = this.getChildElement(eventElement, PLACE_TAG, true);
@@ -456,7 +445,7 @@ public class TreeFileReader extends TreeFileManager {
       int id = this.getAttr(actorElement, PERSON_ID_ATTR, Integer::parseInt, null, false);
       try {
         consumer.accept(persons.get(id));
-      } catch (IndexOutOfBoundsException e) {
+      } catch (IndexOutOfBoundsException | IllegalArgumentException e) {
         throw new IOException(e);
       }
     }

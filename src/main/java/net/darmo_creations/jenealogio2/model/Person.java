@@ -480,36 +480,19 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
-   * Indicate whether this person is an actor of the given life event.
-   *
-   * @param lifeEvent Life event to check.
-   * @return True if this person has the given life event in its list and acted in it, false otherwise.
-   */
-  public boolean isActorOf(final @NotNull LifeEvent lifeEvent) {
-    return this.getActedInEventsStream().anyMatch(e -> e == lifeEvent);
-  }
-
-  /**
-   * Indicate whether this person is a witness of the given life event.
-   *
-   * @param lifeEvent Life event to check.
-   * @return True if this person has the given life event in its list and witnessed it, false otherwise.
-   */
-  public boolean isWitnessOf(final @NotNull LifeEvent lifeEvent) {
-    return this.getWitnessedEventsStream().anyMatch(e -> e == lifeEvent);
-  }
-
-  /**
-   * Add a life event to this person.
+   * Add a life event to this person. Does <b>not</b> update the {@link LifeEvent} object.
    *
    * @param event Life event to add.
    * @throws IllegalArgumentException If the event’s type has a unicity constraint
    *                                  and this actor already acts in another event of the same type.
    */
-  public void addLifeEvent(final @NotNull LifeEvent event) {
+  void addLifeEvent(final @NotNull LifeEvent event) {
     if (event.type().isUnique() && event.hasActor(this)
         && this.getActedInEventsStream().anyMatch(e -> e.type() == event.type())) {
       throw new IllegalArgumentException("%s already acts in an event of type %s".formatted(this, event.type()));
+    }
+    if (event.hasActor(this) && event.type().indicatesDeath()) {
+      this.lifeStatus = LifeStatus.DECEASED;
     }
     if (!this.lifeEvents.contains(event)) {
       this.lifeEvents.add(event);
@@ -518,11 +501,11 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
-   * Remove a life event from this person.
+   * Remove a life event from this person. Does <b>not</b> update the {@link LifeEvent} object.
    *
    * @param event Life event to remove.
    */
-  public void removeLifeEvent(final LifeEvent event) {
+  void removeLifeEvent(final LifeEvent event) {
     this.lifeEvents.remove(event);
   }
 

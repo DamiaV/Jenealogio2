@@ -35,7 +35,8 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   public LifeEvent(@NotNull Person actor, @NotNull CalendarDate date, @NotNull LifeEventType type) {
     this.date = Objects.requireNonNull(date);
     this.type = Objects.requireNonNull(type);
-    this.addActor(actor);
+    this.actors.add(actor);
+    actor.addLifeEvent(this);
   }
 
   /**
@@ -100,51 +101,40 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   }
 
   /**
-   * Add an actor to this event.
-   *
-   * @param actor The actor to add.
-   * @throws IllegalArgumentException If the actor is already a witness of this event
-   *                                  or if this event cannot accept any more actors.
-   */
-  public void addActor(final @NotNull Person actor) {
-    Objects.requireNonNull(actor);
-    if (this.hasWitness(actor)) {
-      throw new IllegalArgumentException("same person cannot be both actor and witness of same event");
-    }
-    int max = this.type.maxActors();
-    if (this.actors.size() == max && !this.hasActor(actor)) {
-      throw new IllegalArgumentException("cannot add more than %d actor(s) to life event with type %s"
-          .formatted(max, this.type.key()));
-    }
-    this.actors.add(actor);
-  }
-
-  /**
-   * Remove an actor from this event.
+   * Remove an actor from this event. Updates the {@link Person} object.
    *
    * @param actor The actor to remove.
    * @throws IllegalArgumentException If the number of actors is already at the allowed minimum.
    */
-  public void removeActor(final @NotNull Person actor) {
+  void removeActor(final @NotNull Person actor) {
     if (this.actors.size() == this.type.minActors() && this.hasActor(actor)) {
       throw new IllegalStateException("cannot remove any more actors");
     }
     this.actors.remove(actor);
+    actor.removeLifeEvent(this);
   }
 
   /**
-   * Replace all current actors by the given ones.
+   * Replace all current actors by the given ones. Updates the {@link Person} object.
    *
    * @param actors Persons to set as actors of this life event.
-   * @throws IllegalArgumentException If the number of new actors is not within the allowed bounds.
+   * @throws IllegalArgumentException If the number of new actors is not within the allowed bounds
+   *                                  or if any of the actors are witnesses.
    */
   public void setActors(final @NotNull Set<Person> actors) {
     if (actors.size() < this.type.minActors() || actors.size() > this.type.maxActors()) {
       throw new IllegalStateException("invalid actors number: expected between %d and %d, got %d"
           .formatted(this.type.minActors(), this.type.maxActors(), actors.size()));
     }
+    if (actors.stream().anyMatch(this::hasWitness)) {
+      throw new IllegalArgumentException("same person cannot be both witness and actor of same event");
+    }
+    // Dissociate current actors
+    this.actors.forEach(p -> p.removeLifeEvent(this));
     this.actors.clear();
     this.actors.addAll(actors);
+    // Associate new actors
+    actors.forEach(actor -> actor.addLifeEvent(this));
   }
 
   /**
@@ -165,7 +155,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   }
 
   /**
-   * Add a witness to this event.
+   * Add a witness to this event. Updates the {@link Person} object.
    *
    * @param witness The witness to add.
    * @throws IllegalArgumentException If the person is already an actor of this event.
@@ -176,15 +166,20 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
       throw new IllegalArgumentException("same person cannot be both witness and actor of same event");
     }
     this.witnesses.add(witness);
+    witness.addLifeEvent(this);
   }
 
   /**
-   * Remove a witness from this event.
+   * Remove a witness from this event. Updates the {@link Person} object.
    *
    * @param witness The witness to remove.
    */
   public void removeWitness(final Person witness) {
+    if (!this.hasWitness(witness)) {
+      return;
+    }
     this.witnesses.remove(witness);
+    witness.removeLifeEvent(this);
   }
 
   /**
