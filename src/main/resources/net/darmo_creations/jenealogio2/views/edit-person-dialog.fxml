@@ -29,6 +29,7 @@
                     <RowConstraints vgrow="SOMETIMES"/>
                     <RowConstraints vgrow="SOMETIMES"/>
                     <RowConstraints vgrow="SOMETIMES"/>
+                    <RowConstraints vgrow="SOMETIMES"/>
                     <RowConstraints valignment="TOP" vgrow="ALWAYS"/>
                     <RowConstraints valignment="TOP" vgrow="ALWAYS"/>
                   </rowConstraints>

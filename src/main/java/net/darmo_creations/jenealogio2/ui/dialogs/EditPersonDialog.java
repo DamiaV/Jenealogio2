@@ -188,7 +188,7 @@ public class EditPersonDialog extends DialogBase<Person> {
 
     Stage stage = this.stage();
     stage.setMinWidth(850);
-    stage.setMinHeight(600);
+    stage.setMinHeight(650);
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
