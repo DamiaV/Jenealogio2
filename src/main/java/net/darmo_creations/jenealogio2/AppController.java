@@ -270,7 +270,7 @@ public class AppController {
     AnchorPane.setRightAnchor(this.personDetailsView, 0.0);
     this.detailsView.getChildren().add(this.personDetailsView);
     this.personDetailsView.personClickListeners()
-        .add(person -> this.onPersonClick(person, 1, TARGET_UPDATE_BUTTON, true));
+        .add(person -> this.onPersonClick(person, 1, TARGET_UPDATE_BUTTON, false));
   }
 
   /**
@@ -646,6 +646,7 @@ public class AppController {
    */
   private void onPersonClick(Person person, int clickCount, MouseButton button, boolean inTree) {
     this.focusedComponent = inTree ? this.familyTreeView : this.familyTreePane;
+    this.focusedComponent.selectPerson(person, button == TARGET_UPDATE_BUTTON);
     if (App.config().shouldSyncTreeWithMainPane()) {
       if (inTree) {
         this.familyTreePane.selectPerson(person, button == TARGET_UPDATE_BUTTON);
@@ -678,10 +679,8 @@ public class AppController {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
       if (person == null && childInfo == null) {
-        this.familyTreePane.selectPerson(p.get(), true);
-        this.focusedComponent = this.familyTreePane;
+        this.onPersonClick(p.get(), 1, TARGET_UPDATE_BUTTON, false);
       }
-      this.personDetailsView.setPerson(person);
       this.defaultEmptyTree = false;
       this.unsavedChanges = true;
       this.updateUI();
