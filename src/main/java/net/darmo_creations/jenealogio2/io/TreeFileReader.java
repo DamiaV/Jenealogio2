@@ -408,7 +408,10 @@ public class TreeFileReader extends TreeFileManager {
       }
 
       // Witnesses
-      this.readPersons(eventElement, WITNESSES_TAG, persons, lifeEvent::addWitness, true);
+      this.readPersons(eventElement, WITNESSES_TAG, persons, person -> {
+        person.addLifeEvent(lifeEvent);
+        lifeEvent.addWitness(person);
+      }, true);
 
       // Place
       Optional<Element> placeElement = this.getChildElement(eventElement, PLACE_TAG, true);
