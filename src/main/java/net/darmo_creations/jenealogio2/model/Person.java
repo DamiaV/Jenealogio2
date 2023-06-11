@@ -481,6 +481,9 @@ public class Person extends GenealogyObject<Person> {
 
   /**
    * Add a life event to this person. Does <b>not</b> update the {@link LifeEvent} object.
+   * <p>
+   * If the event has a type with {@link LifeEventType#indicatesDeath()} to true,
+   * this person’s life status is set to {@link LifeStatus#DECEASED}.
    *
    * @param event Life event to add.
    * @throws IllegalArgumentException If the event’s type has a unicity constraint
