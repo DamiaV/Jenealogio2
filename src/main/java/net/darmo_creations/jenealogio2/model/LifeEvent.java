@@ -28,15 +28,12 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   /**
    * Create a new life event.
    *
-   * @param actor Event’s actor.
-   * @param date  Event’s date.
-   * @param type  Event’s type.
+   * @param date Event’s date.
+   * @param type Event’s type.
    */
-  public LifeEvent(@NotNull Person actor, @NotNull CalendarDate date, @NotNull LifeEventType type) {
+  public LifeEvent(@NotNull CalendarDate date, @NotNull LifeEventType type) {
     this.date = Objects.requireNonNull(date);
     this.type = Objects.requireNonNull(type);
-    this.actors.add(actor);
-    actor.addLifeEvent(this);
   }
 
   /**

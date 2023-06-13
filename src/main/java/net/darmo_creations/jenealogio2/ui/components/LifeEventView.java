@@ -32,7 +32,6 @@ public class LifeEventView extends TitledPane {
   private final TextArea notesField = new TextArea();
   private final TextArea sourcesField = new TextArea();
 
-  private final FamilyTree familyTree;
   private final LifeEvent lifeEvent;
   private final Person person;
   private final List<Person> persons;
@@ -52,14 +51,12 @@ public class LifeEventView extends TitledPane {
    * @param parent    Parent {@link ListView} component.
    */
   public LifeEventView(
-      @NotNull FamilyTree familyTree,
       @NotNull LifeEvent lifeEvent,
       @NotNull Person person,
       final @NotNull Collection<Person> persons,
       boolean expanded,
       final @NotNull ListView<LifeEventView> parent
   ) {
-    this.familyTree = familyTree;
     this.lifeEvent = Objects.requireNonNull(lifeEvent);
     this.person = person;
     // Get all persons except the one we are currently editing and sort by name

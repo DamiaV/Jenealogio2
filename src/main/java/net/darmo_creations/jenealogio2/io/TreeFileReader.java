@@ -393,7 +393,7 @@ public class TreeFileReader extends TreeFileManager {
 
       LifeEvent lifeEvent;
       try {
-        lifeEvent = new LifeEvent(actors.get(0), date, type);
+        lifeEvent = new LifeEvent(date, type);
         lifeEvent.setActors(new HashSet<>(actors));
       } catch (IllegalArgumentException e) {
         throw new IOException(e);

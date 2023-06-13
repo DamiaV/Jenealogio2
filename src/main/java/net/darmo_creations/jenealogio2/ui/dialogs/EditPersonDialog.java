@@ -171,7 +171,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.addEventButton.setOnAction(event -> {
       DateWithPrecision date = new DateWithPrecision(LocalDateTime.now(), DatePrecision.EXACT);
       LifeEventType birth = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
-      this.addEvent(new LifeEvent(this.person, date, birth), true);
+      this.addEvent(new LifeEvent(date, birth), true);
     });
     this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
 
@@ -348,7 +348,7 @@ public class EditPersonDialog extends DialogBase<Person> {
    */
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
     LifeEventView lifeEventView = new LifeEventView(
-        this.familyTree, lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
+        lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
     lifeEventView.getDeletionListeners().add(this::onEventDelete);
     lifeEventView.getUpdateListeners().add(this::updateButtons);
     lifeEventView.getTypeListeners().add(t -> {
