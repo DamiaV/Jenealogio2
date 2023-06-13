@@ -14,10 +14,14 @@ import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
+import net.darmo_creations.jenealogio2.ui.dialogs.NoSelectionModel;
 import net.darmo_creations.jenealogio2.utils.DateTimeUtils;
+import net.darmo_creations.jenealogio2.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 public class PersonDetailsView extends TabPane {
   private Person person;
@@ -39,8 +43,9 @@ public class PersonDetailsView extends TabPane {
   private final ListView<LifeEventItem> lifeEventsList = new ListView<>();
   private final ListView<WitnessedEventItem> witnessedEventsList = new ListView<>();
 
-  private final PersonCard person1Card = new PersonCard();
-  private final PersonCard person2Card = new PersonCard();
+  private final PersonCard parent1Card = new PersonCard();
+  private final PersonCard parent2Card = new PersonCard();
+  private final ListView<ChildrenItem> siblingsList = new ListView<>();
   private final ListView<ChildrenItem> childrenList = new ListView<>();
 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
@@ -146,6 +151,7 @@ public class PersonDetailsView extends TabPane {
     VBox.setVgrow(this.witnessedEventsList, Priority.ALWAYS);
     VBox vBox2 = new VBox(witnessedLabelPane, this.witnessedEventsList);
     vBox2.getStyleClass().add("person-details");
+    // TODO show details when clicked
 
     tabPane.getItems().addAll(vBox, vBox2);
     tabPane.setDividerPositions(0.5);
@@ -154,8 +160,8 @@ public class PersonDetailsView extends TabPane {
   private void setupFamilyTab() {
     Language language = App.config().language();
 
-    VBox tabPane = new VBox();
-    tabPane.getStyleClass().add("person-details");
+    SplitPane tabPane = new SplitPane();
+    tabPane.setOrientation(Orientation.VERTICAL);
     this.familyTab.setContent(tabPane);
 
     Label sourcesLabel = new Label(language.translate("person_details_view.parents"));
@@ -167,8 +173,24 @@ public class PersonDetailsView extends TabPane {
     AnchorPane.setLeftAnchor(sourcesLabel, 0.0);
     AnchorPane.setRightAnchor(sourcesLabel, 0.0);
 
-    this.person1Card.setPerson(null);
-    this.person2Card.setPerson(null);
+    VBox parentsVBox = new VBox(4, this.parent1Card, this.parent2Card);
+    this.parent1Card.setPerson(null);
+    this.parent2Card.setPerson(null);
+
+    Label siblingsLabel = new Label(language.translate("person_details_view.siblings"));
+    siblingsLabel.getStyleClass().add("person-details-title");
+    AnchorPane siblingsLabelPane = new AnchorPane(siblingsLabel);
+    siblingsLabelPane.getStyleClass().add("person-details-header");
+    AnchorPane.setTopAnchor(siblingsLabel, 0.0);
+    AnchorPane.setBottomAnchor(siblingsLabel, 0.0);
+    AnchorPane.setLeftAnchor(siblingsLabel, 0.0);
+    AnchorPane.setRightAnchor(siblingsLabel, 0.0);
+
+    VBox.setVgrow(this.siblingsList, Priority.ALWAYS);
+    this.siblingsList.setSelectionModel(new NoSelectionModel<>());
+
+    VBox topBox = new VBox(sourcesLabelPane, parentsVBox, siblingsLabelPane, this.siblingsList);
+    topBox.getStyleClass().add("person-details");
 
     Label childrenLabel = new Label(language.translate("person_details_view.children"));
     childrenLabel.getStyleClass().add("person-details-title");
@@ -180,9 +202,15 @@ public class PersonDetailsView extends TabPane {
     AnchorPane.setRightAnchor(childrenLabel, 0.0);
 
     VBox.setVgrow(this.childrenList, Priority.ALWAYS);
+    this.childrenList.setSelectionModel(new NoSelectionModel<>());
 
-    tabPane.getChildren()
-        .addAll(sourcesLabelPane, this.person1Card, this.person2Card, childrenLabelPane, this.childrenList);
+    VBox bottomBox = new VBox(childrenLabelPane, this.childrenList);
+    bottomBox.getStyleClass().add("person-details");
+
+    // TODO show list of adoptive parents, godparents and foster parents
+
+    tabPane.getItems().addAll(topBox, bottomBox);
+    tabPane.setDividerPositions(0.6);
   }
 
   public void setPerson(final Person person) {
@@ -193,6 +221,7 @@ public class PersonDetailsView extends TabPane {
   private void populateFields() {
     this.lifeEventsList.getItems().clear();
     this.witnessedEventsList.getItems().clear();
+    this.siblingsList.getItems().clear();
     this.childrenList.getItems().clear();
 
     if (this.person != null) {
@@ -224,34 +253,35 @@ public class PersonDetailsView extends TabPane {
       this.person.getLifeEventsAsWitness()
           .forEach(lifeEvent -> this.witnessedEventsList.getItems().add(new WitnessedEventItem(lifeEvent)));
 
-      var parents = this.person.parents();
-      this.person1Card.setPerson(parents.left().orElse(null));
-      this.person2Card.setPerson(parents.right().orElse(null));
-
-      Map<Person, List<Person>> partnersChildren = new HashMap<>();
-      for (Person child : this.person.children()) {
-        var childParents = child.parents();
-        childParents.left().ifPresent(p -> {
-          if (p != this.person) {
-            if (!partnersChildren.containsKey(p)) {
-              partnersChildren.put(p, new LinkedList<>());
-            }
-            partnersChildren.get(p).add(child);
-          }
-        });
-        childParents.right().ifPresent(p -> {
-          if (p != this.person) {
-            if (!partnersChildren.containsKey(p)) {
-              partnersChildren.put(p, new LinkedList<>());
-            }
-            partnersChildren.get(p).add(child);
-          }
-        });
+      {
+        var parents = this.person.parents();
+        this.parent1Card.setPerson(parents.left().orElse(null));
+        this.parent2Card.setPerson(parents.right().orElse(null));
       }
 
-      partnersChildren.entrySet().stream()
+      this.person.getAllSiblings().entrySet().stream()
+          // Sort according to first parent then second
+          .sorted((e1, e2) -> {
+            Pair<Person, Person> key1 = e1.getKey();
+            Pair<Person, Person> key2 = e2.getKey();
+            int c = Person.birthDateThenNameComparator(false).compare(key1.left(), key2.left());
+            if (c != 0) {
+              return c;
+            }
+            return Person.birthDateThenNameComparator(false).compare(key1.right(), key2.right());
+          })
+          .forEach(e -> {
+            // Sort children
+            List<Person> sortedChildren = e.getValue().stream()
+                .sorted(Person.birthDateThenNameComparator(false))
+                .toList();
+            var parents = e.getKey();
+            this.siblingsList.getItems().add(new ChildrenItem(parents.left(), parents.right(), sortedChildren));
+          });
+
+      this.person.getPartnersAndChildren().entrySet().stream()
           .sorted((e1, e2) -> Person.birthDateThenNameComparator(false).compare(e1.getKey(), e2.getKey()))
-          .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey(), e.getValue())));
+          .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey(), null, e.getValue())));
     } else {
       this.imageView.setImage(PersonWidget.DEFAULT_IMAGE);
       this.fullNameLabel.setText(null);
@@ -269,8 +299,8 @@ public class PersonDetailsView extends TabPane {
       this.notesLabel.setText(null);
       this.sourcesLabel.setText(null);
 
-      this.person1Card.setPerson(null);
-      this.person2Card.setPerson(null);
+      this.parent1Card.setPerson(null);
+      this.parent2Card.setPerson(null);
     }
   }
 
@@ -447,14 +477,19 @@ public class PersonDetailsView extends TabPane {
       this.getChildren().add(header);
 
       VBox actorsBox = new VBox(4);
-      lifeEvent.actors().stream()
-          .sorted(Person.birthDateThenNameComparator(false))
-          .forEach(p -> {
-            Button b = new Button(p.toString(), App.config().theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
-            b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
-            b.setUserData(p);
-            actorsBox.getChildren().add(b);
-          });
+      List<Person> actors = lifeEvent.actors().stream()
+          .sorted(Person.birthDateThenNameComparator(false)).toList();
+      boolean first = true;
+      for (Person actor : actors) {
+        Label label = new Label(language.translate("person_details_view.life_events." + (first ? "of" : "and")));
+        Button b = new Button(actor.toString(), App.config().theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+        b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
+        b.setUserData(actor);
+        HBox hBox = new HBox(4, label, b);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        actorsBox.getChildren().add(hBox);
+        first = false;
+      }
       this.getChildren().add(actorsBox);
     }
   }
@@ -463,11 +498,16 @@ public class PersonDetailsView extends TabPane {
    * Item for showing the children of a person in a {@link ListView}.
    */
   private class ChildrenItem extends VBox {
-    public ChildrenItem(final @NotNull Person parent, final @NotNull List<Person> children) {
+    public ChildrenItem(final @NotNull Person parent1, final Person parent2, final @NotNull List<Person> children) {
       super(4);
-      PersonCard parentCard = new PersonCard();
-      parentCard.setPerson(parent);
-      this.getChildren().add(parentCard);
+      PersonCard parent1Card = new PersonCard();
+      parent1Card.setPerson(parent1);
+      this.getChildren().add(parent1Card);
+      if (parent2 != null) {
+        PersonCard parent2Card = new PersonCard();
+        parent2Card.setPerson(parent2);
+        this.getChildren().add(parent2Card);
+      }
       children.stream()
           .sorted(Person.birthDateThenNameComparator(false))
           .forEach(child -> {

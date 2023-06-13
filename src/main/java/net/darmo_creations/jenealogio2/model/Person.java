@@ -7,6 +7,8 @@ import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -14,6 +16,43 @@ import java.util.stream.Stream;
  */
 public class Person extends GenealogyObject<Person> {
   public static final String NAME_SEPARATOR = " ";
+
+  private static final Comparator<Person> LAST_THEN_FIRST_NAMES_COMPARATOR = (p1, p2) -> {
+    int c1 = p1.getLastName().orElse("")
+        .compareTo(p2.getLastName().orElse(""));
+    if (c1 != 0) {
+      return c1;
+    }
+    int c2 = p1.getFirstNames().orElse("")
+        .compareTo(p2.getFirstNames().orElse(""));
+    if (c2 != 0) {
+      return c2;
+    }
+    return p1.disambiguationID().orElse(-1)
+        .compareTo(p2.disambiguationID().orElse(-1));
+  };
+  private static final Function<Boolean, Comparator<Person>> BIRTH_DATE_THEN_NAME_COMPARATOR_FACTORY = reversed -> (p1, p2) -> {
+    Optional<CalendarDate> birthDate1 = p1.getBirthDate();
+    Optional<CalendarDate> birthDate2 = p2.getBirthDate();
+    if (birthDate1.isPresent() && birthDate2.isPresent()) {
+      int c = birthDate1.get().compareTo(birthDate2.get());
+      if (reversed) {
+        c = -c;
+      }
+      if (c != 0) {
+        return c;
+      }
+    }
+    int c = lastThenFirstNamesComparator().compare(p1, p2);
+    if (reversed) {
+      c = -c;
+    }
+    return c;
+  };
+  private static final Comparator<Person> BIRTH_DATE_THEN_NAME_COMPARATOR =
+      BIRTH_DATE_THEN_NAME_COMPARATOR_FACTORY.apply(false);
+  private static final Comparator<Person> BIRTH_DATE_THEN_NAME_COMPARATOR_REVERSED =
+      BIRTH_DATE_THEN_NAME_COMPARATOR_FACTORY.apply(true);
 
   private Integer disambiguationID;
   private LifeStatus lifeStatus = LifeStatus.LIVING;
@@ -294,16 +333,6 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
-   * Check whether this person has the given person as a biological parent.
-   *
-   * @param person Person to check as parent.
-   * @return True if the passed person is a biological parent of this person, false otherwise.
-   */
-  public boolean hasParent(final Person person) {
-    return this.parents[0] == person || this.parents[1] == person;
-  }
-
-  /**
    * Check if two persons have the same parents, regardless of order.
    *
    * @param person Person to check parents againts this.
@@ -374,6 +403,102 @@ public class Person extends GenealogyObject<Person> {
    */
   public Set<Person> children() {
     return new HashSet<>(this.children);
+  }
+
+  /**
+   * Return a map associating persons and the children they had with this person, if any.
+   * <p>
+   * If a list is empty, the person has a union with this person but no children.
+   * <p>
+   * Children lists are not sorted.
+   */
+  public Map<Person, List<Person>> getPartnersAndChildren() {
+    Map<Person, List<Person>> partnersChildren = new HashMap<>();
+    for (Person child : this.children) {
+      var childParents = child.parents();
+      var parent1 = childParents.left();
+      var parent2 = childParents.right();
+      if (parent1.isEmpty() || parent2.isEmpty()) {
+        continue;
+      }
+      Person parent = parent1.get() == this ? parent2.get() : parent1.get();
+      if (!partnersChildren.containsKey(parent)) {
+        partnersChildren.put(parent, new LinkedList<>());
+      }
+      partnersChildren.get(parent).add(child);
+    }
+    // Add all partners that did not have any children with this person
+    //noinspection OptionalGetWithoutIsPresent
+    this.getActedInEventsStream()
+        .filter(e -> e.type().indicatesUnion())
+        // Partner always present in unions
+        .map(e -> e.actors().stream().filter(p -> p != this).findFirst().get())
+        .forEach(person -> {
+          if (!partnersChildren.containsKey(person)) {
+            partnersChildren.put(person, new LinkedList<>());
+          }
+        });
+    return partnersChildren;
+  }
+
+  /**
+   * Return the siblings of this person, i.e. the set of all persons with the exact same parents.
+   *
+   * @return The set of siblings.
+   */
+  public Set<Person> getSameParentsSiblings() {
+    Set<Person> siblings = new HashSet<>();
+    Person parent1 = this.parents[0];
+    Person parent2 = this.parents[1];
+    if (parent1 != null) {
+      this.addChildren(siblings, parent1);
+    } else if (parent2 != null) {
+      this.addChildren(siblings, parent2);
+    }
+    return siblings;
+  }
+
+  private void addChildren(@NotNull Set<Person> siblings, final @NotNull Person parent) {
+    siblings.addAll(parent.children().stream()
+        .filter(c -> c != this && c.hasSameParents(this))
+        .collect(Collectors.toSet()));
+  }
+
+  /**
+   * Return all sibling of this person, i.e. all persons that share at least one parent with this one.
+   *
+   * @return A map associating a pair of parents to their children.
+   * It is guaranted that at least one of the parents in each pair is a parent of this person.
+   */
+  public Map<Pair<Person, Person>, Set<Person>> getAllSiblings() {
+    Map<Pair<Person, Person>, Set<Person>> siblings = new HashMap<>();
+    Person parent1 = this.parents[0];
+    Person parent2 = this.parents[1];
+    if (parent1 != null) {
+      this.addChildren(siblings, parent1);
+    }
+    if (parent2 != null) {
+      this.addChildren(siblings, parent2);
+    }
+    return siblings;
+  }
+
+  private void addChildren(@NotNull Map<Pair<Person, Person>, Set<Person>> siblings, final @NotNull Person parent) {
+    for (Person child : parent.children()) {
+      if (child == this) {
+        continue;
+      }
+      Person p1 = child.parents[0];
+      Person p2 = child.parents[1];
+      var key1 = new Pair<>(p1, p2);
+      var key2 = new Pair<>(p2, p1);
+      // Ensure that there isn’t already any key with the same persons but in a different order
+      var key = siblings.containsKey(key2) ? key2 : key1;
+      if (!siblings.containsKey(key)) {
+        siblings.put(key, new HashSet<>());
+      }
+      siblings.get(key).add(child);
+    }
   }
 
   /**
@@ -556,24 +681,7 @@ public class Person extends GenealogyObject<Person> {
    * @return A comparator object.
    */
   public static Comparator<Person> birthDateThenNameComparator(boolean reversed) {
-    return (p1, p2) -> {
-      Optional<CalendarDate> birthDate1 = p1.getBirthDate();
-      Optional<CalendarDate> birthDate2 = p2.getBirthDate();
-      if (birthDate1.isPresent() && birthDate2.isPresent()) {
-        int c = birthDate1.get().compareTo(birthDate2.get());
-        if (reversed) {
-          c = -c;
-        }
-        if (c != 0) {
-          return c;
-        }
-      }
-      int c = lastThenFirstNamesComparator().compare(p1, p2);
-      if (reversed) {
-        c = -c;
-      }
-      return c;
-    };
+    return reversed ? BIRTH_DATE_THEN_NAME_COMPARATOR_REVERSED : BIRTH_DATE_THEN_NAME_COMPARATOR;
   }
 
   /**
@@ -587,20 +695,7 @@ public class Person extends GenealogyObject<Person> {
    * @return A comparator object.
    */
   public static Comparator<Person> lastThenFirstNamesComparator() {
-    return (p1, p2) -> {
-      int c1 = p1.getLastName().orElse("")
-          .compareTo(p2.getLastName().orElse(""));
-      if (c1 != 0) {
-        return c1;
-      }
-      int c2 = p1.getFirstNames().orElse("")
-          .compareTo(p2.getFirstNames().orElse(""));
-      if (c2 != 0) {
-        return c2;
-      }
-      return p1.disambiguationID().orElse(-1)
-          .compareTo(p2.disambiguationID().orElse(-1));
-    };
+    return LAST_THEN_FIRST_NAMES_COMPARATOR;
   }
 
   /**

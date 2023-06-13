@@ -16,7 +16,6 @@ import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * JavaFX component displaying a part of a family tree’s graph.
@@ -101,6 +100,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
     this.centerNodeInScrollPane(root);
   }
+
+  // FIXME show plus sign if any hidden partner
 
   /**
    * Create and position widgets for each ascendant of the current root.
@@ -202,7 +203,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
     final double rootX = root.getLayoutX();
     final double rootY = root.getLayoutY();
 
-    List<Person> siblings = this.getSiblings(rootPerson);
+    Set<Person> siblings = rootPerson.getSameParentsSiblings();
     List<Person> olderSiblings = siblings.stream()
         .filter(p -> Person.birthDateThenNameComparator(false).compare(p, rootPerson) < 0)
         .sorted(Person.birthDateThenNameComparator(false))
@@ -212,38 +213,12 @@ public class FamilyTreePane extends FamilyTreeComponent {
         .sorted(Person.birthDateThenNameComparator(true))
         .toList();
 
-    Set<Person> rootsChildren = rootPerson.children(); // Make only one copy
-    //noinspection OptionalGetWithoutIsPresent
-    Set<Person> partnersSet = rootPerson.getLifeEventsAsActor().stream()
-        .filter(e -> e.type().indicatesUnion())
-        // Partner always present in unions
-        .map(e -> e.actors().stream().filter(p -> p != rootPerson).findFirst().get())
-        .collect(Collectors.toSet());
-    // Add persons that had a child with root but are not linked by a life event
-    for (Person rootsChild : rootsChildren) {
-      var parents = rootsChild.parents();
-      parents.left().ifPresent(p -> {
-        if (p != rootPerson) {
-          partnersSet.add(p);
-        }
-      });
-      parents.right().ifPresent(p -> {
-        if (p != rootPerson) {
-          partnersSet.add(p);
-        }
-      });
-    }
+    Map<Person, List<Person>> childrenMap = rootPerson.getPartnersAndChildren();
+    childrenMap.forEach((key, value) -> value.sort(Person.birthDateThenNameComparator(false)));
 
-    List<Person> partners = partnersSet.stream()
+    List<Person> partners = childrenMap.keySet().stream()
         .sorted(Person.birthDateThenNameComparator(false))
         .toList();
-
-    // Get children for each relation with root, sorted by birth date and name
-    Map<Person, List<Person>> childrenMap = new HashMap<>();
-    partners.forEach(partner -> childrenMap.put(partner, rootsChildren.stream()
-        .filter(child -> child.hasParent(partner))
-        .sorted(Person.birthDateThenNameComparator(false))
-        .toList()));
 
     // Used to detect whether any widget have a negative x coordinate
     double minX = rootX;
