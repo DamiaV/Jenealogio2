@@ -324,19 +324,6 @@ public class FamilyTreePane extends FamilyTreeComponent {
   }
 
   /**
-   * Get the list of persons that have the same parents as the given person.
-   *
-   * @param person Person to get siblings of.
-   * @return List of the person’s siblings.
-   */
-  private List<Person> getSiblings(final @NotNull Person person) {
-    //noinspection OptionalGetWithoutIsPresent
-    return this.familyTree().get().persons().stream()
-        .filter(p -> p != person && p.hasSameParents(person))
-        .toList();
-  }
-
-  /**
    * Create a new {@link PersonWidget}.
    *
    * @param person    Person to create a widget for.
