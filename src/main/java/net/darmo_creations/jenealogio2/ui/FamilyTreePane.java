@@ -101,8 +101,6 @@ public class FamilyTreePane extends FamilyTreeComponent {
     this.centerNodeInScrollPane(root);
   }
 
-  // FIXME show plus sign if any hidden partner
-
   /**
    * Create and position widgets for each ascendant of the current root.
    *
@@ -123,14 +121,18 @@ public class FamilyTreePane extends FamilyTreeComponent {
           if (child.isPresent()) {
             Person c = child.get();
             var parents = c.parents();
-            boolean hasHiddenParents = i == this.maxHeight && parents.left().map(Person::hasAnyParents).orElse(false);
-            boolean hasHiddenChildren = i > 1 && parents.left().map(p -> p.children().stream().anyMatch(p_ -> p_ != c)).orElse(false);
-            PersonWidget parent1Widget = this.createWidget(parents.left().orElse(null),
-                new ChildInfo(c, 0), hasHiddenParents || hasHiddenChildren, false);
-            hasHiddenParents = i == this.maxHeight && parents.right().map(Person::hasAnyParents).orElse(false);
-            hasHiddenChildren = i > 1 && parents.right().map(p -> p.children().stream().anyMatch(p_ -> p_ != c)).orElse(false);
-            PersonWidget parent2Widget = this.createWidget(parents.right().orElse(null),
-                new ChildInfo(c, 1), hasHiddenParents || hasHiddenChildren, false);
+            PersonWidget parent1Widget = this.createWidget(
+                parents.left().orElse(null),
+                new ChildInfo(c, 0),
+                this.hasHiddenRelatives(parents.left(), i, c),
+                false
+            );
+            PersonWidget parent2Widget = this.createWidget(
+                parents.right().orElse(null),
+                new ChildInfo(c, 1),
+                this.hasHiddenRelatives(parents.right(), i, c),
+                false
+            );
             widgets.add(parent1Widget);
             widgets.add(parent2Widget);
             childWidget.setParentWidget1(parent1Widget);
@@ -164,6 +166,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
     }
 
     return root;
+  }
+
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private boolean hasHiddenRelatives(@NotNull Optional<Person> parent, int treeLevel, final @NotNull Person child) {
+    boolean hasHiddenParents = treeLevel == this.maxHeight && parent.map(Person::hasAnyParents).orElse(false);
+    boolean hasHiddenChildren = treeLevel > 1 && parent.map(p -> p.children().stream().anyMatch(p_ -> p_ != child)).orElse(false);
+    boolean hasHiddenPartners = parent.map(p -> p.getPartnersAndChildren().size() > 1).orElse(false);
+    return hasHiddenParents || hasHiddenChildren || hasHiddenPartners;
   }
 
   /**
