@@ -111,28 +111,18 @@ public class PersonDetailsView extends TabPane {
     nnBox.getChildren().add(this.nicknamesLabel);
     publicNamesBox.getChildren().addAll(plnBox, pfnBox, nnBox);
 
-    Label notesLabel = new Label(language.translate("person_details_view.notes"));
-    notesLabel.getStyleClass().add("person-details-title");
-    AnchorPane notesLabelPane = new AnchorPane(notesLabel);
-    notesLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(notesLabel, 0.0);
-    AnchorPane.setBottomAnchor(notesLabel, 0.0);
-    AnchorPane.setLeftAnchor(notesLabel, 0.0);
-    AnchorPane.setRightAnchor(notesLabel, 0.0);
     this.notesLabel.setWrapText(true);
 
-    Label sourcesLabel = new Label(language.translate("person_details_view.sources"));
-    sourcesLabel.getStyleClass().add("person-details-title");
-    AnchorPane sourcesLabelPane = new AnchorPane(sourcesLabel);
-    sourcesLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(sourcesLabel, 0.0);
-    AnchorPane.setBottomAnchor(sourcesLabel, 0.0);
-    AnchorPane.setLeftAnchor(sourcesLabel, 0.0);
-    AnchorPane.setRightAnchor(sourcesLabel, 0.0);
     this.sourcesLabel.setWrapText(true);
 
-    tabPane.getChildren()
-        .addAll(vHeader, publicNamesBox, notesLabelPane, this.notesLabel, sourcesLabelPane, this.sourcesLabel);
+    tabPane.getChildren().addAll(
+        vHeader,
+        publicNamesBox,
+        new SectionLabel("notes"),
+        this.notesLabel,
+        new SectionLabel("sources"),
+        this.sourcesLabel
+    );
   }
 
   private void setupEventsTab() {
@@ -143,20 +133,11 @@ public class PersonDetailsView extends TabPane {
     this.lifeEventsList.getStyleClass().add("life-events-list");
     // TODO show details when clicked
 
-    Label witnessedLabel = new Label(App.config().language().translate("person_details_view.witnessed_events"));
-    witnessedLabel.getStyleClass().add("person-details-title");
-    AnchorPane witnessedLabelPane = new AnchorPane(witnessedLabel);
-    witnessedLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(witnessedLabel, 0.0);
-    AnchorPane.setBottomAnchor(witnessedLabel, 0.0);
-    AnchorPane.setLeftAnchor(witnessedLabel, 0.0);
-    AnchorPane.setRightAnchor(witnessedLabel, 0.0);
-
     VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
     VBox vBox = new VBox(this.lifeEventsList);
     vBox.getStyleClass().add("person-details");
     VBox.setVgrow(this.witnessedEventsList, Priority.ALWAYS);
-    VBox vBox2 = new VBox(witnessedLabelPane, this.witnessedEventsList);
+    VBox vBox2 = new VBox(new SectionLabel("witnessed_events"), this.witnessedEventsList);
     vBox2.getStyleClass().add("person-details");
     // TODO show details when clicked
 
@@ -165,51 +146,24 @@ public class PersonDetailsView extends TabPane {
   }
 
   private void setupFamilyTab() {
-    Language language = App.config().language();
-
     SplitPane tabPane = new SplitPane();
     tabPane.setOrientation(Orientation.VERTICAL);
     this.familyTab.setContent(tabPane);
 
-    Label sourcesLabel = new Label(language.translate("person_details_view.parents"));
-    sourcesLabel.getStyleClass().add("person-details-title");
-    AnchorPane sourcesLabelPane = new AnchorPane(sourcesLabel);
-    sourcesLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(sourcesLabel, 0.0);
-    AnchorPane.setBottomAnchor(sourcesLabel, 0.0);
-    AnchorPane.setLeftAnchor(sourcesLabel, 0.0);
-    AnchorPane.setRightAnchor(sourcesLabel, 0.0);
-
     VBox parentsVBox = new VBox(4, this.parent1Card, this.parent2Card);
-
-    Label siblingsLabel = new Label(language.translate("person_details_view.siblings"));
-    siblingsLabel.getStyleClass().add("person-details-title");
-    AnchorPane siblingsLabelPane = new AnchorPane(siblingsLabel);
-    siblingsLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(siblingsLabel, 0.0);
-    AnchorPane.setBottomAnchor(siblingsLabel, 0.0);
-    AnchorPane.setLeftAnchor(siblingsLabel, 0.0);
-    AnchorPane.setRightAnchor(siblingsLabel, 0.0);
-
-    VBox.setVgrow(this.siblingsList, Priority.ALWAYS);
     this.siblingsList.setSelectionModel(new NoSelectionModel<>());
-
-    VBox topBox = new VBox(sourcesLabelPane, parentsVBox, siblingsLabelPane, this.siblingsList);
+    VBox.setVgrow(this.siblingsList, Priority.ALWAYS);
+    VBox topBox = new VBox(
+        new SectionLabel("parents"),
+        parentsVBox,
+        new SectionLabel("siblings"),
+        this.siblingsList
+    );
     topBox.getStyleClass().add("person-details");
 
-    Label childrenLabel = new Label(language.translate("person_details_view.children"));
-    childrenLabel.getStyleClass().add("person-details-title");
-    AnchorPane childrenLabelPane = new AnchorPane(childrenLabel);
-    childrenLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(childrenLabel, 0.0);
-    AnchorPane.setBottomAnchor(childrenLabel, 0.0);
-    AnchorPane.setLeftAnchor(childrenLabel, 0.0);
-    AnchorPane.setRightAnchor(childrenLabel, 0.0);
-
-    VBox.setVgrow(this.childrenList, Priority.ALWAYS);
     this.childrenList.setSelectionModel(new NoSelectionModel<>());
-
-    VBox bottomBox = new VBox(childrenLabelPane, this.childrenList);
+    VBox.setVgrow(this.childrenList, Priority.ALWAYS);
+    VBox bottomBox = new VBox(new SectionLabel("children"), this.childrenList);
     bottomBox.getStyleClass().add("person-details");
 
     tabPane.getItems().addAll(topBox, bottomBox);
@@ -217,55 +171,23 @@ public class PersonDetailsView extends TabPane {
   }
 
   private void setupFosterParentsTab() {
-    Language language = App.config().language();
-
     SplitPane tabPane = new SplitPane();
     tabPane.setOrientation(Orientation.VERTICAL);
     this.fosterParentsTab.setContent(tabPane);
 
-    Label adoptiveParentsLabel = new Label(language.translate("person_details_view.adoptive_parents"));
-    adoptiveParentsLabel.getStyleClass().add("person-details-title");
-    AnchorPane adoptiveParentsLabelPane = new AnchorPane(adoptiveParentsLabel);
-    adoptiveParentsLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(adoptiveParentsLabel, 0.0);
-    AnchorPane.setBottomAnchor(adoptiveParentsLabel, 0.0);
-    AnchorPane.setLeftAnchor(adoptiveParentsLabel, 0.0);
-    AnchorPane.setRightAnchor(adoptiveParentsLabel, 0.0);
-
-    VBox.setVgrow(this.adoptiveParentsList, Priority.ALWAYS);
     this.adoptiveParentsList.setSelectionModel(new NoSelectionModel<>());
-
-    VBox topBox = new VBox(adoptiveParentsLabelPane, this.adoptiveParentsList);
+    VBox.setVgrow(this.adoptiveParentsList, Priority.ALWAYS);
+    VBox topBox = new VBox(new SectionLabel("adoptive_parents"), this.adoptiveParentsList);
     topBox.getStyleClass().add("person-details");
 
-    Label godparentsLabel = new Label(language.translate("person_details_view.godparents"));
-    godparentsLabel.getStyleClass().add("person-details-title");
-    AnchorPane godparentsLabelPane = new AnchorPane(godparentsLabel);
-    godparentsLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(godparentsLabel, 0.0);
-    AnchorPane.setBottomAnchor(godparentsLabel, 0.0);
-    AnchorPane.setLeftAnchor(godparentsLabel, 0.0);
-    AnchorPane.setRightAnchor(godparentsLabel, 0.0);
-
-    VBox.setVgrow(this.godparentsList, Priority.ALWAYS);
     this.godparentsList.setSelectionModel(new NoSelectionModel<>());
-
-    VBox middleBox = new VBox(godparentsLabelPane, this.godparentsList);
+    VBox.setVgrow(this.godparentsList, Priority.ALWAYS);
+    VBox middleBox = new VBox(new SectionLabel("godparents"), this.godparentsList);
     middleBox.getStyleClass().add("person-details");
 
-    Label fosterParentsLabel = new Label(language.translate("person_details_view.foster_parents"));
-    fosterParentsLabel.getStyleClass().add("person-details-title");
-    AnchorPane fosterParentsLabelPane = new AnchorPane(fosterParentsLabel);
-    fosterParentsLabelPane.getStyleClass().add("person-details-header");
-    AnchorPane.setTopAnchor(fosterParentsLabel, 0.0);
-    AnchorPane.setBottomAnchor(fosterParentsLabel, 0.0);
-    AnchorPane.setLeftAnchor(fosterParentsLabel, 0.0);
-    AnchorPane.setRightAnchor(fosterParentsLabel, 0.0);
-
-    VBox.setVgrow(this.fosterParentsList, Priority.ALWAYS);
     this.fosterParentsList.setSelectionModel(new NoSelectionModel<>());
-
-    VBox bottomBox = new VBox(fosterParentsLabelPane, this.fosterParentsList);
+    VBox.setVgrow(this.fosterParentsList, Priority.ALWAYS);
+    VBox bottomBox = new VBox(new SectionLabel("foster_parents"), this.fosterParentsList);
     bottomBox.getStyleClass().add("person-details");
 
     tabPane.getItems().addAll(topBox, middleBox, bottomBox);
@@ -399,6 +321,27 @@ public class PersonDetailsView extends TabPane {
    */
   protected final void firePersonClickEvent(final @NotNull Person person, @NotNull MouseButton mouseButton) {
     this.personClickListeners.forEach(listener -> listener.onClick(person, 1, mouseButton));
+  }
+
+  /**
+   * Label that displays some text in bold and bigger font on a darker background.
+   */
+  private static class SectionLabel extends AnchorPane {
+    /**
+     * Create a label.
+     *
+     * @param key Final part of the translation key.
+     */
+    public SectionLabel(@NotNull String key) {
+      this.getStyleClass().add("person-details-header");
+      Label label = new Label(App.config().language().translate("person_details_view." + key));
+      label.getStyleClass().add("person-details-title");
+      AnchorPane.setTopAnchor(label, 0.0);
+      AnchorPane.setBottomAnchor(label, 0.0);
+      AnchorPane.setLeftAnchor(label, 0.0);
+      AnchorPane.setRightAnchor(label, 0.0);
+      this.getChildren().add(label);
+    }
   }
 
   /**
