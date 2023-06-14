@@ -29,6 +29,7 @@ public class PersonDetailsView extends TabPane {
   private final Tab profileTab = new Tab();
   private final Tab eventsTab = new Tab();
   private final Tab familyTab = new Tab();
+  private final Tab fosterParentsTab = new Tab();
 
   private final ImageView imageView = new ImageView();
   private final Label fullNameLabel = new Label();
@@ -43,10 +44,14 @@ public class PersonDetailsView extends TabPane {
   private final ListView<LifeEventItem> lifeEventsList = new ListView<>();
   private final ListView<WitnessedEventItem> witnessedEventsList = new ListView<>();
 
-  private final PersonCard parent1Card = new PersonCard();
-  private final PersonCard parent2Card = new PersonCard();
+  private final PersonCard parent1Card = new PersonCard(null);
+  private final PersonCard parent2Card = new PersonCard(null);
   private final ListView<ChildrenItem> siblingsList = new ListView<>();
   private final ListView<ChildrenItem> childrenList = new ListView<>();
+
+  private final ListView<PersonCard> adoptiveParentsList = new ListView<>();
+  private final ListView<PersonCard> godparentsList = new ListView<>();
+  private final ListView<PersonCard> fosterParentsList = new ListView<>();
 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
 
@@ -57,7 +62,8 @@ public class PersonDetailsView extends TabPane {
     this.profileTab.setText(language.translate("person_details_view.profile_tab.title"));
     this.eventsTab.setText(language.translate("person_details_view.events_tab.title"));
     this.familyTab.setText(language.translate("person_details_view.family_tab.title"));
-    this.getTabs().addAll(this.profileTab, this.eventsTab, this.familyTab);
+    this.fosterParentsTab.setText(language.translate("person_details_view.foster_parents_tab.title"));
+    this.getTabs().addAll(this.profileTab, this.eventsTab, this.familyTab, this.fosterParentsTab);
     this.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
     this.setMinWidth(200);
@@ -65,6 +71,7 @@ public class PersonDetailsView extends TabPane {
     this.setupProfileTab();
     this.setupEventsTab();
     this.setupFamilyTab();
+    this.setupFosterParentsTab();
   }
 
   private void setupProfileTab() {
@@ -174,8 +181,6 @@ public class PersonDetailsView extends TabPane {
     AnchorPane.setRightAnchor(sourcesLabel, 0.0);
 
     VBox parentsVBox = new VBox(4, this.parent1Card, this.parent2Card);
-    this.parent1Card.setPerson(null);
-    this.parent2Card.setPerson(null);
 
     Label siblingsLabel = new Label(language.translate("person_details_view.siblings"));
     siblingsLabel.getStyleClass().add("person-details-title");
@@ -207,10 +212,64 @@ public class PersonDetailsView extends TabPane {
     VBox bottomBox = new VBox(childrenLabelPane, this.childrenList);
     bottomBox.getStyleClass().add("person-details");
 
-    // TODO show list of adoptive parents, godparents and foster parents
-
     tabPane.getItems().addAll(topBox, bottomBox);
     tabPane.setDividerPositions(0.6);
+  }
+
+  private void setupFosterParentsTab() {
+    Language language = App.config().language();
+
+    SplitPane tabPane = new SplitPane();
+    tabPane.setOrientation(Orientation.VERTICAL);
+    this.fosterParentsTab.setContent(tabPane);
+
+    Label adoptiveParentsLabel = new Label(language.translate("person_details_view.adoptive_parents"));
+    adoptiveParentsLabel.getStyleClass().add("person-details-title");
+    AnchorPane adoptiveParentsLabelPane = new AnchorPane(adoptiveParentsLabel);
+    adoptiveParentsLabelPane.getStyleClass().add("person-details-header");
+    AnchorPane.setTopAnchor(adoptiveParentsLabel, 0.0);
+    AnchorPane.setBottomAnchor(adoptiveParentsLabel, 0.0);
+    AnchorPane.setLeftAnchor(adoptiveParentsLabel, 0.0);
+    AnchorPane.setRightAnchor(adoptiveParentsLabel, 0.0);
+
+    VBox.setVgrow(this.adoptiveParentsList, Priority.ALWAYS);
+    this.adoptiveParentsList.setSelectionModel(new NoSelectionModel<>());
+
+    VBox topBox = new VBox(adoptiveParentsLabelPane, this.adoptiveParentsList);
+    topBox.getStyleClass().add("person-details");
+
+    Label godparentsLabel = new Label(language.translate("person_details_view.godparents"));
+    godparentsLabel.getStyleClass().add("person-details-title");
+    AnchorPane godparentsLabelPane = new AnchorPane(godparentsLabel);
+    godparentsLabelPane.getStyleClass().add("person-details-header");
+    AnchorPane.setTopAnchor(godparentsLabel, 0.0);
+    AnchorPane.setBottomAnchor(godparentsLabel, 0.0);
+    AnchorPane.setLeftAnchor(godparentsLabel, 0.0);
+    AnchorPane.setRightAnchor(godparentsLabel, 0.0);
+
+    VBox.setVgrow(this.godparentsList, Priority.ALWAYS);
+    this.godparentsList.setSelectionModel(new NoSelectionModel<>());
+
+    VBox middleBox = new VBox(godparentsLabelPane, this.godparentsList);
+    middleBox.getStyleClass().add("person-details");
+
+    Label fosterParentsLabel = new Label(language.translate("person_details_view.foster_parents"));
+    fosterParentsLabel.getStyleClass().add("person-details-title");
+    AnchorPane fosterParentsLabelPane = new AnchorPane(fosterParentsLabel);
+    fosterParentsLabelPane.getStyleClass().add("person-details-header");
+    AnchorPane.setTopAnchor(fosterParentsLabel, 0.0);
+    AnchorPane.setBottomAnchor(fosterParentsLabel, 0.0);
+    AnchorPane.setLeftAnchor(fosterParentsLabel, 0.0);
+    AnchorPane.setRightAnchor(fosterParentsLabel, 0.0);
+
+    VBox.setVgrow(this.fosterParentsList, Priority.ALWAYS);
+    this.fosterParentsList.setSelectionModel(new NoSelectionModel<>());
+
+    VBox bottomBox = new VBox(fosterParentsLabelPane, this.fosterParentsList);
+    bottomBox.getStyleClass().add("person-details");
+
+    tabPane.getItems().addAll(topBox, middleBox, bottomBox);
+    tabPane.setDividerPositions(0.33, 0.67);
   }
 
   public void setPerson(final Person person) {
@@ -223,6 +282,9 @@ public class PersonDetailsView extends TabPane {
     this.witnessedEventsList.getItems().clear();
     this.siblingsList.getItems().clear();
     this.childrenList.getItems().clear();
+    this.adoptiveParentsList.getItems().clear();
+    this.godparentsList.getItems().clear();
+    this.fosterParentsList.getItems().clear();
 
     if (this.person != null) {
       this.imageView.setImage(this.person.getImage().orElse(PersonWidget.DEFAULT_IMAGE));
@@ -282,6 +344,16 @@ public class PersonDetailsView extends TabPane {
       this.person.getPartnersAndChildren().entrySet().stream()
           .sorted((e1, e2) -> Person.birthDateThenNameComparator(false).compare(e1.getKey(), e2.getKey()))
           .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey(), null, e.getValue())));
+
+      this.person.getRelatives(Person.RelativeType.ADOPTIVE).stream()
+          .sorted(Person.birthDateThenNameComparator(false))
+          .forEach(parent -> this.adoptiveParentsList.getItems().add(new PersonCard(parent)));
+      this.person.getRelatives(Person.RelativeType.GOD).stream()
+          .sorted(Person.birthDateThenNameComparator(false))
+          .forEach(parent -> this.godparentsList.getItems().add(new PersonCard(parent)));
+      this.person.getRelatives(Person.RelativeType.FOSTER).stream()
+          .sorted(Person.birthDateThenNameComparator(false))
+          .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
     } else {
       this.imageView.setImage(PersonWidget.DEFAULT_IMAGE);
       this.fullNameLabel.setText(null);
@@ -339,7 +411,12 @@ public class PersonDetailsView extends TabPane {
     private final Label birthDateLabel = new Label();
     private final Label deathDateLabel = new Label();
 
-    public PersonCard() {
+    /**
+     * Create a person card.
+     *
+     * @param person The person to show information of.
+     */
+    public PersonCard(final Person person) {
       super(4);
 
       this.getStyleClass().add("person-widget");
@@ -368,6 +445,8 @@ public class PersonDetailsView extends TabPane {
           imageBox,
           new VBox(4, this.nameLabel, this.birthDateLabel, this.deathDateLabel)
       );
+
+      this.setPerson(person);
     }
 
     /**
@@ -500,20 +579,15 @@ public class PersonDetailsView extends TabPane {
   private class ChildrenItem extends VBox {
     public ChildrenItem(final @NotNull Person parent1, final Person parent2, final @NotNull List<Person> children) {
       super(4);
-      PersonCard parent1Card = new PersonCard();
-      parent1Card.setPerson(parent1);
-      this.getChildren().add(parent1Card);
+      this.getChildren().add(new PersonCard(parent1));
       if (parent2 != null) {
-        PersonCard parent2Card = new PersonCard();
-        parent2Card.setPerson(parent2);
-        this.getChildren().add(parent2Card);
+        this.getChildren().add(new PersonCard(parent2));
       }
       children.stream()
           .sorted(Person.birthDateThenNameComparator(false))
           .forEach(child -> {
             Label arrow = new Label("", App.config().theme().getIcon(Icon.GO_TO, Icon.Size.BIG));
-            PersonCard childCard = new PersonCard();
-            childCard.setPerson(child);
+            PersonCard childCard = new PersonCard(child);
             HBox.setHgrow(childCard, Priority.ALWAYS);
             HBox hBox = new HBox(8, arrow, childCard);
             hBox.setAlignment(Pos.CENTER_LEFT);
