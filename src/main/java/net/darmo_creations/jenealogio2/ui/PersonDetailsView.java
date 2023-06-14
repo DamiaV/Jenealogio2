@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
+import javafx.scene.text.TextFlow;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
@@ -17,6 +18,7 @@ import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
 import net.darmo_creations.jenealogio2.ui.dialogs.NoSelectionModel;
 import net.darmo_creations.jenealogio2.utils.DateTimeUtils;
 import net.darmo_creations.jenealogio2.utils.Pair;
+import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
@@ -38,8 +40,8 @@ public class PersonDetailsView extends TabPane {
   private final Label publicLastNameLabel = new Label();
   private final Label publicFirstNamesLabel = new Label();
   private final Label nicknamesLabel = new Label();
-  private final Label notesLabel = new Label();
-  private final Label sourcesLabel = new Label();
+  private final TextFlow notesTextFlow = new TextFlow();
+  private final TextFlow sourcesTextFlow = new TextFlow();
 
   private final ListView<LifeEventItem> lifeEventsList = new ListView<>();
   private final ListView<WitnessedEventItem> witnessedEventsList = new ListView<>();
@@ -111,17 +113,13 @@ public class PersonDetailsView extends TabPane {
     nnBox.getChildren().add(this.nicknamesLabel);
     publicNamesBox.getChildren().addAll(plnBox, pfnBox, nnBox);
 
-    this.notesLabel.setWrapText(true);
-
-    this.sourcesLabel.setWrapText(true);
-
     tabPane.getChildren().addAll(
         vHeader,
         publicNamesBox,
         new SectionLabel("notes"),
-        this.notesLabel,
+        this.notesTextFlow,
         new SectionLabel("sources"),
-        this.sourcesLabel
+        this.sourcesTextFlow
     );
   }
 
@@ -200,10 +198,15 @@ public class PersonDetailsView extends TabPane {
   }
 
   private void populateFields() {
+    this.notesTextFlow.getChildren().clear();
+    this.sourcesTextFlow.getChildren().clear();
+
     this.lifeEventsList.getItems().clear();
     this.witnessedEventsList.getItems().clear();
+
     this.siblingsList.getItems().clear();
     this.childrenList.getItems().clear();
+
     this.adoptiveParentsList.getItems().clear();
     this.godparentsList.getItems().clear();
     this.fosterParentsList.getItems().clear();
@@ -229,8 +232,8 @@ public class PersonDetailsView extends TabPane {
       this.publicFirstNamesLabel.setTooltip(this.person.getJoinedPublicFirstNames().map(Tooltip::new).orElse(null));
       this.nicknamesLabel.setText(this.person.getJoinedNicknames().orElse("-"));
       this.nicknamesLabel.setTooltip(this.person.getJoinedNicknames().map(Tooltip::new).orElse(null));
-      this.notesLabel.setText(this.person.notes().orElse(null));
-      this.sourcesLabel.setText(this.person.sources().orElse(null)); // TODO make links clickable
+      this.person.notes().ifPresent(s -> this.notesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+      this.person.sources().ifPresent(s -> this.sourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
 
       this.person.getLifeEventsAsActor()
           .forEach(lifeEvent -> this.lifeEventsList.getItems().add(new LifeEventItem(lifeEvent, this.person)));
@@ -290,8 +293,6 @@ public class PersonDetailsView extends TabPane {
       this.publicFirstNamesLabel.setTooltip(null);
       this.nicknamesLabel.setText("-");
       this.nicknamesLabel.setTooltip(null);
-      this.notesLabel.setText(null);
-      this.sourcesLabel.setText(null);
 
       this.parent1Card.setPerson(null);
       this.parent2Card.setPerson(null);

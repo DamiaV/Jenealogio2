@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2;
 
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -102,6 +103,17 @@ public class App extends Application {
     controller.onConfigUpdate();
   }
 
+  private static HostServices hostServices;
+
+  /**
+   * Open a URL in the user’s default web browser.
+   *
+   * @param url URL to open.
+   */
+  public static void openURL(@NotNull String url) {
+    hostServices.showDocument(url);
+  }
+
   @Override
   public void start(Stage stage) throws IOException {
     LOGGER.info("Running %s (v%s)".formatted(NAME, VERSION));
@@ -109,6 +121,7 @@ public class App extends Application {
       LOGGER.setLevel(Logger.Level.DEBUG);
       LOGGER.info("Debug mode is ON");
     }
+    hostServices = this.getHostServices();
     FXMLLoader loader = getFxmlLoader("main-window");
     Scene scene = new Scene(loader.load());
     config.theme().getStyleSheets()
@@ -204,6 +217,7 @@ public class App extends Application {
     }
     String fileName = "crash_report_%s.log".formatted(DateTimeUtils.formatFileName(date));
     try (FileWriter fw = new FileWriter(new File(logsDir, fileName))) {
+      //noinspection BlockingMethodInNonBlockingContext
       fw.write(message);
     } catch (IOException ex) {
       throw new RuntimeException(ex);
