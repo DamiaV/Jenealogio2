@@ -59,30 +59,27 @@ public final class StringUtils {
     StringBuilder builder = new StringBuilder();
     StringBuilder urlBuffer = new StringBuilder();
 
-    int[] codepoints = s.replaceAll("\n?\r|\n\r?", "\n").chars().toArray();
+    int[] codepoints = s.strip().replaceAll("\n?\r|\n\r?", "\n").chars().toArray();
     for (int i = 0; i < codepoints.length; i++) {
       int codepoint = codepoints[i];
-      if (codepoint == 'h' || !urlBuffer.isEmpty()) {
+      if (codepoint == 'h' || !urlBuffer.isEmpty()) { // Handle HTTP(S) urls
         if (Character.isWhitespace(codepoint) || i == codepoints.length - 1) {
           String urlCandidate = urlBuffer.toString();
-          if (URL_REGEX.matcher(urlCandidate).matches()) {
+          if (URL_REGEX.matcher(urlCandidate).matches()) { // Text matched, treat as hyperlink and make clickable
             Text url = new Text(urlCandidate);
-            url.getStyleClass().add("hyperlink");
+            url.getStyleClass().add("hyperlink"); // JavaFX adds some default styling with this class
             url.setOnMouseClicked(event -> urlClickListener.accept(urlCandidate));
             texts.add(url);
-          } else {
+          } else { // Text did not match, add it to the main builder as plain text
             builder.append(urlCandidate);
           }
-          if (i != codepoints.length - 1) {
-            i--; // Step back to parse the whitespace char at next iteration
-          }
+          i--; // Step back to parse the whitespace char at next iteration
           urlBuffer.setLength(0); // Clear
         } else {
           urlBuffer.append(Character.toString(codepoint));
         }
-      } else if (codepoint == '\n') {
-        String s1 = builder + Character.toString(codepoint);
-        texts.add(new Text(s1));
+      } else if (codepoint == '\n') { // Start new line
+        texts.add(new Text(builder + Character.toString(codepoint)));
         builder.setLength(0); // Clear
       } else {
         builder.append(Character.toString(codepoint));
