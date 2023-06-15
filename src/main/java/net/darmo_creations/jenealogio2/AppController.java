@@ -141,6 +141,7 @@ public class AppController {
 
   // Dialogs
   private final EditPersonDialog editPersonDialog = new EditPersonDialog();
+  private final BirthdaysDialog birthdaysDialog = new BirthdaysDialog();
   private final SettingsDialog settingsDialog = new SettingsDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
 
@@ -208,6 +209,7 @@ public class AppController {
 
     this.calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
     this.birthdaysMenuItem.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.SMALL));
+    this.birthdaysMenuItem.setOnAction(event -> this.onShowBirthdaysDialog());
     this.mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
     this.checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
 
@@ -242,6 +244,7 @@ public class AppController {
 
     this.calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
     this.birthdaysToolbarButton.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.BIG));
+    this.birthdaysToolbarButton.setOnAction(event -> this.onShowBirthdaysDialog());
     this.mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
     this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
 
@@ -269,6 +272,9 @@ public class AppController {
     AnchorPane.setRightAnchor(this.personDetailsView, 0.0);
     this.detailsView.getChildren().add(this.personDetailsView);
     this.personDetailsView.personClickListeners()
+        .add((person, clickCount, mouseButton) -> this.onPersonClick(person, clickCount, mouseButton, false));
+
+    this.birthdaysDialog.getPersonClickListeners()
         .add((person, clickCount, mouseButton) -> this.onPersonClick(person, clickCount, mouseButton, false));
   }
 
@@ -660,6 +666,10 @@ public class AppController {
   private void updateUI() {
     this.stage.setTitle("%s – %s%s".formatted(App.NAME, this.familyTree.name(), this.unsavedChanges ? "*" : ""));
 
+    if (this.birthdaysDialog.isShowing()) {
+      this.birthdaysDialog.refresh(this.familyTree);
+    }
+
     boolean emptyTree = this.familyTree.persons().isEmpty();
     Optional<Person> selectedPerson = this.getSelectedPerson();
     boolean selection = selectedPerson.isPresent();
@@ -685,6 +695,17 @@ public class AppController {
     this.editParentsToolbarButton.setDisable(!selection);
     this.editLifeEventsToolbarButton.setDisable(!selection);
     this.setPictureToolbarButton.setDisable(!selection);
+  }
+
+  /**
+   * Open birthdays dialog.
+   */
+  private void onShowBirthdaysDialog() {
+    if (this.birthdaysDialog.isShowing()) {
+      return;
+    }
+    this.birthdaysDialog.refresh(this.familyTree);
+    this.birthdaysDialog.show();
   }
 
   /**

@@ -55,6 +55,8 @@ public enum Icon {
 
   GO_TO("arrow_right"),
   CLOSE_LIFE_EVENT("arrow_left"),
+
+  UNCERTAIN("help"),
   ;
 
   private final String baseName;
