@@ -7,7 +7,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.AppController;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
@@ -16,6 +15,7 @@ import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.ui.PersonClickListener;
 import net.darmo_creations.jenealogio2.ui.PersonClickObservable;
+import net.darmo_creations.jenealogio2.ui.PersonClickedEvent;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import org.jetbrains.annotations.NotNull;
 
@@ -103,12 +103,12 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   }
 
   @Override
-  public List<PersonClickListener> getPersonClickListeners() {
+  public List<PersonClickListener> personClickListeners() {
     return this.personClickListeners;
   }
 
   private void firePersonClickEvent(@NotNull Person person) {
-    PersonClickObservable.super.firePersonClickEvent(person, 1, AppController.TARGET_UPDATE_BUTTON);
+    this.firePersonClickEvent(new PersonClickedEvent(person, PersonClickedEvent.Action.SET_AS_TARGET));
   }
 
   /**

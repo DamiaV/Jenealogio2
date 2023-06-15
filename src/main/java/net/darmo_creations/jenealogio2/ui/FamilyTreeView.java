@@ -5,7 +5,6 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -21,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -100,16 +100,17 @@ public class FamilyTreeView extends FamilyTreeComponent {
     this.treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
       if (!this.internalSelectionChange) {
         if (newValue != null && newValue.getValue() instanceof Person person) {
-          this.firePersonClickEvent(person, 1, MouseButton.PRIMARY);
+          this.firePersonClickEvent(new PersonClickedEvent(person, PersonClickedEvent.Action.SELECT));
         } else {
-          this.firePersonClickEvent(null, 1, MouseButton.PRIMARY);
+          this.firePersonClickEvent(new DeselectPersonsEvent());
         }
       }
     });
     this.treeView.setOnMouseClicked(event -> {
       TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
       if (selectedItem != null && selectedItem.getValue() instanceof Person person) {
-        this.firePersonClickEvent(person, event.getClickCount(), event.getButton());
+        var clickType = PersonClickedEvent.getClickType(event.getClickCount(), event.getButton());
+        this.firePersonClickEvent(new PersonClickedEvent(person, clickType));
       }
     });
   }
@@ -137,14 +138,15 @@ public class FamilyTreeView extends FamilyTreeComponent {
   }
 
   @Override
-  protected void deselectAll() {
+  public void deselectAll() {
     this.internalSelectionChange = true;
     this.treeView.getSelectionModel().clearSelection();
     this.internalSelectionChange = false;
   }
 
   @Override
-  protected void select(@NotNull Person person, boolean updateTarget) {
+  public void select(@NotNull Person person, boolean updateTarget) {
+    Objects.requireNonNull(person);
     for (int i = 0; i < this.personsItem.getChildren().size(); i++) {
       TreeItem<Object> item = this.personsItem.getChildren().get(i);
       if (item.getValue() == person) {

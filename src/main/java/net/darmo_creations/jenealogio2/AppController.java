@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import net.darmo_creations.jenealogio2.config.Config;
@@ -29,11 +28,6 @@ import java.util.Optional;
  * Application’s main controller.
  */
 public class AppController {
-  /**
-   * Mouse button used to select the target in the tree pane.
-   */
-  public static final MouseButton TARGET_UPDATE_BUTTON = MouseButton.SECONDARY;
-
   /**
    * The stage associated to this controller.
    */
@@ -254,7 +248,7 @@ public class AppController {
     AnchorPane.setRightAnchor(this.familyTreeView, 0.0);
     this.sideTreeView.getChildren().add(this.familyTreeView);
     this.familyTreeView.personClickListeners()
-        .add((person, clickCount, button) -> this.onPersonClick(person, clickCount, button, true));
+        .add(event -> this.onPersonClick(event, true));
 
     AnchorPane.setTopAnchor(this.familyTreePane, 0.0);
     AnchorPane.setBottomAnchor(this.familyTreePane, 0.0);
@@ -262,7 +256,7 @@ public class AppController {
     AnchorPane.setRightAnchor(this.familyTreePane, 0.0);
     this.mainPane.getChildren().add(this.familyTreePane);
     this.familyTreePane.personClickListeners()
-        .add((person, clickCount, button) -> this.onPersonClick(person, clickCount, button, false));
+        .add(event -> this.onPersonClick(event, false));
     this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
     this.familyTreePane.setMaxHeight(config.maxTreeHeight());
 
@@ -272,10 +266,10 @@ public class AppController {
     AnchorPane.setRightAnchor(this.personDetailsView, 0.0);
     this.detailsView.getChildren().add(this.personDetailsView);
     this.personDetailsView.personClickListeners()
-        .add((person, clickCount, mouseButton) -> this.onPersonClick(person, clickCount, mouseButton, false));
+        .add(event -> this.onPersonClick(event, false));
 
-    this.birthdaysDialog.getPersonClickListeners()
-        .add((person, clickCount, mouseButton) -> this.onPersonClick(person, clickCount, mouseButton, false));
+    this.birthdaysDialog.personClickListeners()
+        .add(event -> this.onPersonClick(event, false));
   }
 
   /**
@@ -611,27 +605,37 @@ public class AppController {
   /**
    * Update display when a person is clicked.
    *
-   * @param person     Person that was clicked. May be null if none was.
-   * @param clickCount Number of clicks.
-   * @param button     Clicked mouse button.
-   * @param inTree     True if the click occured inside the side tree view;
-   *                   false if it occured inside the pane view.
+   * @param event  The event that was fired.
+   * @param inTree True if the click occured inside the side tree view;
+   *               false if it occured inside the pane view.
    */
-  private void onPersonClick(Person person, int clickCount, MouseButton button, boolean inTree) {
+  private void onPersonClick(@NotNull PersonClickEvent event, boolean inTree) {
     this.focusedComponent = inTree ? this.familyTreeView : this.familyTreePane;
-    this.focusedComponent.selectPerson(person, button == TARGET_UPDATE_BUTTON);
+    this.updateSelection(event, this.focusedComponent);
     if (App.config().shouldSyncTreeWithMainPane()) {
       if (inTree) {
-        this.familyTreePane.selectPerson(person, button == TARGET_UPDATE_BUTTON);
+        this.updateSelection(event, this.familyTreePane);
       } else {
-        this.familyTreeView.selectPerson(person, button == TARGET_UPDATE_BUTTON);
+        this.updateSelection(event, this.familyTreeView);
       }
     }
+    Person person = event instanceof PersonClickedEvent e ? e.person() : null;
     this.personDetailsView.setPerson(person);
-    if (clickCount == 2 && button == MouseButton.PRIMARY) {
+    if (event instanceof PersonClickedEvent e && e.action() == PersonClickedEvent.Action.EDIT) {
       this.openEditPersonDialog(person, null, null, null, EditPersonDialog.TAB_PROFILE);
     }
     this.updateUI();
+  }
+
+  /**
+   * Update the selection of a {@link FamilyTreeComponent} depending on the given {@link PersonClickEvent}.
+   */
+  private void updateSelection(@NotNull PersonClickEvent event, @NotNull FamilyTreeComponent component) {
+    if (event instanceof DeselectPersonsEvent) {
+      component.deselectAll();
+    } else if (event instanceof PersonClickedEvent e) {
+      component.select(e.person(), e.action().shouldUpdateTarget());
+    }
   }
 
   /**
@@ -652,7 +656,7 @@ public class AppController {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
       if (person == null && childInfo == null) {
-        this.onPersonClick(p.get(), 1, TARGET_UPDATE_BUTTON, false);
+        this.onPersonClick(new PersonClickedEvent(p.get(), PersonClickedEvent.Action.SET_AS_TARGET), false);
       }
       this.defaultEmptyTree = false;
       this.unsavedChanges = true;

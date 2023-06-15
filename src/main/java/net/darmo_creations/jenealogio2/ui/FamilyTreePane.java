@@ -9,7 +9,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
-import net.darmo_creations.jenealogio2.AppController;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
@@ -340,7 +339,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @param childInfo Information about the relation to its visible child.
    * @return The new component.
    */
-  private PersonWidget createWidget(final Person person, final ChildInfo childInfo, boolean showMoreIcon, boolean isCenter) {
+  private PersonWidget createWidget(final Person person, ChildInfo childInfo, boolean showMoreIcon, boolean isCenter) {
     PersonWidget w = new PersonWidget(person, childInfo, showMoreIcon, isCenter);
     this.pane.getChildren().add(w);
     this.personWidgets.add(w);
@@ -357,17 +356,21 @@ public class FamilyTreePane extends FamilyTreeComponent {
   }
 
   @Override
-  protected void deselectAll() {
+  public void deselectAll() {
     this.personWidgets.forEach(w -> w.setSelected(false));
   }
 
   @Override
-  protected void select(@NotNull Person person, boolean updateTarget) {
+  public void select(@NotNull Person person, boolean updateTarget) {
+    Objects.requireNonNull(person);
     if (updateTarget) {
       this.targettedPerson = person;
       this.refresh();
     }
-    this.personWidgets.forEach(w -> w.setSelected(w.person().isPresent() && person == w.person().get()));
+    this.personWidgets.forEach(w -> {
+      Optional<Person> p = w.person();
+      w.setSelected(p.isPresent() && person == p.get());
+    });
     if (!this.internalClick) {
       this.personWidgets.stream()
           .filter(w -> w.person().orElse(null) == person)
@@ -379,7 +382,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
   /**
    * Called when a {@link PersonWidget} is clicked.
    * <p>
-   * Calls upon {@link #firePersonClickEvent(Person, int, MouseButton)} if the widget contains a person object,
+   * Calls upon {@link #firePersonClickEvent(PersonClickEvent)} if the widget contains a person object,
    * calls upon {@link #fireNewParentClickEvent(ChildInfo)} otherwise.
    *
    * @param personWidget The clicked widget.
@@ -390,9 +393,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
     Optional<Person> person = personWidget.person();
     if (person.isPresent()) {
       this.internalClick = true;
-      this.select(person.get(), button == AppController.TARGET_UPDATE_BUTTON);
-      // Prevent double-click when right-clicking to avoid double-click action to miss the widget
-      this.firePersonClickEvent(person.get(), button == AppController.TARGET_UPDATE_BUTTON ? 1 : clickCount, button);
+      var clickType = PersonClickedEvent.getClickType(clickCount, button);
+      this.firePersonClickEvent(new PersonClickedEvent(person.get(), clickType));
       this.internalClick = false;
     } else {
       personWidget.childInfo().ifPresent(this::fireNewParentClickEvent);
@@ -406,10 +408,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @param event The mouse event.
    */
   private void onBackgroundClicked(MouseEvent event) {
-    this.deselectAll();
-    if (event.getButton() == MouseButton.PRIMARY) {
-      this.firePersonClickEvent(null, event.getClickCount(), event.getButton());
-    }
+    this.firePersonClickEvent(new DeselectPersonsEvent());
     this.pane.requestFocus();
   }
 

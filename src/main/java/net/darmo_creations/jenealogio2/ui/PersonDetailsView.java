@@ -25,7 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-public class PersonDetailsView extends TabPane {
+public class PersonDetailsView extends TabPane implements PersonClickObservable {
   private Person person;
 
   private final Tab profileTab = new Tab();
@@ -377,10 +377,7 @@ public class PersonDetailsView extends TabPane {
     this.eventsTab.setContent(this.eventPane);
   }
 
-  /**
-   * The list of all listeners to person button clicks.
-   */
-  public final List<PersonClickListener> personClickListeners() {
+  public List<PersonClickListener> personClickListeners() {
     return this.personClickListeners;
   }
 
@@ -389,8 +386,9 @@ public class PersonDetailsView extends TabPane {
    *
    * @param button The clicked button.
    */
-  protected final void firePersonClickEvent(final @NotNull Button button) {
-    this.firePersonClickEvent((Person) button.getUserData(), MouseButton.PRIMARY);
+  private void firePersonClickEvent(final @NotNull Button button) {
+    this.firePersonClickEvent(new PersonClickedEvent((Person) button.getUserData(),
+        PersonClickedEvent.Action.SET_AS_TARGET));
   }
 
   /**
@@ -398,8 +396,9 @@ public class PersonDetailsView extends TabPane {
    *
    * @param person The person.
    */
-  protected final void firePersonClickEvent(final @NotNull Person person, @NotNull MouseButton mouseButton) {
-    this.personClickListeners.forEach(listener -> listener.onClick(person, 1, mouseButton));
+  private void firePersonClickEvent(final @NotNull Person person, @NotNull MouseButton mouseButton) {
+    var clickType = PersonClickedEvent.getClickType(1, mouseButton);
+    this.firePersonClickEvent(new PersonClickedEvent(person, clickType));
   }
 
   /**
@@ -636,19 +635,5 @@ public class PersonDetailsView extends TabPane {
             this.getChildren().add(hBox);
           });
     }
-  }
-
-  /**
-   * Interface representing a listener to person button clicks.
-   */
-  public interface PersonClickListener {
-    /**
-     * Called when a person button is clicked.
-     *
-     * @param person      The person object wrapped by the clicked component.
-     * @param clickCount  Number of mouse clicks.
-     * @param mouseButton Mouse button that was clicked.
-     */
-    void onClick(@NotNull Person person, int clickCount, @NotNull MouseButton mouseButton);
   }
 }
