@@ -5,8 +5,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
+import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
@@ -19,11 +21,12 @@ import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Dialog that displays all birthday for the current day. It is not resizable.
+ * Dialog that displays all birthdays from a family tree.
  * <p>
  * User may choose to show/hide birthdays of deceased persons.
  */
@@ -32,18 +35,38 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   @FXML
   @SuppressWarnings("unused")
   private TabPane tabPane;
+  private final ListView<PersonItem> todayList = new ListView<>();
+  private final ListView<PersonItem> tomorrowList = new ListView<>();
+  private final ListView<PersonItem> afterTomorrowList = new ListView<>();
 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
 
   /**
-   * Create a dialog that shows today’s birthdays.
+   * Create a dialog that shows birthdays of a family tree.
    */
   public BirthdaysDialog() {
     super("birthdays", true, false, ButtonTypes.CLOSE);
-    this.tabPane.getTabs().add(new Tab(App.config().language().translate("dialog.birthdays.tab.soon")));
+    Language language = App.config().language();
+
+    VBox.setVgrow(this.todayList, Priority.ALWAYS);
+    VBox.setVgrow(this.tomorrowList, Priority.ALWAYS);
+    VBox.setVgrow(this.afterTomorrowList, Priority.ALWAYS);
+    VBox vBox = new VBox(4,
+        new Label(language.translate("dialog.birthdays.tab.upcoming.today")),
+        this.todayList,
+        new Label(language.translate("dialog.birthdays.tab.upcoming.tomorrow")),
+        this.tomorrowList,
+        new Label(language.translate("dialog.birthdays.tab.upcoming.after_tomorrow")),
+        this.afterTomorrowList
+    );
+    vBox.setStyle("-fx-padding: 10px 0 0 0");
+    this.tabPane.getTabs().get(0).setContent(vBox);
+
     for (int i = 1; i <= 12; i++) {
       this.tabPane.getTabs().add(new BirthdayTab(i));
     }
+    this.stage().setMinWidth(300);
+    this.stage().setMinHeight(300);
   }
 
   /**
@@ -52,8 +75,6 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
    * @param familyTree Tree to get information from.
    */
   public void refresh(final @NotNull FamilyTree familyTree) {
-    // TODO fill "coming" tab
-
     Map<Integer, Map<Integer, Set<BirthdayEntry>>> perMonth = new HashMap<>();
 
     for (Person person : familyTree.persons()) {
@@ -74,6 +95,24 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       ((BirthdayTab) this.tabPane.getTabs().get(entry.getKey()))
           .setEntries(entry.getValue());
     }
+
+    LocalDate today = LocalDate.now();
+    this.updateList(this.todayList, perMonth, today);
+    LocalDate tomorrow = today.plusDays(1);
+    this.updateList(this.tomorrowList, perMonth, tomorrow);
+    LocalDate afterTomorrow = tomorrow.plusDays(1);
+    this.updateList(this.afterTomorrowList, perMonth, afterTomorrow);
+  }
+
+  private void updateList(
+      @NotNull ListView<PersonItem> list,
+      final Map<Integer, @NotNull Map<Integer, Set<BirthdayEntry>>> birthdays,
+      @NotNull LocalDate date
+  ) {
+    list.getItems().clear();
+    birthdays.getOrDefault(date.getMonthValue(), Map.of()).getOrDefault(date.getDayOfMonth(), Set.of()).stream()
+        .sorted((e1, e2) -> Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
+        .forEach(e -> list.getItems().add(new PersonItem(e.person(), date.getYear())));
   }
 
   /**
@@ -109,6 +148,16 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
 
   private void firePersonClickEvent(@NotNull Person person) {
     this.firePersonClickEvent(new PersonClickedEvent(person, PersonClickedEvent.Action.SET_AS_TARGET));
+  }
+
+  private class PersonItem extends HBox {
+    public PersonItem(@NotNull Person person, int year) {
+      super(4);
+      this.setAlignment(Pos.CENTER_LEFT);
+      Button button = new Button(person.toString(), App.config().theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+      button.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
+      this.getChildren().addAll(button, new Label(String.valueOf(year)));
+    }
   }
 
   /**

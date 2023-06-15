@@ -22,3 +22,8 @@
 .person-details .life-events-list-item-header > Label {
     -fx-font-weight: bold;
 }
+
+.birth-day {
+    -fx-font-weight: bold;
+    -fx-font-size: 1.2em;
+}
