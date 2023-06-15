@@ -13,9 +13,9 @@ import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
 import net.darmo_creations.jenealogio2.model.calendar.DatePrecision;
 import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.ui.PersonClickListener;
-import net.darmo_creations.jenealogio2.ui.PersonClickObservable;
-import net.darmo_creations.jenealogio2.ui.PersonClickedEvent;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import org.jetbrains.annotations.NotNull;
 

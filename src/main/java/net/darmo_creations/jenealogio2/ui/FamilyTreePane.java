@@ -12,6 +12,9 @@ import javafx.scene.shape.Line;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
+import net.darmo_creations.jenealogio2.ui.events.DeselectPersonsEvent;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickEvent;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

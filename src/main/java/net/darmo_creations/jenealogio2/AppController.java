@@ -15,6 +15,9 @@ import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.dialogs.*;
+import net.darmo_creations.jenealogio2.ui.events.DeselectPersonsEvent;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickEvent;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,4 +1,4 @@
-package net.darmo_creations.jenealogio2.ui;
+package net.darmo_creations.jenealogio2.ui.events;
 
 import javafx.scene.input.MouseButton;
 import net.darmo_creations.jenealogio2.model.Person;

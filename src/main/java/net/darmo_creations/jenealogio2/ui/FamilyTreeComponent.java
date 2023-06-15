@@ -3,6 +3,8 @@ package net.darmo_creations.jenealogio2.ui;
 import javafx.scene.layout.AnchorPane;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
+import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
