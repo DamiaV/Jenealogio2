@@ -130,6 +130,7 @@ public class App extends Application {
     stage.setMinHeight(200);
     stage.setTitle(NAME);
     stage.setScene(scene);
+    stage.setMaximized(true);
     stage.show();
     controller = loader.getController();
     controller.onShown(stage, file);

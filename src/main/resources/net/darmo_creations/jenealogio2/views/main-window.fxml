@@ -245,7 +245,7 @@
             </ToolBar>
           </top>
         </BorderPane>
-        <SplitPane dividerPositions="0.2,0.8" VBox.vgrow="ALWAYS">
+        <SplitPane dividerPositions="0.1,0.9" VBox.vgrow="ALWAYS">
           <items>
             <AnchorPane fx:id="sideTreeView"/>
             <AnchorPane fx:id="mainPane"/>
