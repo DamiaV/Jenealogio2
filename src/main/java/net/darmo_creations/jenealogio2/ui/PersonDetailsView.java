@@ -43,8 +43,17 @@ public class PersonDetailsView extends TabPane {
   private final TextFlow notesTextFlow = new TextFlow();
   private final TextFlow sourcesTextFlow = new TextFlow();
 
+  private final SplitPane eventsTabPane = new SplitPane();
   private final ListView<LifeEventItem> lifeEventsList = new ListView<>();
   private final ListView<WitnessedEventItem> witnessedEventsList = new ListView<>();
+
+  private final VBox eventPane = new VBox();
+  private final Label eventTypeLabel = new Label();
+  private final Label eventDateLabel = new Label();
+  private final VBox eventActorsPane = new VBox(4);
+  private final Label eventPlaceLabel = new Label();
+  private final TextFlow eventNotesTextFlow = new TextFlow();
+  private final TextFlow eventSourcesTextFlow = new TextFlow();
 
   private final PersonCard parent1Card = new PersonCard(null);
   private final PersonCard parent2Card = new PersonCard(null);
@@ -124,12 +133,22 @@ public class PersonDetailsView extends TabPane {
   }
 
   private void setupEventsTab() {
-    SplitPane tabPane = new SplitPane();
-    tabPane.setOrientation(Orientation.VERTICAL);
-    this.eventsTab.setContent(tabPane);
+    this.eventsTabPane.setOrientation(Orientation.VERTICAL);
+    this.eventsTab.setContent(this.eventsTabPane);
 
-    this.lifeEventsList.getStyleClass().add("life-events-list");
-    // TODO show details when clicked
+    this.lifeEventsList.setOnMouseClicked(event -> {
+      var selectedItem = this.lifeEventsList.getSelectionModel().getSelectedItem();
+      if (selectedItem != null) {
+        this.showEvent(selectedItem.lifeEvent());
+      }
+    });
+
+    this.witnessedEventsList.setOnMouseClicked(event -> {
+      var selectedItem = this.witnessedEventsList.getSelectionModel().getSelectedItem();
+      if (selectedItem != null) {
+        this.showEvent(selectedItem.lifeEvent());
+      }
+    });
 
     VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
     VBox vBox = new VBox(this.lifeEventsList);
@@ -137,10 +156,31 @@ public class PersonDetailsView extends TabPane {
     VBox.setVgrow(this.witnessedEventsList, Priority.ALWAYS);
     VBox vBox2 = new VBox(new SectionLabel("witnessed_events"), this.witnessedEventsList);
     vBox2.getStyleClass().add("person-details");
-    // TODO show details when clicked
 
-    tabPane.getItems().addAll(vBox, vBox2);
-    tabPane.setDividerPositions(0.5);
+    this.eventsTabPane.getItems().addAll(vBox, vBox2);
+    this.eventsTabPane.setDividerPositions(0.5);
+
+    // Event pane, hidden by default
+    this.eventTypeLabel.getStyleClass().add("person-details-title");
+    this.eventDateLabel.getStyleClass().add("person-details-title");
+    Pane spacer = new Pane();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    Button closeButton = new Button(null, App.config().theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
+    closeButton.setTooltip(new Tooltip(App.config().language().translate("person_details_view.close_life_event")));
+    closeButton.setOnAction(event -> this.eventsTab.setContent(this.eventsTabPane));
+    HBox hBox = new HBox(4, this.eventTypeLabel, spacer, this.eventDateLabel, closeButton);
+    hBox.getStyleClass().add("person-details-header");
+
+    this.eventPane.getStyleClass().add("person-details");
+    this.eventPane.getChildren().addAll(
+        hBox,
+        this.eventActorsPane,
+        this.eventPlaceLabel,
+        new SectionLabel("notes"),
+        this.eventNotesTextFlow,
+        new SectionLabel("sources"),
+        this.eventSourcesTextFlow
+    );
   }
 
   private void setupFamilyTab() {
@@ -210,6 +250,8 @@ public class PersonDetailsView extends TabPane {
     this.adoptiveParentsList.getItems().clear();
     this.godparentsList.getItems().clear();
     this.fosterParentsList.getItems().clear();
+
+    this.eventsTab.setContent(this.eventsTabPane);
 
     if (this.person != null) {
       this.imageView.setImage(this.person.getImage().orElse(PersonWidget.DEFAULT_IMAGE));
@@ -297,6 +339,42 @@ public class PersonDetailsView extends TabPane {
       this.parent1Card.setPerson(null);
       this.parent2Card.setPerson(null);
     }
+  }
+
+  private void showEvent(final @NotNull LifeEvent lifeEvent) {
+    String text;
+    if (lifeEvent.type().key().namespace().equals(Registry.BUILTIN_NS)) {
+      text = App.config().language().translate("life_event_type." + lifeEvent.type().key().name());
+    } else {
+      text = lifeEvent.type().key().name();
+    }
+    this.eventTypeLabel.setText(text);
+
+    this.eventActorsPane.getChildren().clear();
+
+    List<Person> actors = lifeEvent.actors().stream()
+        .sorted(Person.birthDateThenNameComparator(false)).toList();
+    boolean first = true;
+    for (Person actor : actors) {
+      Label label = new Label(App.config().language().translate("person_details_view.life_events." + (first ? "of" : "and")));
+      Button b = new Button(actor.toString(), App.config().theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+      b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
+      b.setUserData(actor);
+      HBox hBox = new HBox(4, label, b);
+      hBox.setAlignment(Pos.CENTER_LEFT);
+      this.eventActorsPane.getChildren().add(hBox);
+      first = false;
+    }
+
+    this.eventDateLabel.setText(DateTimeUtils.formatCalendarDate(lifeEvent.date()));
+    this.eventPlaceLabel.setText(lifeEvent.place().orElse(null));
+
+    this.eventNotesTextFlow.getChildren().clear();
+    lifeEvent.notes().ifPresent(s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+    this.eventSourcesTextFlow.getChildren().clear();
+    lifeEvent.sources().ifPresent(s -> this.eventSourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+
+    this.eventsTab.setContent(this.eventPane);
   }
 
   /**
@@ -435,8 +513,11 @@ public class PersonDetailsView extends TabPane {
    * Item for showing a {@link LifeEvent} in a {@link ListView}.
    */
   private class LifeEventItem extends VBox {
+    private final LifeEvent lifeEvent;
+
     private LifeEventItem(final @NotNull LifeEvent lifeEvent, final @NotNull Person mainActor) {
       super(4);
+      this.lifeEvent = lifeEvent;
       this.getStyleClass().add("life-events-list-item");
       Config config = App.config();
       Language language = config.language();
@@ -473,14 +554,24 @@ public class PersonDetailsView extends TabPane {
       placeLabel.setWrapText(true);
       this.getChildren().add(placeLabel);
     }
+
+    /**
+     * The life event wrapped by this node.
+     */
+    public LifeEvent lifeEvent() {
+      return this.lifeEvent;
+    }
   }
 
   /**
    * Item for showing a {@link LifeEvent} that the current person witnessed, in a {@link ListView}.
    */
   private class WitnessedEventItem extends VBox {
+    private final LifeEvent lifeEvent;
+
     public WitnessedEventItem(final @NotNull LifeEvent lifeEvent) {
       super(4);
+      this.lifeEvent = lifeEvent;
       this.getStyleClass().add("life-events-list-item");
       Language language = App.config().language();
       HBox header = new HBox(4);
@@ -514,6 +605,13 @@ public class PersonDetailsView extends TabPane {
         first = false;
       }
       this.getChildren().add(actorsBox);
+    }
+
+    /**
+     * The life event wrapped by this node.
+     */
+    public LifeEvent lifeEvent() {
+      return this.lifeEvent;
     }
   }
 

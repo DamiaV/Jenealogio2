@@ -54,6 +54,7 @@ public enum Icon {
   MORE("plus"),
 
   GO_TO("arrow_right"),
+  CLOSE_LIFE_EVENT("arrow_left"),
   ;
 
   private final String baseName;
