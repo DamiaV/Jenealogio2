@@ -37,6 +37,7 @@ public final class Config implements Cloneable {
   private static final String MAX_TREE_HEIGHT_OPTION = "max_tree_height";
   private static final String DATE_FORMAT_OPTION = "date_format";
   private static final String TIME_FORMAT_OPTION = "time_format";
+  private static final String SHOW_DECEASED_BIRTHDAYS_OPTION = "show_deceased_birthdays";
 
   /**
    * Load the configuration from the settings file.
@@ -51,19 +52,24 @@ public final class Config implements Cloneable {
   public static Config loadConfig(boolean debug) throws IOException, ConfigException {
     loadLanguages();
     Theme.loadThemes();
+
     //noinspection MismatchedQueryAndUpdateOfCollection
     Wini ini = new Wini(SETTINGS_FILE);
+
     String langCode = StringUtils.stripNullable(ini.get(APP_SECTION, LANGUAGE_OPTION)).orElse(DEFAULT_LANGUAGE_CODE);
     if (!LANGUAGES.containsKey(langCode)) {
       throw new ConfigException("unsupported language code: " + langCode);
     }
+
     String themeID = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION)).orElse(Theme.DEFAULT_THEME_ID);
     Theme theme = Theme.getTheme(themeID).orElseThrow(() -> new ConfigException("undefined theme: " + themeID));
+
     boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
     Integer maxTreeHeight = ini.get(APP_SECTION, MAX_TREE_HEIGHT_OPTION, Integer.class);
     if (maxTreeHeight == null) {
       maxTreeHeight = FamilyTreePane.DEFAULT_MAX_HEIGHT;
     }
+
     int dateFormatOrdinal = ini.get(APP_SECTION, DATE_FORMAT_OPTION, int.class);
     int timeFormatOrdinal = ini.get(APP_SECTION, TIME_FORMAT_OPTION, int.class);
     DateFormat dateFormat;
@@ -74,6 +80,9 @@ public final class Config implements Cloneable {
     } catch (IndexOutOfBoundsException e) {
       throw new ConfigException(e);
     }
+
+    boolean showDeceasedPersonsBirthdays = ini.get(APP_SECTION, SHOW_DECEASED_BIRTHDAYS_OPTION, boolean.class);
+
     try {
       return new Config(
           LANGUAGES.get(langCode),
@@ -82,6 +91,7 @@ public final class Config implements Cloneable {
           maxTreeHeight,
           dateFormat,
           timeFormat,
+          showDeceasedPersonsBirthdays,
           debug
       );
     } catch (IllegalArgumentException e) {
@@ -137,6 +147,7 @@ public final class Config implements Cloneable {
   private int maxTreeHeight;
   private DateFormat dateFormat;
   private TimeFormat timeFormat;
+  private boolean showDeceasedPersonsBirthdays;
 
   /**
    * Create a configuration object.
@@ -156,6 +167,7 @@ public final class Config implements Cloneable {
       int maxTreeHeight,
       @NotNull DateFormat dateFormat,
       @NotNull TimeFormat timeFormat,
+      boolean showDeceasedPersonsBirthdays,
       boolean debug
   ) {
     this.language = Objects.requireNonNull(language);
@@ -164,6 +176,7 @@ public final class Config implements Cloneable {
     this.setMaxTreeHeight(maxTreeHeight);
     this.setDateFormat(dateFormat);
     this.setTimeFormat(timeFormat);
+    this.setShouldShowDeceasedPersonsBirthdays(showDeceasedPersonsBirthdays);
     this.debug = debug;
   }
 
@@ -232,6 +245,14 @@ public final class Config implements Cloneable {
     this.timeFormat = Objects.requireNonNull(timeFormat);
   }
 
+  public boolean shouldShowDeceasedPersonsBirthdays() {
+    return this.showDeceasedPersonsBirthdays;
+  }
+
+  public void setShouldShowDeceasedPersonsBirthdays(boolean showDeceasedPersonsBirthdays) {
+    this.showDeceasedPersonsBirthdays = showDeceasedPersonsBirthdays;
+  }
+
   /**
    * Whether the app is in debug mode.
    */
@@ -251,7 +272,10 @@ public final class Config implements Cloneable {
         this.theme,
         this.syncTreeWithMainPane,
         this.maxTreeHeight,
-        this.dateFormat, this.timeFormat, this.debug
+        this.dateFormat,
+        this.timeFormat,
+        this.showDeceasedPersonsBirthdays,
+        this.debug
     );
   }
 
@@ -267,7 +291,10 @@ public final class Config implements Cloneable {
         theme,
         this.syncTreeWithMainPane,
         this.maxTreeHeight,
-        this.dateFormat, this.timeFormat, this.debug
+        this.dateFormat,
+        this.timeFormat,
+        this.showDeceasedPersonsBirthdays,
+        this.debug
     );
   }
 
@@ -297,6 +324,7 @@ public final class Config implements Cloneable {
     ini.put(APP_SECTION, MAX_TREE_HEIGHT_OPTION, this.maxTreeHeight);
     ini.put(APP_SECTION, DATE_FORMAT_OPTION, this.dateFormat.ordinal());
     ini.put(APP_SECTION, TIME_FORMAT_OPTION, this.timeFormat.ordinal());
+    ini.put(APP_SECTION, SHOW_DECEASED_BIRTHDAYS_OPTION, this.showDeceasedPersonsBirthdays);
     ini.store();
     App.LOGGER.info("Done.");
   }
@@ -313,12 +341,12 @@ public final class Config implements Cloneable {
     return this.debug == config.debug && this.syncTreeWithMainPane == config.syncTreeWithMainPane
         && this.maxTreeHeight == config.maxTreeHeight && Objects.equals(this.language, config.language)
         && Objects.equals(this.theme, config.theme) && this.dateFormat == config.dateFormat
-        && this.timeFormat == config.timeFormat;
+        && this.timeFormat == config.timeFormat && this.showDeceasedPersonsBirthdays == config.showDeceasedPersonsBirthdays;
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(this.language, this.theme, this.debug, this.syncTreeWithMainPane, this.maxTreeHeight,
-        this.dateFormat, this.timeFormat);
+        this.dateFormat, this.timeFormat, this.showDeceasedPersonsBirthdays);
   }
 }

@@ -8,6 +8,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
+import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
@@ -21,6 +22,7 @@ import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,8 +32,10 @@ import java.util.*;
  * <p>
  * User may choose to show/hide birthdays of deceased persons.
  */
-// TODO add checkbox to toggle birthdays of deceased persons
 public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonClickObservable {
+  @FXML
+  @SuppressWarnings("unused")
+  private CheckBox showDeceasedCheckBox;
   @FXML
   @SuppressWarnings("unused")
   private TabPane tabPane;
@@ -40,13 +44,19 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   private final ListView<PersonItem> afterTomorrowList = new ListView<>();
 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
+  private FamilyTree familyTree;
 
   /**
    * Create a dialog that shows birthdays of a family tree.
    */
   public BirthdaysDialog() {
     super("birthdays", true, false, ButtonTypes.CLOSE);
-    Language language = App.config().language();
+    Config config = App.config();
+    Language language = config.language();
+
+    this.showDeceasedCheckBox.setSelected(config.shouldShowDeceasedPersonsBirthdays());
+    this.showDeceasedCheckBox.selectedProperty()
+        .addListener((observable, oldValue, newValue) -> this.onCheckBoxSelection(newValue));
 
     VBox.setVgrow(this.todayList, Priority.ALWAYS);
     VBox.setVgrow(this.tomorrowList, Priority.ALWAYS);
@@ -70,14 +80,37 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   }
 
   /**
+   * Called when {@link #showDeceasedCheckBox}’s selection changes.
+   *
+   * @param selected Whether it is selected or not.
+   */
+  private void onCheckBoxSelection(boolean selected) {
+    Config config = App.config();
+    config.setShouldShowDeceasedPersonsBirthdays(selected);
+    try {
+      config.save();
+    } catch (IOException e) {
+      App.LOGGER.exception(e);
+    }
+    if (this.familyTree != null) {
+      this.refresh(this.familyTree);
+    }
+  }
+
+  /**
    * Refresh displayed information from the given tree.
    *
    * @param familyTree Tree to get information from.
    */
   public void refresh(final @NotNull FamilyTree familyTree) {
+    this.familyTree = Objects.requireNonNull(familyTree);
     Map<Integer, Map<Integer, Set<BirthdayEntry>>> perMonth = new HashMap<>();
 
+    boolean hideDeceased = !App.config().shouldShowDeceasedPersonsBirthdays();
     for (Person person : familyTree.persons()) {
+      if (hideDeceased && person.lifeStatus().isConsideredDeceased()) {
+        continue;
+      }
       Optional<CalendarDate> birthDate = person.getBirthDate();
       if (birthDate.isPresent()) {
         CalendarDate date = birthDate.get();
@@ -91,9 +124,9 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       }
     }
 
-    for (var entry : perMonth.entrySet()) {
-      ((BirthdayTab) this.tabPane.getTabs().get(entry.getKey()))
-          .setEntries(entry.getValue());
+    for (int i = 1; i <= 12; i++) {
+      var monthEntry = perMonth.getOrDefault(i, Map.of());
+      ((BirthdayTab) this.tabPane.getTabs().get(i)).setEntries(monthEntry);
     }
 
     LocalDate today = LocalDate.now();

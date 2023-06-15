@@ -102,6 +102,7 @@ public class App extends Application {
     config.setMaxTreeHeight(localConfig.maxTreeHeight());
     config.setDateFormat(localConfig.dateFormat());
     config.setTimeFormat(localConfig.timeFormat());
+    config.setShouldShowDeceasedPersonsBirthdays(localConfig.shouldShowDeceasedPersonsBirthdays());
     controller.onConfigUpdate();
   }
 
