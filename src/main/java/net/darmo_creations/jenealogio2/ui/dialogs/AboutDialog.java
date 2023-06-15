@@ -51,7 +51,7 @@ public class AboutDialog extends DialogBase<ButtonType> {
    * Return an {@link Image} object of the app’s icon.
    */
   private Image createImage() {
-    URL url = this.getClass().getResource(App.IMAGES_PATH + "icons/app-icon.png");
+    URL url = this.getClass().getResource(App.IMAGES_PATH + "app-icon.png");
     if (url == null) {
       return null;
     }

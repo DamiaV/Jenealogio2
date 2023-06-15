@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.ConfigException;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -131,6 +133,12 @@ public class App extends Application {
     stage.setTitle(NAME);
     stage.setScene(scene);
     stage.setMaximized(true);
+    URL url = this.getClass().getResource(IMAGES_PATH + "app-icon.png");
+    if (url != null) {
+      stage.getIcons().add(new Image(url.toExternalForm()));
+    } else {
+      LOGGER.warn("Could not load app icon!");
+    }
     stage.show();
     controller = loader.getController();
     controller.onShown(stage, file);
