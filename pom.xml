@@ -57,6 +57,17 @@
       <version>RELEASE</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.threeten</groupId>
+      <artifactId>threeten-extra</artifactId>
+      <version>1.7.2</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/ca.rmen/lib-french-revolutionary-calendar -->
+    <dependency>
+      <groupId>ca.rmen</groupId>
+      <artifactId>lib-french-revolutionary-calendar</artifactId>
+      <version>1.8.2</version>
+    </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.ini4j/ini4j -->
     <dependency>

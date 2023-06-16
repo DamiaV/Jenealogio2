@@ -1,6 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
-import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
+import net.darmo_creations.jenealogio2.model.datetime.DateTime;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -16,12 +16,12 @@ import java.util.Set;
  * and the witnesses may be the parents or other relatives.
  * <p>
  * {@link LifeEvent} objects are comparable. Their natural ordering
- * is based on the {@link CalendarDate#compareTo(CalendarDate)} method.
+ * is based on the {@link DateTime#compareTo(DateTime)} method.
  */
 public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<LifeEvent> {
   private final Set<Person> actors = new HashSet<>();
   private final Set<Person> witnesses = new HashSet<>();
-  private CalendarDate date;
+  private DateTime date;
   private LifeEventType type;
   private String place;
 
@@ -31,7 +31,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
    * @param date Event’s date.
    * @param type Event’s type.
    */
-  public LifeEvent(@NotNull CalendarDate date, @NotNull LifeEventType type) {
+  public LifeEvent(@NotNull DateTime date, @NotNull LifeEventType type) {
     this.date = Objects.requireNonNull(date);
     this.type = Objects.requireNonNull(type);
   }
@@ -39,7 +39,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   /**
    * This event’s date.
    */
-  public CalendarDate date() {
+  public DateTime date() {
     return this.date;
   }
 
@@ -49,7 +49,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
    * @param date The date.
    * @return This object.
    */
-  public LifeEvent setDate(@NotNull CalendarDate date) {
+  public LifeEvent setDate(@NotNull DateTime date) {
     this.date = Objects.requireNonNull(date);
     return this;
   }

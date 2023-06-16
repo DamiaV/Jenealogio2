@@ -5,11 +5,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.calendar.*;
+import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -17,7 +17,7 @@ import java.util.Optional;
 
 /**
  * A JavaFX component containing two date fields.
- * It returns a {@link CalendarDate} from the fields’ values.
+ * It returns a {@link DateTime} from the fields’ values.
  */
 public class CalendarDateField extends HBox {
   private final DateTimeField dateTimeField = new DateTimeField();
@@ -62,8 +62,8 @@ public class CalendarDateField extends HBox {
   public boolean checkValidity() {
     this.dateTimeField.pseudoClassStateChanged(PseudoClasses.INVALID, false);
     this.secondDateTimeField.pseudoClassStateChanged(PseudoClasses.INVALID, false);
-    LocalDateTime date = this.dateTimeField.getDate();
-    LocalDateTime secondDate = this.secondDateTimeField.getDate();
+    CalendarDateTime date = this.dateTimeField.getDate();
+    CalendarDateTime secondDate = this.secondDateTimeField.getDate();
     boolean invalid = false;
     if (this.dateType.requiresTwoFields()) {
       if (date == null && secondDate != null) {
@@ -78,43 +78,43 @@ public class CalendarDateField extends HBox {
   }
 
   /**
-   * Return a {@link CalendarDate} object from the date fields.
+   * Return a {@link DateTime} object from the date fields.
    */
-  public Optional<CalendarDate> getDate() {
-    LocalDateTime date = this.dateTimeField.getDate();
-    LocalDateTime secondDate = this.secondDateTimeField.getDate();
+  public Optional<DateTime> getDate() {
+    CalendarDateTime date = this.dateTimeField.getDate();
+    CalendarDateTime secondDate = this.secondDateTimeField.getDate();
     if ((date == null ^ secondDate == null) && this.dateType.requiresTwoFields()) {
       throw new IllegalArgumentException("missing date");
     }
     if (date == null) {
       return Optional.empty();
     }
-    if (secondDate != null && date.isAfter(secondDate)) {
+    if (secondDate != null && date.iso8601Date().isAfter(secondDate.iso8601Date())) {
       // Swap dates if wrong way around
-      LocalDateTime d = date;
+      CalendarDateTime d = date;
       date = secondDate;
       secondDate = d;
     }
     return Optional.of(switch (this.dateType) {
-      case EXACT -> new DateWithPrecision(date, DatePrecision.EXACT);
-      case ABOUT -> new DateWithPrecision(date, DatePrecision.ABOUT);
-      case POSSIBLY -> new DateWithPrecision(date, DatePrecision.POSSIBLY);
-      case BEFORE -> new DateWithPrecision(date, DatePrecision.BEFORE);
-      case AFTER -> new DateWithPrecision(date, DatePrecision.AFTER);
+      case EXACT -> new DateTimeWithPrecision(date, DateTimePrecision.EXACT);
+      case ABOUT -> new DateTimeWithPrecision(date, DateTimePrecision.ABOUT);
+      case POSSIBLY -> new DateTimeWithPrecision(date, DateTimePrecision.POSSIBLY);
+      case BEFORE -> new DateTimeWithPrecision(date, DateTimePrecision.BEFORE);
+      case AFTER -> new DateTimeWithPrecision(date, DateTimePrecision.AFTER);
       case OR -> //noinspection DataFlowIssue
-          new DateAlternative(date, secondDate);
+          new DateTimeAlternative(date, secondDate);
       case BETWEEN -> //noinspection DataFlowIssue
-          new DateRange(date, secondDate);
+          new DateTimeRange(date, secondDate);
     });
   }
 
   /**
-   * Set the value of date fields from the given {@link CalendarDate}.
+   * Set the value of date fields from the given {@link DateTime}.
    *
    * @param date Date object to extract data from.
    * @throws IllegalArgumentException If the date’s concrete type is not compatible with the currently set date type.
    */
-  public void setDate(CalendarDate date) {
+  public void setDate(DateTime date) {
     if (date == null) {
       this.dateTimeField.setDate(null);
       this.secondDateTimeField.setDate(null);
@@ -125,9 +125,9 @@ public class CalendarDateField extends HBox {
       throw new IllegalArgumentException("expected date of type %s, got %s".formatted(this.dateType, type));
     }
     this.dateTimeField.setDate(date.date());
-    if (date instanceof DateAlternative d) {
+    if (date instanceof DateTimeAlternative d) {
       this.secondDateTimeField.setDate(d.latestDate());
-    } else if (date instanceof DateRange d) {
+    } else if (date instanceof DateTimeRange d) {
       this.secondDateTimeField.setDate(d.endDate());
     } else {
       this.secondDateTimeField.setDate(null);
@@ -161,31 +161,31 @@ public class CalendarDateField extends HBox {
    */
   public enum DateType {
     /**
-     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#EXACT}.
+     * Setup fields for {@link DateTimeWithPrecision} class with precision {@link DateTimePrecision#EXACT}.
      */
     EXACT(false),
     /**
-     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#ABOUT}.
+     * Setup fields for {@link DateTimeWithPrecision} class with precision {@link DateTimePrecision#ABOUT}.
      */
     ABOUT(false),
     /**
-     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#POSSIBLY}.
+     * Setup fields for {@link DateTimeWithPrecision} class with precision {@link DateTimePrecision#POSSIBLY}.
      */
     POSSIBLY(false),
     /**
-     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#BEFORE}.
+     * Setup fields for {@link DateTimeWithPrecision} class with precision {@link DateTimePrecision#BEFORE}.
      */
     BEFORE(false),
     /**
-     * Setup fields for {@link DateWithPrecision} class with precision {@link DatePrecision#AFTER}.
+     * Setup fields for {@link DateTimeWithPrecision} class with precision {@link DateTimePrecision#AFTER}.
      */
     AFTER(false),
     /**
-     * Setup fields for {@link DateAlternative} class.
+     * Setup fields for {@link DateTimeAlternative} class.
      */
     OR(true),
     /**
-     * Setup fields for {@link DateRange} class.
+     * Setup fields for {@link DateTimeRange} class.
      */
     BETWEEN(true),
     ;
@@ -218,9 +218,9 @@ public class CalendarDateField extends HBox {
      * @param date A date object.
      * @return The corresponding date type.
      */
-    public static DateType fromDate(@NotNull CalendarDate date) {
+    public static DateType fromDate(@NotNull DateTime date) {
       Objects.requireNonNull(date);
-      if (date instanceof DateWithPrecision d) {
+      if (date instanceof DateTimeWithPrecision d) {
         return switch (d.precision()) {
           case EXACT -> EXACT;
           case ABOUT -> ABOUT;
@@ -229,10 +229,10 @@ public class CalendarDateField extends HBox {
           case AFTER -> AFTER;
         };
       }
-      if (date instanceof DateAlternative) {
+      if (date instanceof DateTimeAlternative) {
         return OR;
       }
-      if (date instanceof DateRange) {
+      if (date instanceof DateTimeRange) {
         return BETWEEN;
       }
       throw new IllegalArgumentException();

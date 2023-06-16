@@ -3,10 +3,10 @@ package net.darmo_creations.jenealogio2.utils;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
-import net.darmo_creations.jenealogio2.model.calendar.DateAlternative;
-import net.darmo_creations.jenealogio2.model.calendar.DateRange;
-import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
+import net.darmo_creations.jenealogio2.model.datetime.DateTime;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeAlternative;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeRange;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
@@ -42,12 +42,12 @@ public final class DateTimeUtils {
   }
 
   /**
-   * Format a {@link CalendarDate} object according to the current app configuration.
+   * Format a {@link DateTime} object according to the current app configuration.
    *
    * @param date Date to format.
    * @return The formatted date.
    */
-  public static String formatCalendarDate(@NotNull CalendarDate date) {
+  public static String formatCalendarDate(@NotNull DateTime date) {
     Objects.requireNonNull(date);
     Config config = App.config();
     Language language = config.language();
@@ -58,24 +58,24 @@ public final class DateTimeUtils {
     Function<LocalDateTime, String> formatter =
         d -> (d.getHour() + d.getMinute() != 0 ? dateFormatter : dateFormatterNoHour).format(d);
 
-    if (date instanceof DateWithPrecision d) {
+    if (date instanceof DateTimeWithPrecision d) {
       return language.translate(
           "date_format." + d.precision().name().toLowerCase(),
-          new FormatArg("date", formatter.apply(d.date()))
+          new FormatArg("date", formatter.apply(d.date().iso8601Date()))
       );
     }
-    if (date instanceof DateRange d) {
+    if (date instanceof DateTimeRange d) {
       return language.translate(
           "date_format.range",
-          new FormatArg("date1", formatter.apply(d.startDate())),
-          new FormatArg("date2", formatter.apply(d.endDate()))
+          new FormatArg("date1", formatter.apply(d.startDate().iso8601Date())),
+          new FormatArg("date2", formatter.apply(d.endDate().iso8601Date()))
       );
     }
-    if (date instanceof DateAlternative d) {
+    if (date instanceof DateTimeAlternative d) {
       return language.translate(
           "date_format.alternative",
-          new FormatArg("date1", formatter.apply(d.earliestDate())),
-          new FormatArg("date2", formatter.apply(d.latestDate()))
+          new FormatArg("date1", formatter.apply(d.earliestDate().iso8601Date())),
+          new FormatArg("date2", formatter.apply(d.latestDate().iso8601Date()))
       );
     }
 

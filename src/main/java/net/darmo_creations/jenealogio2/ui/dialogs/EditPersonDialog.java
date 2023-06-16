@@ -9,8 +9,10 @@ import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.model.calendar.DatePrecision;
-import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimePrecision;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.ChildInfo;
@@ -167,7 +169,10 @@ public class EditPersonDialog extends DialogBase<Person> {
 
     this.addEventButton.setGraphic(theme.getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
     this.addEventButton.setOnAction(event -> {
-      DateWithPrecision date = new DateWithPrecision(LocalDateTime.now(), DatePrecision.EXACT);
+      DateTimeWithPrecision date = new DateTimeWithPrecision(
+          new CalendarDateTime(LocalDateTime.now(), Calendar.GREGORIAN),
+          DateTimePrecision.EXACT
+      );
       LifeEventType birth = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
       this.addEvent(new LifeEvent(date, birth), true);
     });

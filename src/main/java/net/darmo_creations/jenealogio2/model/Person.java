@@ -1,7 +1,7 @@
 package net.darmo_creations.jenealogio2.model;
 
 import javafx.scene.image.Image;
-import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
+import net.darmo_creations.jenealogio2.model.datetime.DateTime;
 import net.darmo_creations.jenealogio2.utils.Pair;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -32,8 +32,8 @@ public class Person extends GenealogyObject<Person> {
         .compareTo(p2.disambiguationID().orElse(-1));
   };
   private static final Function<Boolean, Comparator<Person>> BIRTH_DATE_THEN_NAME_COMPARATOR_FACTORY = reversed -> (p1, p2) -> {
-    Optional<CalendarDate> birthDate1 = p1.getBirthDate();
-    Optional<CalendarDate> birthDate2 = p2.getBirthDate();
+    Optional<DateTime> birthDate1 = p1.getBirthDate();
+    Optional<DateTime> birthDate2 = p2.getBirthDate();
     if (birthDate1.isPresent() && birthDate2.isPresent()) {
       int c = birthDate1.get().compareTo(birthDate2.get());
       if (reversed) {
@@ -554,7 +554,7 @@ public class Person extends GenealogyObject<Person> {
    *
    * @return The computed birth date.
    */
-  public Optional<CalendarDate> getBirthDate() {
+  public Optional<DateTime> getBirthDate() {
     LifeEventType birthEventType = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
     return this.getActedInEventsStream()
         .filter(lifeEvent -> lifeEvent.type() == birthEventType)
@@ -569,7 +569,7 @@ public class Person extends GenealogyObject<Person> {
    *
    * @return The computed death date.
    */
-  public Optional<CalendarDate> getDeathDate() {
+  public Optional<DateTime> getDeathDate() {
     LifeEventType deathEventType = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "death"));
     return this.getActedInEventsStream()
         .filter(lifeEvent -> lifeEvent.type() == deathEventType)

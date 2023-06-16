@@ -1,17 +1,21 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
 import javafx.geometry.Insets;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.util.converter.IntegerStringConverter;
 import net.darmo_creations.jenealogio2.App;
+import net.darmo_creations.jenealogio2.config.Language;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,11 +26,21 @@ import java.util.List;
  * year, month, day, hours, and minutes.
  */
 public class DateTimeField extends HBox {
+  private static final Calendar<?>[] CALENDARS = {
+      Calendar.GREGORIAN,
+      Calendar.JULIAN,
+      Calendar.FRENCH_REPUBLICAN_DECIMAL_CALENDAR,
+      Calendar.FRENCH_REPUBLICAN_CALENDAR,
+      Calendar.COPTIC,
+      Calendar.ETHIOPIAN,
+  };
+
   private final TextField yearField = new TextField();
-  private final TextField monthField = new TextField();
+  private final ComboBox<String> monthField = new ComboBox<>();
   private final TextField dayField = new TextField();
   private final TextField hourField = new TextField();
   private final TextField minuteField = new TextField();
+  private final ComboBox<NotNullComboBoxItem<Calendar<?>>> calendarField = new ComboBox<>();
 
   private final List<UpdateListener> updateListeners = new LinkedList<>();
 
@@ -37,31 +51,37 @@ public class DateTimeField extends HBox {
     super(4);
 
     this.setupField(this.yearField, 50, "year");
-    this.setupField(this.monthField, 40, "month");
+    this.monthField.getSelectionModel().selectedItemProperty()
+        .addListener((observable, oldValue, newValue) -> this.notifyListeners());
     this.setupField(this.dayField, 40, "day");
     this.setupField(this.hourField, 40, "hour");
     this.setupField(this.minuteField, 40, "minute");
 
-    Label slash1Label = new Label("/");
-    HBox.setMargin(slash1Label, new Insets(4, 0, 0, 0));
-    Label slash2Label = new Label("/");
-    HBox.setMargin(slash2Label, new Insets(4, 0, 0, 0));
+    Language language = App.config().language();
+    for (Calendar<?> calendar : CALENDARS) {
+      this.calendarField.getItems()
+          .add(new NotNullComboBoxItem<>(calendar, language.translate("calendar.%s.name".formatted(calendar.name()))));
+    }
+    this.calendarField.getSelectionModel().selectedItemProperty()
+        .addListener((observable, oldValue, newValue) -> this.updateMonths(newValue.data()));
+    this.calendarField.getSelectionModel().select(0);
+
     Label colonLabel = new Label(":");
     HBox.setMargin(colonLabel, new Insets(4, 0, 0, 0));
     Pane spacer = new Pane();
     spacer.setPrefWidth(4);
 
-    this.getChildren().addAll(
-        this.yearField,
-        slash1Label,
-        this.monthField,
-        slash2Label,
+    HBox fieldsBox = new HBox(4,
         this.dayField,
+        this.monthField,
+        this.yearField,
         spacer,
         this.hourField,
         colonLabel,
         this.minuteField
     );
+
+    this.getChildren().add(new VBox(4, fieldsBox, this.calendarField));
   }
 
   /**
@@ -83,16 +103,17 @@ public class DateTimeField extends HBox {
   }
 
   /**
-   * Return the {@link LocalDateTime} value corresponding to the field’s values.
+   * Return the {@link CalendarDateTime} value corresponding to the field’s values.
    */
-  public @Nullable LocalDateTime getDate() {
+  public @Nullable CalendarDateTime getDate() {
     try {
       int y = Integer.parseInt(this.yearField.getText());
-      int m = Integer.parseInt(this.monthField.getText());
+      int m = this.monthField.getSelectionModel().getSelectedIndex() + 1;
       int d = Integer.parseInt(this.dayField.getText());
       int h = Integer.parseInt(this.hourField.getText());
       int mi = Integer.parseInt(this.minuteField.getText());
-      return LocalDateTime.of(y, m, d, h, mi);
+      Calendar<?> calendar = this.calendarField.getSelectionModel().getSelectedItem().data();
+      return new CalendarDateTime(calendar.getDate(y, m, d, h, mi).toISO8601Date(), calendar);
     } catch (RuntimeException e) {
       return null;
     }
@@ -103,20 +124,37 @@ public class DateTimeField extends HBox {
    *
    * @param dateTime The date-time value.
    */
-  public void setDate(LocalDateTime dateTime) {
+  public void setDate(CalendarDateTime dateTime) {
     if (dateTime != null) {
-      this.yearField.setText(String.valueOf(dateTime.getYear()));
-      this.monthField.setText(String.valueOf(dateTime.getMonthValue()));
-      this.dayField.setText(String.valueOf(dateTime.getDayOfMonth()));
-      this.hourField.setText(String.valueOf(dateTime.getHour()));
-      this.minuteField.setText(String.valueOf(dateTime.getMinute()));
+      this.calendarField.getSelectionModel().select(new NotNullComboBoxItem<>(dateTime.calendar()));
+      var calendarDate = dateTime.calendar().convertDate(dateTime.iso8601Date());
+      this.yearField.setText(String.valueOf(calendarDate.year()));
+      this.monthField.getSelectionModel().select(calendarDate.month() - 1);
+      this.dayField.setText(String.valueOf(calendarDate.dayOfMonth()));
+      this.hourField.setText(String.valueOf(calendarDate.hour()));
+      this.minuteField.setText(String.valueOf(calendarDate.minute()));
     } else {
       this.yearField.setText(null);
-      this.monthField.setText(null);
+      this.monthField.getSelectionModel().select(0);
       this.dayField.setText(null);
       this.hourField.setText(null);
       this.minuteField.setText(null);
     }
+  }
+
+  /**
+   * Update {@link #monthField}’s items using the given calendar.
+   *
+   * @param calendar Calendar to get months from.
+   */
+  private void updateMonths(@NotNull Calendar<?> calendar) {
+    this.monthField.getItems().clear();
+    Language language = App.config().language();
+    String name = calendar.name();
+    for (int i = 1; i <= calendar.lengthOfYearInMonths(); i++) {
+      this.monthField.getItems().add(language.translate("calendar.%s.month.%d".formatted(name, i)));
+    }
+    this.monthField.getSelectionModel().select(0);
   }
 
   /**

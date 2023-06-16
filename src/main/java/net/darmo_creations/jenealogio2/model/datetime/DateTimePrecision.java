@@ -1,9 +1,9 @@
-package net.darmo_creations.jenealogio2.model.calendar;
+package net.darmo_creations.jenealogio2.model.datetime;
 
 /**
  * Enumeration of available date precisions.
  */
-public enum DatePrecision {
+public enum DateTimePrecision {
   /**
    * Date is exact.
    */

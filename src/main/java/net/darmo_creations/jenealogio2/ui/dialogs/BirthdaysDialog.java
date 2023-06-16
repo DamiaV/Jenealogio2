@@ -12,9 +12,9 @@ import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
-import net.darmo_creations.jenealogio2.model.calendar.DatePrecision;
-import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
+import net.darmo_creations.jenealogio2.model.datetime.DateTime;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimePrecision;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
@@ -111,15 +111,15 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       if (hideDeceased && person.lifeStatus().isConsideredDeceased()) {
         continue;
       }
-      Optional<CalendarDate> birthDate = person.getBirthDate();
+      Optional<DateTime> birthDate = person.getBirthDate();
       if (birthDate.isPresent()) {
-        CalendarDate date = birthDate.get();
-        if (date instanceof DateWithPrecision d) {
-          DatePrecision precision = d.precision();
-          if (precision == DatePrecision.BEFORE || precision == DatePrecision.AFTER) {
+        DateTime date = birthDate.get();
+        if (date instanceof DateTimeWithPrecision d) {
+          DateTimePrecision precision = d.precision();
+          if (precision == DateTimePrecision.BEFORE || precision == DateTimePrecision.AFTER) {
             continue;
           }
-          this.addDate(perMonth, d.date(), precision != DatePrecision.EXACT, person);
+          this.addDate(perMonth, d.date().iso8601Date(), precision != DateTimePrecision.EXACT, person);
         }
       }
     }
@@ -224,7 +224,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       if (month < 1 || month > 12) {
         throw new IllegalArgumentException("invalid month value: " + month);
       }
-      this.baseTitle = App.config().language().translate("month." + month);
+      this.baseTitle = App.config().language().translate("calendar.gregorian.month." + month);
       this.setText(this.baseTitle);
 
       this.entriesList.setSelectionModel(new NoSelectionModel<>());

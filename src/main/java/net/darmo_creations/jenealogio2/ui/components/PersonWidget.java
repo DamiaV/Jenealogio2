@@ -15,10 +15,10 @@ import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.model.Gender;
 import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.model.calendar.CalendarDate;
-import net.darmo_creations.jenealogio2.model.calendar.DateAlternative;
-import net.darmo_creations.jenealogio2.model.calendar.DateRange;
-import net.darmo_creations.jenealogio2.model.calendar.DateWithPrecision;
+import net.darmo_creations.jenealogio2.model.datetime.DateTime;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeAlternative;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeRange;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.ui.ChildInfo;
 import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
@@ -245,9 +245,9 @@ public class PersonWidget extends AnchorPane {
   /**
    * Format a date’s year.
    */
-  private String formatDate(@NotNull CalendarDate date) {
-    if (date instanceof DateWithPrecision d) {
-      int year = d.date().getYear();
+  private String formatDate(@NotNull DateTime date) {
+    if (date instanceof DateTimeWithPrecision d) {
+      int year = d.date().iso8601Date().getYear();
       return switch (d.precision()) {
         case EXACT -> String.valueOf(year);
         case ABOUT -> "~ " + year;
@@ -255,13 +255,13 @@ public class PersonWidget extends AnchorPane {
         case BEFORE -> "< " + year;
         case AFTER -> "> " + year;
       };
-    } else if (date instanceof DateRange d) {
-      int startYear = d.startDate().getYear();
-      int endYear = d.endDate().getYear();
+    } else if (date instanceof DateTimeRange d) {
+      int startYear = d.startDate().iso8601Date().getYear();
+      int endYear = d.endDate().iso8601Date().getYear();
       return startYear != endYear ? "%s-%s".formatted(startYear, endYear) : String.valueOf(startYear);
-    } else if (date instanceof DateAlternative d) {
-      int earliestYear = d.earliestDate().getYear();
-      int latestYear = d.latestDate().getYear();
+    } else if (date instanceof DateTimeAlternative d) {
+      int earliestYear = d.earliestDate().iso8601Date().getYear();
+      int latestYear = d.latestDate().iso8601Date().getYear();
       return earliestYear != latestYear ? "%s/%s".formatted(earliestYear, latestYear) : String.valueOf(earliestYear);
     }
     throw new IllegalArgumentException("unexpected date type: " + date.getClass());

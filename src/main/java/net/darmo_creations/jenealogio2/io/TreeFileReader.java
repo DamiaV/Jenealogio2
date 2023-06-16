@@ -1,7 +1,8 @@
 package net.darmo_creations.jenealogio2.io;
 
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.model.calendar.*;
+import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
 import net.darmo_creations.jenealogio2.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
@@ -12,7 +13,6 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -344,27 +344,27 @@ public class TreeFileReader extends TreeFileManager {
       //noinspection OptionalGetWithoutIsPresent
       Element dateElement = this.getChildElement(eventElement, DATE_TAG, false).get();
       String dateType = this.getAttr(dateElement, DATE_TYPE_ATTR, s -> s, null, false);
-      CalendarDate date = switch (dateType) {
+      DateTime date = switch (dateType) {
         case DATE_WITH_PRECISION -> {
           int ordinal = this.getAttr(dateElement, DATE_PRECISION_ATTR, Integer::parseInt, null, false);
-          DatePrecision precision;
+          DateTimePrecision precision;
           try {
-            precision = DatePrecision.values()[ordinal];
+            precision = DateTimePrecision.values()[ordinal];
           } catch (IndexOutOfBoundsException e) {
             throw new IOException(e);
           }
-          LocalDateTime d = this.getAttr(dateElement, DATE_DATE_ATTR, LocalDateTime::parse, null, false);
-          yield new DateWithPrecision(d, precision);
+          CalendarDateTime d = this.getAttr(dateElement, DATE_DATE_ATTR, CalendarDateTime::parse, null, false);
+          yield new DateTimeWithPrecision(d, precision);
         }
         case DATE_RANGE -> {
-          LocalDateTime startDate = this.getAttr(dateElement, DATE_START_ATTR, LocalDateTime::parse, null, false);
-          LocalDateTime endDate = this.getAttr(dateElement, DATE_END_ATTR, LocalDateTime::parse, null, false);
-          yield new DateRange(startDate, endDate);
+          CalendarDateTime startDate = this.getAttr(dateElement, DATE_START_ATTR, CalendarDateTime::parse, null, false);
+          CalendarDateTime endDate = this.getAttr(dateElement, DATE_END_ATTR, CalendarDateTime::parse, null, false);
+          yield new DateTimeRange(startDate, endDate);
         }
         case DATE_ALTERNATIVE -> {
-          LocalDateTime earliestDate = this.getAttr(dateElement, DATE_EARLIEST_ATTR, LocalDateTime::parse, null, false);
-          LocalDateTime latestDate = this.getAttr(dateElement, DATE_LATEST_ATTR, LocalDateTime::parse, null, false);
-          yield new DateAlternative(earliestDate, latestDate);
+          CalendarDateTime earliestDate = this.getAttr(dateElement, DATE_EARLIEST_ATTR, CalendarDateTime::parse, null, false);
+          CalendarDateTime latestDate = this.getAttr(dateElement, DATE_LATEST_ATTR, CalendarDateTime::parse, null, false);
+          yield new DateTimeAlternative(earliestDate, latestDate);
         }
         default -> throw new IOException("Undefined date type " + dateType);
       };

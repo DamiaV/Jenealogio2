@@ -9,6 +9,8 @@ module net.darmo_creations.jenealogio2 {
   requires ini4j;
   requires commons.cli;
   requires com.google.gson;
+  requires org.threeten.extra;
+  requires lib.french.revolutionary.calendar;
 
   // Make AppController open for reflection to JavaFX’s FXML system only
   opens net.darmo_creations.jenealogio2 to javafx.fxml;
