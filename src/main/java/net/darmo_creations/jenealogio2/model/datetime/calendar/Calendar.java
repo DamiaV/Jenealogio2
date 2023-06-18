@@ -73,19 +73,20 @@ public sealed interface Calendar<D extends CalendarSpecificDateTime>
    * @param year   Date’s year.
    * @param month  Date’s month value.
    * @param day    Date’s day of month.
-   * @param hour   Date’s hour.
-   * @param minute Date’s minute.
+   * @param hour   Date’s hour. May be null.
+   * @param minute Date’s minute. May be null.
    * @return A new calendar-specific date.
    */
-  D getDate(int year, int month, int day, int hour, int minute);
+  D getDate(int year, int month, int day, Integer hour, Integer minute);
 
   /**
    * Convert an ISO-8601 date into one specific to this calendar.
    *
-   * @param date Date to convert.
+   * @param date        Date to convert.
+   * @param isTimeSet   Whether to take into account the time in the first argument
    * @return The equivalent calendar-specific date.
    */
-  D convertDate(@NotNull LocalDateTime date);
+  D convertDate(@NotNull LocalDateTime date, boolean isTimeSet);
 
   /**
    * Name of this calendar.

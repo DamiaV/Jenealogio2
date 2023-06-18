@@ -32,7 +32,7 @@ public final class FrenchRepublicanDateTime extends CalendarSpecificDateTime {
     var date = new FrenchRevolutionaryCalendarDate(
         Locale.getDefault(), this.year(), this.month(), this.dayOfMonth(), 0, 0, 0);
     LocalDate d = LocalDate.ofInstant(FrenchRepublicanCalendar.CAL.getDate(date).toInstant(), ZoneId.systemDefault());
-    return d.atTime(this.hour(), this.minute());
+    return d.atTime(this.hour().orElse(0), this.minute().orElse(0));
   }
 
   @Override

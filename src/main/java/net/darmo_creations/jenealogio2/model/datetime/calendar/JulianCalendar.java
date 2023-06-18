@@ -14,13 +14,17 @@ public final class JulianCalendar implements Calendar<JulianDateTime> {
   public static final String NAME = "julian";
 
   @Override
-  public JulianDateTime getDate(int year, int month, int day, int hour, int minute) {
+  public JulianDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
     return new JulianDateTime(JulianDate.of(year, month, day), hour, minute);
   }
 
   @Override
-  public JulianDateTime convertDate(@NotNull LocalDateTime date) {
-    return new JulianDateTime(JulianDate.from(date), date.getHour(), date.getMinute());
+  public JulianDateTime convertDate(@NotNull LocalDateTime date, boolean isTimeSet) {
+    return new JulianDateTime(
+        JulianDate.from(date),
+        isTimeSet ? date.getHour() : null,
+        isTimeSet ? date.getMinute() : null
+    );
   }
 
   @Override

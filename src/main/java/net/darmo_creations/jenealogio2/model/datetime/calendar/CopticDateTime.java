@@ -17,7 +17,7 @@ public final class CopticDateTime extends CalendarSpecificDateTime {
   public static final int HOURS_IN_DAY = 24;
   public static final int MINUTES_IN_HOUR = 60;
 
-  CopticDateTime(@NotNull CopticDate date, int hours, int minutes) {
+  CopticDateTime(@NotNull CopticDate date, Integer hours, Integer minutes) {
     super(
         date.get(ChronoField.YEAR),
         date.get(ChronoField.MONTH_OF_YEAR),
@@ -30,7 +30,7 @@ public final class CopticDateTime extends CalendarSpecificDateTime {
   @Override
   public LocalDateTime toISO8601Date() {
     return LocalDate.ofEpochDay(CopticDate.of(this.year(), this.month(), this.dayOfMonth()).toEpochDay())
-        .atTime(LocalTime.of(this.hour(), this.minute()));
+        .atTime(LocalTime.of(this.hour().orElse(0), this.minute().orElse(0)));
   }
 
   @Override

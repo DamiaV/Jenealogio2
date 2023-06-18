@@ -19,18 +19,19 @@ public final class FrenchRepublicanDecimalCalendar implements Calendar<FrenchRep
   public static final String NAME = "french_republican_decimal";
 
   @Override
-  public FrenchRepublicanDecimalDateTime getDate(int year, int month, int day, int hour, int minute) {
-    var date = new FrenchRevolutionaryCalendarDate(Locale.getDefault(), year, month, day, hour, minute, 0);
-    return new FrenchRepublicanDecimalDateTime(date);
+  public FrenchRepublicanDecimalDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
+    var date = new FrenchRevolutionaryCalendarDate(
+        Locale.getDefault(), year, month, day, hour != null ? hour : 0, minute != null ? minute : 0, 0);
+    return new FrenchRepublicanDecimalDateTime(date, hour != null && minute != null);
   }
 
   @Override
-  public FrenchRepublicanDecimalDateTime convertDate(@NotNull LocalDateTime date) {
+  public FrenchRepublicanDecimalDateTime convertDate(@NotNull LocalDateTime date, boolean isTimeSet) {
     //noinspection MagicConstant
     var cal = new GregorianCalendar(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth(),
         date.getHour(), date.getMinute());
     cal.setGregorianChange(new Date(Long.MIN_VALUE));
-    return new FrenchRepublicanDecimalDateTime(FrenchRepublicanCalendar.CAL.getDate(cal));
+    return new FrenchRepublicanDecimalDateTime(FrenchRepublicanCalendar.CAL.getDate(cal), isTimeSet);
   }
 
   @Override

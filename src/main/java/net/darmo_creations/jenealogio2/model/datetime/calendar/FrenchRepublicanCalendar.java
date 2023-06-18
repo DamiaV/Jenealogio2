@@ -26,17 +26,21 @@ public final class FrenchRepublicanCalendar implements Calendar<FrenchRepublican
       new FrenchRevolutionaryCalendar(Locale.getDefault(), FrenchRevolutionaryCalendar.CalculationMethod.ROMME);
 
   @Override
-  public FrenchRepublicanDateTime getDate(int year, int month, int day, int hour, int minute) {
+  public FrenchRepublicanDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
     var date = new FrenchRevolutionaryCalendarDate(Locale.getDefault(), year, month, day, 0, 0, 0);
     return new FrenchRepublicanDateTime(date, hour, minute);
   }
 
   @Override
-  public FrenchRepublicanDateTime convertDate(@NotNull LocalDateTime date) {
+  public FrenchRepublicanDateTime convertDate(@NotNull LocalDateTime date, boolean isTimeSet) {
     //noinspection MagicConstant
     var cal = new GregorianCalendar(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
     cal.setGregorianChange(new Date(Long.MIN_VALUE));
-    return new FrenchRepublicanDateTime(CAL.getDate(cal), date.getHour(), date.getMinute());
+    return new FrenchRepublicanDateTime(
+        CAL.getDate(cal),
+        isTimeSet ? date.getHour() : null,
+        isTimeSet ? date.getMinute() : null
+    );
   }
 
   @Override

@@ -14,13 +14,17 @@ public final class EthiopianCalendar implements Calendar<EthiopianDateTime> {
   public static final String NAME = "ethiopian";
 
   @Override
-  public EthiopianDateTime getDate(int year, int month, int day, int hour, int minute) {
+  public EthiopianDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
     return new EthiopianDateTime(EthiopicDate.of(year, month, day), hour, minute);
   }
 
   @Override
-  public EthiopianDateTime convertDate(@NotNull LocalDateTime date) {
-    return new EthiopianDateTime(EthiopicDate.from(date), date.getHour(), date.getMinute());
+  public EthiopianDateTime convertDate(@NotNull LocalDateTime date, boolean isTimeSet) {
+    return new EthiopianDateTime(
+        EthiopicDate.from(date),
+        isTimeSet ? date.getHour() : null,
+        isTimeSet ? date.getMinute() : null
+    );
   }
 
   @Override

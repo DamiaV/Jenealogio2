@@ -234,7 +234,6 @@ public class LifeEventView extends TitledPane {
     boolean valid;
     if (this.dateField.checkValidity()) {
       boolean datePresent = this.dateField.getDate().isPresent();
-      System.out.println(datePresent);
       this.dateField.pseudoClassStateChanged(PseudoClasses.INVALID, !datePresent);
       valid = datePresent;
     } else {

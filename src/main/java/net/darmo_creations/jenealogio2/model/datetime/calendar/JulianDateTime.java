@@ -30,7 +30,7 @@ public final class JulianDateTime extends CalendarSpecificDateTime {
   @Override
   public LocalDateTime toISO8601Date() {
     return LocalDate.ofEpochDay(JulianDate.of(this.year(), this.month(), this.dayOfMonth()).toEpochDay())
-        .atTime(LocalTime.of(this.hour(), this.minute()));
+        .atTime(LocalTime.of(this.hour().orElse(0), this.minute().orElse(0)));
   }
 
   @Override

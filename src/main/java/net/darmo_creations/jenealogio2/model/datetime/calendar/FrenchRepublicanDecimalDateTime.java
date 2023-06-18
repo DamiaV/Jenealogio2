@@ -21,21 +21,22 @@ public final class FrenchRepublicanDecimalDateTime extends CalendarSpecificDateT
   // Seconds are kept for more accurate conversions to LocalDateTime
   private final int seconds;
 
-  FrenchRepublicanDecimalDateTime(@NotNull FrenchRevolutionaryCalendarDate date) {
+  FrenchRepublicanDecimalDateTime(@NotNull FrenchRevolutionaryCalendarDate date, boolean isTimeSet) {
     super(
         date.year,
         date.month,
         date.dayOfMonth,
-        date.hour,
-        date.minute
+        isTimeSet ? date.hour : 0,
+        isTimeSet ? date.minute : 0
     );
-    this.seconds = date.second;
+    this.seconds = isTimeSet ? date.second : 0;
   }
 
   @Override
   public LocalDateTime toISO8601Date() {
     var date = new FrenchRevolutionaryCalendarDate(
-        Locale.getDefault(), this.year(), this.month(), this.dayOfMonth(), this.hour(), this.minute(), this.seconds);
+        Locale.getDefault(), this.year(), this.month(), this.dayOfMonth(),
+        this.hour().orElse(0), this.minute().orElse(0), this.seconds);
     return LocalDateTime.ofInstant(FrenchRepublicanCalendar.CAL.getDate(date).toInstant(), ZoneId.systemDefault());
   }
 

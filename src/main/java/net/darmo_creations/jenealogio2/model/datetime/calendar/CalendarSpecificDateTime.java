@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * This class represents a date-time object specific to a calendar system.
@@ -13,25 +14,26 @@ public abstract sealed class CalendarSpecificDateTime
   private final int year;
   private final int month;
   private final int day;
-  private final int hour;
-  private final int minute;
+  private final Integer hour;
+  private final Integer minute;
 
   /**
    * Create a non-standard date-time object. Only hours’ and minutes’ bounds are checked,
    * year, month and day MUST be checked by sub-classes.
    */
-  protected CalendarSpecificDateTime(int year, int month, int day, int hour, int minute) {
+  protected CalendarSpecificDateTime(int year, int month, int day, Integer hour, Integer minute) {
     this.year = year;
     this.month = month;
     this.day = day;
-    if (hour < 0 || hour >= this.hoursInDay()) {
+    boolean isTimeSet = hour != null && minute != null;
+    if (isTimeSet && (hour < 0 || hour >= this.hoursInDay())) {
       throw new IllegalArgumentException("Hour out of range: expected [0, %d[, got %d".formatted(this.hoursInDay(), hour));
     }
-    this.hour = hour;
-    if (minute < 0 || minute >= this.minutesInHour()) {
+    this.hour = isTimeSet ? hour : null;
+    if (isTimeSet && (minute < 0 || minute >= this.minutesInHour())) {
       throw new IllegalArgumentException("Minute out of range: expected [0, %d[, got %d".formatted(this.minutesInHour(), minute));
     }
-    this.minute = minute;
+    this.minute = isTimeSet ? minute : null;
   }
 
   /**
@@ -75,14 +77,14 @@ public abstract sealed class CalendarSpecificDateTime
   /**
    * This date’s hour.
    */
-  public int hour() {
-    return this.hour;
+  public Optional<Integer> hour() {
+    return Optional.ofNullable(this.hour);
   }
 
   /**
    * This date’s minute.
    */
-  public int minute() {
-    return this.minute;
+  public Optional<Integer> minute() {
+    return Optional.ofNullable(this.minute);
   }
 }

@@ -14,13 +14,17 @@ public final class CopticCalendar implements Calendar<CopticDateTime> {
   public static final String NAME = "coptic";
 
   @Override
-  public CopticDateTime getDate(int year, int month, int day, int hour, int minute) {
+  public CopticDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
     return new CopticDateTime(CopticDate.of(year, month, day), hour, minute);
   }
 
   @Override
-  public CopticDateTime convertDate(@NotNull LocalDateTime date) {
-    return new CopticDateTime(CopticDate.from(date), date.getHour(), date.getMinute());
+  public CopticDateTime convertDate(@NotNull LocalDateTime date, boolean isTimeSet) {
+    return new CopticDateTime(
+        CopticDate.from(date),
+        isTimeSet ? date.getHour() : null,
+        isTimeSet ? date.getMinute() : null
+    );
   }
 
   @Override

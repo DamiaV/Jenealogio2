@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -13,19 +14,25 @@ public final class GregorianDateTime extends CalendarSpecificDateTime {
   public static final int HOURS_IN_DAY = 24;
   public static final int MINUTES_IN_HOUR = 60;
 
-  GregorianDateTime(@NotNull LocalDateTime date) {
+  GregorianDateTime(@NotNull LocalDate date, Integer hour, Integer minute) {
     super(
         date.getYear(),
         date.getMonthValue(),
         date.getDayOfMonth(),
-        date.getHour(),
-        date.getMinute()
+        hour,
+        minute
     );
   }
 
   @Override
   public LocalDateTime toISO8601Date() {
-    return LocalDateTime.of(this.year(), this.month(), this.dayOfMonth(), this.hour(), this.minute());
+    return LocalDateTime.of(
+        this.year(),
+        this.month(),
+        this.dayOfMonth(),
+        this.hour().orElse(0),
+        this.minute().orElse(0)
+    );
   }
 
   @Override

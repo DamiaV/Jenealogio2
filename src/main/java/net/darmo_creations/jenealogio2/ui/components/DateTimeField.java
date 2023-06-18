@@ -110,13 +110,22 @@ public class DateTimeField extends HBox {
       int y = Integer.parseInt(this.yearField.getText());
       int m = this.monthField.getSelectionModel().getSelectedIndex() + 1;
       int d = Integer.parseInt(this.dayField.getText());
-      int h = Integer.parseInt(this.hourField.getText());
-      int mi = Integer.parseInt(this.minuteField.getText());
+      Integer h = this.getFieldValue(this.hourField);
+      Integer mi = this.getFieldValue(this.minuteField);
       Calendar<?> calendar = this.calendarField.getSelectionModel().getSelectedItem().data();
-      return new CalendarDateTime(calendar.getDate(y, m, d, h, mi).toISO8601Date(), calendar);
+      return new CalendarDateTime(
+          calendar.getDate(y, m, d, h, mi).toISO8601Date(),
+          calendar,
+          h != null && mi != null
+      );
     } catch (RuntimeException e) {
       return null;
     }
+  }
+
+  private @Nullable Integer getFieldValue(final @NotNull TextField field) {
+    String text = field.getText();
+    return text == null || text.isEmpty() ? null : Integer.parseInt(text);
   }
 
   /**
@@ -127,12 +136,12 @@ public class DateTimeField extends HBox {
   public void setDate(CalendarDateTime dateTime) {
     if (dateTime != null) {
       this.calendarField.getSelectionModel().select(new NotNullComboBoxItem<>(dateTime.calendar()));
-      var calendarDate = dateTime.calendar().convertDate(dateTime.iso8601Date());
+      var calendarDate = dateTime.getCalendarDateTime();
       this.yearField.setText(String.valueOf(calendarDate.year()));
       this.monthField.getSelectionModel().select(calendarDate.month() - 1);
       this.dayField.setText(String.valueOf(calendarDate.dayOfMonth()));
-      this.hourField.setText(String.valueOf(calendarDate.hour()));
-      this.minuteField.setText(String.valueOf(calendarDate.minute()));
+      this.hourField.setText(calendarDate.hour().map(String::valueOf).orElse(null));
+      this.minuteField.setText(calendarDate.minute().map(String::valueOf).orElse(null));
     } else {
       this.yearField.setText(null);
       this.monthField.getSelectionModel().select(0);

@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -11,13 +12,17 @@ public final class GregorianCalendar implements Calendar<GregorianDateTime> {
   public static final String NAME = "gregorian";
 
   @Override
-  public GregorianDateTime getDate(int year, int month, int day, int hour, int minute) {
-    return new GregorianDateTime(LocalDateTime.of(year, month, day, hour, minute));
+  public GregorianDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
+    return new GregorianDateTime(LocalDate.of(year, month, day), hour, minute);
   }
 
   @Override
-  public GregorianDateTime convertDate(@NotNull LocalDateTime date) {
-    return new GregorianDateTime(date);
+  public GregorianDateTime convertDate(@NotNull LocalDateTime date, boolean isTimeSet) {
+    return new GregorianDateTime(
+        date.toLocalDate(),
+        isTimeSet ? date.getHour() : null,
+        isTimeSet ? date.getMinute() : null
+    );
   }
 
   @Override
