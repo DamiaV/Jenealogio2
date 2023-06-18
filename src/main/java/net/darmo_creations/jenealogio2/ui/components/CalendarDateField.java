@@ -83,13 +83,10 @@ public class CalendarDateField extends HBox {
   public Optional<DateTime> getDate() {
     CalendarDateTime date = this.dateTimeField.getDate();
     CalendarDateTime secondDate = this.secondDateTimeField.getDate();
-    if ((date == null ^ secondDate == null) && this.dateType.requiresTwoFields()) {
-      throw new IllegalArgumentException("missing date");
-    }
-    if (date == null) {
+    if (date == null || secondDate == null && this.dateType.requiresTwoFields()) {
       return Optional.empty();
     }
-    if (secondDate != null && date.iso8601Date().isAfter(secondDate.iso8601Date())) {
+    if (this.dateType.requiresTwoFields() && date.iso8601Date().isAfter(secondDate.iso8601Date())) {
       // Swap dates if wrong way around
       CalendarDateTime d = date;
       date = secondDate;

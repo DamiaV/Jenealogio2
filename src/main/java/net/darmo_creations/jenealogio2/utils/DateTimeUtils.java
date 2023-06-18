@@ -47,7 +47,7 @@ public final class DateTimeUtils {
    * @param date Date to format.
    * @return The formatted date.
    */
-  public static String formatCalendarDate(@NotNull DateTime date) {
+  public static String formatDateTime(@NotNull DateTime date) {
     Objects.requireNonNull(date);
     Config config = App.config();
     Language language = config.language();

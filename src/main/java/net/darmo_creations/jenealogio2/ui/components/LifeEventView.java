@@ -9,10 +9,12 @@ import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.model.datetime.DateTime;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
+import net.darmo_creations.jenealogio2.utils.DateTimeUtils;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,6 +25,8 @@ import java.util.*;
  * JavaFX component that presents a form to edit a {@link LifeEvent} object.
  */
 public class LifeEventView extends TitledPane {
+  private final Label titleLabel = new Label();
+  private final Label dateLabel = new Label();
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
   private final CalendarDateField dateField = new CalendarDateField();
@@ -39,7 +43,6 @@ public class LifeEventView extends TitledPane {
   private final List<DeletionListener> deletionListeners = new LinkedList<>();
   private final List<UpdateListener> updateListeners = new LinkedList<>();
   private final List<TypeListener> typeListeners = new LinkedList<>();
-  private final Label titleLabel = new Label();
 
   /**
    * Create a new {@link LifeEvent} editing form.
@@ -75,7 +78,7 @@ public class LifeEventView extends TitledPane {
     deleteButton.setOnAction(event -> this.onDelete());
     BorderPane.setAlignment(this.titleLabel, Pos.CENTER_LEFT);
     borderPane.setLeft(this.titleLabel);
-    borderPane.setRight(deleteButton);
+    borderPane.setRight(new HBox(4, this.dateLabel, deleteButton));
     borderPane.prefWidthProperty().bind(parent.widthProperty().subtract(70));
     this.setGraphic(borderPane);
 
@@ -100,11 +103,15 @@ public class LifeEventView extends TitledPane {
     this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> {
           this.dateField.setDateType(newValue.data());
+          this.updateDateLabel();
           this.notifyUpdateListeners();
         });
     HBox dateHBox = new HBox(4);
     dateHBox.getChildren().add(this.datePrecisionCombo);
-    this.dateField.getUpdateListeners().add(this::notifyUpdateListeners);
+    this.dateField.getUpdateListeners().add(() -> {
+      this.updateDateLabel();
+      this.notifyUpdateListeners();
+    });
     dateHBox.getChildren().add(this.dateField);
     gridPane.addRow(1, new Label(language.translate("life_event_view.date")), dateHBox);
 
@@ -158,6 +165,18 @@ public class LifeEventView extends TitledPane {
     rowConstraints.get(6).setVgrow(Priority.ALWAYS);
 
     this.populateFields();
+  }
+
+  /**
+   * Update header’s date label text.
+   */
+  private void updateDateLabel() {
+    Optional<DateTime> date = this.dateField.getDate();
+    if (date.isPresent()) {
+      this.dateLabel.setText(DateTimeUtils.formatDateTime(date.get()));
+    } else {
+      this.dateLabel.setText(null);
+    }
   }
 
   /**
@@ -215,6 +234,7 @@ public class LifeEventView extends TitledPane {
     boolean valid;
     if (this.dateField.checkValidity()) {
       boolean datePresent = this.dateField.getDate().isPresent();
+      System.out.println(datePresent);
       this.dateField.pseudoClassStateChanged(PseudoClasses.INVALID, !datePresent);
       valid = datePresent;
     } else {

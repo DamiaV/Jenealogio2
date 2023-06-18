@@ -370,7 +370,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       first = false;
     }
 
-    this.eventDateLabel.setText(DateTimeUtils.formatCalendarDate(lifeEvent.date()));
+    this.eventDateLabel.setText(DateTimeUtils.formatDateTime(lifeEvent.date()));
     this.eventPlaceLabel.setText(lifeEvent.place().orElse(null));
 
     this.eventNotesTextFlow.getChildren().clear();
@@ -498,14 +498,14 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       this.nameLabel.setText(name);
       this.nameLabel.setTooltip(new Tooltip(name));
 
-      String birthDate = person.getBirthDate().map(DateTimeUtils::formatCalendarDate).orElse("?");
+      String birthDate = person.getBirthDate().map(DateTimeUtils::formatDateTime).orElse("?");
       this.birthDateLabel.setText(birthDate);
       this.birthDateLabel.setTooltip(new Tooltip(birthDate));
 
       boolean consideredDeceased = person.lifeStatus().isConsideredDeceased();
       this.deathDateLabel.setVisible(consideredDeceased);
       if (consideredDeceased) {
-        String deathDate = person.getDeathDate().map(DateTimeUtils::formatCalendarDate).orElse("?");
+        String deathDate = person.getDeathDate().map(DateTimeUtils::formatDateTime).orElse("?");
         this.deathDateLabel.setText(deathDate);
         this.deathDateLabel.setTooltip(new Tooltip(deathDate));
       }
@@ -534,7 +534,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         type = typeKey.name();
       }
       Label typeLabel = new Label(type);
-      Label dateLabel = new Label(DateTimeUtils.formatCalendarDate(lifeEvent.date()));
+      Label dateLabel = new Label(DateTimeUtils.formatDateTime(lifeEvent.date()));
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
@@ -587,7 +587,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         type = typeKey.name();
       }
       Label typeLabel = new Label(type);
-      Label dateLabel = new Label(DateTimeUtils.formatCalendarDate(lifeEvent.date()));
+      Label dateLabel = new Label(DateTimeUtils.formatDateTime(lifeEvent.date()));
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
