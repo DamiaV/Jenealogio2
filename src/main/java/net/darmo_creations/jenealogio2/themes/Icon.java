@@ -51,6 +51,7 @@ public enum Icon {
   ADD_PARENT("plus"),
   REMOVE_PARENT("delete"),
 
+  TREE_ROOT("anchor"),
   MORE("plus"),
 
   GO_TO("arrow_right"),

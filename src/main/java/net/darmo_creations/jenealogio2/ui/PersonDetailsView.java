@@ -30,6 +30,7 @@ import java.util.Optional;
 
 public class PersonDetailsView extends TabPane implements PersonClickObservable {
   private Person person;
+  private FamilyTree familyTree;
 
   private final Tab profileTab = new Tab();
   private final Tab eventsTab = new Tab();
@@ -236,8 +237,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     tabPane.setDividerPositions(0.33, 0.67);
   }
 
-  public void setPerson(final Person person) {
+  public void setPerson(final Person person, final FamilyTree familyTree) {
     this.person = person;
+    this.familyTree = familyTree;
     this.populateFields();
   }
 
@@ -497,6 +499,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       String name = person.toString();
       this.nameLabel.setText(name);
       this.nameLabel.setTooltip(new Tooltip(name));
+      if (PersonDetailsView.this.familyTree.isRoot(person)) {
+        this.nameLabel.setGraphic(App.config().theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+      } else {
+        this.nameLabel.setGraphic(null);
+      }
 
       String birthDate = person.getBirthDate().map(DateTimeUtils::formatDateTime).orElse("?");
       this.birthDateLabel.setText(birthDate);

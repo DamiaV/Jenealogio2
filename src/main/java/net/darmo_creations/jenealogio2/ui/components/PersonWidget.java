@@ -64,14 +64,18 @@ public class PersonWidget extends AnchorPane {
   /**
    * Create a component for the given person.
    *
-   * @param person    A person object.
-   * @param childInfo Information about the displayed child this widget is a parent of.
+   * @param person       A person object.
+   * @param childInfo    Information about the displayed child this widget is a parent of.
+   * @param showMoreIcon Whether to show the “plus” icon.
+   * @param isTarget     Whether the widget is targetted.
+   * @param isRoot       Whether the person is the tree’s root.
    */
-  public PersonWidget(final Person person, final ChildInfo childInfo, boolean hiddenRelatives, boolean isCenter) {
+  public PersonWidget(final Person person, final ChildInfo childInfo,
+                      boolean showMoreIcon, boolean isTarget, boolean isRoot) {
     this.person = person;
     this.childInfo = childInfo;
     this.getStyleClass().add("person-widget");
-    if (isCenter) {
+    if (isTarget) {
       this.getStyleClass().add("center");
     }
 
@@ -95,7 +99,12 @@ public class PersonWidget extends AnchorPane {
     } else {
       iconsBox.setLeft(new Label()); // Empty label for proper alignment
     }
-    if (hiddenRelatives) {
+    if (isRoot) {
+      Label rootIcon = new Label("", App.config().theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+      rootIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.root.tooltip")));
+      iconsBox.setRight(rootIcon);
+    }
+    if (showMoreIcon) {
       Label moreIcon = new Label("", App.config().theme().getIcon(Icon.MORE, Icon.Size.SMALL));
       moreIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.more_icon.tooltip")));
       iconsBox.setRight(moreIcon);

@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
+import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
@@ -119,6 +120,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
   @Override
   public void refresh() {
+    Config config = App.config();
     this.personsItem.getChildren().clear();
     this.searchField.clear();
     this.familyTree().ifPresent(familyTree -> {
@@ -128,7 +130,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
       this.personsItem.setExpanded(true);
     });
     // Option may have been updated from elsewhere
-    this.syncTreeButton.setSelected(App.config().shouldSyncTreeWithMainPane());
+    this.syncTreeButton.setSelected(config.shouldSyncTreeWithMainPane());
   }
 
   @Override
@@ -218,6 +220,12 @@ public class FamilyTreeView extends FamilyTreeComponent {
       // Update the text when the displayed item changes
       super.updateItem(item, empty);
       this.setText(empty ? null : item.toString());
+      Optional<FamilyTree> familyTree = FamilyTreeView.this.familyTree();
+      if (familyTree.isPresent() && item instanceof Person p && familyTree.get().isRoot(p)) {
+        this.setGraphic(App.config().theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+      } else {
+        this.setGraphic(null);
+      }
     }
   }
 }

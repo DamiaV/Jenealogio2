@@ -314,7 +314,7 @@ public class AppController {
     this.familyTree = tree;
     this.familyTreeView.setFamilyTree(this.familyTree);
     this.familyTreePane.setFamilyTree(this.familyTree);
-    this.personDetailsView.setPerson(null);
+    this.personDetailsView.setPerson(null, this.familyTree);
     this.familyTreeView.refresh();
     this.familyTreePane.refresh();
     this.loadedFile = file;
@@ -626,7 +626,7 @@ public class AppController {
       }
     }
     Person person = event instanceof PersonClickedEvent e ? e.person() : null;
-    this.personDetailsView.setPerson(person);
+    this.personDetailsView.setPerson(person, this.familyTree);
     if (event instanceof PersonClickedEvent e && e.action() == PersonClickedEvent.Action.EDIT) {
       this.openEditPersonDialog(person, null, null, null, EditPersonDialog.TAB_PROFILE);
     }
