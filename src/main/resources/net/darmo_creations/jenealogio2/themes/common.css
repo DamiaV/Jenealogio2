@@ -19,6 +19,10 @@
     -fx-font-style: italic;
 }
 
+.person-details .life-events-list-item {
+    -fx-cursor: hand;
+}
+
 .person-details .life-events-list-item-header > Label {
     -fx-font-weight: bold;
 }

@@ -145,6 +145,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         this.showEvent(selectedItem.lifeEvent());
       }
     });
+    this.lifeEventsList.getStyleClass().add("life-event-list");
 
     this.witnessedEventsList.setOnMouseClicked(event -> {
       var selectedItem = this.witnessedEventsList.getSelectionModel().getSelectedItem();
@@ -152,6 +153,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         this.showEvent(selectedItem.lifeEvent());
       }
     });
+    this.witnessedEventsList.getStyleClass().add("life-event-list");
 
     VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
     VBox vBox = new VBox(this.lifeEventsList);
