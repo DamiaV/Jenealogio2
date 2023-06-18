@@ -194,23 +194,22 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.familyTab.setContent(tabPane);
 
     VBox parentsVBox = new VBox(4, this.parent1Card, this.parent2Card);
+    parentsVBox.setMinHeight(0);
+    VBox topBox = new VBox(new SectionLabel("parents"), parentsVBox);
+    topBox.getStyleClass().add("person-details");
+
     this.siblingsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.siblingsList, Priority.ALWAYS);
-    VBox topBox = new VBox(
-        new SectionLabel("parents"),
-        parentsVBox,
-        new SectionLabel("siblings"),
-        this.siblingsList
-    );
-    topBox.getStyleClass().add("person-details");
+    VBox middleBox = new VBox(new SectionLabel("siblings"), this.siblingsList);
+    middleBox.getStyleClass().add("person-details");
 
     this.childrenList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.childrenList, Priority.ALWAYS);
     VBox bottomBox = new VBox(new SectionLabel("children"), this.childrenList);
     bottomBox.getStyleClass().add("person-details");
 
-    tabPane.getItems().addAll(topBox, bottomBox);
-    tabPane.setDividerPositions(0.6);
+    tabPane.getItems().addAll(topBox, middleBox, bottomBox);
+    tabPane.setDividerPositions(0.2, 0.6);
   }
 
   private void setupFosterParentsTab() {
