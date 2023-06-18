@@ -150,7 +150,6 @@ public class EditPersonDialog extends DialogBase<Person> {
           String text = language.translate("life_status." + lifeStatus.name().toLowerCase());
           return new NotNullComboBoxItem<>(lifeStatus, text);
         })
-        .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
         .toList());
     this.lifeStatusCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
       if (!this.internalLifeStatusChange) {
