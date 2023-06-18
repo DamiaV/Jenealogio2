@@ -251,7 +251,7 @@ public class AppController {
     AnchorPane.setRightAnchor(this.familyTreeView, 0.0);
     this.sideTreeView.getChildren().add(this.familyTreeView);
     this.familyTreeView.personClickListeners()
-        .add(event -> this.onPersonClick(event, true));
+        .add(event -> this.onPersonClick(event, this.familyTreeView));
 
     AnchorPane.setTopAnchor(this.familyTreePane, 0.0);
     AnchorPane.setBottomAnchor(this.familyTreePane, 0.0);
@@ -259,7 +259,7 @@ public class AppController {
     AnchorPane.setRightAnchor(this.familyTreePane, 0.0);
     this.mainPane.getChildren().add(this.familyTreePane);
     this.familyTreePane.personClickListeners()
-        .add(event -> this.onPersonClick(event, false));
+        .add(event -> this.onPersonClick(event, this.familyTreePane));
     this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
     this.familyTreePane.setMaxHeight(config.maxTreeHeight());
 
@@ -269,10 +269,10 @@ public class AppController {
     AnchorPane.setRightAnchor(this.personDetailsView, 0.0);
     this.detailsView.getChildren().add(this.personDetailsView);
     this.personDetailsView.personClickListeners()
-        .add(event -> this.onPersonClick(event, false));
+        .add(event -> this.onPersonClick(event, null));
 
     this.birthdaysDialog.personClickListeners()
-        .add(event -> this.onPersonClick(event, false));
+        .add(event -> this.onPersonClick(event, null));
   }
 
   /**
@@ -608,15 +608,18 @@ public class AppController {
   /**
    * Update display when a person is clicked.
    *
-   * @param event  The event that was fired.
-   * @param inTree True if the click occured inside the side tree view;
-   *               false if it occured inside the pane view.
+   * @param event    The event that was fired.
+   * @param fromNode The {@link FamilyTreeComponent} in which the click occurred. Null if another node fired it.
    */
-  private void onPersonClick(@NotNull PersonClickEvent event, boolean inTree) {
-    this.focusedComponent = inTree ? this.familyTreeView : this.familyTreePane;
-    this.updateSelection(event, this.focusedComponent);
+  private void onPersonClick(@NotNull PersonClickEvent event, FamilyTreeComponent fromNode) {
+    if (fromNode == null) {
+      // Click occurred outside of tree pane and tree view, select person in tree pane
+      this.updateSelection(event, this.familyTreePane);
+      fromNode = this.familyTreePane;
+    }
+    this.focusedComponent = fromNode;
     if (App.config().shouldSyncTreeWithMainPane()) {
-      if (inTree) {
+      if (fromNode == this.familyTreeView) {
         this.updateSelection(event, this.familyTreePane);
       } else {
         this.updateSelection(event, this.familyTreeView);
@@ -659,7 +662,7 @@ public class AppController {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
       if (person == null && childInfo == null) {
-        this.onPersonClick(new PersonClickedEvent(p.get(), PersonClickedEvent.Action.SET_AS_TARGET), false);
+        this.onPersonClick(new PersonClickedEvent(p.get(), PersonClickedEvent.Action.SET_AS_TARGET), null);
       }
       this.defaultEmptyTree = false;
       this.unsavedChanges = true;

@@ -397,7 +397,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
     if (person.isPresent()) {
       this.internalClick = true;
       var clickType = PersonClickedEvent.getClickType(clickCount, button);
-      this.firePersonClickEvent(new PersonClickedEvent(person.get(), clickType));
+      Person p = person.get();
+      this.select(p, clickType.shouldUpdateTarget());
+      this.firePersonClickEvent(new PersonClickedEvent(p, clickType));
       this.internalClick = false;
     } else {
       personWidget.childInfo().ifPresent(this::fireNewParentClickEvent);
@@ -411,6 +413,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @param event The mouse event.
    */
   private void onBackgroundClicked(MouseEvent event) {
+    this.deselectAll();
     this.firePersonClickEvent(new DeselectPersonsEvent());
     this.pane.requestFocus();
   }
