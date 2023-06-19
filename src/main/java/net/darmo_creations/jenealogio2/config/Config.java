@@ -53,8 +53,7 @@ public final class Config implements Cloneable {
     loadLanguages();
     Theme.loadThemes();
 
-    //noinspection MismatchedQueryAndUpdateOfCollection
-    Wini ini = new Wini(SETTINGS_FILE);
+    Wini ini = getOrCreateIniFile();
 
     String langCode = StringUtils.stripNullable(ini.get(APP_SECTION, LANGUAGE_OPTION)).orElse(DEFAULT_LANGUAGE_CODE);
     if (!LANGUAGES.containsKey(langCode)) {
@@ -97,6 +96,19 @@ public final class Config implements Cloneable {
     } catch (IllegalArgumentException e) {
       throw new ConfigException(e);
     }
+  }
+
+  /**
+   * Return the Ini file designated by {@link #SETTINGS_FILE}. If the file does not exist, it is created.
+   *
+   * @return The {@link Wini} wrapper object.
+   * @throws IOException If the file does not exist and could not be created.
+   */
+  private static Wini getOrCreateIniFile() throws IOException {
+    if (!SETTINGS_FILE.exists() && !SETTINGS_FILE.createNewFile()) {
+      throw new IOException("Could not create %s file!".formatted(SETTINGS_FILE));
+    }
+    return new Wini(SETTINGS_FILE);
   }
 
   /**
@@ -317,7 +329,7 @@ public final class Config implements Cloneable {
    */
   public void save() throws IOException {
     App.LOGGER.info("Saving config…");
-    Wini ini = new Wini(SETTINGS_FILE);
+    Wini ini = getOrCreateIniFile();
     ini.put(APP_SECTION, LANGUAGE_OPTION, this.language.code());
     ini.put(APP_SECTION, THEME_OPTION, this.theme.id());
     ini.put(APP_SECTION, SYNC_TREE_OPTION, this.syncTreeWithMainPane);
