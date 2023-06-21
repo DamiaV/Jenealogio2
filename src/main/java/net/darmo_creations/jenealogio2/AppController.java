@@ -183,7 +183,11 @@ public class AppController {
     this.quitMenuItem.setOnAction(event -> this.onQuitAction());
 
     this.undoMenuItem.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.SMALL));
+    this.undoMenuItem.setDisable(true); // TEMP disabled until implemented
     this.redoMenuItem.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.SMALL));
+    this.redoMenuItem.setDisable(true); // TEMP disabled until implemented
+    this.editRegistriesMenuItem.setGraphic(theme.getIcon(Icon.EDIT_REGISTRIES, Icon.Size.SMALL));
+    this.editRegistriesMenuItem.setOnAction(event -> this.onEditRegistriesAction());
     this.renameTreeMenuItem.setGraphic(theme.getIcon(Icon.RENAME_TREE, Icon.Size.SMALL));
     this.renameTreeMenuItem.setOnAction(event -> this.onRenameTreeAction());
     this.setAsRootMenuItem.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.SMALL));
@@ -203,12 +207,16 @@ public class AppController {
     this.editLifeEventsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.SMALL));
     this.editLifeEventsMenuItem.setOnAction(event -> this.onEditLifeEventsAction());
     this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
+    this.setPictureMenuItem.setDisable(true); // TEMP disabled until implemented
 
     this.calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
+    this.calculateRelationshipsMenuItem.setDisable(true); // TEMP disabled until implemented
     this.birthdaysMenuItem.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.SMALL));
     this.birthdaysMenuItem.setOnAction(event -> this.onShowBirthdaysDialog());
     this.mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
+    this.mapMenuItem.setDisable(true); // TEMP disabled until implemented
     this.checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
+    this.checkInconsistenciesMenuItem.setDisable(true); // TEMP disabled until implemented
 
     this.aboutMenuItem.setGraphic(theme.getIcon(Icon.ABOUT, Icon.Size.SMALL));
     this.aboutMenuItem.setOnAction(event -> this.onAboutAction());
@@ -224,7 +232,9 @@ public class AppController {
     this.saveAsToolbarButton.setOnAction(event -> this.onSaveAsAction());
 
     this.undoToolbarButton.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.BIG));
+    this.undoToolbarButton.setDisable(true); // TEMP disabled until implemented
     this.redoToolbarButton.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.BIG));
+    this.redoToolbarButton.setDisable(true); // TEMP disabled until implemented
     this.setAsRootToolbarButton.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.BIG));
     this.setAsRootToolbarButton.setOnAction(event -> this.onSetAsRootAction());
     this.addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
@@ -238,12 +248,16 @@ public class AppController {
     this.editLifeEventsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.BIG));
     this.editLifeEventsToolbarButton.setOnAction(event -> this.onEditLifeEventsAction());
     this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
+    this.setPictureToolbarButton.setDisable(true); // TEMP disabled until implemented
 
     this.calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
+    this.calculateRelationshipsToolbarButton.setDisable(true); // TEMP disabled until implemented
     this.birthdaysToolbarButton.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.BIG));
     this.birthdaysToolbarButton.setOnAction(event -> this.onShowBirthdaysDialog());
     this.mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
+    this.mapToolbarButton.setDisable(true); // TEMP disabled until implemented
     this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
+    this.checkInconsistenciesToolbarButton.setDisable(true); // TEMP disabled until implemented
 
     AnchorPane.setTopAnchor(this.familyTreeView, 0.0);
     AnchorPane.setBottomAnchor(this.familyTreeView, 0.0);
@@ -695,7 +709,7 @@ public class AppController {
     this.addSiblingMenuItem.setDisable(!hasBothParents);
     this.editParentsMenuItem.setDisable(!selection);
     this.editLifeEventsMenuItem.setDisable(!selection);
-    this.setPictureMenuItem.setDisable(!selection);
+//    this.setPictureMenuItem.setDisable(!selection); // TEMP disabled until implemented
 
     this.saveToolbarButton.setDisable(!this.unsavedChanges || emptyTree);
     this.saveAsToolbarButton.setDisable(emptyTree);
@@ -704,7 +718,7 @@ public class AppController {
     this.addSiblingToolbarButton.setDisable(!hasBothParents);
     this.editParentsToolbarButton.setDisable(!selection);
     this.editLifeEventsToolbarButton.setDisable(!selection);
-    this.setPictureToolbarButton.setDisable(!selection);
+//    this.setPictureToolbarButton.setDisable(!selection); // TEMP disabled until implemented
   }
 
   /**
