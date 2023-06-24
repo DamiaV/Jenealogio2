@@ -19,7 +19,6 @@ public abstract class Registry<E extends RegistryEntry, A> {
 
   private final String name;
   private final Map<RegistryEntryKey, E> entries = new HashMap<>();
-  private final List<E> defaults;
   private final EntryFactory<E, A> entryFactory;
 
   /**
@@ -33,9 +32,9 @@ public abstract class Registry<E extends RegistryEntry, A> {
   protected Registry(@NotNull String name, @NotNull EntryFactory<E, A> entryFactory, final @NotNull BuiltinEntry<A>... defaults) {
     this.name = Objects.requireNonNull(name);
     this.entryFactory = Objects.requireNonNull(entryFactory);
-    this.defaults = Arrays.stream(defaults)
-        .map(e -> this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), null, e.args(), true))
-        .toList();
+    for (var e : defaults) {
+      this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), null, e.args(), true);
+    }
   }
 
   /**
@@ -70,14 +69,6 @@ public abstract class Registry<E extends RegistryEntry, A> {
    */
   public boolean containsKey(@NotNull RegistryEntryKey key) {
     return this.entries.containsKey(Objects.requireNonNull(key));
-  }
-
-  /**
-   * Reset this registry, i.e. empty it and fill it back with default entries only.
-   */
-  public void reset() {
-    this.entries.clear();
-    this.defaults.forEach(g -> this.entries.put(g.key(), g));
   }
 
   /**

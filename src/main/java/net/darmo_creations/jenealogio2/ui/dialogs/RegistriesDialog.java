@@ -36,9 +36,9 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private VBox gendersVBox;
 
   private final RegistryView<LifeEventType, LifeEventType.RegistryArgs, LifeEventTypeRegistryViewEntry> eventTypesView =
-      new LifeEventTypeRegistryView(Registries.LIFE_EVENT_TYPES);
+      new LifeEventTypeRegistryView();
   private final RegistryView<Gender, String, GenderRegistryViewEntry> gendersView =
-      new GenderRegistryView(Registries.GENDERS);
+      new GenderRegistryView();
 
   /**
    * Create an about dialog.
@@ -89,17 +89,14 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     private final Button removeButton;
     protected final ListView<VE> entriesList = new ListView<>();
 
-    protected final Registry<RE, A> registry;
+    protected Registry<RE, A> registry;
     private final Set<RE> entriesToDelete = new HashSet<>();
 
     /**
      * Show all entries of the given registry in a {@link ListView}.
-     *
-     * @param registry The registry to display the entries of.
      */
-    protected RegistryView(@NotNull Registry<RE, A> registry) {
+    protected RegistryView() {
       super(4);
-      this.registry = registry;
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
       Config config = App.config();
@@ -208,17 +205,14 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   /**
-   * This class allows editing {@link Registries#LIFE_EVENT_TYPES}.
+   * This class allows editing {@link FamilyTree#lifeEventTypeRegistry()}.
    */
   private class LifeEventTypeRegistryView
       extends RegistryView<LifeEventType, LifeEventType.RegistryArgs, LifeEventTypeRegistryViewEntry> {
-    public LifeEventTypeRegistryView(@NotNull Registry<LifeEventType, LifeEventType.RegistryArgs> registry) {
-      super(registry);
-    }
-
     @Override
     public void refresh(final @NotNull FamilyTree familyTree) {
       super.refresh(familyTree);
+      this.registry = familyTree.lifeEventTypeRegistry();
       Map<LifeEventType, List<LifeEvent>> eventTypesUsage = familyTree.lifeEvents().stream()
           .collect(Collectors.groupingBy(LifeEvent::type));
       for (LifeEventType entry : this.registry.entries()) {
@@ -263,17 +257,14 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   /**
-   * This class allows editing {@link Registries#GENDERS}.
+   * This class allows editing {@link FamilyTree#genderRegistry()}.
    */
   private class GenderRegistryView
       extends RegistryView<Gender, String, GenderRegistryViewEntry> {
-    public GenderRegistryView(@NotNull Registry<Gender, String> registry) {
-      super(registry);
-    }
-
     @Override
     public void refresh(final @NotNull FamilyTree familyTree) {
       super.refresh(familyTree);
+      this.registry = familyTree.genderRegistry();
       //noinspection OptionalGetWithoutIsPresent
       Map<Gender, List<Person>> gendersUsage = familyTree.persons().stream()
           .filter(person -> person.gender().isPresent())
@@ -375,7 +366,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   /**
-   * This class wraps a single entry of {@link Registries#LIFE_EVENT_TYPES}.
+   * This class wraps a single entry of {@link FamilyTree#lifeEventTypeRegistry()}.
    */
   private class LifeEventTypeRegistryViewEntry extends RegistryViewEntry<LifeEventType> {
     private final ComboBox<NotNullComboBoxItem<LifeEventType.Group>> groupCombo = new ComboBox<>();
@@ -474,7 +465,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   /**
-   * This class wraps a single entry of {@link Registries#GENDERS}.
+   * This class wraps a single entry of {@link FamilyTree#genderRegistry()}.
    */
   private class GenderRegistryViewEntry extends RegistryViewEntry<Gender> {
     private final ColorPicker colorPicker = new ColorPicker();

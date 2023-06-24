@@ -153,7 +153,6 @@ public class EditPersonDialog extends DialogBase<Person> {
         this.lifeStatusCache = newValue.data();
       }
     });
-    this.updateGendersList();
 
     // Only allow digits and empty text
     this.disambiguationIDField.setTextFormatter(new TextFormatter<>(
@@ -169,7 +168,8 @@ public class EditPersonDialog extends DialogBase<Person> {
           new CalendarDateTime(LocalDateTime.now(), Calendar.GREGORIAN),
           DateTimePrecision.EXACT
       );
-      LifeEventType birth = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
+      LifeEventType birth = this.familyTree.lifeEventTypeRegistry()
+          .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
       this.addEvent(new LifeEvent(date, birth), true);
     });
     this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
@@ -212,7 +212,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     Collator collator = Collator.getInstance(language.locale());
     this.genderCombo.getItems().clear();
     this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("gender.unknown")));
-    this.genderCombo.getItems().addAll(Registries.GENDERS.entries().stream()
+    this.genderCombo.getItems().addAll(this.familyTree.genderRegistry().entries().stream()
         .map(gender -> {
           RegistryEntryKey key = gender.key();
           String text = gender.isBuiltin()

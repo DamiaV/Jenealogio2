@@ -54,6 +54,7 @@ public class Person extends GenealogyObject<Person> {
   private static final Comparator<Person> BIRTH_DATE_THEN_NAME_COMPARATOR_REVERSED =
       BIRTH_DATE_THEN_NAME_COMPARATOR_FACTORY.apply(true);
 
+  private FamilyTree familyTree;
   private Integer disambiguationID;
   private LifeStatus lifeStatus = LifeStatus.LIVING;
   private final List<String> legalFirstNames = new ArrayList<>();
@@ -83,6 +84,15 @@ public class Person extends GenealogyObject<Person> {
       this.relatives.put(type, new HashSet<>());
       this.nonBiologicalChildren.put(type, new HashSet<>());
     }
+  }
+
+  /**
+   * Set the {@link FamilyTree} this person belongs to.
+   *
+   * @param familyTree A family tree.
+   */
+  void setFamilyTree(@NotNull FamilyTree familyTree) {
+    this.familyTree = familyTree;
   }
 
   /**
@@ -555,7 +565,8 @@ public class Person extends GenealogyObject<Person> {
    * @return The computed birth date.
    */
   public Optional<DateTime> getBirthDate() {
-    LifeEventType birthEventType = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
+    LifeEventType birthEventType = this.familyTree.lifeEventTypeRegistry()
+        .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
     return this.getActedInEventsStream()
         .filter(lifeEvent -> lifeEvent.type() == birthEventType)
         .findFirst()
@@ -570,7 +581,8 @@ public class Person extends GenealogyObject<Person> {
    * @return The computed death date.
    */
   public Optional<DateTime> getDeathDate() {
-    LifeEventType deathEventType = Registries.LIFE_EVENT_TYPES.getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "death"));
+    LifeEventType deathEventType = this.familyTree.lifeEventTypeRegistry()
+        .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "death"));
     return this.getActedInEventsStream()
         .filter(lifeEvent -> lifeEvent.type() == deathEventType)
         .findFirst()

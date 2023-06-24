@@ -8,7 +8,10 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.model.FamilyTree;
+import net.darmo_creations.jenealogio2.model.LifeEvent;
+import net.darmo_creations.jenealogio2.model.LifeEventType;
+import net.darmo_creations.jenealogio2.model.Person;
 import net.darmo_creations.jenealogio2.model.datetime.DateTime;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
@@ -324,7 +327,7 @@ public class LifeEventView extends TitledPane {
    */
   private void populateEventTypeCombo() {
     Map<LifeEventType.Group, List<LifeEventType>> groups = new HashMap<>();
-    for (LifeEventType eventType : Registries.LIFE_EVENT_TYPES.entries()) {
+    for (LifeEventType eventType : this.familyTree.lifeEventTypeRegistry().entries()) {
       LifeEventType.Group group = eventType.group();
       if (!groups.containsKey(group)) {
         groups.put(group, new LinkedList<>());

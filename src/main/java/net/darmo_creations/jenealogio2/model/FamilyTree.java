@@ -9,6 +9,9 @@ import java.util.*;
  * Trees also have a root which is the person diplayed by default.
  */
 public class FamilyTree {
+  private final GenderRegistry genderRegistry = new GenderRegistry();
+  private final LifeEventTypeRegistry lifeEventTypeRegistry = new LifeEventTypeRegistry();
+
   private final Set<Person> persons = new HashSet<>();
   private final Set<LifeEvent> lifeEvents = new HashSet<>();
   private String name;
@@ -63,6 +66,7 @@ public class FamilyTree {
     if (this.persons.isEmpty()) {
       this.root = person;
     }
+    person.setFamilyTree(this);
     this.persons.add(person);
   }
 
@@ -165,6 +169,14 @@ public class FamilyTree {
    */
   public Optional<Person> root() {
     return Optional.ofNullable(this.root);
+  }
+
+  public GenderRegistry genderRegistry() {
+    return this.genderRegistry;
+  }
+
+  public LifeEventTypeRegistry lifeEventTypeRegistry() {
+    return this.lifeEventTypeRegistry;
   }
 
   /**

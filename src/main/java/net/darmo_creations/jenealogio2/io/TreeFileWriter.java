@@ -47,7 +47,7 @@ public class TreeFileWriter extends TreeFileManager {
     }
     List<LifeEvent> lifeEvents = new LinkedList<>();
 
-    this.writeUserRegistryEntries(document, familyTreeElement);
+    this.writeUserRegistryEntries(document, familyTreeElement, familyTree);
     Element peopleElement = (Element) familyTreeElement.appendChild(document.createElement(PEOPLE_TAG));
     this.writePersons(document, familyTreeElement, peopleElement, familyTree, persons, personIDs, lifeEvents);
     Element lifeEventsElement = document.createElement(LIFE_EVENTS_TAG);
@@ -64,13 +64,15 @@ public class TreeFileWriter extends TreeFileManager {
    *
    * @param document          Current XML document.
    * @param familyTreeElement XML element to write into.
+   * @param familyTree        Tree to get entries from.
    */
-  private void writeUserRegistryEntries(@NotNull Document document, @NotNull Element familyTreeElement) {
+  private void writeUserRegistryEntries(
+      @NotNull Document document, @NotNull Element familyTreeElement, final @NotNull FamilyTree familyTree) {
     Element registriesElement = document.createElement(REGISTRIES_TAG);
-    List<Gender> userGenders = Registries.GENDERS.entries().stream()
+    List<Gender> userGenders = familyTree.genderRegistry().entries().stream()
         .filter(gender -> !gender.isBuiltin() || !gender.color().equals(gender.defaultColor()))
         .toList();
-    List<LifeEventType> userLifeEventTypes = Registries.LIFE_EVENT_TYPES.entries().stream()
+    List<LifeEventType> userLifeEventTypes = familyTree.lifeEventTypeRegistry().entries().stream()
         .filter(lifeEventType -> !lifeEventType.isBuiltin())
         .toList();
 

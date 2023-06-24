@@ -13,7 +13,6 @@ import net.darmo_creations.jenealogio2.io.TreeFileReader;
 import net.darmo_creations.jenealogio2.io.TreeFileWriter;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.model.Registries;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.*;
@@ -376,8 +375,6 @@ public class AppController {
       return;
     }
     this.defaultEmptyTree = false;
-    Registries.GENDERS.reset();
-    Registries.LIFE_EVENT_TYPES.reset();
     this.setFamilyTree(new FamilyTree(name.get()), null);
   }
 

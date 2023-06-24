@@ -47,16 +47,15 @@ public class TreeFileReader extends TreeFileManager {
     String name = this.getAttr(familyTreeElement, FAMILY_TREE_NAME_ATTR, s -> s, null, true);
     int rootID = this.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, null, false);
 
-    Registries.GENDERS.reset();
-    Registries.LIFE_EVENT_TYPES.reset();
-    Optional<Element> registriesElement = this.getChildElement(familyTreeElement, REGISTRIES_TAG, true);
-    if (registriesElement.isPresent()) {
-      this.loadUserRegistries(registriesElement.get());
-    }
-
     //noinspection OptionalGetWithoutIsPresent
     Element peopleElement = this.getChildElement(familyTreeElement, PEOPLE_TAG, false).get();
     FamilyTree familyTree = new FamilyTree(name);
+
+    Optional<Element> registriesElement = this.getChildElement(familyTreeElement, REGISTRIES_TAG, true);
+    if (registriesElement.isPresent()) {
+      this.loadUserRegistries(registriesElement.get(), familyTree);
+    }
+
     List<Person> persons = this.readPersons(peopleElement, familyTree);
     try {
       familyTree.setRoot(persons.get(rootID));
@@ -75,9 +74,10 @@ public class TreeFileReader extends TreeFileManager {
    * Read user-defined registry entries.
    *
    * @param registriesElement XML element containing the registries.
+   * @param familyTree        Tree to update.
    * @throws IOException If any error occurs.
    */
-  private void loadUserRegistries(@NotNull Element registriesElement) throws IOException {
+  private void loadUserRegistries(@NotNull Element registriesElement, @NotNull FamilyTree familyTree) throws IOException {
     Optional<Element> gendersElement = this.getChildElement(registriesElement, GENDERS_TAG, true);
     if (gendersElement.isPresent()) {
       for (Element entryElement : this.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
@@ -87,13 +87,13 @@ public class TreeFileReader extends TreeFileManager {
           throw new IOException("Invalid color code: " + color);
         }
         if (key.isBuiltin()) {
-          if (!Registries.GENDERS.containsKey(key)) {
+          if (!familyTree.genderRegistry().containsKey(key)) {
             throw new IOException("Undefined GENDERS registry key: " + key.fullName());
           }
-          Registries.GENDERS.getEntry(key).setColor(color);
+          familyTree.genderRegistry().getEntry(key).setColor(color);
         } else {
           String label = this.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
-          Registries.GENDERS.registerEntry(key, label, color);
+          familyTree.genderRegistry().registerEntry(key, label, color);
         }
       }
     }
@@ -119,7 +119,7 @@ public class TreeFileReader extends TreeFileManager {
         boolean unique = this.getAttr(entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, Boolean::parseBoolean, null, false);
         var args = new LifeEventType.RegistryArgs(group, indicatesDeath, indicatesUnion, actorsNb, actorsNb, unique);
         try {
-          Registries.LIFE_EVENT_TYPES.registerEntry(key, label, args);
+          familyTree.lifeEventTypeRegistry().registerEntry(key, label, args);
         } catch (IllegalArgumentException e) {
           throw new IOException(e);
         }
@@ -188,7 +188,7 @@ public class TreeFileReader extends TreeFileManager {
       if (genderElement.isPresent()) {
         try {
           RegistryEntryKey key = new RegistryEntryKey(this.getAttr(genderElement.get(), GENDER_KEY_ATTR, s -> s, null, false));
-          Gender gender = Registries.GENDERS.getEntry(key);
+          Gender gender = familyTree.genderRegistry().getEntry(key);
           if (gender == null) {
             throw new IOException("Undefined gender registry key: " + key.fullName());
           }
@@ -387,7 +387,7 @@ public class TreeFileReader extends TreeFileManager {
       Element typeElement = this.getChildElement(eventElement, TYPE_TAG, false).get();
       try {
         RegistryEntryKey key = new RegistryEntryKey(this.getAttr(typeElement, TYPE_KEY_ATTR, s -> s, null, false));
-        type = Registries.LIFE_EVENT_TYPES.getEntry(key);
+        type = familyTree.lifeEventTypeRegistry().getEntry(key);
         if (type == null) {
           throw new IOException("Undefined life event type registry key: " + key.fullName());
         }

@@ -19,11 +19,4 @@ public final class GenderRegistry extends Registry<Gender, String> {
         new BuiltinEntry<>("non_binary", "#fff430")
     );
   }
-
-  @Override
-  public void reset() {
-    super.reset();
-    //noinspection DataFlowIssue
-    this.entries().forEach(gender -> gender.setColor(gender.defaultColor()));
-  }
 }
