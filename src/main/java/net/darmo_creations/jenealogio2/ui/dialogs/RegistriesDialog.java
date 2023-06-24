@@ -145,13 +145,14 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         Optional<RE> entry = item.entry();
         if (entry.isEmpty()) {
           String label = item.label();
-          boolean ok = true;
+          boolean ok;
           Random rng = new Random();
           do {
             String keyName = String.valueOf(rng.nextInt(1_000_000));
             RegistryEntryKey key = new RegistryEntryKey(Registry.USER_NS, keyName);
             try {
               this.registry.registerEntry(key, label, this.getBuildArgs(item));
+              ok = true;
             } catch (IllegalArgumentException e) {
               ok = false; // Key is already used, try another one
             }
