@@ -98,27 +98,13 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   }
 
   /**
-   * Remove an actor from this event. Updates the {@link Person} object.
-   *
-   * @param actor The actor to remove.
-   * @throws IllegalArgumentException If the number of actors is already at the allowed minimum.
-   */
-  void removeActor(final @NotNull Person actor) {
-    if (this.actors.size() == this.type.minActors() && this.hasActor(actor)) {
-      throw new IllegalStateException("cannot remove any more actors");
-    }
-    this.actors.remove(actor);
-    actor.removeLifeEvent(this);
-  }
-
-  /**
    * Replace all current actors by the given ones. Updates the {@link Person} object.
    *
    * @param actors Persons to set as actors of this life event.
    * @throws IllegalArgumentException If the number of new actors is not within the allowed bounds
    *                                  or if any of the actors are witnesses.
    */
-  public void setActors(final @NotNull Set<Person> actors) {
+  void setActors(final @NotNull Set<Person> actors) {
     if (actors.size() < this.type.minActors() || actors.size() > this.type.maxActors()) {
       throw new IllegalStateException("invalid actors number: expected between %d and %d, got %d"
           .formatted(this.type.minActors(), this.type.maxActors(), actors.size()));
@@ -132,6 +118,20 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
     this.actors.addAll(actors);
     // Associate new actors
     actors.forEach(actor -> actor.addLifeEvent(this));
+  }
+
+  /**
+   * Remove an actor from this event. Updates the {@link Person} object.
+   *
+   * @param actor The actor to remove.
+   * @throws IllegalArgumentException If the number of actors is already at the allowed minimum.
+   */
+  void removeActor(final @NotNull Person actor) {
+    if (this.actors.size() == this.type.minActors() && this.hasActor(actor)) {
+      throw new IllegalStateException("cannot remove any more actors");
+    }
+    this.actors.remove(actor);
+    actor.removeLifeEvent(this);
   }
 
   /**
@@ -157,7 +157,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
    * @param witness The witness to add.
    * @throws IllegalArgumentException If the person is already an actor of this event.
    */
-  public void addWitness(final @NotNull Person witness) {
+  void addWitness(final @NotNull Person witness) {
     Objects.requireNonNull(witness);
     if (this.hasActor(witness)) {
       throw new IllegalArgumentException("same person cannot be both witness and actor of same event");
@@ -171,7 +171,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
    *
    * @param witness The witness to remove.
    */
-  public void removeWitness(final Person witness) {
+  void removeWitness(final Person witness) {
     if (!this.hasWitness(witness)) {
       return;
     }

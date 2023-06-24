@@ -3,6 +3,8 @@ package net.darmo_creations.jenealogio2;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
@@ -11,6 +13,7 @@ import net.darmo_creations.jenealogio2.io.TreeFileReader;
 import net.darmo_creations.jenealogio2.io.TreeFileWriter;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
+import net.darmo_creations.jenealogio2.model.Registries;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.*;
@@ -52,6 +55,8 @@ public class AppController {
   private MenuItem undoMenuItem;
   @FXML
   private MenuItem redoMenuItem;
+  @FXML
+  private MenuItem editRegistriesMenuItem;
   @FXML
   private MenuItem renameTreeMenuItem;
   @FXML
@@ -137,6 +142,7 @@ public class AppController {
   private final PersonDetailsView personDetailsView = new PersonDetailsView();
 
   // Dialogs
+  private final RegistriesDialog editRegistriesDialog = new RegistriesDialog();
   private final EditPersonDialog editPersonDialog = new EditPersonDialog();
   private final BirthdaysDialog birthdaysDialog = new BirthdaysDialog();
   private final SettingsDialog settingsDialog = new SettingsDialog();
@@ -370,6 +376,8 @@ public class AppController {
       return;
     }
     this.defaultEmptyTree = false;
+    Registries.GENDERS.reset();
+    Registries.LIFE_EVENT_TYPES.reset();
     this.setFamilyTree(new FamilyTree(name.get()), null);
   }
 
@@ -655,6 +663,21 @@ public class AppController {
       component.deselectAll();
     } else if (event instanceof PersonClickedEvent e) {
       component.select(e.person(), e.action().shouldUpdateTarget());
+    }
+  }
+
+  /**
+   * Open the dialog to edit registries.
+   */
+  private void onEditRegistriesAction() {
+    this.editRegistriesDialog.refresh(this.familyTree);
+    Optional<ButtonType> result = this.editRegistriesDialog.showAndWait();
+    if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+      this.familyTreeView.refresh();
+      this.familyTreePane.refresh();
+      this.defaultEmptyTree = false;
+      this.unsavedChanges = true;
+      this.updateUI();
     }
   }
 

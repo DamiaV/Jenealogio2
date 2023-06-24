@@ -17,6 +17,7 @@ public enum Icon {
 
   UNDO("undo"),
   REDO("redo"),
+  EDIT_REGISTRIES("tag_blue_edit"),
   RENAME_TREE("tree_textfield"),
   SET_AS_ROOT("anchor"),
   ADD_PERSON("user_add"),
@@ -58,6 +59,9 @@ public enum Icon {
   CLOSE_LIFE_EVENT("arrow_left"),
 
   UNCERTAIN("help"),
+
+  ADD_ENTRY("plus"),
+  DELETE_ENTRY("cross"),
   ;
 
   private final String baseName;

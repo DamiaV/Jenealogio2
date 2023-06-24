@@ -10,6 +10,7 @@ import java.util.*;
  */
 public class FamilyTree {
   private final Set<Person> persons = new HashSet<>();
+  private final Set<LifeEvent> lifeEvents = new HashSet<>();
   private String name;
   private Person root;
 
@@ -39,10 +40,17 @@ public class FamilyTree {
   }
 
   /**
-   * A copy of this tree’s members.
+   * A copy of this tree’s members set.
    */
   public Set<Person> persons() {
     return new HashSet<>(this.persons);
+  }
+
+  /**
+   * A copy of this tree’s life events set.
+   */
+  public Set<LifeEvent> lifeEvents() {
+    return new HashSet<>(this.lifeEvents);
   }
 
   /**
@@ -71,8 +79,9 @@ public class FamilyTree {
     person.setParent(0, null);
     person.setParent(1, null);
     for (LifeEvent lifeEvent : person.lifeEvents()) {
-      this.removeLifeEventFromActor(lifeEvent, person);
+      this.removeActorFromLifeEvent(lifeEvent, person);
       lifeEvent.removeWitness(person);
+      this.lifeEvents.remove(lifeEvent);
     }
     for (Person child : person.children()) {
       child.removeParent(person);
@@ -89,13 +98,24 @@ public class FamilyTree {
   }
 
   /**
+   * Set the actors of the given life event. The event is added to this tree’s events set.
+   *
+   * @param lifeEvent The event to set actors of.
+   * @param actors    Persons to set as actors.
+   */
+  public void setLifeEventActors(@NotNull LifeEvent lifeEvent, final @NotNull Set<Person> actors) {
+    this.lifeEvents.add(lifeEvent);
+    lifeEvent.setActors(actors);
+  }
+
+  /**
    * Remove an actor from a life event. If the event is at its minimum allowed number of actors,
-   * all actors and witnesses are detached from the event.
+   * all actors and witnesses are detached from the event and the event itself is removed from this tree’s events set.
    *
    * @param lifeEvent Life event to remove the actor from.
    * @param actor     Actor to remove.
    */
-  public void removeLifeEventFromActor(@NotNull LifeEvent lifeEvent, @NotNull Person actor) {
+  public void removeActorFromLifeEvent(@NotNull LifeEvent lifeEvent, @NotNull Person actor) {
     if (!lifeEvent.hasActor(actor)) {
       return;
     }
@@ -103,9 +123,31 @@ public class FamilyTree {
       lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
       lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
       actor.removeLifeEvent(lifeEvent);
+      this.lifeEvents.remove(lifeEvent);
     } else {
       lifeEvent.removeActor(actor);
     }
+  }
+
+  /**
+   * Add a witness to a life event. The event is added to this tree’s events set.
+   *
+   * @param lifeEvent Life event to add the witness to.
+   * @param witness   The witness to add.
+   */
+  public void addWitnessToLifeEvent(@NotNull LifeEvent lifeEvent, @NotNull Person witness) {
+    this.lifeEvents.add(lifeEvent);
+    lifeEvent.addWitness(witness);
+  }
+
+  /**
+   * Remove a witness from a life event.
+   *
+   * @param lifeEvent Life event to remove the witness from.
+   * @param witness   The witness to remove.
+   */
+  public void removeWitnessFromLifeEvent(@NotNull LifeEvent lifeEvent, @NotNull Person witness) {
+    lifeEvent.removeWitness(witness);
   }
 
   /**

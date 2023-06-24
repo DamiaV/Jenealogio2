@@ -18,14 +18,14 @@ public abstract class TreeFileManager {
   public static final String LIFE_EVENTS_TAG = "LifeEvents";
   public static final String GENDERS_TAG = "Genders";
   public static final String REGISTRY_ENTRY_TAG = "Entry";
-  public static final String REGISTRY_ENTRY_NAME_ATTR = "name";
+  public static final String REGISTRY_ENTRY_KEY_NAME_ATTR = "keyName";
+  public static final String REGISTRY_ENTRY_LABEL_ATTR = "label";
   public static final String GENDER_COLOR_ATTR = "color";
   public static final String LIFE_EVENT_TYPES_TAG = "LifeEventTypes";
   public static final String LIFE_EVENT_TYPE_GROUP_ATTR = "group";
   public static final String LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR = "indicatesDeath";
   public static final String LIFE_EVENT_TYPE_INDICATES_UNION_ATTR = "indicatesUnion";
-  public static final String LIFE_EVENT_TYPE_MIN_ACTORS_ATTR = "minActors";
-  public static final String LIFE_EVENT_TYPE_MAX_ACTORS_ATTR = "maxActors";
+  public static final String LIFE_EVENT_TYPE_ACTORS_NB_ATTR = "actorsNumber";
   public static final String LIFE_EVENT_TYPE_UNIQUE_ATTR = "unique";
   public static final String DISAMBIGUATION_ID_TAG = "DisambiguationID";
   public static final String DISAMBIG_ID_VALUE_ATTR = "value";

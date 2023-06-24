@@ -16,6 +16,7 @@ import net.darmo_creations.jenealogio2.model.datetime.DateTime;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimePrecision;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
+import net.darmo_creations.jenealogio2.ui.components.NoSelectionModel;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;

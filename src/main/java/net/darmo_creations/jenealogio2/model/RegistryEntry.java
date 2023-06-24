@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.model;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -9,9 +10,14 @@ import java.util.Objects;
  */
 public abstract class RegistryEntry {
   private final RegistryEntryKey key;
+  private String userDefinedName;
 
-  protected RegistryEntry(@NotNull RegistryEntryKey key) {
+  protected RegistryEntry(@NotNull RegistryEntryKey key, String userDefinedName) {
     this.key = Objects.requireNonNull(key);
+    if (!this.isBuiltin() && (userDefinedName == null || userDefinedName.isEmpty())) {
+      throw new IllegalArgumentException("empty label for key '%s'".formatted(key));
+    }
+    this.userDefinedName = userDefinedName;
   }
 
   /**
@@ -20,6 +26,38 @@ public abstract class RegistryEntry {
    */
   public RegistryEntryKey key() {
     return this.key;
+  }
+
+  /**
+   * Display name of this entry. Null for builtin entries.
+   */
+  public @Nullable String userDefinedName() {
+    return this.userDefinedName;
+  }
+
+  /**
+   * Set the display name of this entry. Only works for user-defined entries.
+   *
+   * @param userDefinedName The new name.
+   */
+  public void setUserDefinedName(@NotNull String userDefinedName) {
+    this.ensureNotBuiltin("userDefinedName");
+    this.userDefinedName = Objects.requireNonNull(userDefinedName);
+  }
+
+  /**
+   * Whether this entry’s key is in the “builtin” namespace.
+   *
+   * @see Registry#BUILTIN_NS
+   */
+  public boolean isBuiltin() {
+    return this.key.isBuiltin();
+  }
+
+  protected void ensureNotBuiltin(@NotNull String property) {
+    if (this.isBuiltin()) {
+      throw new UnsupportedOperationException("Cannot modify property %s of builtin regitry entry.".formatted(property));
+    }
   }
 
   @Override
@@ -41,6 +79,6 @@ public abstract class RegistryEntry {
 
   @Override
   public String toString() {
-    return "RegistryEntry{%s}".formatted(this.key);
+    return "RegistryEntry{key=%s}".formatted(this.key);
   }
 }

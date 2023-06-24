@@ -52,6 +52,15 @@ public record RegistryEntryKey(@NotNull String namespace, @NotNull String name) 
     return this.namespace + ":" + this.name;
   }
 
+  /**
+   * Whether this key is in the “builtin” namespace.
+   *
+   * @see Registry#BUILTIN_NS
+   */
+  public boolean isBuiltin() {
+    return this.namespace.equals(Registry.BUILTIN_NS);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

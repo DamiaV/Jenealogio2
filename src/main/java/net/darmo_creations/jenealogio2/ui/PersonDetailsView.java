@@ -14,8 +14,8 @@ import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.components.NoSelectionModel;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
-import net.darmo_creations.jenealogio2.ui.dialogs.NoSelectionModel;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class PersonDetailsView extends TabPane implements PersonClickObservable {
@@ -268,7 +269,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       if (gender.isPresent()) {
         RegistryEntryKey key = gender.get().key();
         String name = key.name();
-        g = key.namespace().equals(Registry.BUILTIN_NS) ? App.config().language().translate("gender." + name) : name;
+        g = key.isBuiltin() ? App.config().language().translate("gender." + name) : gender.get().userDefinedName();
       }
       this.genderLabel.setText(g);
       this.genderLabel.setTooltip(g != null ? new Tooltip(g) : null);
@@ -349,10 +350,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
     String text;
-    if (lifeEvent.type().key().namespace().equals(Registry.BUILTIN_NS)) {
+    if (lifeEvent.type().isBuiltin()) {
       text = App.config().language().translate("life_event_type." + lifeEvent.type().key().name());
     } else {
-      text = lifeEvent.type().key().name();
+      text = Objects.requireNonNull(lifeEvent.type().userDefinedName());
     }
     this.eventTypeLabel.setText(text);
 
@@ -535,10 +536,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       header.getStyleClass().add("life-events-list-item-header");
       RegistryEntryKey typeKey = lifeEvent.type().key();
       String type;
-      if (typeKey.namespace().equals(Registry.BUILTIN_NS)) {
+      if (typeKey.isBuiltin()) {
         type = language.translate("life_event_type." + typeKey.name());
       } else {
-        type = typeKey.name();
+        type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
       }
       Label typeLabel = new Label(type);
       Label dateLabel = new Label(DateTimeUtils.formatDateTime(lifeEvent.date()));
@@ -588,10 +589,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       header.getStyleClass().add("life-events-list-item-header");
       RegistryEntryKey typeKey = lifeEvent.type().key();
       String type;
-      if (typeKey.namespace().equals(Registry.BUILTIN_NS)) {
+      if (typeKey.isBuiltin()) {
         type = language.translate("life_event_type." + typeKey.name());
       } else {
-        type = typeKey.name();
+        type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
       }
       Label typeLabel = new Label(type);
       Label dateLabel = new Label(DateTimeUtils.formatDateTime(lifeEvent.date()));

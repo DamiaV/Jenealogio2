@@ -36,6 +36,7 @@ public class LifeEventView extends TitledPane {
   private final TextArea notesField = new TextArea();
   private final TextArea sourcesField = new TextArea();
 
+  private final FamilyTree familyTree;
   private final LifeEvent lifeEvent;
   private final Person person;
   private final List<Person> persons;
@@ -54,14 +55,16 @@ public class LifeEventView extends TitledPane {
    * @param parent    Parent {@link ListView} component.
    */
   public LifeEventView(
+      @NotNull FamilyTree familyTree,
       @NotNull LifeEvent lifeEvent,
       @NotNull Person person,
       final @NotNull Collection<Person> persons,
       boolean expanded,
       final @NotNull ListView<LifeEventView> parent
   ) {
+    this.familyTree = Objects.requireNonNull(familyTree);
     this.lifeEvent = Objects.requireNonNull(lifeEvent);
-    this.person = person;
+    this.person = Objects.requireNonNull(person);
     // Get all persons except the one we are currently editing and sort by name
     this.persons = persons.stream()
         .filter(p -> p != person)
@@ -257,14 +260,14 @@ public class LifeEventView extends TitledPane {
     if (!this.partnerCombo.isDisabled()) {
       actors.add(this.partnerCombo.getSelectionModel().getSelectedItem().data());
     }
-    this.lifeEvent.setActors(actors);
+    this.familyTree.setLifeEventActors(this.lifeEvent, actors);
 
     // Remove all witnesses and add back the selected ones
     for (Person witness : this.lifeEvent.witnesses()) {
-      this.lifeEvent.removeWitness(witness);
+      this.familyTree.removeWitnessFromLifeEvent(this.lifeEvent, witness);
     }
     for (Person witness : this.witnessesList.getItems()) {
-      this.lifeEvent.addWitness(witness);
+      this.familyTree.addWitnessToLifeEvent(this.lifeEvent, witness);
     }
 
     this.lifeEvent.setDate(this.dateField.getDate().orElseThrow(() -> new IllegalArgumentException("missing date")));
@@ -335,9 +338,9 @@ public class LifeEventView extends TitledPane {
       List<LifeEventType> types = groups.get(group);
       String prefix = "[%s] ".formatted(language.translate("life_event_type_group." + group.name().toLowerCase()));
       types.stream().map(type -> {
-            String name = type.key().namespace().equals(Registry.BUILTIN_NS)
+            String name = type.isBuiltin()
                 ? language.translate("life_event_type." + type.key().name())
-                : type.key().name();
+                : Objects.requireNonNull(type.userDefinedName());
             return new NotNullComboBoxItem<>(type, prefix + name);
           })
           .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison

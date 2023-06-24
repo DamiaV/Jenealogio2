@@ -10,7 +10,7 @@ import java.util.*;
  * Two types of entries can be registered: builtin und user defined.
  *
  * @param <E> Type of registry entries.
- * @param <A> Type of arguments to pass to {@link #registerEntry(RegistryEntryKey, Object)}
+ * @param <A> Type of arguments to pass to {@link #registerEntry(RegistryEntryKey, String, Object)}
  *            to build and register a new {@link RegistryEntry} object.
  */
 public class Registry<E extends RegistryEntry, A> {
@@ -34,7 +34,7 @@ public class Registry<E extends RegistryEntry, A> {
     this.name = Objects.requireNonNull(name);
     this.entryFactory = Objects.requireNonNull(entryFactory);
     this.defaults = Arrays.stream(defaults)
-        .map(e -> this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), e.args(), true))
+        .map(e -> this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), null, e.args(), true))
         .toList();
   }
 
@@ -83,35 +83,53 @@ public class Registry<E extends RegistryEntry, A> {
   /**
    * Register a new user-defined entry.
    *
-   * @param key  Key of the entry to register.
-   * @param args Additional arguments to pass to the new entry’s constructor.
+   * @param key   Key of the entry to register.
+   * @param label Entry’s display text.
+   * @param args  Additional arguments to pass to the new entry’s constructor.
    * @throws IllegalArgumentException If the specified key is already used
    *                                  or the key is in the builtin namespace.
    */
-  public void registerEntry(@NotNull RegistryEntryKey key, A args) {
-    this.registerEntry(key, args, false);
+  public void registerEntry(@NotNull RegistryEntryKey key, @NotNull String label, A args) {
+    this.registerEntry(key, Objects.requireNonNull(label), args, false);
   }
 
   /**
    * Register a new entry.
    *
-   * @param key  Key of the entry to register.
-   * @param args Additional arguments to pass to the new entry’s constructor.
+   * @param key   Key of the entry to register.
+   * @param label Entry’s display text if not builtin.
+   * @param args  Additional arguments to pass to the new entry’s constructor.
    * @return The newly created instance.
    * @throws IllegalArgumentException If the specified key is already used
    *                                  or allowBuiltin and the key is in the builtin namespace.
    */
-  private E registerEntry(@NotNull RegistryEntryKey key, A args, boolean allowBuiltin) {
+  private E registerEntry(@NotNull RegistryEntryKey key, String label, A args, boolean allowBuiltin) {
     Objects.requireNonNull(this.name);
-    if (!allowBuiltin && key.namespace().equals(BUILTIN_NS)) {
+    if (!allowBuiltin && key.isBuiltin()) {
       throw new IllegalArgumentException("cannot register entries in the '%s' namespace.".formatted(BUILTIN_NS));
     }
     if (this.entries.containsKey(key)) {
       throw new IllegalArgumentException("key '%s' already exists".formatted(key));
     }
-    E entry = this.entryFactory.apply(key, args);
+    if (!key.isBuiltin() && label.isEmpty()) {
+      throw new IllegalArgumentException("label is empty for non-builtin key '%s'".formatted(key));
+    }
+    E entry = this.entryFactory.apply(key, label, args);
     this.entries.put(key, entry);
     return entry;
+  }
+
+  /**
+   * Delete the given entry.
+   *
+   * @param entry Entry to delete.
+   * @throws IllegalArgumentException If the entry is in {@link #BUILTIN_NS}.
+   */
+  public void removeEntry(E entry) {
+    if (entry.isBuiltin()) {
+      throw new IllegalArgumentException("cannot delete builtin entry '%s'".formatted(entry.key()));
+    }
+    this.entries.remove(entry.key());
   }
 
   /**
@@ -135,6 +153,6 @@ public class Registry<E extends RegistryEntry, A> {
    */
   @FunctionalInterface
   public interface EntryFactory<E extends RegistryEntry, A> {
-    E apply(@NotNull RegistryEntryKey key, A args);
+    E apply(@NotNull RegistryEntryKey key, String label, A args);
   }
 }

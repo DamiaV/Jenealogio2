@@ -1,4 +1,4 @@
-package net.darmo_creations.jenealogio2.ui.dialogs;
+package net.darmo_creations.jenealogio2.ui.components;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

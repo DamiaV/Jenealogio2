@@ -17,10 +17,7 @@ import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.ChildInfo;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
-import net.darmo_creations.jenealogio2.ui.components.ComboBoxItem;
-import net.darmo_creations.jenealogio2.ui.components.LifeEventView;
-import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
-import net.darmo_creations.jenealogio2.ui.components.RelativesListView;
+import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -218,9 +215,9 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.genderCombo.getItems().addAll(Registries.GENDERS.entries().stream()
         .map(gender -> {
           RegistryEntryKey key = gender.key();
-          String text = key.namespace().equals(Registry.BUILTIN_NS)
+          String text = gender.isBuiltin()
               ? language.translate("gender." + key.name())
-              : key.name();
+              : Objects.requireNonNull(gender.userDefinedName());
           return new ComboBoxItem<>(gender, text);
         })
         .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
@@ -350,7 +347,7 @@ public class EditPersonDialog extends DialogBase<Person> {
    */
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
     LifeEventView lifeEventView = new LifeEventView(
-        lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
+        this.familyTree, lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
     lifeEventView.getDeletionListeners().add(this::onEventDelete);
     lifeEventView.getUpdateListeners().add(this::updateButtons);
     lifeEventView.getTypeListeners().add(t -> {
@@ -452,8 +449,8 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.lifeEventsList.getItems().forEach(LifeEventView::applyChanges);
     for (LifeEventView lifeEventView : this.eventsToDelete) {
       LifeEvent event = lifeEventView.lifeEvent();
-      this.familyTree.removeLifeEventFromActor(event, person);
-      event.removeWitness(person);
+      this.familyTree.removeActorFromLifeEvent(event, person);
+      this.familyTree.removeWitnessFromLifeEvent(event, person);
     }
     // Update life status after events to avoid assertion error
     person.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());

@@ -28,7 +28,7 @@ public final class Registries {
   public static final Registry<LifeEventType, RegistryArgs> LIFE_EVENT_TYPES =
       new Registry<>(
           "life_event_types",
-          (key, args) -> new LifeEventType(key, args.group(), args.indicatesDeath(), args.indicatesUnion(), args.minActors(), args.minActors(), args.isUnique()),
+          (key, label, args) -> new LifeEventType(key, label, args.group(), args.indicatesDeath(), args.indicatesUnion(), args.minActors(), args.minActors(), args.isUnique()),
 
           new BuiltinEntry<>("annulment", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, false, 2, 2, false)), // Annulation
           new BuiltinEntry<>("civil_solidarity_pact", new RegistryArgs(LifeEventType.Group.RELATIONSHIP, false, true, 2, 2, false)), // PACS

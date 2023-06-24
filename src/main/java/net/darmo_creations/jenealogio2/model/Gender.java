@@ -10,17 +10,18 @@ import java.util.Objects;
 public final class Gender extends RegistryEntry {
   public static final String MISSING_COLOR = "#808080";
 
-  private final String color;
+  private String color;
 
   /**
    * Create a new gender object.
    *
-   * @param key   Gender’s registry key.
-   * @param color Color to use in the GUI. Must be hex CSS color code.
+   * @param key             Gender’s registry key.
+   * @param userDefinedName Entry’s display text if not builtin.
+   * @param color           Color to use in the GUI. Must be hex CSS color code.
    */
-  Gender(@NotNull RegistryEntryKey key, @NotNull String color) {
-    super(key);
-    this.color = Objects.requireNonNull(color);
+  Gender(@NotNull RegistryEntryKey key, String userDefinedName, @NotNull String color) {
+    super(key, userDefinedName);
+    this.setColor(color);
   }
 
   /**
@@ -30,8 +31,17 @@ public final class Gender extends RegistryEntry {
     return this.color;
   }
 
+  /**
+   * Set the color to use in the GUI.
+   *
+   * @param color A color.
+   */
+  public void setColor(@NotNull String color) {
+    this.color = Objects.requireNonNull(color);
+  }
+
   @Override
   public String toString() {
-    return "Gender{key='%s'}".formatted(this.key());
+    return "Gender{key=%s, color='%s'}".formatted(this.key(), this.color);
   }
 }
