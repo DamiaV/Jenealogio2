@@ -617,7 +617,8 @@ public class Person extends GenealogyObject<Person> {
   void addLifeEvent(final @NotNull LifeEvent event) {
     if (event.type().isUnique() && event.hasActor(this)
         && this.getActedInEventsStream().anyMatch(e -> e.type() == event.type())) {
-      throw new IllegalArgumentException("%s already acts in an event of type %s".formatted(this, event.type()));
+      throw new IllegalArgumentException("%s already acts in an event of type '%s'"
+          .formatted(this, event.type().key().fullName()));
     }
     if (event.hasActor(this) && event.type().indicatesDeath()) {
       this.lifeStatus = LifeStatus.DECEASED;
