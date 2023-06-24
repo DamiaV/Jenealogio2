@@ -145,9 +145,17 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         Optional<RE> entry = item.entry();
         if (entry.isEmpty()) {
           String label = item.label();
-          // TODO normalize label? generate random key name?
-          RegistryEntryKey key = new RegistryEntryKey(Registry.USER_NS, label);
-          this.registry.registerEntry(key, label, this.getBuildArgs(item));
+          boolean ok = true;
+          Random rng = new Random();
+          do {
+            String keyName = String.valueOf(rng.nextInt(1_000_000));
+            RegistryEntryKey key = new RegistryEntryKey(Registry.USER_NS, keyName);
+            try {
+              this.registry.registerEntry(key, label, this.getBuildArgs(item));
+            } catch (IllegalArgumentException e) {
+              ok = false; // Key is already used, try another one
+            }
+          } while (!ok);
         } else {
           this.applyChange(item, entry.get());
         }
