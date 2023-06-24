@@ -81,20 +81,27 @@ public class TreeFileReader extends TreeFileManager {
     Optional<Element> gendersElement = this.getChildElement(registriesElement, GENDERS_TAG, true);
     if (gendersElement.isPresent()) {
       for (Element entryElement : this.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
-        String keyName = this.getAttr(entryElement, REGISTRY_ENTRY_KEY_NAME_ATTR, s -> s, null, false);
-        String label = this.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
+        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(entryElement, REGISTRY_ENTRY_KEY_ATTR, s -> s, null, false));
         String color = this.getAttr(entryElement, GENDER_COLOR_ATTR, s -> s, null, false);
         if (!color.matches("^#[\\da-fA-F]{6}$")) {
           throw new IOException("Invalid color code: " + color);
         }
-        Registries.GENDERS.registerEntry(new RegistryEntryKey(Registry.USER_NS, keyName), label, color);
+        if (key.isBuiltin()) {
+          if (!Registries.GENDERS.containsKey(key)) {
+            throw new IOException("Undefined GENDERS registry key: " + key.fullName());
+          }
+          Registries.GENDERS.getEntry(key).setColor(color);
+        } else {
+          String label = this.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
+          Registries.GENDERS.registerEntry(key, label, color);
+        }
       }
     }
 
     Optional<Element> eventTypeElement = this.getChildElement(registriesElement, LIFE_EVENT_TYPES_TAG, true);
     if (eventTypeElement.isPresent()) {
       for (Element entryElement : this.getChildElements(eventTypeElement.get(), REGISTRY_ENTRY_TAG)) {
-        String keyName = this.getAttr(entryElement, REGISTRY_ENTRY_KEY_NAME_ATTR, s -> s, null, true);
+        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(entryElement, REGISTRY_ENTRY_KEY_ATTR, s -> s, null, true));
         String label = this.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
         int groupOrdinal = this.getAttr(entryElement, LIFE_EVENT_TYPE_GROUP_ATTR, Integer::parseInt, null, false);
         LifeEventType.Group group;
@@ -112,7 +119,7 @@ public class TreeFileReader extends TreeFileManager {
         boolean unique = this.getAttr(entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, Boolean::parseBoolean, null, false);
         var args = new LifeEventType.RegistryArgs(group, indicatesDeath, indicatesUnion, actorsNb, actorsNb, unique);
         try {
-          Registries.LIFE_EVENT_TYPES.registerEntry(new RegistryEntryKey(Registry.USER_NS, keyName), label, args);
+          Registries.LIFE_EVENT_TYPES.registerEntry(key, label, args);
         } catch (IllegalArgumentException e) {
           throw new IOException(e);
         }

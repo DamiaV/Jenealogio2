@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.model;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -10,6 +11,7 @@ import java.util.Objects;
 public final class Gender extends RegistryEntry {
   public static final String MISSING_COLOR = "#808080";
 
+  private final String defaultColor;
   private String color;
 
   /**
@@ -21,7 +23,15 @@ public final class Gender extends RegistryEntry {
    */
   Gender(@NotNull RegistryEntryKey key, String userDefinedName, @NotNull String color) {
     super(key, userDefinedName);
+    this.defaultColor = key.isBuiltin() ? color : null;
     this.setColor(color);
+  }
+
+  /**
+   * The default color, as set when registered. Null for non-builtin entries.
+   */
+  public @Nullable String defaultColor() {
+    return this.defaultColor;
   }
 
   /**

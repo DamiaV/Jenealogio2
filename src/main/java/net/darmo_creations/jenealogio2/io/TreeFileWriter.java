@@ -68,7 +68,7 @@ public class TreeFileWriter extends TreeFileManager {
   private void writeUserRegistryEntries(@NotNull Document document, @NotNull Element familyTreeElement) {
     Element registriesElement = document.createElement(REGISTRIES_TAG);
     List<Gender> userGenders = Registries.GENDERS.entries().stream()
-        .filter(gender -> !gender.isBuiltin())
+        .filter(gender -> !gender.isBuiltin() || !gender.color().equals(gender.defaultColor()))
         .toList();
     List<LifeEventType> userLifeEventTypes = Registries.LIFE_EVENT_TYPES.entries().stream()
         .filter(lifeEventType -> !lifeEventType.isBuiltin())
@@ -78,8 +78,10 @@ public class TreeFileWriter extends TreeFileManager {
       Element gendersElement = document.createElement(GENDERS_TAG);
       userGenders.forEach(gender -> {
         Element entryElement = (Element) gendersElement.appendChild(document.createElement(REGISTRY_ENTRY_TAG));
-        this.setAttr(document, entryElement, REGISTRY_ENTRY_KEY_NAME_ATTR, gender.key().name());
-        this.setAttr(document, entryElement, REGISTRY_ENTRY_LABEL_ATTR, Objects.requireNonNull(gender.userDefinedName()));
+        this.setAttr(document, entryElement, REGISTRY_ENTRY_KEY_ATTR, gender.key().fullName());
+        if (!gender.isBuiltin()) {
+          this.setAttr(document, entryElement, REGISTRY_ENTRY_LABEL_ATTR, Objects.requireNonNull(gender.userDefinedName()));
+        }
         this.setAttr(document, entryElement, GENDER_COLOR_ATTR, gender.color());
       });
       if (gendersElement.hasChildNodes()) {
@@ -91,7 +93,7 @@ public class TreeFileWriter extends TreeFileManager {
       Element typesElement = document.createElement(LIFE_EVENT_TYPES_TAG);
       userLifeEventTypes.forEach(lifeEventType -> {
         Element entryElement = (Element) typesElement.appendChild(document.createElement("Entry"));
-        this.setAttr(document, entryElement, REGISTRY_ENTRY_KEY_NAME_ATTR, lifeEventType.key().name());
+        this.setAttr(document, entryElement, REGISTRY_ENTRY_KEY_ATTR, lifeEventType.key().fullName());
         this.setAttr(document, entryElement, REGISTRY_ENTRY_LABEL_ATTR, Objects.requireNonNull(lifeEventType.userDefinedName()));
         this.setAttr(document, entryElement, LIFE_EVENT_TYPE_GROUP_ATTR, String.valueOf(lifeEventType.group().ordinal()));
         this.setAttr(document, entryElement, LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR, String.valueOf(lifeEventType.indicatesDeath()));

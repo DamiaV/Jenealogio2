@@ -13,7 +13,7 @@ import java.util.*;
  * @param <A> Type of arguments to pass to {@link #registerEntry(RegistryEntryKey, String, Object)}
  *            to build and register a new {@link RegistryEntry} object.
  */
-public class Registry<E extends RegistryEntry, A> {
+public abstract class Registry<E extends RegistryEntry, A> {
   public static final String BUILTIN_NS = "builtin";
   public static final String USER_NS = "user";
 
@@ -30,7 +30,7 @@ public class Registry<E extends RegistryEntry, A> {
    * @param defaults     List of default entries’ data to be registered.
    */
   @SafeVarargs
-  Registry(@NotNull String name, @NotNull EntryFactory<E, A> entryFactory, final @NotNull BuiltinEntry<A>... defaults) {
+  protected Registry(@NotNull String name, @NotNull EntryFactory<E, A> entryFactory, final @NotNull BuiltinEntry<A>... defaults) {
     this.name = Objects.requireNonNull(name);
     this.entryFactory = Objects.requireNonNull(entryFactory);
     this.defaults = Arrays.stream(defaults)

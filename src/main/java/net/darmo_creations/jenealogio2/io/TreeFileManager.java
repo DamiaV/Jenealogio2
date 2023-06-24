@@ -18,7 +18,7 @@ public abstract class TreeFileManager {
   public static final String LIFE_EVENTS_TAG = "LifeEvents";
   public static final String GENDERS_TAG = "Genders";
   public static final String REGISTRY_ENTRY_TAG = "Entry";
-  public static final String REGISTRY_ENTRY_KEY_NAME_ATTR = "keyName";
+  public static final String REGISTRY_ENTRY_KEY_ATTR = "key";
   public static final String REGISTRY_ENTRY_LABEL_ATTR = "label";
   public static final String GENDER_COLOR_ATTR = "color";
   public static final String LIFE_EVENT_TYPES_TAG = "LifeEventTypes";
