@@ -21,6 +21,7 @@ import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
+import net.darmo_creations.jenealogio2.ui.components.ColorPickerTableCell;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -382,7 +383,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       TableColumn<GenderTableItem, Color> colorCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.genders.color"));
       colorCol.setEditable(true);
-      // TODO cell factory
+      colorCol.setCellFactory(param -> new ColorPickerTableCell<>());
       colorCol.setCellValueFactory(param -> param.getValue().colorProperty());
 
       this.entriesTable.getColumns().add(colorCol);
@@ -548,11 +549,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
 
     private String convertColor() {
-      Color color = this.colorProperty.get();
-      int r = (int) Math.round(color.getRed() * 255);
-      int g = (int) Math.round(color.getGreen() * 255);
-      int b = (int) Math.round(color.getBlue() * 255);
-      return String.format("#%02x%02x%02x", r, g, b);
+      return StringUtils.colorToCSSHex(this.colorProperty.get());
     }
   }
 

@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.utils;
 
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import org.jetbrains.annotations.NotNull;
 
@@ -94,6 +95,19 @@ public final class StringUtils {
     }
 
     return texts;
+  }
+
+  /**
+   * Convert a {@link Color} into its CSS hexadecimal representation.
+   *
+   * @param color Color to convert.
+   * @return A string in the format {@code #RRGGBB}.
+   */
+  public static String colorToCSSHex(@NotNull Color color) {
+    int r = (int) Math.round(color.getRed() * 255);
+    int g = (int) Math.round(color.getGreen() * 255);
+    int b = (int) Math.round(color.getBlue() * 255);
+    return String.format("#%02x%02x%02x", r, g, b);
   }
 
   private StringUtils() {
