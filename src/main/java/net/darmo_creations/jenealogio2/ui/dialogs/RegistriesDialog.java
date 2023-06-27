@@ -53,7 +53,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     this.gendersVBox.getChildren().add(0, this.gendersView);
 
     Stage stage = this.stage();
-    stage.setMinWidth(800);
+    stage.setMinWidth(600);
     stage.setMinHeight(500);
 
     this.setResultConverter(buttonType -> {
@@ -98,11 +98,13 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      */
     protected RegistryView() {
       super(4);
-      Pane spacer = new Pane();
-      HBox.setHgrow(spacer, Priority.ALWAYS);
       Config config = App.config();
       Language language = config.language();
       Theme theme = config.theme();
+
+      Label helpLabel = new Label(language.translate("dialog.edit_registries.help"));
+      helpLabel.setWrapText(true);
+      helpLabel.setStyle("-fx-font-weight: bold");
 
       // Buttons
       Button addButton = new Button(language.translate("dialog.edit_registries.add_entry"),
@@ -112,6 +114,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
           theme.getIcon(Icon.DELETE_ENTRY, Icon.Size.SMALL));
       this.removeButton.setOnAction(event -> this.onRemoveSelectedItems());
       this.removeButton.setDisable(true);
+      Pane spacer = new Pane();
+      HBox.setHgrow(spacer, Priority.ALWAYS);
       this.buttonsBox = new HBox(4, spacer, addButton, this.removeButton);
 
       // Table
@@ -160,7 +164,11 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       this.entriesTable.getSelectionModel().selectedItemProperty()
           .addListener((observable, oldValue, newValue) -> this.onSelectionChange());
 
-      this.getChildren().addAll(this.buttonsBox, this.entriesTable);
+      this.getChildren().addAll(
+          helpLabel,
+          this.buttonsBox,
+          this.entriesTable
+      );
     }
 
     /**
