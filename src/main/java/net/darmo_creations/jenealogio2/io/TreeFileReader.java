@@ -93,7 +93,7 @@ public class TreeFileReader extends TreeFileManager {
           familyTree.genderRegistry().getEntry(key).setColor(color);
         } else {
           String label = this.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
-          familyTree.genderRegistry().registerEntry(key, label, color);
+          familyTree.genderRegistry().registerEntry(key, label, new GenderRegistry.RegistryArgs(color));
         }
       }
     }
@@ -117,7 +117,7 @@ public class TreeFileReader extends TreeFileManager {
           throw new IOException("invalid actors number: " + actorsNb);
         }
         boolean unique = this.getAttr(entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, Boolean::parseBoolean, null, false);
-        var args = new LifeEventType.RegistryArgs(group, indicatesDeath, indicatesUnion, actorsNb, actorsNb, unique);
+        var args = new LifeEventTypeRegistry.RegistryArgs(group, indicatesDeath, indicatesUnion, actorsNb, actorsNb, unique);
         try {
           familyTree.lifeEventTypeRegistry().registerEntry(key, label, args);
         } catch (IllegalArgumentException e) {

@@ -10,7 +10,7 @@ import java.util.*;
  * Two types of entries can be registered: builtin und user defined.
  *
  * @param <E> Type of registry entries.
- * @param <A> Type of arguments to pass to {@link #registerEntry(RegistryEntryKey, String, Object)}
+ * @param <A> Type of arguments to pass to {@link #registerEntry(RegistryEntryKey, String, A)}
  *            to build and register a new {@link RegistryEntry} object.
  */
 public abstract class Registry<E extends RegistryEntry, A> {

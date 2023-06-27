@@ -257,7 +257,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    * This class allows editing {@link FamilyTree#lifeEventTypeRegistry()}.
    */
   private class LifeEventTypeRegistryView
-      extends RegistryView<LifeEventTypeTableItem, LifeEventType, LifeEventType.RegistryArgs> {
+      extends RegistryView<LifeEventTypeTableItem, LifeEventType, LifeEventTypeRegistry.RegistryArgs> {
     public LifeEventTypeRegistryView() {
       Language language = App.config().language();
 
@@ -385,7 +385,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    * This class allows editing {@link FamilyTree#genderRegistry()}.
    */
   private class GenderRegistryView
-      extends RegistryView<GenderTableItem, Gender, String> {
+      extends RegistryView<GenderTableItem, Gender, GenderRegistry.RegistryArgs> {
 
     private final Button resetButton;
 
@@ -498,7 +498,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     public abstract A getBuildArgs();
   }
 
-  private class LifeEventTypeTableItem extends TableItem<LifeEventType, LifeEventType.RegistryArgs> {
+  private class LifeEventTypeTableItem extends TableItem<LifeEventType, LifeEventTypeRegistry.RegistryArgs> {
     private final ObjectProperty<LifeEventType.Group> groupProperty = new SimpleObjectProperty<>();
     private final BooleanProperty indicatesDeathProperty = new SimpleBooleanProperty();
     private final BooleanProperty indicatesUnionProperty = new SimpleBooleanProperty();
@@ -532,8 +532,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
 
     @Override
-    public LifeEventType.RegistryArgs getBuildArgs() {
-      return new LifeEventType.RegistryArgs(
+    public LifeEventTypeRegistry.RegistryArgs getBuildArgs() {
+      return new LifeEventTypeRegistry.RegistryArgs(
           this.groupProperty.get(),
           this.indicatesDeathProperty.get(),
           this.indicatesUnionProperty.get(),
@@ -564,7 +564,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
   }
 
-  private class GenderTableItem extends TableItem<Gender, String> {
+  private class GenderTableItem extends TableItem<Gender, GenderRegistry.RegistryArgs> {
     private final ObjectProperty<Color> colorProperty = new SimpleObjectProperty<>();
 
     public GenderTableItem(Gender entry, int usage) {
@@ -579,8 +579,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
 
     @Override
-    public String getBuildArgs() {
-      return this.convertColor();
+    public GenderRegistry.RegistryArgs getBuildArgs() {
+      return new GenderRegistry.RegistryArgs(this.convertColor());
     }
 
     public ObjectProperty<Color> colorProperty() {

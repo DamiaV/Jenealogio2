@@ -182,46 +182,4 @@ public final class LifeEventType extends RegistryEntry {
       return App.config().language().translate(key);
     }
   }
-
-  /**
-   * Wrapper class used to declare new {@link LifeEventType} entries.
-   *
-   * @param group          Type’s group.
-   * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
-   * @param indicatesUnion Whether this type indicates the union (marriage, etc.) the associated event’s actors.
-   * @param minActors      Minimum allowed number of actor allowed to be attached to the event.
-   * @param maxActors      Maximum allowed number of actor allowed to be attached to the event.
-   * @param isUnique       Whether events with this type can appear multiple times in an actor’s timeline.
-   */
-  public record RegistryArgs(
-      @NotNull Group group,
-      boolean indicatesDeath,
-      boolean indicatesUnion,
-      int minActors,
-      int maxActors,
-      boolean isUnique
-  ) {
-    /**
-     * Create a new registry wrapper with an minimum and maximum number of actors of 1 and no unicity constraint.
-     *
-     * @param group          Type’s group.
-     * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
-     * @param indicatesUnion Whether events with this type indicate the union (marriage, etc.) the associated event’s actors.
-     */
-    public RegistryArgs(@NotNull Group group, boolean indicatesDeath, boolean indicatesUnion) {
-      this(group, indicatesDeath, indicatesUnion, 1, 1, false);
-    }
-
-    /**
-     * Create a new registry wrapper with an minimum and maximum number of actors of 1.
-     *
-     * @param group          Type’s group.
-     * @param indicatesDeath Whether this type indicates the death of the associated event’s actors.
-     * @param indicatesUnion Whether events with this type indicate the union (marriage, etc.) the associated event’s actors.
-     * @param isUnique       Whether events with the created type can appear multiple times in an actor’s timeline.
-     */
-    public RegistryArgs(@NotNull Group group, boolean indicatesDeath, boolean indicatesUnion, boolean isUnique) {
-      this(group, indicatesDeath, indicatesUnion, 1, 1, isUnique);
-    }
-  }
 }
