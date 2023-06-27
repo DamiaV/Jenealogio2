@@ -88,6 +88,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       extends VBox {
     private final Button removeButton;
     protected final TableView<TI> entriesTable = new TableView<>();
+    protected final HBox buttonsBox;
 
     protected Registry<RE, A> registry;
     private final Set<RE> entriesToDelete = new HashSet<>();
@@ -111,7 +112,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
           theme.getIcon(Icon.DELETE_ENTRY, Icon.Size.SMALL));
       this.removeButton.setOnAction(event -> this.onRemoveSelectedItems());
       this.removeButton.setDisable(true);
-      HBox buttonsBox = new HBox(4, spacer, addButton, this.removeButton);
+      this.buttonsBox = new HBox(4, spacer, addButton, this.removeButton);
 
       // Table
       VBox.setVgrow(this.entriesTable, Priority.ALWAYS);
@@ -159,7 +160,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       this.entriesTable.getSelectionModel().selectedItemProperty()
           .addListener((observable, oldValue, newValue) -> this.onSelectionChange());
 
-      this.getChildren().addAll(buttonsBox, this.entriesTable);
+      this.getChildren().addAll(this.buttonsBox, this.entriesTable);
     }
 
     /**
@@ -235,7 +236,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     /**
      * Called when the selection of {@link #entriesTable} changes.
      */
-    private void onSelectionChange() {
+    protected void onSelectionChange() {
       // Prevent deleting builtin and used entries
       ObservableList<TI> selectedItems = this.entriesTable.getSelectionModel().getSelectedItems();
       boolean disable = selectedItems.isEmpty() || selectedItems.stream()
@@ -377,8 +378,26 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    */
   private class GenderRegistryView
       extends RegistryView<GenderTableItem, Gender, String> {
+
+    private final Button resetButton;
+
     public GenderRegistryView() {
       Language language = App.config().language();
+
+      this.resetButton = new Button(language.translate("dialog.edit_registries.reset_entry"),
+          App.config().theme().getIcon(Icon.RESET_ENTRY, Icon.Size.SMALL));
+      this.resetButton.setOnAction(event -> {
+        ObservableList<GenderTableItem> selectedCells = this.entriesTable.getSelectionModel().getSelectedItems();
+        for (GenderTableItem selectedCell : selectedCells) {
+          Gender entry = selectedCell.entry();
+          if (entry.isBuiltin()) {
+            //noinspection DataFlowIssue
+            selectedCell.colorProperty().set(Color.valueOf(entry.defaultColor()));
+          }
+        }
+      });
+      this.resetButton.setDisable(true);
+      this.buttonsBox.getChildren().add(1, this.resetButton);
 
       TableColumn<GenderTableItem, Color> colorCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.genders.color"));
@@ -387,6 +406,18 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       colorCol.setCellValueFactory(param -> param.getValue().colorProperty());
 
       this.entriesTable.getColumns().add(colorCol);
+    }
+
+    @Override
+    protected void onSelectionChange() {
+      super.onSelectionChange();
+      ObservableList<GenderTableItem> selectedItems = this.entriesTable.getSelectionModel().getSelectedItems();
+      boolean disable = selectedItems.isEmpty() || selectedItems.stream()
+          .allMatch(i -> {
+            Gender entry = i.entry();
+            return entry == null || !entry.isBuiltin() || i.convertColor().equals(entry.defaultColor());
+          });
+      this.resetButton.setDisable(disable);
     }
 
     @Override
