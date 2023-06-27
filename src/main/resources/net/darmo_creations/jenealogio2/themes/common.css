@@ -1,6 +1,11 @@
 /*
  * This stylesheet is always loaded before any theme-specific stylesheet.
  */
+
+.table-row-cell > .table-cell:disabled {
+    -fx-opacity: 0.4;
+}
+
 .no-focus-scroll-pane {
     /* Disable focus border in main scroll pane by making the background invisible */
     -fx-background-color: rgba(0, 0, 0, 0);

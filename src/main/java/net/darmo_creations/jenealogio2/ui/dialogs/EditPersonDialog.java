@@ -211,12 +211,12 @@ public class EditPersonDialog extends DialogBase<Person> {
     Language language = App.config().language();
     Collator collator = Collator.getInstance(language.locale());
     this.genderCombo.getItems().clear();
-    this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("gender.unknown")));
+    this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("genders.unknown")));
     this.genderCombo.getItems().addAll(this.familyTree.genderRegistry().entries().stream()
         .map(gender -> {
           RegistryEntryKey key = gender.key();
           String text = gender.isBuiltin()
-              ? language.translate("gender." + key.name())
+              ? language.translate("genders." + key.name())
               : Objects.requireNonNull(gender.userDefinedName());
           return new ComboBoxItem<>(gender, text);
         })

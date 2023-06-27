@@ -342,7 +342,7 @@ public class LifeEventView extends TitledPane {
       String prefix = "[%s] ".formatted(language.translate("life_event_type_group." + group.name().toLowerCase()));
       types.stream().map(type -> {
             String name = type.isBuiltin()
-                ? language.translate("life_event_type." + type.key().name())
+                ? language.translate("life_event_types." + type.key().name())
                 : Objects.requireNonNull(type.userDefinedName());
             return new NotNullComboBoxItem<>(type, prefix + name);
           })

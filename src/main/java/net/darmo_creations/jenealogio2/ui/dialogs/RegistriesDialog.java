@@ -1,28 +1,30 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
+import javafx.beans.property.*;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.converter.DefaultStringConverter;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
-import net.darmo_creations.jenealogio2.utils.FormatArg;
+import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -35,10 +37,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   @FXML
   private VBox gendersVBox;
 
-  private final RegistryView<LifeEventType, LifeEventType.RegistryArgs, LifeEventTypeRegistryViewEntry> eventTypesView =
-      new LifeEventTypeRegistryView();
-  private final RegistryView<Gender, String, GenderRegistryViewEntry> gendersView =
-      new GenderRegistryView();
+  private final LifeEventTypeRegistryView eventTypesView = new LifeEventTypeRegistryView();
+  private final GenderRegistryView gendersView = new GenderRegistryView();
 
   /**
    * Create an about dialog.
@@ -82,18 +82,17 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    *
    * @param <RE> Type of wrapped registry entries.
    * @param <A>  Type of registry’s building arguments.
-   * @param <VE> Type of registry entries wrapper.
    */
-  private abstract class RegistryView<RE extends RegistryEntry, A, VE extends RegistryViewEntry<RE>>
+  private abstract class RegistryView<TI extends TableItem<RE, A>, RE extends RegistryEntry, A>
       extends VBox {
     private final Button removeButton;
-    protected final ListView<VE> entriesList = new ListView<>();
+    protected final TableView<TI> entriesTable = new TableView<>();
 
     protected Registry<RE, A> registry;
     private final Set<RE> entriesToDelete = new HashSet<>();
 
     /**
-     * Show all entries of the given registry in a {@link ListView}.
+     * Show all entries of the given registry in a {@link TableView}.
      */
     protected RegistryView() {
       super(4);
@@ -102,27 +101,71 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       Config config = App.config();
       Language language = config.language();
       Theme theme = config.theme();
+
+      // Buttons
       Button addButton = new Button(language.translate("dialog.edit_registries.add_entry"),
           theme.getIcon(Icon.ADD_ENTRY, Icon.Size.SMALL));
       addButton.setOnAction(event -> this.onAddItem());
       this.removeButton = new Button(language.translate("dialog.edit_registries.delete_entry"),
           theme.getIcon(Icon.DELETE_ENTRY, Icon.Size.SMALL));
       this.removeButton.setOnAction(event -> this.onRemoveSelectedItems());
-      HBox buttonsBox = new HBox(4, spacer, addButton, this.removeButton);
-      VBox.setVgrow(this.entriesList, Priority.ALWAYS);
-      this.entriesList.setPrefHeight(0);
-      this.getChildren().addAll(buttonsBox, this.entriesList);
-
-      this.entriesList.getSelectionModel().selectedItemProperty()
-          .addListener((observable, oldValue, newValue) -> this.onSelectionChange());
       this.removeButton.setDisable(true);
+      HBox buttonsBox = new HBox(4, spacer, addButton, this.removeButton);
+
+      // Table
+      VBox.setVgrow(this.entriesTable, Priority.ALWAYS);
+      this.entriesTable.setPrefHeight(0);
+      this.entriesTable.setEditable(true);
+
+      TableColumn<TI, Integer> usageCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.entry_usage"));
+      usageCol.setCellFactory(param -> new TableCell<>() {
+        @Override
+        protected void updateItem(Integer item, boolean empty) {
+          super.updateItem(item, empty);
+          super.setGraphic(null);
+          super.setText(item != null ? item.toString() : null);
+          this.pseudoClassStateChanged(PseudoClasses.DISABLED, true);
+        }
+      });
+      usageCol.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().usage()));
+
+      TableColumn<TI, String> nameCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.entry_name"));
+      nameCol.setEditable(true);
+      nameCol.setCellFactory(param -> new TextFieldTableCell<>(new DefaultStringConverter()) {
+        @Override
+        public void updateItem(String item, boolean empty) {
+          super.updateItem(item, empty);
+          var row = this.getTableRow();
+          if (row == null) {
+            return;
+          }
+          var rowItem = row.getItem();
+          if (rowItem == null) {
+            return;
+          }
+          var value = rowItem.entry();
+          boolean editable = value == null || !value.isBuiltin();
+          this.setEditable(editable);
+          this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
+        }
+      });
+      nameCol.setCellValueFactory(param -> param.getValue().nameProperty());
+
+      //noinspection unchecked
+      this.entriesTable.getColumns().addAll(usageCol, nameCol);
+      this.entriesTable.getSelectionModel().selectedItemProperty()
+          .addListener((observable, oldValue, newValue) -> this.onSelectionChange());
+
+      this.getChildren().addAll(buttonsBox, this.entriesTable);
     }
 
     /**
      * Refresh the entries list.
      */
     public void refresh(final @NotNull FamilyTree familyTree) {
-      this.entriesList.getItems().clear();
+      this.entriesTable.getItems().clear();
       this.entriesToDelete.clear();
     }
 
@@ -130,7 +173,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      * Indicate whether all entries in this view are valid.
      */
     public boolean isValid() {
-      return this.entriesList.getItems().stream().allMatch(RegistryViewEntry::isValid);
+      return this.entriesTable.getItems().stream().allMatch(TableItem::isValid);
     }
 
     /**
@@ -138,69 +181,65 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      */
     public void applyChanges() {
       this.entriesToDelete.forEach(this.registry::removeEntry);
-      for (VE item : this.entriesList.getItems()) {
-        Optional<RE> entry = item.entry();
-        if (entry.isEmpty()) {
-          String label = item.label();
+      for (var item : this.entriesTable.getItems()) {
+        RE entry = item.entry();
+        if (entry == null) {
+          String label = item.getName();
           boolean ok;
           Random rng = new Random();
           do {
             String keyName = String.valueOf(rng.nextInt(1_000_000));
             RegistryEntryKey key = new RegistryEntryKey(Registry.USER_NS, keyName);
             try {
-              this.registry.registerEntry(key, label, this.getBuildArgs(item));
+              this.registry.registerEntry(key, label, item.getBuildArgs());
               ok = true;
             } catch (IllegalArgumentException e) {
               ok = false; // Key is already used, try another one
             }
           } while (!ok);
         } else {
-          this.applyChange(item, entry.get());
+          item.updateEntry();
         }
       }
     }
 
-    protected abstract A getBuildArgs(final @NotNull VE item);
-
-    protected void applyChange(final @NotNull VE item, @NotNull RE entry) {
-      if (!entry.isBuiltin()) {
-        entry.setUserDefinedName(item.label());
-      }
-    }
-
     /**
-     * Add a new entry to {@link #entriesList}.
+     * Add a new entry to {@link #entriesTable}.
      */
     private void onAddItem() {
-      VE item = this.newEntry().apply(null, 0);
-      this.entriesList.getItems().add(item);
-      this.entriesList.getSelectionModel().select(item);
+      this.entriesTable.getItems().add(this.newEntry(null, 0));
+      this.entriesTable.getSelectionModel().select(this.entriesTable.getItems().size() - 1);
       RegistriesDialog.this.updateButtons();
     }
 
-    protected abstract BiFunction<RE, Integer, VE> newEntry();
+    @SuppressWarnings("SameParameterValue")
+    protected abstract TI newEntry(RE entry, int usage);
 
     /**
      * Remove all selected items and stage them for deletion from the registry.
      */
     private void onRemoveSelectedItems() {
-      Set<VE> toDelete = new HashSet<>();
-      for (VE selectedItem : this.entriesList.getSelectionModel().getSelectedItems()) {
-        selectedItem.entry().ifPresent(this.entriesToDelete::add);
+      Set<TI> toDelete = new HashSet<>();
+      for (var selectedItem : this.entriesTable.getSelectionModel().getSelectedItems()) {
+        RE entry = selectedItem.entry();
+        if (entry != null) {
+          this.entriesToDelete.add(entry);
+        }
         toDelete.add(selectedItem);
       }
-      this.entriesList.getItems().removeAll(toDelete);
+      this.entriesTable.getItems().removeAll(toDelete);
       RegistriesDialog.this.updateButtons();
     }
 
     /**
-     * Called when the selection of {@link #entriesList} changes.
+     * Called when the selection of {@link #entriesTable} changes.
      */
     private void onSelectionChange() {
       // Prevent deleting builtin and used entries
-      boolean anyInvalid = this.entriesList.getSelectionModel().getSelectedItems().stream()
-          .anyMatch(i -> i.entry().map(RegistryEntry::isBuiltin).orElse(false) || i.usage() != 0);
-      this.removeButton.setDisable(anyInvalid);
+      ObservableList<TI> selectedItems = this.entriesTable.getSelectionModel().getSelectedItems();
+      boolean disable = selectedItems.isEmpty() || selectedItems.stream()
+          .anyMatch(i -> i.entry() != null && i.entry().isBuiltin() || i.usage() != 0);
+      this.removeButton.setDisable(disable);
     }
   }
 
@@ -208,7 +247,110 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    * This class allows editing {@link FamilyTree#lifeEventTypeRegistry()}.
    */
   private class LifeEventTypeRegistryView
-      extends RegistryView<LifeEventType, LifeEventType.RegistryArgs, LifeEventTypeRegistryViewEntry> {
+      extends RegistryView<LifeEventTypeTableItem, LifeEventType, LifeEventType.RegistryArgs> {
+    public LifeEventTypeRegistryView() {
+      Language language = App.config().language();
+
+      TableColumn<LifeEventTypeTableItem, LifeEventType.Group> groupCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.tab.life_event_types.group"));
+      groupCol.setEditable(true);
+      groupCol.setCellFactory(param -> new ComboBoxTableCell<>(LifeEventType.Group.values()) {
+        @Override
+        public void updateItem(LifeEventType.Group item, boolean empty) {
+          super.updateItem(item, empty);
+          var row = this.getTableRow();
+          if (row == null) {
+            return;
+          }
+          var rowItem = row.getItem();
+          if (rowItem == null) {
+            return;
+          }
+          var value = rowItem.entry();
+          boolean editable = value == null || !value.isBuiltin();
+          this.setEditable(editable);
+          this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
+        }
+      });
+      groupCol.setCellValueFactory(param -> param.getValue().groupProperty());
+
+      TableColumn<LifeEventTypeTableItem, Boolean> deathCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.tab.life_event_types.indication_type.death"));
+      deathCol.setEditable(true);
+      deathCol.setCellFactory(param -> new CheckBoxTableCell<>() {
+        @Override
+        public void updateItem(Boolean item, boolean empty) {
+          super.updateItem(item, empty);
+          this.pseudoClassStateChanged(PseudoClasses.DISABLED, !this.isEditable());
+        }
+      });
+      deathCol.setCellValueFactory(param -> param.getValue().indicatesDeathProperty());
+
+      TableColumn<LifeEventTypeTableItem, Boolean> unionCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.tab.life_event_types.indication_type.union"));
+      unionCol.setEditable(true);
+      unionCol.setCellFactory(param -> new CheckBoxCell<>() {
+        @Override
+        public void updateItem(Boolean item, boolean empty) {
+          super.updateItem(item, empty);
+          if (this.isEditable()) {
+            var row = this.getTableRow();
+            if (row == null) {
+              return;
+            }
+            var rowItem = row.getItem();
+            if (rowItem == null) {
+              return;
+            }
+            boolean editable = rowItem.actorsNbProperty().get() >= 2;
+            this.setEditable(editable);
+            if (!editable) {
+              rowItem.indicatesUnionProperty().set(false);
+            }
+          }
+        }
+      });
+      unionCol.setCellValueFactory(param -> param.getValue().indicatesUnionProperty());
+
+      TableColumn<LifeEventTypeTableItem, Integer> actorsNbCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.tab.life_event_types.actors_nb"));
+      actorsNbCol.setEditable(true);
+      actorsNbCol.setCellFactory(param -> new ComboBoxTableCell<>(1, 2) {
+        @Override
+        public void updateItem(Integer item, boolean empty) {
+          super.updateItem(item, empty);
+          var row = this.getTableRow();
+          if (row == null) {
+            return;
+          }
+          var rowItem = row.getItem();
+          if (rowItem == null) {
+            return;
+          }
+          var value = rowItem.entry();
+          boolean editable = rowItem.usage() == 0 && (value == null || !value.isBuiltin());
+          this.setEditable(editable);
+          this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
+        }
+
+        @Override
+        public void commitEdit(Integer newValue) {
+          super.commitEdit(newValue);
+          this.getTableView().refresh(); // Force table refresh to update "editable" state of union checkbox
+        }
+      });
+      actorsNbCol.setCellValueFactory(param -> param.getValue().actorsNbProperty());
+
+      TableColumn<LifeEventTypeTableItem, Boolean> uniqueCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.tab.life_event_types.unique"));
+      uniqueCol.setEditable(true);
+      uniqueCol.setCellFactory(param -> new CheckBoxCell<>());
+      uniqueCol.setCellValueFactory(param -> param.getValue().uniqueProperty());
+
+      //noinspection unchecked
+      this.entriesTable.getColumns().addAll(groupCol, deathCol, unionCol, actorsNbCol, uniqueCol);
+    }
+
     @Override
     public void refresh(final @NotNull FamilyTree familyTree) {
       super.refresh(familyTree);
@@ -218,41 +360,14 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       for (LifeEventType entry : this.registry.entries()) {
         if (!entry.isBuiltin()) {
           int usage = eventTypesUsage.getOrDefault(entry, List.of()).size();
-          this.entriesList.getItems().add(new LifeEventTypeRegistryViewEntry(entry, usage));
+          this.entriesTable.getItems().add(new LifeEventTypeTableItem(entry, usage));
         }
       }
-      this.entriesList.getItems().sort(Comparator.comparing(RegistryViewEntry::label));
     }
 
     @Override
-    protected BiFunction<LifeEventType, Integer, LifeEventTypeRegistryViewEntry> newEntry() {
-      return LifeEventTypeRegistryViewEntry::new;
-    }
-
-    @Override
-    protected LifeEventType.RegistryArgs getBuildArgs(final @NotNull LifeEventTypeRegistryViewEntry item) {
-      int actorsNb = item.actorsNb();
-      return new LifeEventType.RegistryArgs(
-          item.group(),
-          item.indicatesDeath(),
-          item.indicatesUnion(),
-          actorsNb,
-          actorsNb,
-          item.isUnique()
-      );
-    }
-
-    @Override
-    protected void applyChange(final @NotNull LifeEventTypeRegistryViewEntry item, @NotNull LifeEventType entry) {
-      super.applyChange(item, entry);
-      entry.setGroup(item.group());
-      entry.setIndicatesDeath(item.indicatesDeath());
-      entry.setIndicatesUnion(item.indicatesUnion());
-      if (item.usage() == 0) {
-        entry.setMaxActors(item.actorsNb());
-        entry.setMinActors(item.actorsNb());
-        entry.setUnique(item.isUnique());
-      }
+    protected LifeEventTypeTableItem newEntry(LifeEventType entry, int usage) {
+      return new LifeEventTypeTableItem(entry, usage);
     }
   }
 
@@ -260,7 +375,19 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    * This class allows editing {@link FamilyTree#genderRegistry()}.
    */
   private class GenderRegistryView
-      extends RegistryView<Gender, String, GenderRegistryViewEntry> {
+      extends RegistryView<GenderTableItem, Gender, String> {
+    public GenderRegistryView() {
+      Language language = App.config().language();
+
+      TableColumn<GenderTableItem, Color> colorCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.tab.genders.color"));
+      colorCol.setEditable(true);
+      // TODO cell factory
+      colorCol.setCellValueFactory(param -> param.getValue().colorProperty());
+
+      this.entriesTable.getColumns().add(colorCol);
+    }
+
     @Override
     public void refresh(final @NotNull FamilyTree familyTree) {
       super.refresh(familyTree);
@@ -271,231 +398,188 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
           .collect(Collectors.groupingBy(person -> person.gender().get()));
       for (Gender entry : this.registry.entries()) {
         int usage = gendersUsage.getOrDefault(entry, List.of()).size();
-        this.entriesList.getItems().add(new GenderRegistryViewEntry(entry, usage));
+        this.entriesTable.getItems().add(new GenderTableItem(entry, usage));
       }
-      this.entriesList.getItems().sort(Comparator.comparing(RegistryViewEntry::label));
     }
 
     @Override
-    protected BiFunction<Gender, Integer, GenderRegistryViewEntry> newEntry() {
-      return GenderRegistryViewEntry::new;
-    }
-
-    @Override
-    protected String getBuildArgs(final @NotNull GenderRegistryViewEntry item) {
-      return item.color();
-    }
-
-    @Override
-    protected void applyChange(final @NotNull GenderRegistryViewEntry item, @NotNull Gender entry) {
-      super.applyChange(item, entry);
-      entry.setColor(item.color());
+    protected GenderTableItem newEntry(Gender entry, int usage) {
+      return new GenderTableItem(entry, usage);
     }
   }
 
-  /**
-   * Base class for entries of {@link RegistryView}. Wraps a single {@link RegistryEntry}.
-   *
-   * @param <E> Type of wrapped registry entry.
-   */
-  private abstract class RegistryViewEntry<E extends RegistryEntry> extends HBox {
+  private abstract class TableItem<E extends RegistryEntry, A> {
     private final E entry;
     private final int usage;
+    private final StringProperty nameProperty = new SimpleStringProperty();
 
-    private final TextField nameField;
-
-    /**
-     * Create a {@link RegistryEntry} wrapper.
-     *
-     * @param entry          Entry to wrap. Null for new entries.
-     * @param translationKey Translation key prefix for builtin entries.
-     * @param usage          Number of times the entry is being used.
-     */
-    protected RegistryViewEntry(E entry, @NotNull String translationKey, int usage) {
-      super(10);
-      this.entry = entry;
+    private TableItem(E entry, String registryName, int usage) {
       this.usage = usage;
-      Language language = App.config().language();
-      this.setAlignment(Pos.CENTER_LEFT);
-      String label = null;
+      this.entry = entry;
+      this.nameProperty.addListener((observable, oldValue, newValue) -> RegistriesDialog.this.updateButtons());
+      String label;
       boolean builtin = entry != null && entry.isBuiltin();
       if (builtin) {
-        label = language.translate(translationKey + "." + entry.key().name());
+        label = App.config().language().translate(registryName + "." + entry.key().name());
       } else if (entry != null) {
         label = Objects.requireNonNull(entry.userDefinedName());
+      } else {
+        label = "";
       }
-      this.nameField = new TextField(label);
-      this.nameField.setDisable(builtin);
-      this.nameField.textProperty()
-          .addListener((observable, oldValue, newValue) -> RegistriesDialog.this.updateButtons());
-      String text = language.translate("dialog.edit_registries.entry_usage", new FormatArg("nb", usage));
-      this.getChildren().addAll(
-          new Label(language.translate("dialog.edit_registries.entry_name")),
-          this.nameField,
-          new Label(text)
-      );
+      this.nameProperty.set(label);
     }
 
-    /**
-     * The wrapped entry.
-     */
-    public Optional<E> entry() {
-      return Optional.ofNullable(this.entry);
+    public void updateEntry() {
+      if (!this.entry.isBuiltin()) {
+        this.entry.setUserDefinedName(this.getName());
+      }
     }
 
-    /**
-     * Check whether the form is valid.
-     */
     public boolean isValid() {
-      return StringUtils.stripNullable(this.nameField.getText()).isPresent();
+      return this.getName() != null;
     }
 
-    /**
-     * The number of times the wrapped entry is used.
-     */
+    public E entry() {
+      return this.entry;
+    }
+
     public int usage() {
       return this.usage;
     }
 
-    /**
-     * Entry’s label.
-     */
-    public String label() {
-      return StringUtils.stripNullable(this.nameField.getText()).orElseThrow();
+    public StringProperty nameProperty() {
+      return this.nameProperty;
+    }
+
+    public String getName() {
+      return StringUtils.stripNullable(this.nameProperty.get()).orElse(null);
+    }
+
+    public abstract A getBuildArgs();
+  }
+
+  private class LifeEventTypeTableItem extends TableItem<LifeEventType, LifeEventType.RegistryArgs> {
+    private final ObjectProperty<LifeEventType.Group> groupProperty = new SimpleObjectProperty<>();
+    private final BooleanProperty indicatesDeathProperty = new SimpleBooleanProperty();
+    private final BooleanProperty indicatesUnionProperty = new SimpleBooleanProperty();
+    private final ObjectProperty<Integer> actorsNbProperty = new SimpleObjectProperty<>();
+    private final BooleanProperty uniqueProperty = new SimpleBooleanProperty();
+
+    public LifeEventTypeTableItem(LifeEventType entry, int usage) {
+      super(entry, "life_event_types", usage);
+      this.groupProperty.set(entry != null ? entry.group() : LifeEventType.Group.LIFESPAN);
+      this.indicatesDeathProperty.set(entry != null && entry.indicatesDeath());
+      this.indicatesUnionProperty.set(entry != null && entry.indicatesUnion());
+      this.actorsNbProperty.set(entry != null ? entry.minActors() : 1);
+      this.uniqueProperty.set(entry != null && entry.isUnique());
+    }
+
+    @Override
+    public void updateEntry() {
+      super.updateEntry();
+      LifeEventType entry = this.entry();
+      if (entry.isBuiltin()) {
+        return;
+      }
+      entry.setGroup(this.groupProperty.get());
+      entry.setIndicatesDeath(this.indicatesDeathProperty.get());
+      if (this.usage() == 0) {
+        int currentMax = entry.maxActors();
+        int actorsNb = this.actorsNbProperty.get();
+        entry.setActorsNumber(actorsNb, actorsNb, this.indicatesUnionProperty.get());
+        entry.setUnique(this.uniqueProperty.get());
+      }
+    }
+
+    @Override
+    public LifeEventType.RegistryArgs getBuildArgs() {
+      return new LifeEventType.RegistryArgs(
+          this.groupProperty.get(),
+          this.indicatesDeathProperty.get(),
+          this.indicatesUnionProperty.get(),
+          this.actorsNbProperty.get(),
+          this.actorsNbProperty.get(),
+          this.uniqueProperty.get()
+      );
+    }
+
+    public ObjectProperty<LifeEventType.Group> groupProperty() {
+      return this.groupProperty;
+    }
+
+    public BooleanProperty indicatesDeathProperty() {
+      return this.indicatesDeathProperty;
+    }
+
+    public BooleanProperty indicatesUnionProperty() {
+      return this.indicatesUnionProperty;
+    }
+
+    public ObjectProperty<Integer> actorsNbProperty() {
+      return this.actorsNbProperty;
+    }
+
+    public BooleanProperty uniqueProperty() {
+      return this.uniqueProperty;
     }
   }
 
-  /**
-   * This class wraps a single entry of {@link FamilyTree#lifeEventTypeRegistry()}.
-   */
-  private class LifeEventTypeRegistryViewEntry extends RegistryViewEntry<LifeEventType> {
-    private final ComboBox<NotNullComboBoxItem<LifeEventType.Group>> groupCombo = new ComboBox<>();
-    private final CheckBox indicatesDeathCheckBox = new CheckBox();
-    private final CheckBox indicatesUnionCheckBox = new CheckBox();
-    private final ComboBox<Integer> actorsNbCombo = new ComboBox<>();
-    private final CheckBox isUniqueCheckBox = new CheckBox();
+  private class GenderTableItem extends TableItem<Gender, String> {
+    private final ObjectProperty<Color> colorProperty = new SimpleObjectProperty<>();
 
-    /**
-     * Create a wrapper for a {@link LifeEventType}.
-     *
-     * @param entry Entry to wrap. Null for new entries.
-     * @param usage Number of times the entry is used.
-     */
-    public LifeEventTypeRegistryViewEntry(LifeEventType entry, int usage) {
-      super(entry, "life_event_type", usage);
-      Language language = App.config().language();
-      Node usageLabel = this.getChildren().remove(this.getChildren().size() - 1);
-      this.getChildren().addAll(
-          new Label(language.translate("dialog.edit_registries.tab.life_event_types.group")),
-          this.groupCombo,
-          this.indicatesDeathCheckBox,
-          new Label(language.translate("dialog.edit_registries.tab.life_event_types.indication_type.death")),
-          this.indicatesUnionCheckBox,
-          new Label(language.translate("dialog.edit_registries.tab.life_event_types.indication_type.union")),
-          new Label(language.translate("dialog.edit_registries.tab.life_event_types.actors_nb")),
-          this.actorsNbCombo,
-          this.isUniqueCheckBox,
-          new Label(language.translate("dialog.edit_registries.tab.life_event_types.unique")),
-          usageLabel
-      );
-
-      for (LifeEventType.Group group : LifeEventType.Group.values()) {
-        String key = "life_event_type_group." + group.name().toLowerCase();
-        this.groupCombo.getItems().add(new NotNullComboBoxItem<>(group, language.translate(key)));
-      }
-      if (entry != null) {
-        this.groupCombo.getSelectionModel().select(new NotNullComboBoxItem<>(entry.group()));
-      } else {
-        this.groupCombo.getSelectionModel().select(0);
-      }
-
-      this.indicatesDeathCheckBox.setSelected(entry != null && entry.indicatesDeath());
-      this.indicatesUnionCheckBox.setSelected(entry != null && entry.indicatesUnion());
-      this.indicatesUnionCheckBox.setDisable(usage != 0);
-
-      this.actorsNbCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-        boolean oneActor = newValue == 1;
-        this.indicatesUnionCheckBox.setDisable(oneActor);
-        if (oneActor) {
-          this.indicatesUnionCheckBox.setSelected(false);
-        }
-      });
-      this.actorsNbCombo.getItems().addAll(1, 2);
-      // Explicit cast is necessary to select by value instead of index
-      this.actorsNbCombo.getSelectionModel().select((Integer) (entry != null ? entry.minActors() : 1));
-      this.actorsNbCombo.setDisable(usage != 0);
-      this.isUniqueCheckBox.setSelected(entry != null && entry.isUnique());
-      this.isUniqueCheckBox.setDisable(usage != 0);
+    public GenderTableItem(Gender entry, int usage) {
+      super(entry, "genders", usage);
+      this.colorProperty.set(entry != null ? Color.valueOf(entry.color()) : Color.BLACK);
     }
 
-    /**
-     * Entry’s group.
-     */
-    public LifeEventType.Group group() {
-      return this.groupCombo.getSelectionModel().getSelectedItem().data();
+    @Override
+    public void updateEntry() {
+      super.updateEntry();
+      this.entry().setColor(this.convertColor());
     }
 
-    /**
-     * Whether the entry indicates death.
-     */
-    public boolean indicatesDeath() {
-      return this.indicatesDeathCheckBox.isSelected();
+    @Override
+    public String getBuildArgs() {
+      return this.convertColor();
     }
 
-    /**
-     * Whether the entry indicates a union.
-     */
-    public boolean indicatesUnion() {
-      return this.indicatesUnionCheckBox.isSelected();
+    public ObjectProperty<Color> colorProperty() {
+      return this.colorProperty;
     }
 
-    /**
-     * Entry’s number of actors.
-     */
-    public int actorsNb() {
-      return this.actorsNbCombo.getSelectionModel().getSelectedItem();
-    }
-
-    /**
-     * Whether the entry should have a unicity constraint.
-     */
-    public boolean isUnique() {
-      return this.isUniqueCheckBox.isSelected();
-    }
-  }
-
-  /**
-   * This class wraps a single entry of {@link FamilyTree#genderRegistry()}.
-   */
-  private class GenderRegistryViewEntry extends RegistryViewEntry<Gender> {
-    private final ColorPicker colorPicker = new ColorPicker();
-
-    /**
-     * Create a wrapper for a {@link Gender}.
-     *
-     * @param entry Entry to wrap. Null for new entries.
-     * @param usage Number of times the entry is used.
-     */
-    public GenderRegistryViewEntry(Gender entry, int usage) {
-      super(entry, "gender", usage);
-      Node usageLabel = this.getChildren().remove(this.getChildren().size() - 1);
-      this.getChildren().addAll(
-          new Label(App.config().language().translate("dialog.edit_registries.tab.genders.color")),
-          this.colorPicker,
-          usageLabel
-      );
-      this.colorPicker.setValue(entry != null ? Color.valueOf(entry.color()) : Color.BLACK);
-    }
-
-    /**
-     * Entry’s color in hexadecimal CSS format.
-     */
-    public String color() {
-      Color color = this.colorPicker.getValue();
+    private String convertColor() {
+      Color color = this.colorProperty.get();
       int r = (int) Math.round(color.getRed() * 255);
       int g = (int) Math.round(color.getGreen() * 255);
       int b = (int) Math.round(color.getBlue() * 255);
       return String.format("#%02x%02x%02x", r, g, b);
+    }
+  }
+
+  private static class NonSortableTableColumn<S, T> extends TableColumn<S, T> {
+    public NonSortableTableColumn(String text) {
+      super(text);
+      this.setSortable(false);
+      this.setReorderable(false);
+    }
+  }
+
+  private static class CheckBoxCell<S extends TableItem<?, ?>, T> extends CheckBoxTableCell<S, T> {
+    @Override
+    public void updateItem(T item, boolean empty) {
+      super.updateItem(item, empty);
+      var row = this.getTableRow();
+      if (row == null) {
+        return;
+      }
+      var rowItem = row.getItem();
+      if (rowItem == null) {
+        return;
+      }
+      var value = rowItem.entry();
+      boolean editable = rowItem.usage() == 0 && (value == null || !value.isBuiltin());
+      this.setEditable(editable);
+      this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
     }
   }
 }

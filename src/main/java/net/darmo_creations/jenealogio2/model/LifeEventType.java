@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
+import net.darmo_creations.jenealogio2.App;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -40,15 +41,10 @@ public final class LifeEventType extends RegistryEntry {
       boolean unique
   ) {
     super(key, userDefinedName);
-    if (indicatesUnion && minActors == 1) {
-      throw new IllegalArgumentException("at least 2 actors required for indicatesUnion to be true");
-    }
     this.init = true;
     this.setGroup(group);
     this.setIndicatesDeath(indicatesDeath);
-    this.setIndicatesUnion(indicatesUnion);
-    this.setMaxActors(maxActors);
-    this.setMinActors(minActors);
+    this.setActorsNumber(minActors, maxActors, indicatesUnion);
     this.setUnique(unique);
     this.init = false;
   }
@@ -96,37 +92,10 @@ public final class LifeEventType extends RegistryEntry {
   }
 
   /**
-   * Set whether this life event type indicates that the actors it is associated with are in a union (marriage, etc.).
-   * Only works for user-defined entries.
-   *
-   * @param indicatesUnion True to indicate a union, false otherwise.
-   */
-  public void setIndicatesUnion(boolean indicatesUnion) {
-    this.ensureNotBuiltin("indicatesUnion");
-    this.indicatesUnion = indicatesUnion;
-  }
-
-  /**
    * The minimum number of actors allowed for this event type.
    */
   public int minActors() {
     return this.minActors;
-  }
-
-  /**
-   * Set the minimum number of actors allowed for this event type. Only works for user-defined entries.
-   *
-   * @param minActors The minimum number of actors.
-   */
-  public void setMinActors(int minActors) {
-    this.ensureNotBuiltin("minActors");
-    if (minActors < 1) {
-      throw new IllegalArgumentException("expected > 0, got " + minActors);
-    }
-    if (minActors > this.maxActors) {
-      throw new IllegalArgumentException("minActors cannot be greater than maxActors");
-    }
-    this.minActors = minActors;
   }
 
   /**
@@ -137,19 +106,29 @@ public final class LifeEventType extends RegistryEntry {
   }
 
   /**
-   * Set the maximum number of actors allowed for this event type. Only works for user-defined entries.
+   * Set the minimum and maximum number of actors allowed for this event type. Only works for user-defined entries.
    *
-   * @param maxActors The maximum number of actors.
+   * @param min     The minimum number of actors.
+   * @param max     The maximum number of actors.
+   * @param isUnion Whether this type should indicate a union.
    */
-  public void setMaxActors(int maxActors) {
-    this.ensureNotBuiltin("maxActors");
-    if (maxActors > 2) {
-      throw new IllegalArgumentException("maxActors must be > 2");
+  public void setActorsNumber(int min, int max, boolean isUnion) {
+    this.ensureNotBuiltin("minActors/maxActors/indicatesUnion");
+    if (min < 1) {
+      throw new IllegalArgumentException("min must be > 0, got " + min);
     }
-    if (maxActors < this.minActors) {
-      throw new IllegalArgumentException("maxActors cannot be less than minActors");
+    if (max > 2) {
+      throw new IllegalArgumentException("max must be > 2, got" + max);
     }
-    this.maxActors = maxActors;
+    if (max < min) {
+      throw new IllegalArgumentException("max cannot be less than min");
+    }
+    if (isUnion && max < 2) {
+      throw new IllegalArgumentException("not enough max actors for union: " + max);
+    }
+    this.minActors = min;
+    this.maxActors = max;
+    this.indicatesUnion = isUnion;
   }
 
   /**
@@ -195,7 +174,13 @@ public final class LifeEventType extends RegistryEntry {
     RELATIONSHIP,
     RELIGION,
 
-    OTHER
+    OTHER;
+
+    @Override
+    public String toString() {
+      String key = "life_event_type_group." + this.name().toLowerCase();
+      return App.config().language().translate(key);
+    }
   }
 
   /**

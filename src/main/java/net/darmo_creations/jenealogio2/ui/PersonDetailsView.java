@@ -269,7 +269,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       if (gender.isPresent()) {
         RegistryEntryKey key = gender.get().key();
         String name = key.name();
-        g = key.isBuiltin() ? App.config().language().translate("gender." + name) : gender.get().userDefinedName();
+        g = key.isBuiltin() ? App.config().language().translate("genders." + name) : gender.get().userDefinedName();
       }
       this.genderLabel.setText(g);
       this.genderLabel.setTooltip(g != null ? new Tooltip(g) : null);
@@ -351,7 +351,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
     String text;
     if (lifeEvent.type().isBuiltin()) {
-      text = App.config().language().translate("life_event_type." + lifeEvent.type().key().name());
+      text = App.config().language().translate("life_event_types." + lifeEvent.type().key().name());
     } else {
       text = Objects.requireNonNull(lifeEvent.type().userDefinedName());
     }
@@ -537,7 +537,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       RegistryEntryKey typeKey = lifeEvent.type().key();
       String type;
       if (typeKey.isBuiltin()) {
-        type = language.translate("life_event_type." + typeKey.name());
+        type = language.translate("life_event_types." + typeKey.name());
       } else {
         type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
       }
@@ -590,7 +590,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       RegistryEntryKey typeKey = lifeEvent.type().key();
       String type;
       if (typeKey.isBuiltin()) {
-        type = language.translate("life_event_type." + typeKey.name());
+        type = language.translate("life_event_types." + typeKey.name());
       } else {
         type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
       }

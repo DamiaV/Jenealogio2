@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.ui;
 
 import javafx.css.PseudoClass;
+import javafx.scene.control.TableCell;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
 
 /**
@@ -19,6 +20,10 @@ public final class PseudoClasses {
    * Mark a {@link PersonWidget} as being selected.
    */
   public static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
+  /**
+   * Mark a {@link TableCell} as being disabled.
+   */
+  public static final PseudoClass DISABLED = PseudoClass.getPseudoClass("disabled");
 
   private PseudoClasses() {
   }
