@@ -103,7 +103,7 @@ public class EditPersonDialog extends DialogBase<Person> {
   /**
    * If not null, indicates the person the one being edited should be a parent of.
    */
-  private ChildInfo childInfo;
+  private List<ChildInfo> childInfo;
   /**
    * The family tree the person belongs to..
    */
@@ -194,8 +194,8 @@ public class EditPersonDialog extends DialogBase<Person> {
         this.updatePerson(this.person);
         if (this.creating) {
           this.familyTree.addPerson(this.person);
-          if (this.childInfo != null) {
-            this.childInfo.child().setParent(this.childInfo.parentIndex(), this.person);
+          for (ChildInfo info : this.childInfo) {
+            info.child().setParent(info.parentIndex(), this.person);
           }
         }
         return this.person;
@@ -228,11 +228,11 @@ public class EditPersonDialog extends DialogBase<Person> {
    * Set the person to edit.
    *
    * @param person     The person to edit. A null value indicates to create a new person.
-   * @param childInfo  If not null, indicates the person the one being created should be a parent of.
+   * @param childInfo  If not null, indicates the persons the one being created should be a parent of.
    * @param familyTree The family tree the person belongs or should belong to.
    */
-  public void setPerson(Person person, ChildInfo childInfo, @NotNull FamilyTree familyTree) {
-    this.childInfo = childInfo;
+  public void setPerson(Person person, final @NotNull List<ChildInfo> childInfo, @NotNull FamilyTree familyTree) {
+    this.childInfo = new ArrayList<>(childInfo);
     this.familyTree = Objects.requireNonNull(familyTree);
     Language language = App.config().language();
 

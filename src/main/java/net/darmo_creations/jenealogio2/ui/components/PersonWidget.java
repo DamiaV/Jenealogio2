@@ -25,6 +25,7 @@ import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -42,13 +43,13 @@ public class PersonWidget extends AnchorPane {
   public static final Image DEFAULT_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_person_image.png"));
   @SuppressWarnings("DataFlowIssue")
-  private static final Image ADD_IMAGE =
+  public static final Image ADD_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "add_person_image.png"));
 
   private final List<ClickListener> clickListeners = new LinkedList<>();
 
   private final Person person;
-  private final ChildInfo childInfo;
+  private final List<ChildInfo> childInfo = new ArrayList<>();
   private PersonWidget parentWidget1;
   private PersonWidget parentWidget2;
 
@@ -65,15 +66,15 @@ public class PersonWidget extends AnchorPane {
    * Create a component for the given person.
    *
    * @param person       A person object.
-   * @param childInfo    Information about the displayed child this widget is a parent of.
+   * @param childInfo    Information about the displayed children this widget is a parent of.
    * @param showMoreIcon Whether to show the “plus” icon.
    * @param isTarget     Whether the widget is targetted.
    * @param isRoot       Whether the person is the tree’s root.
    */
-  public PersonWidget(final Person person, final ChildInfo childInfo,
+  public PersonWidget(final Person person, final @NotNull List<ChildInfo> childInfo,
                       boolean showMoreIcon, boolean isTarget, boolean isRoot) {
     this.person = person;
-    this.childInfo = childInfo;
+    this.childInfo.addAll(childInfo);
     this.getStyleClass().add("person-widget");
     if (isTarget) {
       this.getStyleClass().add("center");
@@ -147,8 +148,8 @@ public class PersonWidget extends AnchorPane {
   /**
    * Information about the visible child this widget is a parent of.
    */
-  public Optional<ChildInfo> childInfo() {
-    return Optional.ofNullable(this.childInfo);
+  public List<ChildInfo> childInfo() {
+    return new ArrayList<>(this.childInfo);
   }
 
   /**

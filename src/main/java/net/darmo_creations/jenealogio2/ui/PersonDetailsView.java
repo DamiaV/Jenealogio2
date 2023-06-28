@@ -16,6 +16,7 @@ import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.components.NoSelectionModel;
 import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
+import net.darmo_creations.jenealogio2.ui.events.NewParentClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
@@ -24,10 +25,7 @@ import net.darmo_creations.jenealogio2.utils.Pair;
 import net.darmo_creations.jenealogio2.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class PersonDetailsView extends TabPane implements PersonClickObservable {
   private Person person;
@@ -70,6 +68,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final ListView<PersonCard> fosterParentsList = new ListView<>();
 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
+  private final List<NewParentClickListener> newParentClickListeners = new LinkedList<>();
 
   public PersonDetailsView() {
     super();
@@ -241,10 +240,17 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   public void setPerson(final Person person, final FamilyTree familyTree) {
     this.person = person;
     this.familyTree = familyTree;
-    this.populateFields();
+
+    this.resetLists();
+
+    if (this.person != null) {
+      this.populateFields();
+    } else {
+      this.resetFields();
+    }
   }
 
-  private void populateFields() {
+  private void resetLists() {
     this.notesTextFlow.getChildren().clear();
     this.sourcesTextFlow.getChildren().clear();
 
@@ -259,93 +265,124 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.fosterParentsList.getItems().clear();
 
     this.eventsTab.setContent(this.eventsTabPane);
+  }
 
-    if (this.person != null) {
-      this.imageView.setImage(this.person.getImage().orElse(PersonWidget.DEFAULT_IMAGE));
-      this.fullNameLabel.setText(this.person.toString());
-      this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
-      Optional<Gender> gender = this.person.gender();
-      String g = null;
-      if (gender.isPresent()) {
-        RegistryEntryKey key = gender.get().key();
-        String name = key.name();
-        g = key.isBuiltin() ? App.config().language().translate("genders." + name) : gender.get().userDefinedName();
-      }
-      this.genderLabel.setText(g);
-      this.genderLabel.setTooltip(g != null ? new Tooltip(g) : null);
-      this.occupationLabel.setText(this.person.mainOccupation().orElse(null));
-      this.occupationLabel.setTooltip(this.person.mainOccupation().map(Tooltip::new).orElse(null));
-      this.publicLastNameLabel.setText(this.person.publicLastName().orElse("-"));
-      this.publicLastNameLabel.setTooltip(this.person.publicLastName().map(Tooltip::new).orElse(null));
-      this.publicFirstNamesLabel.setText(this.person.getJoinedPublicFirstNames().orElse("-"));
-      this.publicFirstNamesLabel.setTooltip(this.person.getJoinedPublicFirstNames().map(Tooltip::new).orElse(null));
-      this.nicknamesLabel.setText(this.person.getJoinedNicknames().orElse("-"));
-      this.nicknamesLabel.setTooltip(this.person.getJoinedNicknames().map(Tooltip::new).orElse(null));
-      this.person.notes().ifPresent(s -> this.notesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
-      this.person.sources().ifPresent(s -> this.sourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
-
-      this.person.getLifeEventsAsActor()
-          .forEach(lifeEvent -> this.lifeEventsList.getItems().add(new LifeEventItem(lifeEvent, this.person)));
-      this.person.getLifeEventsAsWitness()
-          .forEach(lifeEvent -> this.witnessedEventsList.getItems().add(new WitnessedEventItem(lifeEvent)));
-
-      {
-        var parents = this.person.parents();
-        this.parent1Card.setPerson(parents.left().orElse(null));
-        this.parent2Card.setPerson(parents.right().orElse(null));
-      }
-
-      this.person.getAllSiblings().entrySet().stream()
-          // Sort according to first parent then second
-          .sorted((e1, e2) -> {
-            Pair<Person, Person> key1 = e1.getKey();
-            Pair<Person, Person> key2 = e2.getKey();
-            int c = Person.birthDateThenNameComparator(false).compare(key1.left(), key2.left());
-            if (c != 0) {
-              return c;
-            }
-            return Person.birthDateThenNameComparator(false).compare(key1.right(), key2.right());
-          })
-          .forEach(e -> {
-            // Sort children
-            List<Person> sortedChildren = e.getValue().stream()
-                .sorted(Person.birthDateThenNameComparator(false))
-                .toList();
-            var parents = e.getKey();
-            this.siblingsList.getItems().add(new ChildrenItem(parents.left(), parents.right(), sortedChildren));
-          });
-
-      this.person.getPartnersAndChildren().entrySet().stream()
-          .sorted((e1, e2) -> Person.birthDateThenNameComparator(false).compare(e1.getKey(), e2.getKey()))
-          .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey(), null, e.getValue())));
-
-      this.person.getRelatives(Person.RelativeType.ADOPTIVE).stream()
-          .sorted(Person.birthDateThenNameComparator(false))
-          .forEach(parent -> this.adoptiveParentsList.getItems().add(new PersonCard(parent)));
-      this.person.getRelatives(Person.RelativeType.GOD).stream()
-          .sorted(Person.birthDateThenNameComparator(false))
-          .forEach(parent -> this.godparentsList.getItems().add(new PersonCard(parent)));
-      this.person.getRelatives(Person.RelativeType.FOSTER).stream()
-          .sorted(Person.birthDateThenNameComparator(false))
-          .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
-    } else {
-      this.imageView.setImage(PersonWidget.DEFAULT_IMAGE);
-      this.fullNameLabel.setText(null);
-      this.fullNameLabel.setTooltip(null);
-      this.genderLabel.setText(null);
-      this.genderLabel.setTooltip(null);
-      this.occupationLabel.setText(null);
-      this.occupationLabel.setTooltip(null);
-      this.publicLastNameLabel.setText("-");
-      this.publicLastNameLabel.setTooltip(null);
-      this.publicFirstNamesLabel.setText("-");
-      this.publicFirstNamesLabel.setTooltip(null);
-      this.nicknamesLabel.setText("-");
-      this.nicknamesLabel.setTooltip(null);
-
-      this.parent1Card.setPerson(null);
-      this.parent2Card.setPerson(null);
+  private void populateFields() {
+    this.imageView.setImage(this.person.getImage().orElse(PersonWidget.DEFAULT_IMAGE));
+    this.fullNameLabel.setText(this.person.toString());
+    this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
+    Optional<Gender> gender = this.person.gender();
+    String g = null;
+    if (gender.isPresent()) {
+      RegistryEntryKey key = gender.get().key();
+      String name = key.name();
+      g = key.isBuiltin() ? App.config().language().translate("genders." + name) : gender.get().userDefinedName();
     }
+    this.genderLabel.setText(g);
+    this.genderLabel.setTooltip(g != null ? new Tooltip(g) : null);
+    this.occupationLabel.setText(this.person.mainOccupation().orElse(null));
+    this.occupationLabel.setTooltip(this.person.mainOccupation().map(Tooltip::new).orElse(null));
+    this.publicLastNameLabel.setText(this.person.publicLastName().orElse("-"));
+    this.publicLastNameLabel.setTooltip(this.person.publicLastName().map(Tooltip::new).orElse(null));
+    this.publicFirstNamesLabel.setText(this.person.getJoinedPublicFirstNames().orElse("-"));
+    this.publicFirstNamesLabel.setTooltip(this.person.getJoinedPublicFirstNames().map(Tooltip::new).orElse(null));
+    this.nicknamesLabel.setText(this.person.getJoinedNicknames().orElse("-"));
+    this.nicknamesLabel.setTooltip(this.person.getJoinedNicknames().map(Tooltip::new).orElse(null));
+    this.person.notes().ifPresent(s -> this.notesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+    this.person.sources().ifPresent(s -> this.sourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+
+    this.person.getLifeEventsAsActor()
+        .forEach(lifeEvent -> this.lifeEventsList.getItems().add(new LifeEventItem(lifeEvent, this.person)));
+    this.person.getLifeEventsAsWitness()
+        .forEach(lifeEvent -> this.witnessedEventsList.getItems().add(new WitnessedEventItem(lifeEvent)));
+
+    this.populateParentCards();
+
+    this.person.getAllSiblings().entrySet().stream()
+        // Sort according to first parent then second
+        .sorted((e1, e2) -> {
+          Pair<Person, Person> key1 = e1.getKey();
+          Pair<Person, Person> key2 = e2.getKey();
+          int c = Person.birthDateThenNameComparator(false).compare(key1.left(), key2.left());
+          if (c != 0) {
+            return c;
+          }
+          return Person.birthDateThenNameComparator(false).compare(key1.right(), key2.right());
+        })
+        .forEach(e -> {
+          // Sort children
+          List<Person> sortedChildren = e.getValue().stream()
+              .sorted(Person.birthDateThenNameComparator(false))
+              .toList();
+          var parents = e.getKey();
+          this.siblingsList.getItems().add(new ChildrenItem(parents.left(), parents.right(), sortedChildren));
+        });
+
+    this.person.getPartnersAndChildren().entrySet().stream()
+        .sorted((e1, e2) -> {
+          Optional<Person> p1 = e1.getKey();
+          Optional<Person> p2 = e2.getKey();
+          boolean p2Present = p2.isPresent();
+          if (p1.isEmpty()) {
+            return p2Present ? 1 : 0;
+          }
+          if (!p2Present) {
+            return -1;
+          }
+          return Person.birthDateThenNameComparator(false).compare(p1.get(), p2.get());
+        })
+        .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey().orElse(null), null, e.getValue())));
+
+    this.person.getRelatives(Person.RelativeType.ADOPTIVE).stream()
+        .sorted(Person.birthDateThenNameComparator(false))
+        .forEach(parent -> this.adoptiveParentsList.getItems().add(new PersonCard(parent)));
+    this.person.getRelatives(Person.RelativeType.GOD).stream()
+        .sorted(Person.birthDateThenNameComparator(false))
+        .forEach(parent -> this.godparentsList.getItems().add(new PersonCard(parent)));
+    this.person.getRelatives(Person.RelativeType.FOSTER).stream()
+        .sorted(Person.birthDateThenNameComparator(false))
+        .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
+  }
+
+  private void populateParentCards() {
+    var parents = this.person.parents();
+    Person parent1 = parents.left().orElse(null);
+    Person parent2 = parents.right().orElse(null);
+    Set<Person> sameParentsSiblings = this.person.getSameParentsSiblings();
+    sameParentsSiblings.add(this.person);
+    List<ChildInfo> childInfo = new LinkedList<>();
+    for (Person child : sameParentsSiblings) {
+      childInfo.add(new ChildInfo(child, 0));
+    }
+    this.parent1Card.setPerson(parent1, childInfo);
+    this.parent1Card.setVisible(true);
+    childInfo.clear();
+    for (Person child : sameParentsSiblings) {
+      childInfo.add(new ChildInfo(child, 1));
+    }
+    this.parent2Card.setPerson(parent2, childInfo);
+    this.parent2Card.setVisible(true);
+  }
+
+  private void resetFields() {
+    this.imageView.setImage(PersonWidget.DEFAULT_IMAGE);
+    this.fullNameLabel.setText(null);
+    this.fullNameLabel.setTooltip(null);
+    this.genderLabel.setText(null);
+    this.genderLabel.setTooltip(null);
+    this.occupationLabel.setText(null);
+    this.occupationLabel.setTooltip(null);
+    this.publicLastNameLabel.setText("-");
+    this.publicLastNameLabel.setTooltip(null);
+    this.publicFirstNamesLabel.setText("-");
+    this.publicFirstNamesLabel.setTooltip(null);
+    this.nicknamesLabel.setText("-");
+    this.nicknamesLabel.setTooltip(null);
+
+    this.parent1Card.setPerson(null, List.of());
+    this.parent1Card.setVisible(false);
+    this.parent2Card.setPerson(null, List.of());
+    this.parent2Card.setVisible(false);
   }
 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
@@ -384,8 +421,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventsTab.setContent(this.eventPane);
   }
 
-  public List<PersonClickListener> personClickListeners() {
+  public final List<PersonClickListener> personClickListeners() {
     return this.personClickListeners;
+  }
+
+  public final List<NewParentClickListener> newParentClickListeners() {
+    return this.newParentClickListeners;
   }
 
   /**
@@ -439,12 +480,24 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     private final Label birthDateLabel = new Label();
     private final Label deathDateLabel = new Label();
 
+    private final List<ChildInfo> childInfo = new ArrayList<>();
+
     /**
      * Create a person card.
      *
      * @param person The person to show information of.
      */
     public PersonCard(final Person person) {
+      this(person, List.of());
+    }
+
+    /**
+     * Create a person card.
+     *
+     * @param person    The person to show information of.
+     * @param childInfo Information about the visible children of this person.
+     */
+    public PersonCard(final Person person, final @NotNull List<ChildInfo> childInfo) {
       super(4);
 
       this.getStyleClass().add("person-widget");
@@ -474,7 +527,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
           new VBox(4, this.nameLabel, this.birthDateLabel, this.deathDateLabel)
       );
 
-      this.setPerson(person);
+      this.setPerson(person, childInfo);
     }
 
     /**
@@ -482,9 +535,21 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      *
      * @param person Person to display.
      */
-    public void setPerson(final Person person) {
-      this.setVisible(person != null);
-      if (person == null) {
+    public void setPerson(final Person person, final @NotNull List<ChildInfo> childInfo) {
+      this.childInfo.clear();
+      this.childInfo.addAll(childInfo);
+      boolean isNull = person == null;
+      this.nameLabel.setVisible(!isNull);
+      this.birthDateLabel.setVisible(!isNull);
+      this.deathDateLabel.setVisible(!isNull);
+
+      if (isNull) {
+        this.imageView.setImage(PersonWidget.ADD_IMAGE);
+        this.imagePane.setStyle(null);
+        this.setOnMouseClicked(event -> {
+          PersonDetailsView.this.fireNewParentClickEvent(this.childInfo);
+          event.consume();
+        });
         return;
       }
 
@@ -630,9 +695,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    * Item for showing the children of a person in a {@link ListView}.
    */
   private class ChildrenItem extends VBox {
-    public ChildrenItem(final @NotNull Person parent1, final Person parent2, final @NotNull List<Person> children) {
+    public ChildrenItem(final Person parent1, final Person parent2, final @NotNull List<Person> children) {
       super(4);
-      this.getChildren().add(new PersonCard(parent1));
+      List<ChildInfo> childInfo = new LinkedList<>();
+      for (Person child : children) {
+        //noinspection OptionalGetWithoutIsPresent
+        int parentIndex = child.getParentIndex(parent1).get(); // Will always exist in this context
+        childInfo.add(new ChildInfo(child, parentIndex));
+      }
+      this.getChildren().add(new PersonCard(parent1, childInfo));
       if (parent2 != null) {
         this.getChildren().add(new PersonCard(parent2));
       }

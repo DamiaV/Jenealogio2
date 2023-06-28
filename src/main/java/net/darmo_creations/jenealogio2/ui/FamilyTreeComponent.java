@@ -3,6 +3,7 @@ package net.darmo_creations.jenealogio2.ui;
 import javafx.scene.layout.AnchorPane;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
 import net.darmo_creations.jenealogio2.model.Person;
+import net.darmo_creations.jenealogio2.ui.events.NewParentClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
 import org.jetbrains.annotations.NotNull;
@@ -61,7 +62,7 @@ public abstract class FamilyTreeComponent extends AnchorPane implements PersonCl
   public abstract void select(@NotNull Person person, boolean updateTarget);
 
   @Override
-  public List<PersonClickListener> personClickListeners() {
+  public final List<PersonClickListener> personClickListeners() {
     return this.personClickListeners;
   }
 
@@ -70,21 +71,5 @@ public abstract class FamilyTreeComponent extends AnchorPane implements PersonCl
    */
   public final List<NewParentClickListener> newParentClickListeners() {
     return this.newParentClickListeners;
-  }
-
-  /**
-   * Fire a new parent click event.
-   *
-   * @param childInfo Information about the child of the parent to create.
-   */
-  protected final void fireNewParentClickEvent(@NotNull ChildInfo childInfo) {
-    this.newParentClickListeners.forEach(listener -> listener.onClick(childInfo));
-  }
-
-  /**
-   * A function that takes in some {@link ChildInfo} and is called when a parent should be created for a given person.
-   */
-  public interface NewParentClickListener {
-    void onClick(@NotNull ChildInfo childInfo);
   }
 }

@@ -111,7 +111,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @return The widget for the tree’s root.
    */
   private PersonWidget buildParentsTree(@NotNull FamilyTree familyTree) {
-    PersonWidget root = this.createWidget(this.targettedPerson, null, false, true, familyTree);
+    PersonWidget root = this.createWidget(this.targettedPerson, List.of(), false, true, familyTree);
 
     List<List<PersonWidget>> levels = new ArrayList<>();
     levels.add(List.of(root));
@@ -127,14 +127,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
             var parents = c.parents();
             PersonWidget parent1Widget = this.createWidget(
                 parents.left().orElse(null),
-                new ChildInfo(c, 0),
+                List.of(new ChildInfo(c, 0)),
                 this.hasHiddenRelatives(parents.left(), i, c),
                 false,
                 familyTree
             );
             PersonWidget parent2Widget = this.createWidget(
                 parents.right().orElse(null),
-                new ChildInfo(c, 1),
+                List.of(new ChildInfo(c, 1)),
                 this.hasHiddenRelatives(parents.right(), i, c),
                 false,
                 familyTree
@@ -230,11 +230,20 @@ public class FamilyTreePane extends FamilyTreeComponent {
         .sorted(Person.birthDateThenNameComparator(true))
         .toList();
 
-    Map<Person, List<Person>> childrenMap = rootPerson.getPartnersAndChildren();
+    Map<Optional<Person>, List<Person>> childrenMap = rootPerson.getPartnersAndChildren();
     childrenMap.forEach((key, value) -> value.sort(Person.birthDateThenNameComparator(false)));
 
-    List<Person> partners = childrenMap.keySet().stream()
-        .sorted(Person.birthDateThenNameComparator(false))
+    List<Optional<Person>> partners = childrenMap.keySet().stream()
+        .sorted((p1, p2) -> {
+          boolean p2Present = p2.isPresent();
+          if (p1.isEmpty()) {
+            return p2Present ? 1 : 0;
+          }
+          if (!p2Present) {
+            return -1;
+          }
+          return Person.birthDateThenNameComparator(false).compare(p1.get(), p2.get());
+        })
         .toList();
 
     // Used to detect whether any widget have a negative x coordinate
@@ -246,7 +255,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       x -= personW + HGAP;
       Person sibling = olderSiblings.get(i);
       boolean hasHiddenChildren = !sibling.children().isEmpty();
-      PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren, false, familyTree);
+      PersonWidget widget = this.createWidget(sibling, List.of(), hasHiddenChildren, false, familyTree);
       widget.setLayoutX(x);
       widget.setLayoutY(rootY);
       widget.setParentWidget1(root.parentWidget1().orElse(null));
@@ -264,11 +273,19 @@ public class FamilyTreePane extends FamilyTreeComponent {
     // Render partners with enough space for direct children
     int partnersNb = partners.size();
     for (int i = 0; i < partnersNb; i++) {
-      Person partner = partners.get(i);
+      Optional<Person> partnerOpt = partners.get(i);
       x += HGAP + personW;
 
-      boolean hasHiddenParents = partner.hasAnyParents();
-      PersonWidget partnerWidget = this.createWidget(partner, null, hasHiddenParents, false, familyTree);
+      List<Person> children = childrenMap.get(partnerOpt);
+      boolean hasHiddenParents = partnerOpt.map(Person::hasAnyParents).orElse(false);
+      List<ChildInfo> childInfo = new LinkedList<>();
+      Person partner = partnerOpt.orElse(null);
+      for (Person child : children) {
+        //noinspection OptionalGetWithoutIsPresent
+        int parentIndex = child.getParentIndex(partner).get(); // Will always exist in this context
+        childInfo.add(new ChildInfo(child, parentIndex));
+      }
+      PersonWidget partnerWidget = this.createWidget(partner, childInfo, hasHiddenParents, false, familyTree);
       partnerWidget.setLayoutX(x);
       partnerWidget.setLayoutY(rootY);
 
@@ -276,7 +293,6 @@ public class FamilyTreePane extends FamilyTreeComponent {
       double lineY = rootY + personH / 2.0 + (partnersNb - i * 8);
       this.drawLine(rootX + personW, lineY, x, lineY);
 
-      List<Person> children = childrenMap.get(partner);
       int childrenNb = children.size();
       double halfChildrenWidth = (childrenNb * personW + (childrenNb - 1) * HGAP) / 2;
       // Compute gap to fit children of this partner and the next
@@ -295,7 +311,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       }
       for (Person child : children) {
         boolean hasHiddenChildren = !child.children().isEmpty();
-        PersonWidget childWidget = this.createWidget(child, null, hasHiddenChildren, false, familyTree);
+        PersonWidget childWidget = this.createWidget(child, List.of(), hasHiddenChildren, false, familyTree);
         childWidget.setLayoutX(childX);
         childWidget.setLayoutY(childY);
         childWidget.setParentWidget1(root);
@@ -316,7 +332,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
       x += HGAP + personW;
       Person sibling = youngerSiblings.get(i);
       boolean hasHiddenChildren = !sibling.children().isEmpty();
-      PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren, false, familyTree);
+      PersonWidget widget = this.createWidget(sibling, List.of(), hasHiddenChildren, false, familyTree);
       widget.setLayoutX(x);
       widget.setLayoutY(rootY);
       widget.setParentWidget1(root.parentWidget1().orElse(null));
@@ -350,7 +366,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @param familyTree   Tree the person belongs to.
    * @return The new component.
    */
-  private PersonWidget createWidget(final Person person, ChildInfo childInfo,
+  private PersonWidget createWidget(final Person person, final @NotNull List<ChildInfo> childInfo,
                                     boolean showMoreIcon, boolean isTarget, @NotNull FamilyTree familyTree) {
     PersonWidget w = new PersonWidget(person, childInfo, showMoreIcon, isTarget, familyTree.isRoot(person));
     this.pane.getChildren().add(w);
@@ -395,7 +411,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * Called when a {@link PersonWidget} is clicked.
    * <p>
    * Calls upon {@link #firePersonClickEvent(PersonClickEvent)} if the widget contains a person object,
-   * calls upon {@link #fireNewParentClickEvent(ChildInfo)} otherwise.
+   * calls upon {@link #fireNewParentClickEvent(List)} otherwise.
    *
    * @param personWidget The clicked widget.
    * @param clickCount   Number of clicks.
@@ -411,7 +427,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
       this.firePersonClickEvent(new PersonClickedEvent(p, clickType));
       this.internalClick = false;
     } else {
-      personWidget.childInfo().ifPresent(this::fireNewParentClickEvent);
+      if (!personWidget.childInfo().isEmpty()) {
+        this.fireNewParentClickEvent(personWidget.childInfo());
+      }
     }
     this.pane.requestFocus();
   }

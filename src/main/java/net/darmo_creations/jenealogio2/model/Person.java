@@ -342,6 +342,15 @@ public class Person extends GenealogyObject<Person> {
     return new Pair<>(Optional.ofNullable(this.parents[0]), Optional.ofNullable(this.parents[1]));
   }
 
+  public Optional<Integer> getParentIndex(final Person person) {
+    for (int i = 0; i < this.parents.length; i++) {
+      if (this.parents[i] == person) {
+        return Optional.of(i);
+      }
+    }
+    return Optional.empty();
+  }
+
   /**
    * Check if two persons have the same parents, regardless of order.
    *
@@ -422,16 +431,18 @@ public class Person extends GenealogyObject<Person> {
    * <p>
    * Children lists are not sorted.
    */
-  public Map<Person, List<Person>> getPartnersAndChildren() {
+  public Map<Optional<Person>, List<Person>> getPartnersAndChildren() {
     Map<Person, List<Person>> partnersChildren = new HashMap<>();
     for (Person child : this.children) {
       var childParents = child.parents();
       var parent1 = childParents.left();
       var parent2 = childParents.right();
-      if (parent1.isEmpty() || parent2.isEmpty()) {
-        continue;
+      Person parent = null;
+      if (parent1.isPresent() && parent1.get() != this) {
+        parent = parent1.get();
+      } else if (parent2.isPresent() && parent2.get() != this) {
+        parent = parent2.get();
       }
-      Person parent = parent1.get() == this ? parent2.get() : parent1.get();
       if (!partnersChildren.containsKey(parent)) {
         partnersChildren.put(parent, new LinkedList<>());
       }
@@ -448,7 +459,8 @@ public class Person extends GenealogyObject<Person> {
             partnersChildren.put(person, new LinkedList<>());
           }
         });
-    return partnersChildren;
+    return partnersChildren.entrySet().stream()
+        .collect(Collectors.toMap(e -> Optional.ofNullable(e.getKey()), Map.Entry::getValue));
   }
 
   /**

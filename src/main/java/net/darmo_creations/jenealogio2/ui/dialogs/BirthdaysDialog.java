@@ -17,6 +17,7 @@ import net.darmo_creations.jenealogio2.model.datetime.DateTimePrecision;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
 import net.darmo_creations.jenealogio2.themes.Icon;
 import net.darmo_creations.jenealogio2.ui.components.NoSelectionModel;
+import net.darmo_creations.jenealogio2.ui.events.NewParentClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
 import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
@@ -178,6 +179,11 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   @Override
   public List<PersonClickListener> personClickListeners() {
     return this.personClickListeners;
+  }
+
+  @Override
+  public List<NewParentClickListener> newParentClickListeners() {
+    throw new UnsupportedOperationException();
   }
 
   private void firePersonClickEvent(@NotNull Person person) {
