@@ -2,9 +2,6 @@ package net.darmo_creations.jenealogio2;
 
 import javafx.application.Application;
 import javafx.application.HostServices;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.ConfigException;
@@ -15,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -39,10 +35,6 @@ public class App extends Application {
    * Jar path to the images directory.
    */
   public static final String IMAGES_PATH = RESOURCES_ROOT + "images/";
-  /**
-   * Jar path to the directory containing FXML files.
-   */
-  private static final String VIEWS_PATH = RESOURCES_ROOT + "views/";
 
   /**
    * Application’s controller.
@@ -79,18 +71,6 @@ public class App extends Application {
   private static File file;
 
   /**
-   * Return a FXML loader for the given in-jar file name.
-   *
-   * @param fileName Name of the FXML file, without the extension.
-   * @return The FXML loader.
-   */
-  public static FXMLLoader getFxmlLoader(@NotNull String fileName) {
-    FXMLLoader loader = new FXMLLoader(App.class.getResource(VIEWS_PATH + fileName + ".fxml"));
-    loader.setResources(getResourceBundle());
-    return loader;
-  }
-
-  /**
    * Update the current configuration object with the given one.
    * <p>
    * Only the options that do <b>not</b> need a restart are copied.
@@ -118,31 +98,15 @@ public class App extends Application {
   }
 
   @Override
-  public void start(Stage stage) throws IOException {
+  public void start(Stage stage) {
     LOGGER.info("Running %s (v%s)".formatted(NAME, VERSION));
     if (config.isDebug()) {
       LOGGER.setLevel(Logger.Level.DEBUG);
       LOGGER.info("Debug mode is ON");
     }
     hostServices = this.getHostServices();
-    FXMLLoader loader = getFxmlLoader("main-window");
-    Scene scene = new Scene(loader.load());
-    config.theme().getStyleSheets()
-        .forEach(url -> scene.getStylesheets().add(url.toExternalForm()));
-    stage.setMinWidth(300);
-    stage.setMinHeight(200);
-    stage.setTitle(NAME);
-    stage.setScene(scene);
-    stage.setMaximized(true);
-    URL url = this.getClass().getResource(IMAGES_PATH + "app-icon.png");
-    if (url != null) {
-      stage.getIcons().add(new Image(url.toExternalForm()));
-    } else {
-      LOGGER.warn("Could not load app icon!");
-    }
-    stage.show();
-    controller = loader.getController();
-    controller.onShown(stage, file);
+    controller = new AppController(stage);
+    controller.show(file);
   }
 
   public static void main(String[] args) {

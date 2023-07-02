@@ -3,7 +3,6 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -86,13 +85,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       this.tabPane.getTabs().add(new BirthdayTab(i));
     }
 
-    VBox content1 = new VBox(hBox, this.tabPane);
-    AnchorPane.setTopAnchor(content1, 0.0);
-    AnchorPane.setBottomAnchor(content1, 0.0);
-    AnchorPane.setLeftAnchor(content1, 0.0);
-    AnchorPane.setRightAnchor(content1, 0.0);
-
-    AnchorPane content = new AnchorPane(content1);
+    VBox content = new VBox(hBox, this.tabPane);
     content.setPrefWidth(1100);
     content.setPrefHeight(700);
     this.getDialogPane().setContent(content);
@@ -256,11 +249,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       this.setText(this.baseTitle);
 
       this.entriesList.setSelectionModel(new NoSelectionModel<>());
-      AnchorPane.setTopAnchor(this.entriesList, 0.0);
-      AnchorPane.setBottomAnchor(this.entriesList, 0.0);
-      AnchorPane.setLeftAnchor(this.entriesList, 0.0);
-      AnchorPane.setRightAnchor(this.entriesList, 0.0);
-      this.setContent(new AnchorPane(this.entriesList));
+      this.setContent(this.entriesList);
     }
 
     /**

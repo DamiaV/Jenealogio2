@@ -1,6 +1,5 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.geometry.Insets;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -108,11 +107,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.tabPane.getTabs().add(this.createEventsTab());
     this.tabPane.getTabs().add(this.createParentsTab());
 
-    AnchorPane.setTopAnchor(this.tabPane, 0.0);
-    AnchorPane.setBottomAnchor(this.tabPane, 0.0);
-    AnchorPane.setLeftAnchor(this.tabPane, 0.0);
-    AnchorPane.setRightAnchor(this.tabPane, 0.0);
-    this.getDialogPane().setContent(new AnchorPane(this.tabPane));
+    this.getDialogPane().setContent(this.tabPane);
 
     Stage stage = this.stage();
     stage.setMinWidth(850);
@@ -165,8 +160,7 @@ public class EditPersonDialog extends DialogBase<Person> {
       Label label = new Label(language.translate("dialog.edit_person.profile.legal_last_name"));
       Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_last_name.tooltip")));
-      HBox.setMargin(helpLabel, new Insets(0, 0, 0, 5));
-      HBox hBox = new HBox(label, helpLabel);
+      HBox hBox = new HBox(5, label, helpLabel);
       gridPane.addRow(1, hBox, this.legalLastNameField);
       RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -177,8 +171,7 @@ public class EditPersonDialog extends DialogBase<Person> {
       Label label = new Label(language.translate("dialog.edit_person.profile.legal_first_names"));
       Label helpLable = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLable.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_first_names.tooltip")));
-      HBox.setMargin(helpLable, new Insets(0, 0, 0, 5));
-      HBox hBox = new HBox(label, helpLable);
+      HBox hBox = new HBox(5, label, helpLable);
       gridPane.addRow(2, hBox, this.legalFirstNamesField);
       RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -189,8 +182,7 @@ public class EditPersonDialog extends DialogBase<Person> {
       Label label = new Label(language.translate("dialog.edit_person.profile.public_last_name"));
       Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_last_name.tooltip")));
-      HBox.setMargin(helpLabel, new Insets(0, 0, 0, 5));
-      HBox hBox = new HBox(label, helpLabel);
+      HBox hBox = new HBox(5, label, helpLabel);
       gridPane.addRow(3, hBox, this.publicLastNameField);
       RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -201,8 +193,7 @@ public class EditPersonDialog extends DialogBase<Person> {
       Label label = new Label(language.translate("dialog.edit_person.profile.public_first_names"));
       Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_first_names.tooltip")));
-      HBox.setMargin(helpLabel, new Insets(0, 0, 0, 5));
-      HBox hBox = new HBox(label, helpLabel);
+      HBox hBox = new HBox(5, label, helpLabel);
       gridPane.addRow(4, hBox, this.publicFirstNamesField);
       RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -234,8 +225,7 @@ public class EditPersonDialog extends DialogBase<Person> {
       Label label = new Label(language.translate("dialog.edit_person.profile.disambiguation_id"));
       Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.disambiguation_id.tooltip")));
-      HBox.setMargin(helpLabel, new Insets(0, 0, 0, 5));
-      HBox hBox = new HBox(label, helpLabel);
+      HBox hBox = new HBox(5, label, helpLabel);
       // Only allow digits and empty text
       this.disambiguationIDField.setTextFormatter(new TextFormatter<>(
           new IntegerStringConverter(),
@@ -251,7 +241,6 @@ public class EditPersonDialog extends DialogBase<Person> {
 
     {
       Label notesLabel = new Label(language.translate("dialog.edit_person.profile.notes"));
-      GridPane.setMargin(notesLabel, new Insets(5, 0, 0, 0));
       GridPane.setValignment(notesLabel, VPos.TOP);
       gridPane.addRow(9, notesLabel, this.notesField);
       RowConstraints rc = new RowConstraints();
@@ -261,7 +250,6 @@ public class EditPersonDialog extends DialogBase<Person> {
 
     {
       Label sourcesLabel = new Label(language.translate("dialog.edit_person.profile.sources"));
-      GridPane.setMargin(sourcesLabel, new Insets(5, 0, 0, 0));
       GridPane.setValignment(sourcesLabel, VPos.TOP);
       gridPane.addRow(10, sourcesLabel, this.sourcesField);
       RowConstraints rc = new RowConstraints();
@@ -275,12 +263,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     cc2.setHgrow(Priority.ALWAYS);
     gridPane.getColumnConstraints().addAll(cc1, cc2);
 
-    AnchorPane.setTopAnchor(gridPane, 10.0);
-    AnchorPane.setBottomAnchor(gridPane, 10.0);
-    AnchorPane.setLeftAnchor(gridPane, 10.0);
-    AnchorPane.setRightAnchor(gridPane, 10.0);
-
-    tab.setContent(new AnchorPane(gridPane));
+    tab.setContent(gridPane);
     return tab;
   }
 
@@ -308,13 +291,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
 
-    VBox vBox = new VBox(10, buttonsBox, this.lifeEventsList);
-    AnchorPane.setTopAnchor(vBox, 10.0);
-    AnchorPane.setBottomAnchor(vBox, 10.0);
-    AnchorPane.setLeftAnchor(vBox, 10.0);
-    AnchorPane.setRightAnchor(vBox, 10.0);
-
-    tab.setContent(new AnchorPane(vBox));
+    tab.setContent(new VBox(10, buttonsBox, this.lifeEventsList));
     return tab;
   }
 
@@ -346,7 +323,6 @@ public class EditPersonDialog extends DialogBase<Person> {
       this.relativesLists.put(type, component);
       Label label = new Label(language.translate(
           "dialog.edit_person.parents.%s_parents".formatted(type.name().toLowerCase())));
-      GridPane.setMargin(label, new Insets(5, 0, 0, 0));
       gridPane.addRow(i++, label, component);
       RowConstraints rc = new RowConstraints();
       rc.setValignment(VPos.TOP);
@@ -360,12 +336,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     cc2.setHgrow(Priority.ALWAYS);
     gridPane.getColumnConstraints().addAll(cc1, cc2);
 
-    AnchorPane.setTopAnchor(gridPane, 10.0);
-    AnchorPane.setBottomAnchor(gridPane, 10.0);
-    AnchorPane.setLeftAnchor(gridPane, 10.0);
-    AnchorPane.setRightAnchor(gridPane, 10.0);
-
-    tab.setContent(new AnchorPane(gridPane));
+    tab.setContent(gridPane);
     return tab;
   }
 

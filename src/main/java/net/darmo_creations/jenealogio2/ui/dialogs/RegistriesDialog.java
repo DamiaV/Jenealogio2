@@ -7,7 +7,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.converter.DefaultStringConverter;
@@ -55,12 +58,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     exportButton.setText(language.translate("dialog.edit_registries.export"));
     HBox buttonsBox = new HBox(4, importButton, importFromTreeButton, exportButton);
 
-    VBox vBox = new VBox(4, tabPane, buttonsBox);
-    AnchorPane.setTopAnchor(vBox, 0.0);
-    AnchorPane.setBottomAnchor(vBox, 0.0);
-    AnchorPane.setLeftAnchor(vBox, 0.0);
-    AnchorPane.setRightAnchor(vBox, 0.0);
-    AnchorPane content = new AnchorPane(vBox);
+    VBox content = new VBox(4, tabPane, buttonsBox);
     content.setPrefWidth(600);
     content.setPrefHeight(400);
     this.getDialogPane().setContent(content);

@@ -1,14 +1,17 @@
 package net.darmo_creations.jenealogio2;
 
 import javafx.application.Platform;
-import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.MenuItem;
-import javafx.scene.layout.AnchorPane;
+import javafx.geometry.Orientation;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import net.darmo_creations.jenealogio2.config.Config;
+import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.io.TreeFileReader;
 import net.darmo_creations.jenealogio2.io.TreeFileWriter;
 import net.darmo_creations.jenealogio2.model.FamilyTree;
@@ -25,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,98 +40,50 @@ public class AppController {
   /**
    * The stage associated to this controller.
    */
-  private Stage stage;
+  private final Stage stage;
 
-  @FXML
-  private MenuItem newFileMenuItem;
-  @FXML
-  private MenuItem openFileMenuItem;
-  @FXML
-  private MenuItem saveMenuItem;
-  @FXML
-  private MenuItem saveAsMenuItem;
-  @FXML
-  private MenuItem settingsMenuItem;
-  @FXML
-  private MenuItem quitMenuItem;
-  @FXML
-  private MenuItem undoMenuItem;
-  @FXML
-  private MenuItem redoMenuItem;
-  @FXML
-  private MenuItem editRegistriesMenuItem;
-  @FXML
-  private MenuItem renameTreeMenuItem;
-  @FXML
-  private MenuItem setAsRootMenuItem;
-  @FXML
-  private MenuItem addPersonMenuItem;
-  @FXML
-  private MenuItem editPersonMenuItem;
-  @FXML
-  private MenuItem removePersonMenuItem;
-  @FXML
-  private MenuItem addChildMenuItem;
-  @FXML
-  private MenuItem addSiblingMenuItem;
-  @FXML
-  private MenuItem editParentsMenuItem;
-  @FXML
-  private MenuItem editLifeEventsMenuItem;
-  @FXML
-  private MenuItem setPictureMenuItem;
-  @FXML
-  private MenuItem calculateRelationshipsMenuItem;
-  @FXML
-  private MenuItem birthdaysMenuItem;
-  @FXML
-  private MenuItem mapMenuItem;
-  @FXML
-  private MenuItem checkInconsistenciesMenuItem;
-  @FXML
-  private MenuItem aboutMenuItem;
+  private final MenuItem newFileMenuItem = new MenuItem();
+  private final MenuItem openFileMenuItem = new MenuItem();
+  private final MenuItem saveMenuItem = new MenuItem();
+  private final MenuItem saveAsMenuItem = new MenuItem();
+  private final MenuItem settingsMenuItem = new MenuItem();
+  private final MenuItem quitMenuItem = new MenuItem();
+  private final MenuItem undoMenuItem = new MenuItem();
+  private final MenuItem redoMenuItem = new MenuItem();
+  private final MenuItem editRegistriesMenuItem = new MenuItem();
+  private final MenuItem renameTreeMenuItem = new MenuItem();
+  private final MenuItem setAsRootMenuItem = new MenuItem();
+  private final MenuItem addPersonMenuItem = new MenuItem();
+  private final MenuItem editPersonMenuItem = new MenuItem();
+  private final MenuItem removePersonMenuItem = new MenuItem();
+  private final MenuItem addChildMenuItem = new MenuItem();
+  private final MenuItem addSiblingMenuItem = new MenuItem();
+  private final MenuItem editParentsMenuItem = new MenuItem();
+  private final MenuItem editLifeEventsMenuItem = new MenuItem();
+  private final MenuItem setPictureMenuItem = new MenuItem();
+  private final MenuItem calculateRelationshipsMenuItem = new MenuItem();
+  private final MenuItem birthdaysMenuItem = new MenuItem();
+  private final MenuItem mapMenuItem = new MenuItem();
+  private final MenuItem checkInconsistenciesMenuItem = new MenuItem();
+  private final MenuItem aboutMenuItem = new MenuItem();
 
-  @FXML
-  private Button newToolbarButton;
-  @FXML
-  private Button openToolbarButton;
-  @FXML
-  private Button saveToolbarButton;
-  @FXML
-  private Button saveAsToolbarButton;
-  @FXML
-  private Button undoToolbarButton;
-  @FXML
-  private Button redoToolbarButton;
-  @FXML
-  private Button setAsRootToolbarButton;
-  @FXML
-  private Button addPersonToolbarButton;
-  @FXML
-  private Button addChildToolbarButton;
-  @FXML
-  private Button addSiblingToolbarButton;
-  @FXML
-  private Button editParentsToolbarButton;
-  @FXML
-  private Button editLifeEventsToolbarButton;
-  @FXML
-  private Button setPictureToolbarButton;
-  @FXML
-  private Button calculateRelationshipsToolbarButton;
-  @FXML
-  private Button birthdaysToolbarButton;
-  @FXML
-  private Button mapToolbarButton;
-  @FXML
-  private Button checkInconsistenciesToolbarButton;
-
-  @FXML
-  private AnchorPane sideTreeView;
-  @FXML
-  private AnchorPane mainPane;
-  @FXML
-  private AnchorPane detailsView;
+  private final Button newToolbarButton = new Button();
+  private final Button openToolbarButton = new Button();
+  private final Button saveToolbarButton = new Button();
+  private final Button saveAsToolbarButton = new Button();
+  private final Button undoToolbarButton = new Button();
+  private final Button redoToolbarButton = new Button();
+  private final Button setAsRootToolbarButton = new Button();
+  private final Button addPersonToolbarButton = new Button();
+  private final Button addChildToolbarButton = new Button();
+  private final Button addSiblingToolbarButton = new Button();
+  private final Button editParentsToolbarButton = new Button();
+  private final Button editLifeEventsToolbarButton = new Button();
+  private final Button setPictureToolbarButton = new Button();
+  private final Button calculateRelationshipsToolbarButton = new Button();
+  private final Button birthdaysToolbarButton = new Button();
+  private final Button mapToolbarButton = new Button();
+  private final Button checkInconsistenciesToolbarButton = new Button();
 
   // File managers
   private final TreeFileReader treeFileReader = new TreeFileReader();
@@ -165,148 +121,355 @@ public class AppController {
   private boolean defaultEmptyTree;
 
   /**
-   * Initialize this controller.
-   * <p>
-   * Automatically called by JavaFX.
+   * Create the app’s controller.
+   *
+   * @param stage App’s main stage.
    */
-  public void initialize() {
-    Config config = App.config();
-    Theme theme = config.theme();
-
-    // Menu items
-    this.newFileMenuItem.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.SMALL));
-    this.newFileMenuItem.setOnAction(event -> this.onNewFileAction());
-    this.openFileMenuItem.setGraphic(theme.getIcon(Icon.OPEN_FILE, Icon.Size.SMALL));
-    this.openFileMenuItem.setOnAction(event -> this.onOpenFileAction());
-    this.saveMenuItem.setGraphic(theme.getIcon(Icon.SAVE, Icon.Size.SMALL));
-    this.saveMenuItem.setOnAction(event -> this.onSaveAction());
-    this.saveAsMenuItem.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.SMALL));
-    this.saveAsMenuItem.setOnAction(event -> this.onSaveAsAction());
-    this.settingsMenuItem.setGraphic(theme.getIcon(Icon.SETTINGS, Icon.Size.SMALL));
-    this.settingsMenuItem.setOnAction(event -> this.onSettingsAction());
-    this.quitMenuItem.setGraphic(theme.getIcon(Icon.QUIT, Icon.Size.SMALL));
-    this.quitMenuItem.setOnAction(event -> this.onQuitAction());
-
-    this.undoMenuItem.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.SMALL));
-    this.undoMenuItem.setDisable(true); // TEMP disabled until implemented
-    this.redoMenuItem.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.SMALL));
-    this.redoMenuItem.setDisable(true); // TEMP disabled until implemented
-    this.editRegistriesMenuItem.setGraphic(theme.getIcon(Icon.EDIT_REGISTRIES, Icon.Size.SMALL));
-    this.editRegistriesMenuItem.setOnAction(event -> this.onEditRegistriesAction());
-    this.renameTreeMenuItem.setGraphic(theme.getIcon(Icon.RENAME_TREE, Icon.Size.SMALL));
-    this.renameTreeMenuItem.setOnAction(event -> this.onRenameTreeAction());
-    this.setAsRootMenuItem.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.SMALL));
-    this.setAsRootMenuItem.setOnAction(event -> this.onSetAsRootAction());
-    this.addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
-    this.addPersonMenuItem.setOnAction(event -> this.onAddPersonAction());
-    this.editPersonMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PERSON, Icon.Size.SMALL));
-    this.editPersonMenuItem.setOnAction(event -> this.onEditPersonAction());
-    this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PERSON, Icon.Size.SMALL));
-    this.removePersonMenuItem.setOnAction(event -> this.onRemovePersonAction());
-    this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
-    this.addChildMenuItem.setOnAction(event -> this.onAddChildAction());
-    this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
-    this.addSiblingMenuItem.setOnAction(event -> this.onAddSiblingAction());
-    this.editParentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.SMALL));
-    this.editParentsMenuItem.setOnAction(event -> this.onEditParentsAction());
-    this.editLifeEventsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.SMALL));
-    this.editLifeEventsMenuItem.setOnAction(event -> this.onEditLifeEventsAction());
-    this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
-    this.setPictureMenuItem.setDisable(true); // TEMP disabled until implemented
-
-    this.calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
-    this.calculateRelationshipsMenuItem.setDisable(true); // TEMP disabled until implemented
-    this.birthdaysMenuItem.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.SMALL));
-    this.birthdaysMenuItem.setOnAction(event -> this.onShowBirthdaysDialog());
-    this.mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
-    this.mapMenuItem.setDisable(true); // TEMP disabled until implemented
-    this.checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
-    this.checkInconsistenciesMenuItem.setDisable(true); // TEMP disabled until implemented
-
-    this.aboutMenuItem.setGraphic(theme.getIcon(Icon.ABOUT, Icon.Size.SMALL));
-    this.aboutMenuItem.setOnAction(event -> this.onAboutAction());
-
-    // Toolbar buttons
-    this.newToolbarButton.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.BIG));
-    this.newToolbarButton.setOnAction(event -> this.onNewFileAction());
-    this.openToolbarButton.setGraphic(theme.getIcon(Icon.OPEN_FILE, Icon.Size.BIG));
-    this.openToolbarButton.setOnAction(event -> this.onOpenFileAction());
-    this.saveToolbarButton.setGraphic(theme.getIcon(Icon.SAVE, Icon.Size.BIG));
-    this.saveToolbarButton.setOnAction(event -> this.onSaveAction());
-    this.saveAsToolbarButton.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.BIG));
-    this.saveAsToolbarButton.setOnAction(event -> this.onSaveAsAction());
-
-    this.undoToolbarButton.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.BIG));
-    this.undoToolbarButton.setDisable(true); // TEMP disabled until implemented
-    this.redoToolbarButton.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.BIG));
-    this.redoToolbarButton.setDisable(true); // TEMP disabled until implemented
-    this.setAsRootToolbarButton.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.BIG));
-    this.setAsRootToolbarButton.setOnAction(event -> this.onSetAsRootAction());
-    this.addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
-    this.addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
-    this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
-    this.addChildToolbarButton.setOnAction(event -> this.onAddChildAction());
-    this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
-    this.addSiblingToolbarButton.setOnAction(event -> this.onAddSiblingAction());
-    this.editParentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.BIG));
-    this.editParentsToolbarButton.setOnAction(event -> this.onEditParentsAction());
-    this.editLifeEventsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.BIG));
-    this.editLifeEventsToolbarButton.setOnAction(event -> this.onEditLifeEventsAction());
-    this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
-    this.setPictureToolbarButton.setDisable(true); // TEMP disabled until implemented
-
-    this.calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
-    this.calculateRelationshipsToolbarButton.setDisable(true); // TEMP disabled until implemented
-    this.birthdaysToolbarButton.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.BIG));
-    this.birthdaysToolbarButton.setOnAction(event -> this.onShowBirthdaysDialog());
-    this.mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
-    this.mapToolbarButton.setDisable(true); // TEMP disabled until implemented
-    this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
-    this.checkInconsistenciesToolbarButton.setDisable(true); // TEMP disabled until implemented
-
-    AnchorPane.setTopAnchor(this.familyTreeView, 0.0);
-    AnchorPane.setBottomAnchor(this.familyTreeView, 0.0);
-    AnchorPane.setLeftAnchor(this.familyTreeView, 0.0);
-    AnchorPane.setRightAnchor(this.familyTreeView, 0.0);
-    this.sideTreeView.getChildren().add(this.familyTreeView);
-    this.familyTreeView.personClickListeners()
-        .add(event -> this.onPersonClick(event, this.familyTreeView));
-
-    AnchorPane.setTopAnchor(this.familyTreePane, 0.0);
-    AnchorPane.setBottomAnchor(this.familyTreePane, 0.0);
-    AnchorPane.setLeftAnchor(this.familyTreePane, 0.0);
-    AnchorPane.setRightAnchor(this.familyTreePane, 0.0);
-    this.mainPane.getChildren().add(this.familyTreePane);
-    this.familyTreePane.personClickListeners()
-        .add(event -> this.onPersonClick(event, this.familyTreePane));
-    this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
-    this.familyTreePane.setMaxHeight(config.maxTreeHeight());
-
-    AnchorPane.setTopAnchor(this.personDetailsView, 0.0);
-    AnchorPane.setBottomAnchor(this.personDetailsView, 0.0);
-    AnchorPane.setLeftAnchor(this.personDetailsView, 0.0);
-    AnchorPane.setRightAnchor(this.personDetailsView, 0.0);
-    this.detailsView.getChildren().add(this.personDetailsView);
-    this.personDetailsView.personClickListeners()
-        .add(event -> this.onPersonClick(event, null));
-    this.personDetailsView.newParentClickListeners()
-        .add(this::onNewParentClick);
+  public AppController(@NotNull Stage stage) {
+    this.stage = Objects.requireNonNull(stage);
+    URL url = this.getClass().getResource(App.IMAGES_PATH + "app-icon.png");
+    if (url != null) {
+      stage.getIcons().add(new Image(url.toExternalForm()));
+    } else {
+      App.LOGGER.warn("Could not load app icon!");
+    }
+    stage.setMinWidth(300);
+    stage.setMinHeight(200);
+    stage.setTitle(App.NAME);
+    stage.setMaximized(true);
+    Scene scene = new Scene(new VBox(this.createMenuBar(), this.createToolBar(), this.createContent()));
+    stage.setScene(scene);
+    App.config().theme().getStyleSheets()
+        .forEach(path -> scene.getStylesheets().add(path.toExternalForm()));
 
     this.birthdaysDialog.personClickListeners()
         .add(event -> this.onPersonClick(event, null));
   }
 
+  private MenuBar createMenuBar() {
+    Config config = App.config();
+    Language language = config.language();
+    Theme theme = config.theme();
+
+    //
+
+    Menu fileMenu = new Menu(language.translate("menu.file"));
+
+    this.newFileMenuItem.setText(language.translate("menu.file.new"));
+    this.newFileMenuItem.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.SMALL));
+    this.newFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
+    this.newFileMenuItem.setOnAction(event -> this.onNewFileAction());
+    fileMenu.getItems().add(this.newFileMenuItem);
+
+    this.openFileMenuItem.setText(language.translate("menu.file.open"));
+    this.openFileMenuItem.setGraphic(theme.getIcon(Icon.OPEN_FILE, Icon.Size.SMALL));
+    this.openFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
+    this.openFileMenuItem.setOnAction(event -> this.onOpenFileAction());
+    fileMenu.getItems().add(this.openFileMenuItem);
+
+    fileMenu.getItems().add(new SeparatorMenuItem());
+
+    this.saveMenuItem.setText(language.translate("menu.file.save"));
+    this.saveMenuItem.setGraphic(theme.getIcon(Icon.SAVE, Icon.Size.SMALL));
+    this.saveMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN));
+    this.saveMenuItem.setOnAction(event -> this.onSaveAction());
+    fileMenu.getItems().add(this.saveMenuItem);
+
+    this.saveAsMenuItem.setText(language.translate("menu.file.save_as"));
+    this.saveAsMenuItem.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.SMALL));
+    this.saveAsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    this.saveAsMenuItem.setOnAction(event -> this.onSaveAsAction());
+    fileMenu.getItems().add(this.saveAsMenuItem);
+
+    fileMenu.getItems().add(new SeparatorMenuItem());
+
+    this.settingsMenuItem.setText(language.translate("menu.file.settings"));
+    this.settingsMenuItem.setGraphic(theme.getIcon(Icon.SETTINGS, Icon.Size.SMALL));
+    this.settingsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHIFT_DOWN, KeyCombination.ALT_DOWN));
+    this.settingsMenuItem.setOnAction(event -> this.onSettingsAction());
+    fileMenu.getItems().add(this.settingsMenuItem);
+
+    this.quitMenuItem.setText(language.translate("menu.file.quit"));
+    this.quitMenuItem.setGraphic(theme.getIcon(Icon.QUIT, Icon.Size.SMALL));
+    this.quitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN));
+    this.quitMenuItem.setOnAction(event -> this.onQuitAction());
+    fileMenu.getItems().add(this.quitMenuItem);
+
+    //
+
+    Menu editMenu = new Menu(language.translate("menu.edit"));
+
+    this.undoMenuItem.setText(language.translate("menu.edit.undo"));
+    this.undoMenuItem.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.SMALL));
+    this.undoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN));
+    this.undoMenuItem.setDisable(true); // TEMP disabled until implemented
+    editMenu.getItems().add(this.undoMenuItem);
+
+    this.redoMenuItem.setText(language.translate("menu.edit.redo"));
+    this.redoMenuItem.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.SMALL));
+    this.redoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN));
+    this.redoMenuItem.setDisable(true); // TEMP disabled until implemented
+    editMenu.getItems().add(this.redoMenuItem);
+
+    editMenu.getItems().add(new SeparatorMenuItem());
+
+    this.editRegistriesMenuItem.setText(language.translate("menu.edit.edit_registries"));
+    this.editRegistriesMenuItem.setGraphic(theme.getIcon(Icon.EDIT_REGISTRIES, Icon.Size.SMALL));
+    this.editRegistriesMenuItem.setOnAction(event -> this.onEditRegistriesAction());
+    editMenu.getItems().add(this.editRegistriesMenuItem);
+
+    editMenu.getItems().add(new SeparatorMenuItem());
+
+    this.renameTreeMenuItem.setText(language.translate("menu.edit.rename_tree"));
+    this.renameTreeMenuItem.setGraphic(theme.getIcon(Icon.RENAME_TREE, Icon.Size.SMALL));
+    this.renameTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    this.renameTreeMenuItem.setOnAction(event -> this.onRenameTreeAction());
+    editMenu.getItems().add(this.renameTreeMenuItem);
+
+    this.setAsRootMenuItem.setText(language.translate("menu.edit.set_as_root"));
+    this.setAsRootMenuItem.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.SMALL));
+    this.setAsRootMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN));
+    this.setAsRootMenuItem.setOnAction(event -> this.onSetAsRootAction());
+    editMenu.getItems().add(this.setAsRootMenuItem);
+
+    this.addPersonMenuItem.setText(language.translate("menu.edit.add_person"));
+    this.addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
+    this.addPersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN));
+    this.addPersonMenuItem.setOnAction(event -> this.onAddPersonAction());
+    editMenu.getItems().add(this.addPersonMenuItem);
+
+    this.editPersonMenuItem.setText(language.translate("menu.edit.edit_person"));
+    this.editPersonMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PERSON, Icon.Size.SMALL));
+    this.editPersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN));
+    this.editPersonMenuItem.setOnAction(event -> this.onEditPersonAction());
+    editMenu.getItems().add(this.editPersonMenuItem);
+
+    this.removePersonMenuItem.setText(language.translate("menu.edit.remove_person"));
+    this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PERSON, Icon.Size.SMALL));
+    this.removePersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
+    this.removePersonMenuItem.setOnAction(event -> this.onRemovePersonAction());
+    editMenu.getItems().add(this.removePersonMenuItem);
+
+    editMenu.getItems().add(new SeparatorMenuItem());
+
+    this.addChildMenuItem.setText(language.translate("menu.edit.add_child"));
+    this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
+    this.addChildMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    this.addChildMenuItem.setOnAction(event -> this.onAddChildAction());
+    editMenu.getItems().add(this.addChildMenuItem);
+
+    this.addSiblingMenuItem.setText(language.translate("menu.edit.add_sibling"));
+    this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
+    this.addSiblingMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN));
+    this.addSiblingMenuItem.setOnAction(event -> this.onAddSiblingAction());
+    editMenu.getItems().add(this.addSiblingMenuItem);
+
+    this.editParentsMenuItem.setText(language.translate("menu.edit.edit_parents"));
+    this.editParentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.SMALL));
+    this.editParentsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    this.editParentsMenuItem.setOnAction(event -> this.onEditParentsAction());
+    editMenu.getItems().add(this.editParentsMenuItem);
+
+    this.editLifeEventsMenuItem.setText(language.translate("menu.edit.edit_life_events"));
+    this.editLifeEventsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.SMALL));
+    this.editLifeEventsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.SHIFT_DOWN, KeyCombination.ALT_DOWN));
+    this.editLifeEventsMenuItem.setOnAction(event -> this.onEditLifeEventsAction());
+    editMenu.getItems().add(this.editLifeEventsMenuItem);
+
+    editMenu.getItems().add(new SeparatorMenuItem());
+
+    this.setPictureMenuItem.setText(language.translate("menu.edit.set_picture"));
+    this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
+    this.setPictureMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN));
+    this.setPictureMenuItem.setDisable(true); // TEMP disabled until implemented
+    editMenu.getItems().add(this.setPictureMenuItem);
+
+    //
+
+    Menu toolsMenu = new Menu(language.translate("menu.tools"));
+
+    this.calculateRelationshipsMenuItem.setText(language.translate("menu.tools.calculate_relationships"));
+    this.calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
+    this.calculateRelationshipsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN));
+    this.calculateRelationshipsMenuItem.setDisable(true); // TEMP disabled until implemented
+    toolsMenu.getItems().add(this.calculateRelationshipsMenuItem);
+
+    this.birthdaysMenuItem.setText(language.translate("menu.tools.birthdays"));
+    this.birthdaysMenuItem.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.SMALL));
+    this.birthdaysMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN));
+    this.birthdaysMenuItem.setOnAction(event -> this.onShowBirthdaysDialog());
+    toolsMenu.getItems().add(this.birthdaysMenuItem);
+
+    this.mapMenuItem.setText(language.translate("menu.tools.map"));
+    this.mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
+    this.mapMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN));
+    this.mapMenuItem.setDisable(true); // TEMP disabled until implemented
+    toolsMenu.getItems().add(this.mapMenuItem);
+
+    toolsMenu.getItems().add(new SeparatorMenuItem());
+
+    this.checkInconsistenciesMenuItem.setText(language.translate("menu.tools.check_inconsistencies"));
+    this.checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
+    this.checkInconsistenciesMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    this.checkInconsistenciesMenuItem.setDisable(true); // TEMP disabled until implemented
+    toolsMenu.getItems().add(this.checkInconsistenciesMenuItem);
+
+    //
+
+    Menu helpMenu = new Menu(language.translate("menu.help"));
+
+    this.aboutMenuItem.setText(language.translate("menu.help.about"));
+    this.aboutMenuItem.setGraphic(theme.getIcon(Icon.ABOUT, Icon.Size.SMALL));
+    this.aboutMenuItem.setOnAction(event -> this.onAboutAction());
+    helpMenu.getItems().add(this.aboutMenuItem);
+
+    return new MenuBar(fileMenu, editMenu, toolsMenu, helpMenu);
+  }
+
+  private ToolBar createToolBar() {
+    Config config = App.config();
+    Language language = config.language();
+    Theme theme = config.theme();
+
+    ToolBar toolbar = new ToolBar();
+
+    //
+
+    this.newToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.new")));
+    this.newToolbarButton.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.BIG));
+    this.newToolbarButton.setOnAction(event -> this.onNewFileAction());
+    toolbar.getItems().add(this.newToolbarButton);
+
+    this.openToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.open")));
+    this.openToolbarButton.setGraphic(theme.getIcon(Icon.OPEN_FILE, Icon.Size.BIG));
+    this.openToolbarButton.setOnAction(event -> this.onOpenFileAction());
+    toolbar.getItems().add(this.openToolbarButton);
+
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
+    this.saveToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.save")));
+    this.saveToolbarButton.setGraphic(theme.getIcon(Icon.SAVE, Icon.Size.BIG));
+    this.saveToolbarButton.setOnAction(event -> this.onSaveAction());
+    toolbar.getItems().add(this.saveToolbarButton);
+
+    this.saveAsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.save_as")));
+    this.saveAsToolbarButton.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.BIG));
+    this.saveAsToolbarButton.setOnAction(event -> this.onSaveAsAction());
+    toolbar.getItems().add(this.saveAsToolbarButton);
+
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
+    //
+
+    this.undoToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.undo")));
+    this.undoToolbarButton.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.BIG));
+    this.undoToolbarButton.setDisable(true); // TEMP disabled until implemented
+    toolbar.getItems().add(this.undoToolbarButton);
+
+    this.redoToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.redo")));
+    this.redoToolbarButton.setGraphic(theme.getIcon(Icon.REDO, Icon.Size.BIG));
+    this.redoToolbarButton.setDisable(true); // TEMP disabled until implemented
+    toolbar.getItems().add(this.redoToolbarButton);
+
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
+    this.setAsRootToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.set_as_root")));
+    this.setAsRootToolbarButton.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.BIG));
+    this.setAsRootToolbarButton.setOnAction(event -> this.onSetAsRootAction());
+    toolbar.getItems().add(this.setAsRootToolbarButton);
+
+    this.addPersonToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_person")));
+    this.addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
+    this.addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
+    toolbar.getItems().add(this.addPersonToolbarButton);
+
+    this.addChildToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_child")));
+    this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
+    this.addChildToolbarButton.setOnAction(event -> this.onAddChildAction());
+    toolbar.getItems().add(this.addChildToolbarButton);
+
+    this.addSiblingToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_sibling")));
+    this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
+    this.addSiblingToolbarButton.setOnAction(event -> this.onAddSiblingAction());
+    toolbar.getItems().add(this.addSiblingToolbarButton);
+
+    this.editParentsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.edit_parents")));
+    this.editParentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_PARENTS, Icon.Size.BIG));
+    this.editParentsToolbarButton.setOnAction(event -> this.onEditParentsAction());
+    toolbar.getItems().add(this.editParentsToolbarButton);
+
+    this.editLifeEventsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.edit_life_events")));
+    this.editLifeEventsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.BIG));
+    this.editLifeEventsToolbarButton.setOnAction(event -> this.onEditLifeEventsAction());
+    toolbar.getItems().add(this.editLifeEventsToolbarButton);
+
+    this.setPictureToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.set_picture")));
+    this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
+    this.setPictureToolbarButton.setDisable(true); // TEMP disabled until implemented
+    toolbar.getItems().add(this.setPictureToolbarButton);
+
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
+    //
+
+    this.calculateRelationshipsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.calculate_relationships")));
+    this.calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
+    this.calculateRelationshipsToolbarButton.setDisable(true); // TEMP disabled until implemented
+    toolbar.getItems().add(this.calculateRelationshipsToolbarButton);
+
+    this.birthdaysToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.birthdays")));
+    this.birthdaysToolbarButton.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.BIG));
+    this.birthdaysToolbarButton.setOnAction(event -> this.onShowBirthdaysDialog());
+    toolbar.getItems().add(this.birthdaysToolbarButton);
+
+    this.mapToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.map")));
+    this.mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
+    this.mapToolbarButton.setDisable(true); // TEMP disabled until implemented
+    toolbar.getItems().add(this.mapToolbarButton);
+
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
+    this.checkInconsistenciesToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.check_inconsistencies")));
+    this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
+    this.checkInconsistenciesToolbarButton.setDisable(true); // TEMP disabled until implemented
+    toolbar.getItems().add(this.checkInconsistenciesToolbarButton);
+
+    return toolbar;
+  }
+
+  private SplitPane createContent() {
+    SplitPane splitPane = new SplitPane();
+
+    this.familyTreeView.personClickListeners()
+        .add(event -> this.onPersonClick(event, this.familyTreeView));
+    splitPane.getItems().add(this.familyTreeView);
+
+    this.familyTreePane.personClickListeners()
+        .add(event -> this.onPersonClick(event, this.familyTreePane));
+    this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
+    this.familyTreePane.setMaxHeight(App.config().maxTreeHeight());
+    splitPane.getItems().add(this.familyTreePane);
+
+    this.personDetailsView.personClickListeners()
+        .add(event -> this.onPersonClick(event, null));
+    this.personDetailsView.newParentClickListeners()
+        .add(this::onNewParentClick);
+    splitPane.getItems().add(this.personDetailsView);
+
+    splitPane.setDividerPositions(0.1, 0.9);
+    return splitPane;
+  }
+
   /**
-   * Called when the app’s main stage is shown.
+   * Show the stage.
    * <p>
    * Hooks callbacks to the stage’s close event and load the specified tree or the default one.
    *
-   * @param stage App’s main stage.
-   * @param file  File to load. May be null.
+   * @param file File to load. May be null.
    */
-  public void onShown(@NotNull Stage stage, File file) {
-    this.stage = Objects.requireNonNull(stage);
-    stage.setOnCloseRequest(event -> {
+  public void show(File file) {
+    this.stage.show();
+    this.stage.setOnCloseRequest(event -> {
       event.consume();
       this.onQuitAction();
     });

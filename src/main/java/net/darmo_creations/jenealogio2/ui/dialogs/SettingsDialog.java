@@ -39,12 +39,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   public SettingsDialog() {
     super("settings", false, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    VBox vBox = new VBox(this.createInterfaceForm(), new Separator(), this.createTreeForm());
-    AnchorPane.setTopAnchor(vBox, 0.0);
-    AnchorPane.setBottomAnchor(vBox, 0.0);
-    AnchorPane.setLeftAnchor(vBox, 0.0);
-    AnchorPane.setRightAnchor(vBox, 0.0);
-    Region content = new AnchorPane(vBox);
+    VBox content = new VBox(this.createInterfaceForm(), new Separator(), this.createTreeForm());
     content.setPrefWidth(500);
     this.getDialogPane().setContent(content);
 
