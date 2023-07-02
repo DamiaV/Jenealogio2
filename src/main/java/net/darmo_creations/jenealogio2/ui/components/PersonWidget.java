@@ -100,15 +100,17 @@ public class PersonWidget extends AnchorPane {
     } else {
       iconsBox.setLeft(new Label()); // Empty label for proper alignment
     }
+    HBox iconsRightBox = new HBox(4);
+    iconsBox.setRight(iconsRightBox);
     if (isRoot) {
       Label rootIcon = new Label("", App.config().theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
       rootIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.root.tooltip")));
-      iconsBox.setRight(rootIcon);
+      iconsRightBox.getChildren().add(rootIcon);
     }
     if (showMoreIcon) {
       Label moreIcon = new Label("", App.config().theme().getIcon(Icon.MORE, Icon.Size.SMALL));
       moreIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.more_icon.tooltip")));
-      iconsBox.setRight(moreIcon);
+      iconsRightBox.getChildren().add(moreIcon);
     }
     pane.getChildren().add(iconsBox);
 
