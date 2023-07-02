@@ -60,6 +60,10 @@ public enum Icon {
 
   UNCERTAIN("help"),
 
+  IMPORT_REGISTRIES("tag_blue_down"),
+  IMPORT_REGISTRIES_FROM_TREE("tree_down"),
+  EXPORT_REGISTRIES("tag_blue_up"),
+
   ADD_ENTRY("plus"),
   DELETE_ENTRY("cross"),
   RESET_ENTRY("undo"),

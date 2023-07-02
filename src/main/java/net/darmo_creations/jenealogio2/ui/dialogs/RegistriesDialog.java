@@ -42,6 +42,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     super("edit_registries", true, ButtonTypes.CANCEL, ButtonTypes.OK);
 
     Language language = App.config().language();
+    Theme theme = App.config().theme();
 
     TabPane tabPane = new TabPane(
         this.createTab("life_event_types", this.eventTypesView),
@@ -50,15 +51,16 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
     VBox.setVgrow(tabPane, Priority.ALWAYS);
 
-    Button importButton = new Button();
-    importButton.setText(language.translate("dialog.edit_registries.import"));
-    Button importFromTreeButton = new Button();
-    importFromTreeButton.setText(language.translate("dialog.edit_registries.import_from_tree"));
-    Button exportButton = new Button();
-    exportButton.setText(language.translate("dialog.edit_registries.export"));
+    Button importButton = new Button(language.translate("dialog.edit_registries.import"),
+        theme.getIcon(Icon.IMPORT_REGISTRIES, Icon.Size.SMALL));
+    Button importFromTreeButton = new Button(language.translate("dialog.edit_registries.import_from_tree"),
+        theme.getIcon(Icon.IMPORT_REGISTRIES_FROM_TREE, Icon.Size.SMALL));
+    Button exportButton = new Button(language.translate("dialog.edit_registries.export"),
+        theme.getIcon(Icon.EXPORT_REGISTRIES, Icon.Size.SMALL));
+    // TODO button actions
     HBox buttonsBox = new HBox(4, importButton, importFromTreeButton, exportButton);
 
-    VBox content = new VBox(4, tabPane, buttonsBox);
+    VBox content = new VBox(4, tabPane, new Separator(), buttonsBox);
     content.setPrefWidth(600);
     content.setPrefHeight(400);
     this.getDialogPane().setContent(content);
