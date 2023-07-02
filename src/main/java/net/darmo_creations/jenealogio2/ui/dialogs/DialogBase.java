@@ -17,8 +17,6 @@ import java.util.List;
  * @param <T> Type of returned values.
  */
 public abstract class DialogBase<T> extends Dialog<T> {
-  private final String name;
-
   /**
    * Create a modal dialog.
    *
@@ -39,7 +37,6 @@ public abstract class DialogBase<T> extends Dialog<T> {
    * @param buttonTypes The dialog’s button types.
    */
   public DialogBase(@NotNull String name, boolean resizable, boolean modal, ButtonType @NotNull ... buttonTypes) {
-    this.name = name;
     Config config = App.config();
     config.theme().getStyleSheets()
         .forEach(url -> this.stage().getScene().getStylesheets().add(url.toExternalForm()));
@@ -55,13 +52,6 @@ public abstract class DialogBase<T> extends Dialog<T> {
    */
   protected List<FormatArg> getTitleFormatArgs() {
     return List.of();
-  }
-
-  /**
-   * This dialog’s name.
-   */
-  public String name() {
-    return this.name;
   }
 
   /**
