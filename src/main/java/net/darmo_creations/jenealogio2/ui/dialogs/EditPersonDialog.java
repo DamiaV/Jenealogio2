@@ -1,12 +1,13 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimePrecision;
@@ -30,7 +31,6 @@ import java.util.*;
 /**
  * Dialog to edit a {@link Person} object and its {@link LifeEvent}s.
  */
-@SuppressWarnings("unused")
 public class EditPersonDialog extends DialogBase<Person> {
   /**
    * Index of the profile tab.
@@ -45,54 +45,25 @@ public class EditPersonDialog extends DialogBase<Person> {
    */
   public static final int TAB_PARENTS = 2;
 
-  @FXML
-  private TabPane tabPane;
+  private final TabPane tabPane = new TabPane();
 
-  @FXML
-  private Label legalLastNameHelpLabel;
-  @FXML
-  private Label legalFirstNamesHelpLabel;
-  @FXML
-  private Label publicLastNameHelpLabel;
-  @FXML
-  private Label publicFirstNamesHelpLabel;
-  @FXML
-  private Label disambiguationIDHelpLabel;
+  private final ComboBox<NotNullComboBoxItem<LifeStatus>> lifeStatusCombo = new ComboBox<>();
+  private final TextField legalLastNameField = new TextField();
+  private final TextField legalFirstNamesField = new TextField();
+  private final TextField publicLastNameField = new TextField();
+  private final TextField publicFirstNamesField = new TextField();
+  private final TextField nicknamesField = new TextField();
+  private final ComboBox<ComboBoxItem<Gender>> genderCombo = new ComboBox<>();
+  private final TextField mainOccupationField = new TextField();
+  private final TextField disambiguationIDField = new TextField();
+  private final TextArea notesField = new TextArea();
+  private final TextArea sourcesField = new TextArea();
 
-  @FXML
-  private ComboBox<NotNullComboBoxItem<LifeStatus>> lifeStatusCombo;
-  @FXML
-  private TextField legalLastNameField;
-  @FXML
-  private TextField publicLastNameField;
-  @FXML
-  private TextField legalFirstNamesField;
-  @FXML
-  private TextField publicFirstNamesField;
-  @FXML
-  private TextField nicknamesField;
-  @FXML
-  private ComboBox<ComboBoxItem<Gender>> genderCombo;
-  @FXML
-  private TextField mainOccupationField;
-  @FXML
-  private TextField disambiguationIDField;
-  @FXML
-  private TextArea notesField;
-  @FXML
-  private TextArea sourcesField;
+  private final Button addEventButton = new Button();
+  private final ListView<LifeEventView> lifeEventsList = new ListView<>();
 
-  @FXML
-  private Button addEventButton;
-  @FXML
-  private ListView<LifeEventView> lifeEventsList;
-
-  @FXML
-  private GridPane parentsPane;
-  @FXML
-  private ComboBox<ComboBoxItem<Person>> parent1Combo;
-  @FXML
-  private ComboBox<ComboBoxItem<Person>> parent2Combo;
+  private final ComboBox<ComboBoxItem<Person>> parent1Combo = new ComboBox<>();
+  private final ComboBox<ComboBoxItem<Person>> parent2Combo = new ComboBox<>();
 
   private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
 
@@ -131,59 +102,17 @@ public class EditPersonDialog extends DialogBase<Person> {
    */
   public EditPersonDialog() {
     super("edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
-    Config config = App.config();
-    Language language = config.language();
-    Theme theme = config.theme();
 
-    this.legalLastNameHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
-    this.legalFirstNamesHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
-    this.publicLastNameHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
-    this.publicFirstNamesHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
-    this.disambiguationIDHelpLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+    this.tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+    this.tabPane.getTabs().add(this.createProfileTab());
+    this.tabPane.getTabs().add(this.createEventsTab());
+    this.tabPane.getTabs().add(this.createParentsTab());
 
-    Collator collator = Collator.getInstance(language.locale());
-    this.lifeStatusCombo.getItems().addAll(Arrays.stream(LifeStatus.values())
-        .map(lifeStatus -> {
-          String text = language.translate("life_status." + lifeStatus.name().toLowerCase());
-          return new NotNullComboBoxItem<>(lifeStatus, text);
-        })
-        .toList());
-    this.lifeStatusCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-      if (!this.internalLifeStatusChange) {
-        this.lifeStatusCache = newValue.data();
-      }
-    });
-
-    // Only allow digits and empty text
-    this.disambiguationIDField.setTextFormatter(new TextFormatter<>(
-        new IntegerStringConverter(),
-        null,
-        change -> change.getControlNewText().matches("^\\d*$") ? change : null
-    ));
-    this.disambiguationIDField.textProperty().addListener((observable, oldValue, newValue) -> this.updateButtons());
-
-    this.addEventButton.setGraphic(theme.getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
-    this.addEventButton.setOnAction(event -> {
-      DateTimeWithPrecision date = new DateTimeWithPrecision(
-          new CalendarDateTime(LocalDateTime.now(), Calendar.GREGORIAN),
-          DateTimePrecision.EXACT
-      );
-      LifeEventType birth = this.familyTree.lifeEventTypeRegistry()
-          .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
-      this.addEvent(new LifeEvent(date, birth), true);
-    });
-    this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
-
-    this.parent1Combo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.updateButtons());
-    this.parent2Combo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.updateButtons());
-    int i = 1;
-    for (Person.RelativeType type : Person.RelativeType.values()) {
-      RelativesListView component = new RelativesListView();
-      this.relativesLists.put(type, component);
-      this.parentsPane.add(component, 1, i++);
-    }
+    AnchorPane.setTopAnchor(this.tabPane, 0.0);
+    AnchorPane.setBottomAnchor(this.tabPane, 0.0);
+    AnchorPane.setLeftAnchor(this.tabPane, 0.0);
+    AnchorPane.setRightAnchor(this.tabPane, 0.0);
+    this.getDialogPane().setContent(new AnchorPane(this.tabPane));
 
     Stage stage = this.stage();
     stage.setMinWidth(850);
@@ -202,6 +131,246 @@ public class EditPersonDialog extends DialogBase<Person> {
       }
       return null;
     });
+  }
+
+  private Tab createProfileTab() {
+    Language language = App.config().language();
+    Theme theme = App.config().theme();
+
+    Tab tab = new Tab(language.translate("dialog.edit_person.events.title"));
+
+    GridPane gridPane = new GridPane();
+    gridPane.setHgap(4);
+    gridPane.setVgap(4);
+
+    {
+      this.lifeStatusCombo.getItems().addAll(Arrays.stream(LifeStatus.values())
+          .map(lifeStatus -> {
+            String text = language.translate("life_status." + lifeStatus.name().toLowerCase());
+            return new NotNullComboBoxItem<>(lifeStatus, text);
+          })
+          .toList());
+      this.lifeStatusCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+        if (!this.internalLifeStatusChange) {
+          this.lifeStatusCache = newValue.data();
+        }
+      });
+      this.addRow(gridPane, 0, "dialog.edit_person.profile.life_status", this.lifeStatusCombo);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      Label label = new Label(language.translate("dialog.edit_person.profile.legal_last_name"));
+      Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_last_name.tooltip")));
+      HBox.setMargin(helpLabel, new Insets(0, 0, 0, 5));
+      HBox hBox = new HBox(label, helpLabel);
+      gridPane.addRow(1, hBox, this.legalLastNameField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      Label label = new Label(language.translate("dialog.edit_person.profile.legal_first_names"));
+      Label helpLable = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      helpLable.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_first_names.tooltip")));
+      HBox.setMargin(helpLable, new Insets(0, 0, 0, 5));
+      HBox hBox = new HBox(label, helpLable);
+      gridPane.addRow(2, hBox, this.legalFirstNamesField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      Label label = new Label(language.translate("dialog.edit_person.profile.public_last_name"));
+      Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_last_name.tooltip")));
+      HBox.setMargin(helpLabel, new Insets(0, 0, 0, 5));
+      HBox hBox = new HBox(label, helpLabel);
+      gridPane.addRow(3, hBox, this.publicLastNameField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      Label label = new Label(language.translate("dialog.edit_person.profile.public_first_names"));
+      Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_first_names.tooltip")));
+      HBox.setMargin(helpLabel, new Insets(0, 0, 0, 5));
+      HBox hBox = new HBox(label, helpLabel);
+      gridPane.addRow(4, hBox, this.publicFirstNamesField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      this.addRow(gridPane, 5, "dialog.edit_person.profile.nicknames", this.nicknamesField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      this.addRow(gridPane, 6, "dialog.edit_person.profile.gender", this.genderCombo);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      this.addRow(gridPane, 7, "dialog.edit_person.profile.main_occupation", this.mainOccupationField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      Label label = new Label(language.translate("dialog.edit_person.profile.disambiguation_id"));
+      Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.disambiguation_id.tooltip")));
+      HBox.setMargin(helpLabel, new Insets(0, 0, 0, 5));
+      HBox hBox = new HBox(label, helpLabel);
+      // Only allow digits and empty text
+      this.disambiguationIDField.setTextFormatter(new TextFormatter<>(
+          new IntegerStringConverter(),
+          null,
+          change -> change.getControlNewText().matches("^\\d*$") ? change : null
+      ));
+      this.disambiguationIDField.textProperty().addListener((observable, oldValue, newValue) -> this.updateButtons());
+      gridPane.addRow(8, hBox, this.disambiguationIDField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      Label notesLabel = new Label(language.translate("dialog.edit_person.profile.notes"));
+      GridPane.setMargin(notesLabel, new Insets(5, 0, 0, 0));
+      GridPane.setValignment(notesLabel, VPos.TOP);
+      gridPane.addRow(9, notesLabel, this.notesField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.ALWAYS);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      Label sourcesLabel = new Label(language.translate("dialog.edit_person.profile.sources"));
+      GridPane.setMargin(sourcesLabel, new Insets(5, 0, 0, 0));
+      GridPane.setValignment(sourcesLabel, VPos.TOP);
+      gridPane.addRow(10, sourcesLabel, this.sourcesField);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.ALWAYS);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    ColumnConstraints cc1 = new ColumnConstraints();
+    cc1.setHgrow(Priority.SOMETIMES);
+    ColumnConstraints cc2 = new ColumnConstraints();
+    cc2.setHgrow(Priority.ALWAYS);
+    gridPane.getColumnConstraints().addAll(cc1, cc2);
+
+    AnchorPane.setTopAnchor(gridPane, 10.0);
+    AnchorPane.setBottomAnchor(gridPane, 10.0);
+    AnchorPane.setLeftAnchor(gridPane, 10.0);
+    AnchorPane.setRightAnchor(gridPane, 10.0);
+
+    tab.setContent(new AnchorPane(gridPane));
+    return tab;
+  }
+
+  private Tab createEventsTab() {
+    Language language = App.config().language();
+    Theme theme = App.config().theme();
+
+    Tab tab = new Tab(language.translate("dialog.edit_person.events.title"));
+
+    Pane spacer = new Pane();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    this.addEventButton.setText(language.translate("dialog.edit_person.add_event"));
+    this.addEventButton.setGraphic(theme.getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
+    this.addEventButton.setOnAction(event -> {
+      DateTimeWithPrecision date = new DateTimeWithPrecision(
+          new CalendarDateTime(LocalDateTime.now(), Calendar.GREGORIAN),
+          DateTimePrecision.EXACT
+      );
+      LifeEventType birth = this.familyTree.lifeEventTypeRegistry()
+          .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
+      this.addEvent(new LifeEvent(date, birth), true);
+    });
+    HBox buttonsBox = new HBox(spacer, this.addEventButton);
+
+    this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
+    VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
+
+    VBox vBox = new VBox(10, buttonsBox, this.lifeEventsList);
+    AnchorPane.setTopAnchor(vBox, 10.0);
+    AnchorPane.setBottomAnchor(vBox, 10.0);
+    AnchorPane.setLeftAnchor(vBox, 10.0);
+    AnchorPane.setRightAnchor(vBox, 10.0);
+
+    tab.setContent(new AnchorPane(vBox));
+    return tab;
+  }
+
+  private Tab createParentsTab() {
+    Language language = App.config().language();
+
+    Tab tab = new Tab(language.translate("dialog.edit_person.parents.title"));
+
+    GridPane gridPane = new GridPane();
+    gridPane.setHgap(4);
+    gridPane.setVgap(4);
+
+    {
+      this.parent1Combo.getSelectionModel().selectedItemProperty()
+          .addListener((observable, oldValue, newValue) -> this.updateButtons());
+      this.parent2Combo.getSelectionModel().selectedItemProperty()
+          .addListener((observable, oldValue, newValue) -> this.updateButtons());
+      HBox parentsBox = new HBox(4, this.parent1Combo, this.parent2Combo);
+      this.addRow(gridPane, 0, "dialog.edit_person.parents.parents", parentsBox);
+      RowConstraints rc = new RowConstraints();
+      rc.setValignment(VPos.TOP);
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    int i = 1;
+    for (Person.RelativeType type : Person.RelativeType.values()) {
+      RelativesListView component = new RelativesListView();
+      this.relativesLists.put(type, component);
+      Label label = new Label(language.translate(
+          "dialog.edit_person.parents.%s_parents".formatted(type.name().toLowerCase())));
+      GridPane.setMargin(label, new Insets(5, 0, 0, 0));
+      gridPane.addRow(i++, label, component);
+      RowConstraints rc = new RowConstraints();
+      rc.setValignment(VPos.TOP);
+      rc.setVgrow(Priority.ALWAYS);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    ColumnConstraints cc1 = new ColumnConstraints();
+    cc1.setHgrow(Priority.SOMETIMES);
+    ColumnConstraints cc2 = new ColumnConstraints();
+    cc2.setHgrow(Priority.ALWAYS);
+    gridPane.getColumnConstraints().addAll(cc1, cc2);
+
+    AnchorPane.setTopAnchor(gridPane, 10.0);
+    AnchorPane.setBottomAnchor(gridPane, 10.0);
+    AnchorPane.setLeftAnchor(gridPane, 10.0);
+    AnchorPane.setRightAnchor(gridPane, 10.0);
+
+    tab.setContent(new AnchorPane(gridPane));
+    return tab;
+  }
+
+  private void addRow(@NotNull GridPane gridPane, int index, @NotNull String text, @NotNull Node node) {
+    gridPane.addRow(index, new Label(App.config().language().translate(text)), node);
   }
 
   /**

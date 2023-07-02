@@ -1,12 +1,13 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.Language;
@@ -35,12 +36,8 @@ import java.util.*;
  * User may choose to show/hide birthdays of deceased persons.
  */
 public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonClickObservable {
-  @FXML
-  @SuppressWarnings("unused")
-  private CheckBox showDeceasedCheckBox;
-  @FXML
-  @SuppressWarnings("unused")
-  private TabPane tabPane;
+  private final CheckBox showDeceasedCheckBox = new CheckBox();
+  private final TabPane tabPane = new TabPane();
   private final ListView<PersonItem> todayList = new ListView<>();
   private final ListView<PersonItem> tomorrowList = new ListView<>();
   private final ListView<PersonItem> afterTomorrowList = new ListView<>();
@@ -53,13 +50,19 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
    */
   public BirthdaysDialog() {
     super("birthdays", true, false, ButtonTypes.CLOSE);
+
     Config config = App.config();
     Language language = config.language();
 
+    this.showDeceasedCheckBox.setText(language.translate("dialog.birthdays.show_deceased_birthdays"));
     this.showDeceasedCheckBox.setSelected(config.shouldShowDeceasedPersonsBirthdays());
     this.showDeceasedCheckBox.selectedProperty()
         .addListener((observable, oldValue, newValue) -> this.onCheckBoxSelection(newValue));
+    HBox.setMargin(this.showDeceasedCheckBox, new Insets(4));
 
+    HBox hBox = new HBox(this.showDeceasedCheckBox);
+
+    // First tab’s content
     VBox.setVgrow(this.todayList, Priority.ALWAYS);
     VBox.setVgrow(this.tomorrowList, Priority.ALWAYS);
     VBox.setVgrow(this.afterTomorrowList, Priority.ALWAYS);
@@ -72,13 +75,31 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
         this.afterTomorrowList
     );
     vBox.setStyle("-fx-padding: 10px 0 0 0");
-    this.tabPane.getTabs().get(0).setContent(vBox);
 
+    this.tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+    Tab firstTab = new Tab(language.translate("dialog.birthdays.tab.upcoming"));
+    firstTab.setContent(vBox);
+    this.tabPane.getTabs().add(firstTab);
+
+    // Per-month tabs
     for (int i = 1; i <= 12; i++) {
       this.tabPane.getTabs().add(new BirthdayTab(i));
     }
-    this.stage().setMinWidth(300);
-    this.stage().setMinHeight(300);
+
+    VBox content1 = new VBox(hBox, this.tabPane);
+    AnchorPane.setTopAnchor(content1, 0.0);
+    AnchorPane.setBottomAnchor(content1, 0.0);
+    AnchorPane.setLeftAnchor(content1, 0.0);
+    AnchorPane.setRightAnchor(content1, 0.0);
+
+    AnchorPane content = new AnchorPane(content1);
+    content.setPrefWidth(1100);
+    content.setPrefHeight(700);
+    this.getDialogPane().setContent(content);
+
+    Stage stage = this.stage();
+    stage.setMinWidth(300);
+    stage.setMinHeight(300);
   }
 
   /**

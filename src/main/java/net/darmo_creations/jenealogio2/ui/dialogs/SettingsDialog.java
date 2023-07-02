@@ -1,9 +1,11 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Spinner;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Config;
 import net.darmo_creations.jenealogio2.config.DateFormat;
@@ -11,6 +13,7 @@ import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.config.TimeFormat;
 import net.darmo_creations.jenealogio2.themes.Theme;
 import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
+import net.darmo_creations.jenealogio2.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -21,21 +24,11 @@ import java.time.format.DateTimeFormatter;
  * Dialog to update the app’s settings. It is not resizable.
  */
 public class SettingsDialog extends DialogBase<ButtonType> {
-  @FXML
-  @SuppressWarnings("unused")
-  private ComboBox<Language> languageCombo;
-  @FXML
-  @SuppressWarnings("unused")
-  private ComboBox<Theme> themeCombo;
-  @FXML
-  @SuppressWarnings("unused")
-  private ComboBox<NotNullComboBoxItem<DateFormat>> dateFormatCombo;
-  @FXML
-  @SuppressWarnings("unused")
-  private ComboBox<NotNullComboBoxItem<TimeFormat>> timeFormatCombo;
-  @FXML
-  @SuppressWarnings("unused")
-  private Spinner<Integer> maxTreeHeightField;
+  private final ComboBox<Language> languageCombo = new ComboBox<>();
+  private final ComboBox<Theme> themeCombo = new ComboBox<>();
+  private final ComboBox<NotNullComboBoxItem<DateFormat>> dateFormatCombo = new ComboBox<>();
+  private final ComboBox<NotNullComboBoxItem<TimeFormat>> timeFormatCombo = new ComboBox<>();
+  private final Spinner<Integer> maxTreeHeightField = new Spinner<>(1, 7, 1);
 
   private Config initialConfig;
   private Config localConfig;
@@ -45,7 +38,37 @@ public class SettingsDialog extends DialogBase<ButtonType> {
    */
   public SettingsDialog() {
     super("settings", false, ButtonTypes.OK, ButtonTypes.CANCEL);
-    //noinspection DataFlowIssue
+
+    VBox vBox = new VBox(this.createInterfaceForm(), new Separator(), this.createTreeForm());
+    AnchorPane.setTopAnchor(vBox, 0.0);
+    AnchorPane.setBottomAnchor(vBox, 0.0);
+    AnchorPane.setLeftAnchor(vBox, 0.0);
+    AnchorPane.setRightAnchor(vBox, 0.0);
+    Region content = new AnchorPane(vBox);
+    content.setPrefWidth(500);
+    this.getDialogPane().setContent(content);
+
+    this.setResultConverter(buttonType -> {
+      if (!buttonType.getButtonData().isCancelButton()) {
+        ChangeType changeType = this.configChanged();
+        if (changeType.changed()) {
+          try {
+            App.updateConfig(this.localConfig);
+            this.localConfig.save();
+            if (changeType.needsRestart()) {
+              Alerts.info("dialog.settings.alert.needs_restart.header", null, null);
+            }
+          } catch (IOException e) {
+            App.LOGGER.exception(e);
+            Alerts.error("dialog.settings.alert.save_error.header", null, null);
+          }
+        }
+      }
+      return buttonType;
+    });
+  }
+
+  private BorderPane createInterfaceForm() {
     this.languageCombo.getItems().addAll(Config.languages());
     this.languageCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
@@ -68,27 +91,57 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.timeFormatCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onTimeFormatSelect(newValue));
 
+    //noinspection unchecked
+    return this.getBorderPane(
+        "dialog.settings.interface_box.title",
+        new Pair<>("dialog.settings.interface_box.language.label", this.languageCombo),
+        new Pair<>("dialog.settings.interface_box.theme.label", this.themeCombo),
+        new Pair<>("dialog.settings.interface_box.date_format.label", this.dateFormatCombo),
+        new Pair<>("dialog.settings.interface_box.time_format.label", this.timeFormatCombo)
+    );
+  }
+
+  private BorderPane createTreeForm() {
     this.maxTreeHeightField.valueProperty()
         .addListener((observable, oldValue, newValue) -> this.onMaxTreeHeightUpdate(newValue));
 
-    this.setResultConverter(buttonType -> {
-      if (!buttonType.getButtonData().isCancelButton()) {
-        ChangeType changeType = this.configChanged();
-        if (changeType.changed()) {
-          try {
-            App.updateConfig(this.localConfig);
-            this.localConfig.save();
-            if (changeType.needsRestart()) {
-              Alerts.info("dialog.settings.alert.needs_restart.header", null, null);
-            }
-          } catch (IOException e) {
-            App.LOGGER.exception(e);
-            Alerts.error("dialog.settings.alert.save_error.header", null, null);
-          }
-        }
-      }
-      return buttonType;
-    });
+    //noinspection unchecked,SuspiciousNameCombination
+    return this.getBorderPane(
+        "dialog.settings.tree_box.title",
+        new Pair<>("dialog.settings.tree_box.max_height.label", this.maxTreeHeightField)
+    );
+  }
+
+  @SuppressWarnings("unchecked")
+  private BorderPane getBorderPane(@NotNull String title, final Pair<String, ? extends Control>... rows) {
+    Label titleLabel = new Label(App.config().language().translate(title));
+    BorderPane.setAlignment(titleLabel, Pos.CENTER);
+
+    GridPane gridPane = new GridPane();
+    gridPane.setHgap(10);
+    gridPane.setVgap(5);
+    gridPane.setPadding(new Insets(10, 0, 10, 0));
+    BorderPane.setAlignment(gridPane, Pos.CENTER);
+
+    for (int i = 0; i < rows.length; i++) {
+      Label nodeLabel = new Label(App.config().language().translate(rows[i].left()));
+      GridPane.setHalignment(nodeLabel, HPos.RIGHT);
+      Node node = rows[i].right();
+      GridPane.setHalignment(node, HPos.LEFT);
+      gridPane.addRow(i, nodeLabel, node);
+      RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    ColumnConstraints cc1 = new ColumnConstraints();
+    cc1.setMaxWidth(300);
+    cc1.setHgrow(Priority.SOMETIMES);
+    ColumnConstraints cc2 = new ColumnConstraints();
+    cc2.setHgrow(Priority.SOMETIMES);
+    gridPane.getColumnConstraints().addAll(cc1, cc2);
+
+    return new BorderPane(gridPane, titleLabel, null, null, null);
   }
 
   /**

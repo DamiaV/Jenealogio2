@@ -1,40 +1,36 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.utils.FormatArg;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
 
 import java.net.URL;
+import java.util.List;
 
 /**
  * Dialog that displays information about this app. It is not resizable.
  */
 public class AboutDialog extends DialogBase<ButtonType> {
-  @FXML
-  @SuppressWarnings("unused")
-  private ImageView logo;
-  @FXML
-  @SuppressWarnings("unused")
-  private Label titleLabel;
-  @FXML
-  @SuppressWarnings("unused")
-  private TextArea contentView;
-
   /**
    * Create an about dialog.
    */
   public AboutDialog() {
     super("about", false, ButtonTypes.CLOSE);
-    this.setTitle(StringUtils.format(this.getTitle(), new FormatArg("app_name", App.NAME)));
-    this.logo.setImage(this.createImage());
-    this.titleLabel.setText(App.NAME);
-    this.contentView.setText("""
+    Label titleLabel = new Label();
+    titleLabel.setText(App.NAME);
+    titleLabel.setStyle("-fx-font-size: 1.2em; -fx-font-weight: bold");
+    VBox.setMargin(titleLabel, new Insets(10));
+
+    TextArea contentView = new TextArea();
+    contentView.setText("""
         App version: %s
                 
         Developped by Damia Vergnet (@Darmo117 on GitHub).
@@ -45,13 +41,31 @@ public class AboutDialog extends DialogBase<ButtonType> {
         System properties:
         %s
         """.formatted(App.VERSION, App.getSystemProperties()));
+    contentView.setEditable(false);
+    VBox.setVgrow(contentView, Priority.ALWAYS);
+
+    VBox vBox = new VBox(10, titleLabel, contentView);
+
+    ImageView logo = new ImageView(createImage());
+    logo.setFitHeight(100);
+    logo.setFitWidth(100);
+
+    HBox content = new HBox(10, logo, vBox);
+    content.setPrefWidth(600);
+    content.setPrefHeight(300);
+    this.getDialogPane().setContent(content);
+  }
+
+  @Override
+  protected List<FormatArg> getTitleFormatArgs() {
+    return List.of(new FormatArg("app_name", App.NAME));
   }
 
   /**
    * Return an {@link Image} object of the app’s icon.
    */
-  private Image createImage() {
-    URL url = this.getClass().getResource(App.IMAGES_PATH + "app-icon.png");
+  private static Image createImage() {
+    URL url = AboutDialog.class.getResource(App.IMAGES_PATH + "app-icon.png");
     if (url == null) {
       return null;
     }

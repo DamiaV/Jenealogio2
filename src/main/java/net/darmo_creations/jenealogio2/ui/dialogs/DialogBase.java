@@ -1,14 +1,15 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import net.darmo_creations.jenealogio2.App;
+import net.darmo_creations.jenealogio2.config.Config;
+import net.darmo_creations.jenealogio2.utils.FormatArg;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
+import java.util.List;
 
 /**
  * Base class for this app’s dialogs.
@@ -39,19 +40,21 @@ public abstract class DialogBase<T> extends Dialog<T> {
    */
   public DialogBase(@NotNull String name, boolean resizable, boolean modal, ButtonType @NotNull ... buttonTypes) {
     this.name = name;
-    FXMLLoader loader = App.getFxmlLoader(name.replace('_', '-') + "-dialog");
-    loader.setController(this);
-    try {
-      this.getDialogPane().setContent(loader.load());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    App.config().theme().getStyleSheets()
+    Config config = App.config();
+    config.theme().getStyleSheets()
         .forEach(url -> this.stage().getScene().getStylesheets().add(url.toExternalForm()));
     this.initModality(modal ? Modality.APPLICATION_MODAL : Modality.NONE);
     this.setResizable(resizable);
-    this.setTitle(loader.getResources().getString("dialog.%s.title".formatted(name)));
+    this.setTitle(config.language().translate("dialog.%s.title".formatted(name),
+        this.getTitleFormatArgs().toArray(FormatArg[]::new)));
     this.getDialogPane().getButtonTypes().addAll(buttonTypes);
+  }
+
+  /**
+   * Return a list of {@link FormatArg}s to use when formatting this dialog’s title.
+   */
+  protected List<FormatArg> getTitleFormatArgs() {
+    return List.of();
   }
 
   /**

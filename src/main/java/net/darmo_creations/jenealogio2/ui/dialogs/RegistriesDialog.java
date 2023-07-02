@@ -2,15 +2,12 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.converter.DefaultStringConverter;
@@ -31,19 +28,7 @@ import java.util.stream.Collectors;
 /**
  * Dialog that allows editing registries.
  */
-@SuppressWarnings("unused")
 public class RegistriesDialog extends DialogBase<ButtonType> {
-  @FXML
-  private VBox lifeEventTypesVBox;
-  @FXML
-  private VBox gendersVBox;
-  @FXML
-  private Button importButton;
-  @FXML
-  private Button importFromTreeButton;
-  @FXML
-  private Button exportButton;
-
   private final LifeEventTypeRegistryView eventTypesView = new LifeEventTypeRegistryView();
   private final GenderRegistryView gendersView = new GenderRegistryView();
 
@@ -53,10 +38,32 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   public RegistriesDialog() {
     super("edit_registries", true, ButtonTypes.CANCEL, ButtonTypes.OK);
 
-    VBox.setVgrow(this.eventTypesView, Priority.ALWAYS);
-    this.lifeEventTypesVBox.getChildren().add(0, this.eventTypesView);
-    VBox.setVgrow(this.gendersView, Priority.ALWAYS);
-    this.gendersVBox.getChildren().add(0, this.gendersView);
+    Language language = App.config().language();
+
+    TabPane tabPane = new TabPane(
+        this.createTab("life_event_types", this.eventTypesView),
+        this.createTab("genders", this.gendersView)
+    );
+    tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+    VBox.setVgrow(tabPane, Priority.ALWAYS);
+
+    Button importButton = new Button();
+    importButton.setText(language.translate("dialog.edit_registries.import"));
+    Button importFromTreeButton = new Button();
+    importFromTreeButton.setText(language.translate("dialog.edit_registries.import_from_tree"));
+    Button exportButton = new Button();
+    exportButton.setText(language.translate("dialog.edit_registries.export"));
+    HBox buttonsBox = new HBox(4, importButton, importFromTreeButton, exportButton);
+
+    VBox vBox = new VBox(4, tabPane, buttonsBox);
+    AnchorPane.setTopAnchor(vBox, 0.0);
+    AnchorPane.setBottomAnchor(vBox, 0.0);
+    AnchorPane.setLeftAnchor(vBox, 0.0);
+    AnchorPane.setRightAnchor(vBox, 0.0);
+    AnchorPane content = new AnchorPane(vBox);
+    content.setPrefWidth(600);
+    content.setPrefHeight(400);
+    this.getDialogPane().setContent(content);
 
     Stage stage = this.stage();
     stage.setMinWidth(600);
@@ -69,6 +76,22 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       }
       return buttonType;
     });
+  }
+
+  private Tab createTab(@NotNull String name, final @NotNull RegistryView<?, ?, ?> registryView) {
+    Language language = App.config().language();
+    Tab tab = new Tab(language.translate("dialog.edit_registries.tab.%s.title".formatted(name)));
+
+    Label description = new Label(language.translate("dialog.edit_registries.tab.%s.description".formatted(name)));
+    description.setWrapText(true);
+
+    VBox.setVgrow(registryView, Priority.ALWAYS);
+
+    VBox vBox = new VBox(4, registryView, description);
+    vBox.setPadding(new Insets(4));
+    tab.setContent(vBox);
+
+    return tab;
   }
 
   /**
@@ -530,7 +553,6 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       entry.setGroup(this.groupProperty.get());
       entry.setIndicatesDeath(this.indicatesDeathProperty.get());
       if (this.usage() == 0) {
-        int currentMax = entry.maxActors();
         int actorsNb = this.actorsNbProperty.get();
         entry.setActorsNumber(actorsNb, actorsNb, this.indicatesUnionProperty.get());
         entry.setUnique(this.uniqueProperty.get());
