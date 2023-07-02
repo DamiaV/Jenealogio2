@@ -6,34 +6,46 @@
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
             prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <children>
-    <TabPane tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-             AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-      <tabs>
-        <Tab text="%dialog.edit_registries.tab.life_event_types.title">
-          <content>
-            <VBox fx:id="lifeEventTypesVBox" spacing="4.0">
-              <children>
-                <Label text="%dialog.edit_registries.tab.life_event_types.description" wrapText="true"/>
-              </children>
-              <padding>
-                <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
-              </padding>
-            </VBox>
-          </content>
-        </Tab>
-        <Tab text="%dialog.edit_registries.tab.genders.title">
-          <content>
-            <VBox fx:id="gendersVBox" spacing="4.0">
-              <children>
-                <Label text="%dialog.edit_registries.tab.genders.description" wrapText="true"/>
-              </children>
-              <padding>
-                <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
-              </padding>
-            </VBox>
-          </content>
-        </Tab>
-      </tabs>
-    </TabPane>
+    <VBox spacing="4" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+      <children>
+        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+          <tabs>
+            <Tab text="%dialog.edit_registries.tab.life_event_types.title">
+              <content>
+                <VBox fx:id="lifeEventTypesVBox" spacing="4.0">
+                  <children>
+                    <Label text="%dialog.edit_registries.tab.life_event_types.description" wrapText="true"/>
+                  </children>
+                  <padding>
+                    <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+                  </padding>
+                </VBox>
+              </content>
+            </Tab>
+            <Tab text="%dialog.edit_registries.tab.genders.title">
+              <content>
+                <VBox fx:id="gendersVBox" spacing="4.0">
+                  <children>
+                    <Label text="%dialog.edit_registries.tab.genders.description" wrapText="true"/>
+                  </children>
+                  <padding>
+                    <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+                  </padding>
+                </VBox>
+              </content>
+            </Tab>
+          </tabs>
+        </TabPane>
+        <Separator/>
+        <HBox spacing="4">
+          <children>
+            <Button fx:id="importButton" text="%dialog.edit_registries.import"/>
+            <Button fx:id="importFromTreeButton" text="%dialog.edit_registries.import_from_tree"/>
+            <Button fx:id="exportButton" text="%dialog.edit_registries.export"/>
+          </children>
+        </HBox>
+      </children>
+    </VBox>
   </children>
 </AnchorPane>

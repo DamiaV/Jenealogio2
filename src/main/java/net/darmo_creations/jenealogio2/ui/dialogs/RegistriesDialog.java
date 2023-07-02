@@ -37,6 +37,12 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private VBox lifeEventTypesVBox;
   @FXML
   private VBox gendersVBox;
+  @FXML
+  private Button importButton;
+  @FXML
+  private Button importFromTreeButton;
+  @FXML
+  private Button exportButton;
 
   private final LifeEventTypeRegistryView eventTypesView = new LifeEventTypeRegistryView();
   private final GenderRegistryView gendersView = new GenderRegistryView();
