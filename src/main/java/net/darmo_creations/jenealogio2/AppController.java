@@ -5,9 +5,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
+import javafx.scene.input.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import net.darmo_creations.jenealogio2.config.Config;
@@ -144,6 +142,34 @@ public class AppController {
 
     this.birthdaysDialog.personClickListeners()
         .add(event -> this.onPersonClick(event, null));
+
+    // Files drag-and-drop
+    scene.setOnDragOver(event -> {
+      if (event.getGestureSource() == null // From another application
+          && event.getDragboard().hasFiles()
+          && event.getDragboard().getFiles().size() == 1) {
+        event.acceptTransferModes(TransferMode.COPY);
+      }
+      event.consume();
+    });
+    scene.setOnDragDropped(event -> {
+      Dragboard db = event.getDragboard();
+      boolean success = db.hasFiles() && event.getDragboard().getFiles().size() == 1;
+      if (success) {
+        if (!this.defaultEmptyTree && this.unsavedChanges) {
+          boolean open = Alerts.confirmation(
+              "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+          if (!open) {
+            success = false;
+          }
+        }
+      }
+      if (success) {
+        this.loadFile(db.getFiles().get(0));
+      }
+      event.setDropCompleted(success);
+      event.consume();
+    });
   }
 
   private MenuBar createMenuBar() {
