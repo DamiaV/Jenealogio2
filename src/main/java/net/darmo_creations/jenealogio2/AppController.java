@@ -880,14 +880,12 @@ public class AppController {
       this.birthdaysDialog.refresh(this.familyTree);
     }
 
-    boolean emptyTree = this.familyTree.persons().isEmpty();
     Optional<Person> selectedPerson = this.getSelectedPerson();
     boolean selection = selectedPerson.isPresent();
     boolean hasBothParents = selection && selectedPerson.get().hasBothParents();
     boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
 
-    this.saveMenuItem.setDisable(!this.unsavedChanges || emptyTree);
-    this.saveAsMenuItem.setDisable(emptyTree);
+    this.saveMenuItem.setDisable(!this.unsavedChanges);
     this.setAsRootMenuItem.setDisable(!selection || selectedIsRoot);
     this.editPersonMenuItem.setDisable(!selection);
     this.removePersonMenuItem.setDisable(!selection || selectedIsRoot);
@@ -897,8 +895,7 @@ public class AppController {
     this.editLifeEventsMenuItem.setDisable(!selection);
 //    this.setPictureMenuItem.setDisable(!selection); // TEMP disabled until implemented
 
-    this.saveToolbarButton.setDisable(!this.unsavedChanges || emptyTree);
-    this.saveAsToolbarButton.setDisable(emptyTree);
+    this.saveToolbarButton.setDisable(!this.unsavedChanges);
     this.setAsRootToolbarButton.setDisable(!selection || selectedIsRoot);
     this.addChildToolbarButton.setDisable(!selection);
     this.addSiblingToolbarButton.setDisable(!hasBothParents);

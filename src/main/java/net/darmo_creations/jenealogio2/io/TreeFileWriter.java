@@ -5,6 +5,7 @@ import net.darmo_creations.jenealogio2.model.datetime.DateTime;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimeAlternative;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimeRange;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
+import net.darmo_creations.jenealogio2.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -47,7 +48,7 @@ public class TreeFileWriter extends TreeFileManager {
     }
     List<LifeEvent> lifeEvents = new LinkedList<>();
 
-    this.writeUserRegistryEntries(document, familyTreeElement, familyTree);
+    this.writeUserRegistryEntries(document, familyTreeElement, familyTree, null);
     Element peopleElement = (Element) familyTreeElement.appendChild(document.createElement(PEOPLE_TAG));
     this.writePersons(document, familyTreeElement, peopleElement, familyTree, persons, personIDs, lifeEvents);
     Element lifeEventsElement = document.createElement(LIFE_EVENTS_TAG);
@@ -60,21 +61,44 @@ public class TreeFileWriter extends TreeFileManager {
   }
 
   /**
+   * Save registries to a .reg file.
+   *
+   * @param file       File to write to.
+   * @param familyTree Family tree object containing entries to save.
+   * @param keep       Lists of {@link RegistryEntryKey} of entries to save.
+   * @throws IOException If any error occurs.
+   */
+  public void saveRegistriesToFile(
+      @NotNull File file,
+      @NotNull FamilyTree familyTree,
+      final @NotNull Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep
+  ) throws IOException {
+    Document document = this.newDocumentBuilder().newDocument();
+    Element dummyElement = document.createElement("dummy");
+    this.writeUserRegistryEntries(document, dummyElement, familyTree, keep);
+    Element registriesElement = (Element) dummyElement.getChildNodes().item(0);
+    document.appendChild(registriesElement);
+    this.setAttr(document, registriesElement, REGISTRIES_VERSION_ATTR, String.valueOf(VERSION));
+    this.writeFile(file, document);
+  }
+
+  /**
    * Write all user-defined registry entries.
    *
    * @param document          Current XML document.
    * @param familyTreeElement XML element to write into.
    * @param familyTree        Tree to get entries from.
+   * @param keep              Lists of {@link RegistryEntryKey} of entries to save.
+   *                          If null, all eligible entries are kept
    */
   private void writeUserRegistryEntries(
-      @NotNull Document document, @NotNull Element familyTreeElement, final @NotNull FamilyTree familyTree) {
+      @NotNull Document document, @NotNull Element familyTreeElement, final @NotNull FamilyTree familyTree,
+      final Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep) {
     Element registriesElement = document.createElement(REGISTRIES_TAG);
-    List<Gender> userGenders = familyTree.genderRegistry().entries().stream()
-        .filter(gender -> !gender.isBuiltin() || !gender.color().equals(gender.defaultColor()))
-        .toList();
-    List<LifeEventType> userLifeEventTypes = familyTree.lifeEventTypeRegistry().entries().stream()
-        .filter(lifeEventType -> !lifeEventType.isBuiltin())
-        .toList();
+    List<LifeEventType> userLifeEventTypes = familyTree.lifeEventTypeRegistry().serializableEntries().stream()
+        .filter(entry -> keep != null && keep.left().contains(entry.key())).toList();
+    List<Gender> userGenders = familyTree.genderRegistry().serializableEntries().stream()
+        .filter(entry -> keep != null && keep.right().contains(entry.key())).toList();
 
     if (!userGenders.isEmpty()) {
       Element gendersElement = document.createElement(GENDERS_TAG);

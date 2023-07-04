@@ -52,6 +52,13 @@ public abstract class Registry<E extends RegistryEntry, A> {
   }
 
   /**
+   * A list of this registry’s entries that may be saved to files, in no particular order.
+   */
+  public List<E> serializableEntries() {
+    return this.entries.values().stream().filter(entry -> !entry.isBuiltin()).toList();
+  }
+
+  /**
    * Return the entry with the given key.
    *
    * @param key Key of the entry to get.
@@ -122,6 +129,11 @@ public abstract class Registry<E extends RegistryEntry, A> {
     }
     this.entries.remove(entry.key());
   }
+
+  /**
+   * Return the build arguments for the given entry.
+   */
+  public abstract A getBuildArgs(final @NotNull E entry);
 
   /**
    * Wrapper class to provide builtin entries when creating a registry.

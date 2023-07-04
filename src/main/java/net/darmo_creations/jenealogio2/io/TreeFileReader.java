@@ -40,7 +40,7 @@ public class TreeFileReader extends TreeFileManager {
     if (!familyTreeElement.getTagName().equals(FAMILY_TREE_TAG)) {
       throw new IOException("Missing root element");
     }
-    int version = this.getAttr(familyTreeElement, FAMILY_TREE_VERSION_ATTR, Integer::parseInt, () -> 1, false);
+    int version = this.getAttr(familyTreeElement, FAMILY_TREE_VERSION_ATTR, Integer::parseInt, null, false);
     if (version != 1) {
       throw new IOException("Unsupported XML file version: " + version);
     }
@@ -68,6 +68,35 @@ public class TreeFileReader extends TreeFileManager {
     }
 
     return familyTree;
+  }
+
+  /**
+   * Read registries from a .reg file.
+   *
+   * @param file File to load.
+   * @return The corresponding registries.
+   * @throws IOException If any error occurs.
+   */
+  public RegistriesWrapper loadRegistriesFile(@NotNull File file) throws IOException {
+    FamilyTree dummyTree = new FamilyTree("dummy");
+    Document document = this.readFile(file);
+    NodeList childNodes = document.getChildNodes();
+    if (childNodes.getLength() != 1) {
+      throw new IOException("Parse error");
+    }
+    Element registriesElement = (Element) childNodes.item(0);
+    if (!registriesElement.getTagName().equals(REGISTRIES_TAG)) {
+      throw new IOException("Missing root element");
+    }
+    int version = this.getAttr(registriesElement, REGISTRIES_VERSION_ATTR, Integer::parseInt, null, false);
+    if (version != 1) {
+      throw new IOException("Unsupported XML file version: " + version);
+    }
+    this.loadUserRegistries(registriesElement, dummyTree);
+    return new RegistriesWrapper(
+        dummyTree.lifeEventTypeRegistry().serializableEntries(),
+        dummyTree.genderRegistry().serializableEntries()
+    );
   }
 
   /**

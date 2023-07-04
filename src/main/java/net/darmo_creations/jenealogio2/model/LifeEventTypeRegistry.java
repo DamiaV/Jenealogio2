@@ -81,6 +81,12 @@ public final class LifeEventTypeRegistry extends Registry<LifeEventType, LifeEve
     );
   }
 
+  @Override
+  public RegistryArgs getBuildArgs(@NotNull LifeEventType entry) {
+    return new RegistryArgs(entry.group(), entry.indicatesDeath(), entry.indicatesUnion(),
+        entry.minActors(), entry.maxActors(), entry.isUnique());
+  }
+
   /**
    * Wrapper class used to declare new {@link LifeEventType} entries.
    *

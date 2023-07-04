@@ -1,8 +1,13 @@
 package net.darmo_creations.jenealogio2.io;
 
+import net.darmo_creations.jenealogio2.model.Gender;
+import net.darmo_creations.jenealogio2.model.LifeEventType;
+import org.jetbrains.annotations.NotNull;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.util.List;
 
 /**
  * Base class for tree files managers.
@@ -11,6 +16,7 @@ public abstract class TreeFileManager {
   // Tags and attributes names
   public static final String FAMILY_TREE_TAG = "FamilyTree";
   public static final String FAMILY_TREE_VERSION_ATTR = "version";
+  public static final String REGISTRIES_VERSION_ATTR = "version";
   public static final String FAMILY_TREE_NAME_ATTR = "name";
   public static final String FAMILY_TREE_ROOT_ATTR = "root";
   public static final String REGISTRIES_TAG = "Registries";
@@ -75,13 +81,17 @@ public abstract class TreeFileManager {
   public static final String DATE_ALTERNATIVE = "alternative";
 
   /**
-   * Current version of tree files.
+   * Current version of tree/registries files.
    */
   public static final int VERSION = 1;
   /**
-   * Tree files’ extension.
+   * Tree files extension.
    */
   public static final String EXTENSION = ".jtree";
+  /**
+   * Registries files extension.
+   */
+  public static final String REG_FILE_EXTENSION = ".reg";
 
   private final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
@@ -98,5 +108,11 @@ public abstract class TreeFileManager {
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e); // Should never happen
     }
+  }
+
+  public record RegistriesWrapper(
+      @NotNull List<LifeEventType> lifeEventTypes,
+      @NotNull List<Gender> genders
+  ) {
   }
 }

@@ -51,6 +51,11 @@ public final class Gender extends RegistryEntry {
   }
 
   @Override
+  public RegistryEntry withKey(@NotNull RegistryEntryKey key) {
+    return new Gender(key, this.userDefinedName(), this.color);
+  }
+
+  @Override
   public String toString() {
     return "Gender{key=%s, color='%s'}".formatted(this.key(), this.color);
   }

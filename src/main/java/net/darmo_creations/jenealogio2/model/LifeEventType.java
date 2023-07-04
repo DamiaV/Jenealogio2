@@ -149,6 +149,11 @@ public final class LifeEventType extends RegistryEntry {
   }
 
   @Override
+  public RegistryEntry withKey(@NotNull RegistryEntryKey key) {
+    return new LifeEventType(key, this.userDefinedName(), this.group, this.indicatesDeath, this.indicatesUnion, this.minActors, this.maxActors, this.unique);
+  }
+
+  @Override
   protected void ensureNotBuiltin(@NotNull String property) {
     if (!this.init) {
       super.ensureNotBuiltin(property);

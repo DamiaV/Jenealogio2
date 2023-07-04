@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.model;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -22,6 +23,18 @@ public final class GenderRegistry extends Registry<Gender, GenderRegistry.Regist
         new BuiltinEntry<>("male", new RegistryArgs("#00b69e")),
         new BuiltinEntry<>("non_binary", new RegistryArgs("#fff430"))
     );
+  }
+
+  @Override
+  public List<Gender> serializableEntries() {
+    return this.entries().stream()
+        .filter(entry -> !entry.isBuiltin() || !entry.color().equals(entry.defaultColor()))
+        .toList();
+  }
+
+  @Override
+  public RegistryArgs getBuildArgs(@NotNull Gender entry) {
+    return new RegistryArgs(entry.color());
   }
 
   /**

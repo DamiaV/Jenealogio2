@@ -60,6 +60,14 @@ public abstract class RegistryEntry {
     }
   }
 
+  /**
+   * Create a copy of this entry with the given key.
+   *
+   * @param key A key.
+   * @return A copy of this entry.
+   */
+  public abstract RegistryEntry withKey(@NotNull RegistryEntryKey key);
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

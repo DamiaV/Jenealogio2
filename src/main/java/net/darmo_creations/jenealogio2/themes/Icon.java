@@ -67,6 +67,8 @@ public enum Icon {
   ADD_ENTRY("plus"),
   DELETE_ENTRY("cross"),
   RESET_ENTRY("undo"),
+
+  INFO("information"),
   ;
 
   private final String baseName;
