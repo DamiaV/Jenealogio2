@@ -13,6 +13,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.converter.DefaultStringConverter;
 import net.darmo_creations.jenealogio2.App;
@@ -275,7 +276,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private abstract class RegistryView<TI extends TableItem<RE, A>, RE extends RegistryEntry, A>
       extends VBox {
     private final Button removeButton;
-    protected final TableView<TI> entriesTable = new TableView<>(); // TODO localize empty table text
+    protected final TableView<TI> entriesTable = new TableView<>();
     protected final HBox buttonsBox;
 
     protected Registry<RE, A> registry;
@@ -304,6 +305,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
 
       // Table
       VBox.setVgrow(this.entriesTable, Priority.ALWAYS);
+      this.entriesTable.setPlaceholder(new Text(language.translate("dialog.edit_registries.entries_table.empty")));
       this.entriesTable.setPrefHeight(0);
       this.entriesTable.setEditable(true);
 
