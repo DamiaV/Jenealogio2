@@ -121,7 +121,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private void onImport() {
-    Optional<File> file = FileChoosers.showRegistriesFileChooser(this.getOwner());
+    Optional<File> file = FileChoosers.showRegistriesFileChooser(this.getOwner(), null);
     if (file.isEmpty()) {
       return;
     }
@@ -152,7 +152,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private void onImportFromTree() {
-    Optional<File> file = FileChoosers.showTreeFileChooser(this.getOwner());
+    Optional<File> file = FileChoosers.showTreeFileChooser(this.getOwner(), null);
     if (file.isEmpty()) {
       return;
     }
@@ -202,7 +202,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
       return;
     }
-    Optional<File> file = FileChoosers.showRegistriesFileSaver(this.getOwner());
+    Optional<File> file = FileChoosers.showRegistriesFileSaver(this.getOwner(), "registries");
     if (file.isEmpty()) {
       return;
     }

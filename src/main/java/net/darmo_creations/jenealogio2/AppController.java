@@ -582,7 +582,7 @@ public class AppController {
         return;
       }
     }
-    Optional<File> f = FileChoosers.showTreeFileChooser(this.stage);
+    Optional<File> f = FileChoosers.showTreeFileChooser(this.stage, null);
     if (f.isEmpty()) {
       return;
     }
@@ -625,7 +625,7 @@ public class AppController {
   private void onSaveAction() {
     File file;
     if (this.loadedFile == null) {
-      Optional<File> f = FileChoosers.showTreeFileSaver(this.stage);
+      Optional<File> f = FileChoosers.showTreeFileSaver(this.stage, this.familyTree.name());
       if (f.isEmpty()) {
         return;
       }
@@ -648,7 +648,7 @@ public class AppController {
    * Open a file saver dialog to save the current tree to.
    */
   private void onSaveAsAction() {
-    Optional<File> f = FileChoosers.showTreeFileSaver(this.stage);
+    Optional<File> f = FileChoosers.showTreeFileSaver(this.stage, this.familyTree.name());
     if (f.isEmpty()) {
       return;
     }
