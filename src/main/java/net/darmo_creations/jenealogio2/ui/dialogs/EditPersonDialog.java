@@ -132,7 +132,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     Language language = App.config().language();
     Theme theme = App.config().theme();
 
-    Tab tab = new Tab(language.translate("dialog.edit_person.events.title"));
+    Tab tab = new Tab(language.translate("dialog.edit_person.profile.title"));
 
     GridPane gridPane = new GridPane();
     gridPane.setHgap(4);
