@@ -1,34 +1,18 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.model.Gender;
-import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.model.datetime.DateTime;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimeAlternative;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimeRange;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.ui.ChildInfo;
-import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
-import net.darmo_creations.jenealogio2.ui.PseudoClasses;
-import org.jetbrains.annotations.NotNull;
+import javafx.geometry.*;
+import javafx.scene.control.*;
+import javafx.scene.image.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.*;
+import org.jetbrains.annotations.*;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * A JavaFX component representing a single person in the {@link FamilyTreePane}.
@@ -53,7 +37,7 @@ public class PersonWidget extends AnchorPane {
   private PersonWidget parentWidget1;
   private PersonWidget parentWidget2;
 
-  private final AnchorPane imagePane = new AnchorPane();
+  private final VBox imagePane = new VBox();
   private final ImageView imageView = new ImageView();
   private final Label firstNameLabel = new Label();
   private final Label lastNameLabel = new Label();
@@ -114,21 +98,21 @@ public class PersonWidget extends AnchorPane {
     }
     pane.getChildren().add(iconsBox);
 
-    int size = 54;
-    this.imagePane.setPrefSize(size, size);
-    this.imagePane.setMinSize(size, size);
-    this.imagePane.setMaxSize(size, size);
-    this.imagePane.setPadding(new Insets(2));
-    HBox imageBox = new HBox(this.imagePane);
-    imageBox.setAlignment(Pos.CENTER);
-    pane.getChildren().add(imageBox);
-    AnchorPane.setTopAnchor(this.imageView, 0.0);
-    AnchorPane.setBottomAnchor(this.imageView, 0.0);
-    AnchorPane.setLeftAnchor(this.imageView, 0.0);
-    AnchorPane.setRightAnchor(this.imageView, 0.0);
+    final int imageSize = 50;
+    final int inset = 2;
+    final int size = imageSize + 2 * inset;
+    this.imagePane.setPadding(new Insets(inset));
+    VBox imageBoxInner = new VBox(this.imagePane);
+    imageBoxInner.setAlignment(Pos.CENTER);
+    HBox imageBoxOuter = new HBox(imageBoxInner);
+    imageBoxOuter.setAlignment(Pos.CENTER);
+    imageBoxOuter.setMinHeight(size);
+    imageBoxOuter.setMaxHeight(size);
+    imageBoxOuter.setPrefHeight(size);
+    pane.getChildren().add(imageBoxOuter);
     this.imageView.setPreserveRatio(true);
-    this.imageView.setFitHeight(50);
-    this.imageView.setFitWidth(50);
+    this.imageView.setFitHeight(imageSize);
+    this.imageView.setFitWidth(imageSize);
     this.imagePane.getChildren().add(this.imageView);
 
     VBox infoPane = new VBox(this.firstNameLabel, this.lastNameLabel, this.birthDateLabel, this.deathDateLabel);
