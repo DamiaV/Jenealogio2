@@ -1,14 +1,12 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.stage.FileChooser;
-import javafx.stage.Window;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.io.TreeFileManager;
-import org.jetbrains.annotations.NotNull;
+import javafx.stage.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.io.*;
+import org.jetbrains.annotations.*;
 
-import java.io.File;
-import java.util.List;
-import java.util.Optional;
+import java.io.*;
+import java.util.*;
 
 /**
  * This class provides methods to open file saver/chooser dialogs.
@@ -81,7 +79,7 @@ public final class FileChoosers {
    * @return The selected file.
    */
   private static Optional<File> getRegistriesFile(@NotNull Window stage, @NotNull String titleKey, boolean saver, String defaultName) {
-    return getFile(stage, titleKey, saver, TreeFileManager.REG_FILE_EXTENSION, "registries_file_chooser", defaultName);
+    return getFile(stage, titleKey, saver, TreeXMLManager.REG_FILE_EXTENSION, "registries_file_chooser", defaultName);
   }
 
   /**

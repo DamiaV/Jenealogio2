@@ -213,7 +213,7 @@ public class PersonWidget extends AnchorPane {
       return;
     }
 
-    this.imageView.setImage(this.person.getImage().orElse(DEFAULT_IMAGE));
+    this.imageView.setImage(this.person.getImage().map(Picture::image).orElse(DEFAULT_IMAGE));
     String genderColor = this.person.gender().map(Gender::color).orElse(Gender.MISSING_COLOR);
     this.imagePane.setStyle("-fx-background-color: " + genderColor);
 

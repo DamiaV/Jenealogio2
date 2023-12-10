@@ -1,35 +1,26 @@
 package net.darmo_creations.jenealogio2;
 
-import javafx.application.Platform;
-import javafx.geometry.Orientation;
-import javafx.scene.Scene;
+import javafx.application.*;
+import javafx.geometry.*;
+import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
+import javafx.scene.image.*;
 import javafx.scene.input.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.io.TreeFileReader;
-import net.darmo_creations.jenealogio2.io.TreeFileWriter;
-import net.darmo_creations.jenealogio2.model.FamilyTree;
-import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.themes.Theme;
+import javafx.scene.layout.*;
+import javafx.stage.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.io.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.dialogs.*;
-import net.darmo_creations.jenealogio2.ui.events.DeselectPersonsEvent;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickEvent;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
-import net.darmo_creations.jenealogio2.utils.FormatArg;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.ui.events.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 /**
  * Application’s main controller.

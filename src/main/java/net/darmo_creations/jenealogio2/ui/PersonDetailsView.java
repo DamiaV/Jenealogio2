@@ -1,29 +1,19 @@
 package net.darmo_creations.jenealogio2.ui;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
+import javafx.geometry.*;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
+import javafx.scene.image.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.TextFlow;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.config.Language;
+import javafx.scene.text.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.components.NoSelectionModel;
-import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
-import net.darmo_creations.jenealogio2.ui.events.NewParentClickListener;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
-import net.darmo_creations.jenealogio2.utils.DateTimeUtils;
-import net.darmo_creations.jenealogio2.utils.Pair;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.ui.events.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -268,7 +258,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void populateFields() {
-    this.imageView.setImage(this.person.getImage().orElse(PersonWidget.DEFAULT_IMAGE));
+    this.imageView.setImage(this.person.getImage().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
     this.fullNameLabel.setText(this.person.toString());
     this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
     Optional<Gender> gender = this.person.gender();
@@ -558,7 +548,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         event.consume();
       });
 
-      this.imageView.setImage(person.getImage().orElse(PersonWidget.DEFAULT_IMAGE));
+      this.imageView.setImage(person.getImage().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
       String genderColor = person.gender().map(Gender::color).orElse(Gender.MISSING_COLOR);
       this.imagePane.setStyle("-fx-background-color: " + genderColor);
 

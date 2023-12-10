@@ -1,41 +1,29 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.beans.property.*;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.geometry.Insets;
+import javafx.collections.*;
+import javafx.event.*;
+import javafx.geometry.*;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import javafx.stage.Stage;
-import javafx.util.converter.DefaultStringConverter;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.io.TreeFileManager;
-import net.darmo_creations.jenealogio2.io.TreeFileReader;
-import net.darmo_creations.jenealogio2.io.TreeFileWriter;
+import javafx.scene.control.cell.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.*;
+import javafx.scene.text.*;
+import javafx.stage.*;
+import javafx.util.converter.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.PseudoClasses;
-import net.darmo_creations.jenealogio2.ui.components.ColorPickerTableCell;
-import net.darmo_creations.jenealogio2.utils.FormatArg;
-import net.darmo_creations.jenealogio2.utils.Pair;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.*;
 
 /**
  * Dialog that allows editing registries.
@@ -55,7 +43,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
 
   // File managers
   private final TreeFileReader treeFileReader = new TreeFileReader();
-  private final TreeFileWriter treeFileWriter = new TreeFileWriter();
+  private final TreeXMLReader treeXMLReader = new TreeXMLReader();
+  private final TreeXMLWriter treeXMLWriter = new TreeXMLWriter();
 
   /**
    * Create an about dialog.
@@ -125,9 +114,9 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     if (file.isEmpty()) {
       return;
     }
-    TreeFileManager.RegistriesWrapper registries;
+    TreeXMLManager.RegistriesWrapper registries;
     try {
-      registries = this.treeFileReader.loadRegistriesFile(file.get());
+      registries = this.treeXMLReader.loadRegistriesFile(file.get());
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
@@ -212,7 +201,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         selectedItems.right().stream().map(RegistryEntry::key).toList()
     );
     try {
-      this.treeFileWriter.saveRegistriesToFile(file.get(), this.familyTree, selectedKeys);
+      this.treeXMLWriter.saveRegistriesToFile(file.get(), this.familyTree, selectedKeys);
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(

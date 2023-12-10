@@ -1,15 +1,12 @@
 package net.darmo_creations.jenealogio2.model;
 
-import javafx.scene.image.Image;
-import net.darmo_creations.jenealogio2.model.datetime.DateTime;
-import net.darmo_creations.jenealogio2.utils.Pair;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.function.*;
+import java.util.stream.*;
 
 /**
  * This class represents a person, deceased or alive.
@@ -54,6 +51,7 @@ public class Person extends GenealogyObject<Person> {
   private static final Comparator<Person> BIRTH_DATE_THEN_NAME_COMPARATOR_REVERSED =
       BIRTH_DATE_THEN_NAME_COMPARATOR_FACTORY.apply(true);
 
+  private Picture image;
   private FamilyTree familyTree;
   private Integer disambiguationID;
   private LifeStatus lifeStatus = LifeStatus.LIVING;
@@ -98,8 +96,19 @@ public class Person extends GenealogyObject<Person> {
   /**
    * This person’s profile image.
    */
-  public Optional<Image> getImage() {
-    return Optional.empty(); // TODO image
+  public Optional<Picture> getImage() {
+    return Optional.ofNullable(this.image);
+  }
+
+  /**
+   * Set this person’s profile image.
+   *
+   * @param image The image.
+   * @return This object.
+   */
+  public Person setImage(final Picture image) {
+    this.image = image;
+    return this;
   }
 
   /**
