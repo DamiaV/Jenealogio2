@@ -136,6 +136,19 @@ public class TreeXMLWriter extends TreeXMLManager {
     if (registriesElement.hasChildNodes()) {
       familyTreeElement.appendChild(registriesElement);
     }
+
+    Collection<Picture> pictures = familyTree.pictures();
+    if (!pictures.isEmpty()) {
+      Element picturesElement = document.createElement(PICTURES_TAG);
+      pictures.forEach(picture -> {
+        Element pictureElement = (Element) picturesElement.appendChild(document.createElement(PICTURE_TAG));
+        this.setAttr(document, pictureElement, PICTURE_NAME_ATTR, picture.name());
+        Element descElement = document.createElement(PICTURE_DESC_TAG);
+        descElement.setTextContent(picture.description());
+        pictureElement.appendChild(descElement);
+      });
+      familyTreeElement.appendChild(picturesElement);
+    }
   }
 
   // endregion
@@ -167,7 +180,7 @@ public class TreeXMLWriter extends TreeXMLManager {
 
       Element personElement = (Element) peopleElement.appendChild(document.createElement(PERSON_TAG));
 
-      // TODO write pictures tag
+      this.writePicturesTag(document, personElement, person);
       this.writeDisambiguationIdTag(document, personElement, person);
       this.writeLifeStatusTag(document, personElement, person);
       this.writeLegalLastNameTag(document, personElement, person);
@@ -184,6 +197,25 @@ public class TreeXMLWriter extends TreeXMLManager {
       this.writeRelativesTag(document, personElement, person, personIDs);
       this.writeNotesTag(document, personElement, person);
       this.writeSourcesTag(document, personElement, person);
+    }
+  }
+
+  private void writePicturesTag(
+      @NotNull Document document,
+      @NotNull Element element,
+      final @NotNull GenealogyObject<?> o
+  ) {
+    Collection<Picture> pictures = o.pictures();
+    if (!pictures.isEmpty()) {
+      Element picturesElement = document.createElement(PICTURES_TAG);
+      pictures.forEach(picture -> {
+        Element pictureElement = (Element) picturesElement.appendChild(document.createElement(PICTURE_TAG));
+        this.setAttr(document, pictureElement, PICTURE_NAME_ATTR, picture.name());
+        if (o.mainPicture().map(p -> p == picture).orElse(false)) {
+          this.setAttr(document, pictureElement, PICTURE_MAIN_ATTR, "true");
+        }
+      });
+      element.appendChild(picturesElement);
     }
   }
 
@@ -360,7 +392,7 @@ public class TreeXMLWriter extends TreeXMLManager {
     for (LifeEvent lifeEvent : lifeEvents) {
       Element lifeEventElement = (Element) lifeEventsElement.appendChild(document.createElement(LIFE_EVENT_TAG));
 
-      // TODO write pictures tag
+      this.writePicturesTag(document, lifeEventElement, lifeEvent);
       this.writeDateTag(document, lifeEventElement, lifeEvent);
       this.writeLifeEventTypeTag(document, lifeEventElement, lifeEvent);
       this.writePlace(document, lifeEventElement, lifeEvent);
