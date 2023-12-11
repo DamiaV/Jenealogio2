@@ -464,7 +464,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    * Small component that displays a person’s image, name, birth and death dates.
    */
   private class PersonCard extends HBox {
-    private final AnchorPane imagePane = new AnchorPane();
+    private final VBox imagePane = new VBox();
     private final ImageView imageView = new ImageView();
     private final Label nameLabel = new Label();
     private final Label birthDateLabel = new Label();
@@ -492,20 +492,20 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
       this.getStyleClass().add("person-widget");
 
-      int size = 54;
-      this.imagePane.setPrefSize(size, size);
-      this.imagePane.setMinSize(size, size);
-      this.imagePane.setMaxSize(size, size);
-      this.imagePane.setPadding(new Insets(2));
-      HBox imageBox = new HBox(this.imagePane);
-      imageBox.setAlignment(Pos.CENTER);
-      AnchorPane.setTopAnchor(this.imageView, 0.0);
-      AnchorPane.setBottomAnchor(this.imageView, 0.0);
-      AnchorPane.setLeftAnchor(this.imageView, 0.0);
-      AnchorPane.setRightAnchor(this.imageView, 0.0);
+      final int imageSize = 50;
+      final int inset = 2;
+      final int size = imageSize + 2 * inset;
+      this.imagePane.setPadding(new Insets(inset));
+      VBox imageBoxInner = new VBox(this.imagePane);
+      imageBoxInner.setAlignment(Pos.CENTER);
+      HBox imageBoxOuter = new HBox(imageBoxInner);
+      imageBoxOuter.setAlignment(Pos.CENTER);
+      imageBoxOuter.setMinHeight(size);
+      imageBoxOuter.setMaxHeight(size);
+      imageBoxOuter.setPrefHeight(size);
       this.imageView.setPreserveRatio(true);
-      this.imageView.setFitHeight(50);
-      this.imageView.setFitWidth(50);
+      this.imageView.setFitHeight(imageSize);
+      this.imageView.setFitWidth(imageSize);
       this.imagePane.getChildren().add(this.imageView);
 
       Theme theme = App.config().theme();
@@ -513,7 +513,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       this.deathDateLabel.setGraphic(theme.getIcon(Icon.DEATH, Icon.Size.SMALL));
 
       this.getChildren().addAll(
-          imageBox,
+          imageBoxOuter,
           new VBox(4, this.nameLabel, this.birthDateLabel, this.deathDateLabel)
       );
 
