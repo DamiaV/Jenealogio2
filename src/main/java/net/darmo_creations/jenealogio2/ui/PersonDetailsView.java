@@ -496,13 +496,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       final int inset = 2;
       final int size = imageSize + 2 * inset;
       this.imagePane.setPadding(new Insets(inset));
-      VBox imageBoxInner = new VBox(this.imagePane);
+      HBox imageBoxInner = new HBox(this.imagePane);
       imageBoxInner.setAlignment(Pos.CENTER);
-      HBox imageBoxOuter = new HBox(imageBoxInner);
+      VBox imageBoxOuter = new VBox(imageBoxInner);
       imageBoxOuter.setAlignment(Pos.CENTER);
-      imageBoxOuter.setMinHeight(size);
-      imageBoxOuter.setMaxHeight(size);
-      imageBoxOuter.setPrefHeight(size);
+      imageBoxOuter.setMinWidth(size);
+      imageBoxOuter.setMaxWidth(size);
+      imageBoxOuter.setPrefWidth(size);
       this.imageView.setPreserveRatio(true);
       this.imageView.setFitHeight(imageSize);
       this.imageView.setFitWidth(imageSize);
