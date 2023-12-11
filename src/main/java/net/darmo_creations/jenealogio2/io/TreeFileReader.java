@@ -26,7 +26,8 @@ public class TreeFileReader extends TreeFileManager {
 
     try (var zipFile = new ZipFile(file);
          var inputStream = zipFile.getInputStream(zipFile.getEntry(TREE_FILE))) {
-      familyTree = this.treeXMLReader.readFromStream(inputStream, s -> this.readImageFile(zipFile, s));
+      familyTree = this.treeXMLReader.readFromStream(
+          inputStream, (name, desc) -> this.readImageFile(zipFile, name, desc));
     } catch (RuntimeException e) {
       throw new IOException(e);
     }
@@ -34,7 +35,7 @@ public class TreeFileReader extends TreeFileManager {
     return familyTree;
   }
 
-  private Optional<Picture> readImageFile(@NotNull ZipFile zipFile, @NotNull String name) {
+  private Optional<Picture> readImageFile(@NotNull ZipFile zipFile, @NotNull String name, String description) {
     Objects.requireNonNull(name);
     ZipEntry entry = zipFile.getEntry("%s/%s".formatted(IMAGES_DIR, name));
     if (entry == null) {
@@ -42,7 +43,7 @@ public class TreeFileReader extends TreeFileManager {
     }
     try (var inputStream = zipFile.getInputStream(entry)) {
       Image image = new Image(inputStream);
-      return Optional.of(new Picture(image, name));
+      return Optional.of(new Picture(image, name, description));
     } catch (IOException e) {
       return Optional.empty();
     }

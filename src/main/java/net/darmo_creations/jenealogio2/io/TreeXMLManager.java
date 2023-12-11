@@ -19,6 +19,7 @@ public abstract class TreeXMLManager {
   protected static final String REGISTRIES_TAG = "Registries";
   protected static final String PEOPLE_TAG = "People";
   protected static final String LIFE_EVENTS_TAG = "LifeEvents";
+  protected static final String PICTURES_TAG = "Pictures";
   protected static final String GENDERS_TAG = "Genders";
   protected static final String REGISTRY_ENTRY_TAG = "Entry";
   protected static final String REGISTRY_ENTRY_KEY_ATTR = "key";
@@ -32,8 +33,6 @@ public abstract class TreeXMLManager {
   protected static final String LIFE_EVENT_TYPE_UNIQUE_ATTR = "unique";
   protected static final String DISAMBIGUATION_ID_TAG = "DisambiguationID";
   protected static final String DISAMBIG_ID_VALUE_ATTR = "value";
-  protected static final String IMAGE_TAG = "Image";
-  protected static final String IMAGE_NAME_ATTR = "name";
   protected static final String LIFE_STATUS_TAG = "LifeStatus";
   protected static final String LIFE_STATUS_ORDINAL_ATTR = "ordinal";
   protected static final String LEGAL_LAST_NAME_TAG = "LegalLastName";
@@ -74,6 +73,10 @@ public abstract class TreeXMLManager {
   protected static final String WITNESSES_TAG = "Witnesses";
   protected static final String PERSON_TAG = "Person";
   protected static final String PERSON_ID_ATTR = "id";
+  protected static final String PICTURE_TAG = "Picture";
+  protected static final String PICTURE_NAME_ATTR = "name";
+  protected static final String PICTURE_MAIN_ATTR = "main";
+  protected static final String PICTURE_DESC_TAG = "Description";
 
   protected static final String DATE_WITH_PRECISION = "with_precision";
   protected static final String DATE_RANGE = "range";

@@ -1,6 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -14,6 +14,7 @@ public class FamilyTree {
 
   private final Set<Person> persons = new HashSet<>();
   private final Set<LifeEvent> lifeEvents = new HashSet<>();
+  private final Map<String, Picture> pictures = new HashMap<>();
   private String name;
   private Person root;
 
@@ -54,6 +55,23 @@ public class FamilyTree {
    */
   public Set<LifeEvent> lifeEvents() {
     return new HashSet<>(this.lifeEvents);
+  }
+
+  /**
+   * Get a view of this tree’s pictures.
+   */
+  public Collection<Picture> pictures() {
+    return this.pictures.values();
+  }
+
+  /**
+   * Get a picture with the given name.
+   *
+   * @param name The picture’s name.
+   * @return The picture.
+   */
+  public Optional<Picture> getPicture(@NotNull String name) {
+    return Optional.ofNullable(this.pictures.get(name));
   }
 
   /**
@@ -152,6 +170,63 @@ public class FamilyTree {
    */
   public void removeWitnessFromLifeEvent(@NotNull LifeEvent lifeEvent, @NotNull Person witness) {
     lifeEvent.removeWitness(witness);
+  }
+
+  /**
+   * Add a picture to this tree.
+   *
+   * @param picture The picture to add.
+   * @return True if the picture was added, false otherwise.
+   */
+  public boolean addPicture(@NotNull Picture picture) {
+    if (this.pictures.containsKey(picture.name())) {
+      return false;
+    }
+    this.pictures.put(picture.name(), picture);
+    return true;
+  }
+
+  /**
+   * Remove from this tree the picture with the given name.
+   * The picture is also removed from every {@link GenealogyObject}.
+   *
+   * @param name Name of the picture to remove.
+   * @return The removed picture.
+   */
+  public Picture removePicture(@NotNull String name) {
+    Objects.requireNonNull(name);
+    this.persons.forEach(p -> p.removePicture(name));
+    return this.pictures.remove(name);
+  }
+
+  /**
+   * Add a picture from this tree to the given {@link GenealogyObject}.
+   *
+   * @param name Name of the picture to add.
+   * @param o    The object to update.
+   */
+  public void addPictureToObject(@NotNull String name, @NotNull GenealogyObject<?> o) {
+    o.addPicture(this.pictures.get(Objects.requireNonNull(name)));
+  }
+
+  /**
+   * Remove from the given {@link GenealogyObject} the picture with the given ID.
+   *
+   * @param name Name of the picture to remove.
+   * @param o    The object to update.
+   */
+  public void removePictureFromObject(@NotNull String name, @NotNull GenealogyObject<?> o) {
+    o.removePicture(name);
+  }
+
+  /**
+   * Set the main picture of a {@link GenealogyObject}.
+   *
+   * @param name Name of the picture to set as main. May be null.
+   * @param o    The object to update.
+   */
+  public void setMainPictureOfObject(@NotNull String name, @NotNull GenealogyObject<?> o) {
+    o.setMainPicture(name);
   }
 
   /**

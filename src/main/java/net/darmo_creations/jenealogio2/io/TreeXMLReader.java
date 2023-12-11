@@ -19,13 +19,13 @@ public class TreeXMLReader extends TreeXMLManager {
   /**
    * Read a family tree object from an input stream.
    *
-   * @param inputStream         The stream to read from.
-   * @param personImageProvider Function that provides an image for the given name.
+   * @param inputStream   The stream to read from.
+   * @param imageProvider Function that provides an image for the given name and description.
    * @return The corresponding family tree object.
    * @throws IOException If any error occurs.
    */
   public FamilyTree readFromStream(@NotNull InputStream inputStream,
-                                   @NotNull Function<String, Optional<Picture>> personImageProvider)
+                                   @NotNull BiFunction<String, String, Optional<Picture>> imageProvider)
       throws IOException {
     Document document = this.readFile(inputStream);
 
@@ -53,7 +53,12 @@ public class TreeXMLReader extends TreeXMLManager {
       this.loadUserRegistries(registriesElement.get(), familyTree);
     }
 
-    List<Person> persons = this.readPersons(peopleElement, familyTree, personImageProvider);
+    Optional<Element> picturesElement = this.getChildElement(familyTreeElement, PICTURES_TAG, true);
+    if (picturesElement.isPresent()) {
+      this.loadPictures(picturesElement.get(), familyTree, imageProvider);
+    }
+
+    List<Person> persons = this.readPersons(peopleElement, familyTree);
     try {
       familyTree.setRoot(persons.get(rootID));
     } catch (IndexOutOfBoundsException e) {
@@ -155,18 +160,39 @@ public class TreeXMLReader extends TreeXMLManager {
   }
 
   /**
+   * Load the pictures from the {@code <Pictures>} tag.
+   *
+   * @param picturesElement XML element containing the pictures’ definitions.
+   * @param familyTree      The family tree to load pictures into.
+   * @param imageProvider   Function that provides an image for the given name.
+   * @throws IOException In any error occurs.
+   */
+  private void loadPictures(
+      @NotNull Element picturesElement,
+      @NotNull FamilyTree familyTree,
+      @NotNull BiFunction<String, String, Optional<Picture>> imageProvider
+  ) throws IOException {
+    List<Element> pictureElements = this.getChildElements(picturesElement, PICTURE_TAG);
+    for (Element pictureElement : pictureElements) {
+      String name = this.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
+      Optional<Element> descElement = this.getChildElement(pictureElement, PICTURE_DESC_TAG, true);
+      String desc = descElement.map(Element::getTextContent).orElse(null);
+      Optional<Picture> picture = imageProvider.apply(name, desc);
+      picture.ifPresent(familyTree::addPicture);
+    }
+  }
+
+  /**
    * Read all Person XML elements.
    *
-   * @param peopleElement       XML element containing Person elements.
-   * @param familyTree          The family tree to populate.
-   * @param personImageProvider Function that provides an image for the given name.
+   * @param peopleElement XML element containing Person elements.
+   * @param familyTree    The family tree to populate.
    * @return The list of loaded persons.
    * @throws IOException In any error occurs.
    */
   private List<Person> readPersons(
       final @NotNull Element peopleElement,
-      @NotNull FamilyTree familyTree,
-      @NotNull Function<String, Optional<Picture>> personImageProvider
+      @NotNull FamilyTree familyTree
   ) throws IOException {
     List<Person> persons = new LinkedList<>();
     Map<Person, Pair<Integer, Integer>> parentIDS = new HashMap<>();
@@ -175,11 +201,18 @@ public class TreeXMLReader extends TreeXMLManager {
     for (Element personElement : this.getChildElements(peopleElement, PERSON_TAG)) {
       Person person = new Person();
 
-      // Image
-      Optional<Element> imageElement = this.getChildElement(personElement, IMAGE_TAG, true);
-      if (imageElement.isPresent()) {
-        String imageName = this.getAttr(imageElement.get(), IMAGE_NAME_ATTR, s -> s, () -> null, false);
-        personImageProvider.apply(imageName).ifPresent(person::setImage);
+      // Pictures
+      Optional<Element> picturesElement = this.getChildElement(personElement, PICTURES_TAG, true);
+      if (picturesElement.isPresent()) {
+        List<Element> pictureElements = this.getChildElements(picturesElement.get(), PICTURE_TAG);
+        for (Element pictureElement : pictureElements) {
+          String name = this.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
+          familyTree.addPictureToObject(name, person);
+          boolean isMain = this.getAttr(pictureElement, PICTURE_MAIN_ATTR, Boolean::parseBoolean, () -> false, false);
+          if (isMain) {
+            familyTree.setMainPictureOfObject(name, person);
+          }
+        }
       }
 
       // Disambiguation ID

@@ -258,7 +258,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void populateFields() {
-    this.imageView.setImage(this.person.getImage().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+    this.imageView.setImage(this.person.mainPicture().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
     this.fullNameLabel.setText(this.person.toString());
     this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
     Optional<Gender> gender = this.person.gender();
@@ -548,7 +548,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         event.consume();
       });
 
-      this.imageView.setImage(person.getImage().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+      this.imageView.setImage(person.mainPicture().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
       String genderColor = person.gender().map(Gender::color).orElse(Gender.MISSING_COLOR);
       this.imagePane.setStyle("-fx-background-color: " + genderColor);
 

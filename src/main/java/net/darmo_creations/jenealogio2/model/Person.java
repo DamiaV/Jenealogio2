@@ -51,7 +51,6 @@ public class Person extends GenealogyObject<Person> {
   private static final Comparator<Person> BIRTH_DATE_THEN_NAME_COMPARATOR_REVERSED =
       BIRTH_DATE_THEN_NAME_COMPARATOR_FACTORY.apply(true);
 
-  private Picture image;
   private FamilyTree familyTree;
   private Integer disambiguationID;
   private LifeStatus lifeStatus = LifeStatus.LIVING;
@@ -91,24 +90,6 @@ public class Person extends GenealogyObject<Person> {
    */
   void setFamilyTree(@NotNull FamilyTree familyTree) {
     this.familyTree = familyTree;
-  }
-
-  /**
-   * This person’s profile image.
-   */
-  public Optional<Picture> getImage() {
-    return Optional.ofNullable(this.image);
-  }
-
-  /**
-   * Set this person’s profile image.
-   *
-   * @param image The image.
-   * @return This object.
-   */
-  public Person setImage(final Picture image) {
-    this.image = image;
-    return this;
   }
 
   /**

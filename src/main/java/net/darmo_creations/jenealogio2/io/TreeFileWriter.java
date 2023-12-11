@@ -26,7 +26,7 @@ public class TreeFileWriter extends TreeFileManager {
     try (var out = new ZipOutputStream(new FileOutputStream(file))) {
       this.writeTreeXML(familyTree, out);
       for (Person person : familyTree.persons()) {
-        Optional<Picture> image = person.getImage();
+        Optional<Picture> image = person.mainPicture();
         if (image.isPresent()) {
           this.writeImageFile(image.get(), out);
         }
