@@ -1,12 +1,10 @@
 package net.darmo_creations.jenealogio2.config;
 
-import net.darmo_creations.jenealogio2.utils.FormatArg;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.util.Locale;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * This class represents a language.
@@ -33,7 +31,13 @@ public record Language(@NotNull String code, @NotNull String name, @NotNull Loca
    * @return The translated and formatted text.
    */
   public String translate(@NotNull String key, final FormatArg @NotNull ... formatArgs) {
-    String text = this.resources.getString(key);
+    String text;
+    try {
+      text = this.resources.getString(key);
+    } catch (MissingResourceException e) {
+      App.LOGGER.warn(e.getMessage());
+      return key;
+    }
     if (formatArgs.length != 0) {
       return StringUtils.format(text, formatArgs);
     }
