@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.io;
 
+import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.utils.*;
@@ -19,6 +20,8 @@ import java.util.function.*;
 public class TreeXMLWriter extends TreeXMLManager {
   private final TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
+  // region Public methods
+
   /**
    * Save a family tree to an output stream.
    *
@@ -37,13 +40,12 @@ public class TreeXMLWriter extends TreeXMLManager {
     for (int i = 0; i < persons.size(); i++) {
       personIDs.put(persons.get(i), i);
     }
-    List<LifeEvent> lifeEvents = new LinkedList<>();
 
     this.writeUserRegistryEntries(document, familyTreeElement, familyTree, null);
     Element peopleElement = (Element) familyTreeElement.appendChild(document.createElement(PEOPLE_TAG));
-    this.writePersons(document, familyTreeElement, peopleElement, familyTree, persons, personIDs, lifeEvents);
+    this.writePersons(document, familyTreeElement, peopleElement, familyTree, persons, personIDs);
     Element lifeEventsElement = document.createElement(LIFE_EVENTS_TAG);
-    this.writeEvents(document, lifeEventsElement, lifeEvents, personIDs);
+    this.writeEvents(document, lifeEventsElement, familyTree.lifeEvents(), personIDs);
     if (lifeEventsElement.hasChildNodes()) {
       familyTreeElement.appendChild(lifeEventsElement);
     }
@@ -75,6 +77,9 @@ public class TreeXMLWriter extends TreeXMLManager {
     }
   }
 
+  // endregion
+  // region User registries
+
   /**
    * Write all user-defined registry entries.
    *
@@ -85,13 +90,16 @@ public class TreeXMLWriter extends TreeXMLManager {
    *                          If null, all eligible entries are kept
    */
   private void writeUserRegistryEntries(
-      @NotNull Document document, @NotNull Element familyTreeElement, final @NotNull FamilyTree familyTree,
-      final Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep) {
+      @NotNull Document document,
+      @NotNull Element familyTreeElement,
+      final @NotNull FamilyTree familyTree,
+      final Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep
+  ) {
     Element registriesElement = document.createElement(REGISTRIES_TAG);
     List<LifeEventType> userLifeEventTypes = familyTree.lifeEventTypeRegistry().serializableEntries().stream()
-        .filter(entry -> keep != null && keep.left().contains(entry.key())).toList();
+        .filter(entry -> keep == null || keep.left().contains(entry.key())).toList();
     List<Gender> userGenders = familyTree.genderRegistry().serializableEntries().stream()
-        .filter(entry -> keep != null && keep.right().contains(entry.key())).toList();
+        .filter(entry -> keep == null || keep.right().contains(entry.key())).toList();
 
     if (!userGenders.isEmpty()) {
       Element gendersElement = document.createElement(GENDERS_TAG);
@@ -130,6 +138,9 @@ public class TreeXMLWriter extends TreeXMLManager {
     }
   }
 
+  // endregion
+  // region Persons
+
   /**
    * Write all persons from the tree.
    *
@@ -139,7 +150,6 @@ public class TreeXMLWriter extends TreeXMLManager {
    * @param familyTree        Family tree object to get root from.
    * @param persons           List of persons to write to the document.
    * @param personIDs         Map to get person IDs from.
-   * @param lifeEvents        List of life events to populate.
    */
   private void writePersons(
       @NotNull Document document,
@@ -147,8 +157,7 @@ public class TreeXMLWriter extends TreeXMLManager {
       @NotNull Element peopleElement,
       final @NotNull FamilyTree familyTree,
       final @NotNull List<Person> persons,
-      final @NotNull Map<Person, Integer> personIDs,
-      @NotNull List<LifeEvent> lifeEvents
+      final @NotNull Map<Person, Integer> personIDs
   ) {
     for (Person person : persons) {
       if (familyTree.isRoot(person)) {
@@ -158,103 +167,153 @@ public class TreeXMLWriter extends TreeXMLManager {
 
       Element personElement = (Element) peopleElement.appendChild(document.createElement(PERSON_TAG));
 
-      // Disambiguation ID
-      person.disambiguationID().ifPresent(id -> {
-        Element disambiguationIDElement = (Element) personElement.appendChild(document.createElement(DISAMBIGUATION_ID_TAG));
-        this.setAttr(document, disambiguationIDElement, DISAMBIG_ID_VALUE_ATTR, String.valueOf(id));
-      });
-
-      // Life status
-      Element lifeStatusElement = (Element) personElement.appendChild(document.createElement(LIFE_STATUS_TAG));
-      this.setAttr(document, lifeStatusElement, LIFE_STATUS_ORDINAL_ATTR, String.valueOf(person.lifeStatus().ordinal()));
-
-      // Legal last name
-      person.legalLastName().ifPresent(s -> {
-        Element legalLastNameElement = (Element) personElement.appendChild(document.createElement(LEGAL_LAST_NAME_TAG));
-        this.setAttr(document, legalLastNameElement, NAME_VALUE_ATTR, s);
-      });
-
+      // TODO write pictures tag
+      this.writeDisambiguationIdTag(document, personElement, person);
+      this.writeLifeStatusTag(document, personElement, person);
+      this.writeLegalLastNameTag(document, personElement, person);
       // Legal first names
       this.writeNames(document, personElement, LEGAL_FIRST_NAMES_TAG, person.legalFirstNames());
-
-      // Public last name
-      person.publicLastName().ifPresent(s -> {
-        Element publicLastNameElement = (Element) personElement.appendChild(document.createElement(PUBLIC_LAST_NAME_TAG));
-        this.setAttr(document, publicLastNameElement, NAME_VALUE_ATTR, s);
-      });
-
+      this.writePublicLastNameTag(document, personElement, person);
       // Public first names
       this.writeNames(document, personElement, PUBLIC_FIRST_NAMES_TAG, person.publicFirstNames());
-
       // Nicknames
       this.writeNames(document, personElement, NICKNAMES_TAG, person.nicknames());
-
-      // Gender
-      person.gender().ifPresent(gender -> {
-        Element genderElement = (Element) personElement.appendChild(document.createElement(GENDER_TAG));
-        this.setAttr(document, genderElement, GENDER_KEY_ATTR, gender.key().fullName());
-      });
-
-      // Main occupation
-      person.mainOccupation().ifPresent(occupation -> {
-        Element occupationElement = (Element) personElement.appendChild(document.createElement(MAIN_OCCUPATION_TAG));
-        this.setAttr(document, occupationElement, MAIN_OCCUPATION_VALUE_ATTR, occupation);
-      });
-
-      // Parents
-      var parents = person.parents();
-      Element parentsElement = document.createElement(PARENTS_TAG);
-      Function<Integer, Consumer<Optional<Person>>> writeParent = index -> p ->
-          this.setAttr(document, parentsElement, "id" + index, p.map(p_ -> String.valueOf(personIDs.get(p_))).orElse(""));
-      Optional<Person> leftParent = parents.left();
-      Optional<Person> rightParent = parents.right();
-      writeParent.apply(1).accept(leftParent);
-      writeParent.apply(2).accept(rightParent);
-      if (leftParent.isPresent() || rightParent.isPresent()) {
-        personElement.appendChild(parentsElement);
-      }
-
-      // Relatives
-      Element relativesElement = document.createElement(RELATIVES_TAG);
-      for (Person.RelativeType type : Person.RelativeType.values()) {
-        Set<Person> relatives = person.getRelatives(type);
-        if (relatives.isEmpty()) {
-          continue;
-        }
-        Element groupElement = (Element) relativesElement.appendChild(document.createElement(GROUP_TAG));
-        this.setAttr(document, groupElement, GROUP_ORDINAL_ATTR, String.valueOf(type.ordinal()));
-        for (Person relative : relatives) {
-          Element relativeElement = (Element) groupElement.appendChild(document.createElement(RELATIVE_TAG));
-          this.setAttr(document, relativeElement, RELATIVE_ID_ATTR, String.valueOf(personIDs.get(relative)));
-        }
-      }
-      if (relativesElement.hasChildNodes()) {
-        personElement.appendChild(relativesElement);
-      }
-
-      // Life events
-      Element lifeEventsElement = document.createElement(LIFE_EVENTS_TAG);
-      for (LifeEvent lifeEvent : person.lifeEvents()) {
-        if (!lifeEvents.contains(lifeEvent)) {
-          lifeEvents.add(lifeEvent);
-        }
-      }
-      if (lifeEventsElement.hasChildNodes()) {
-        personElement.appendChild(lifeEventsElement);
-      }
-
-      // Notes
-      person.notes().ifPresent(notes -> {
-        Element notesElement = (Element) personElement.appendChild(document.createElement(NOTES_TAG));
-        notesElement.setTextContent(notes);
-      });
-
-      // Sources
-      person.sources().ifPresent(sources -> {
-        Element sourcesElement = (Element) personElement.appendChild(document.createElement(SOURCES_TAG));
-        sourcesElement.setTextContent(sources);
-      });
+      this.writeGenderTag(document, personElement, person);
+      this.writeMainOccupationTag(document, personElement, person);
+      this.writeParentsTag(document, personElement, person, personIDs);
+      this.writeRelativesTag(document, personElement, person, personIDs);
+      this.writeNotesTag(document, personElement, person);
+      this.writeSourcesTag(document, personElement, person);
     }
+  }
+
+  private void writeDisambiguationIdTag(
+      @NotNull Document document,
+      @NotNull Element personElement,
+      final @NotNull Person person
+  ) {
+    person.disambiguationID().ifPresent(id -> {
+      Element disambiguationIDElement = (Element) personElement.appendChild(document.createElement(DISAMBIGUATION_ID_TAG));
+      this.setAttr(document, disambiguationIDElement, DISAMBIG_ID_VALUE_ATTR, String.valueOf(id));
+    });
+  }
+
+  private void writeLifeStatusTag(
+      @NotNull Document document,
+      @NotNull Element personElement,
+      final @NotNull Person person
+  ) {
+    Element lifeStatusElement = (Element) personElement.appendChild(document.createElement(LIFE_STATUS_TAG));
+    this.setAttr(document, lifeStatusElement, LIFE_STATUS_ORDINAL_ATTR, String.valueOf(person.lifeStatus().ordinal()));
+  }
+
+  private void writeLegalLastNameTag(
+      @NotNull Document document,
+      @NotNull Element personElement,
+      final @NotNull Person person
+  ) {
+    person.legalLastName().ifPresent(s -> {
+      Element legalLastNameElement = (Element) personElement.appendChild(document.createElement(LEGAL_LAST_NAME_TAG));
+      this.setAttr(document, legalLastNameElement, NAME_VALUE_ATTR, s);
+    });
+  }
+
+  private void writePublicLastNameTag(
+      @NotNull Document document,
+      @NotNull Element personElement,
+      final @NotNull Person person
+  ) {
+    person.publicLastName().ifPresent(s -> {
+      Element publicLastNameElement = (Element) personElement.appendChild(document.createElement(PUBLIC_LAST_NAME_TAG));
+      this.setAttr(document, publicLastNameElement, NAME_VALUE_ATTR, s);
+    });
+  }
+
+  private void writeGenderTag(
+      @NotNull Document document,
+      @NotNull Element personElement,
+      final @NotNull Person person
+  ) {
+    person.gender().ifPresent(gender -> {
+      Element genderElement = (Element) personElement.appendChild(document.createElement(GENDER_TAG));
+      this.setAttr(document, genderElement, GENDER_KEY_ATTR, gender.key().fullName());
+    });
+  }
+
+  private void writeMainOccupationTag(
+      @NotNull Document document,
+      @NotNull Element personElement,
+      final @NotNull Person person
+  ) {
+    person.mainOccupation().ifPresent(occupation -> {
+      Element occupationElement = (Element) personElement.appendChild(document.createElement(MAIN_OCCUPATION_TAG));
+      this.setAttr(document, occupationElement, MAIN_OCCUPATION_VALUE_ATTR, occupation);
+    });
+  }
+
+  private void writeParentsTag(
+      @NotNull Document document,
+      @NotNull Element personElement,
+      final @NotNull Person person,
+      final @NotNull Map<Person, Integer> personIDs
+  ) {
+    var parents = person.parents();
+    Element parentsElement = document.createElement(PARENTS_TAG);
+    Function<Integer, Consumer<Optional<Person>>> writeParent = index -> p ->
+        this.setAttr(document, parentsElement, "id" + index, p.map(p_ -> String.valueOf(personIDs.get(p_))).orElse(""));
+    Optional<Person> leftParent = parents.left();
+    Optional<Person> rightParent = parents.right();
+    writeParent.apply(1).accept(leftParent);
+    writeParent.apply(2).accept(rightParent);
+    if (leftParent.isPresent() || rightParent.isPresent()) {
+      personElement.appendChild(parentsElement);
+    }
+  }
+
+  private void writeRelativesTag(
+      @NotNull Document document,
+      @NotNull Element personElement,
+      final @NotNull Person person,
+      final @NotNull Map<Person, Integer> personIDs
+  ) {
+    Element relativesElement = document.createElement(RELATIVES_TAG);
+    for (Person.RelativeType type : Person.RelativeType.values()) {
+      Set<Person> relatives = person.getRelatives(type);
+      if (relatives.isEmpty()) {
+        continue;
+      }
+      Element groupElement = (Element) relativesElement.appendChild(document.createElement(GROUP_TAG));
+      this.setAttr(document, groupElement, GROUP_ORDINAL_ATTR, String.valueOf(type.ordinal()));
+      for (Person relative : relatives) {
+        Element relativeElement = (Element) groupElement.appendChild(document.createElement(RELATIVE_TAG));
+        this.setAttr(document, relativeElement, RELATIVE_ID_ATTR, String.valueOf(personIDs.get(relative)));
+      }
+    }
+    if (relativesElement.hasChildNodes()) {
+      personElement.appendChild(relativesElement);
+    }
+  }
+
+  private void writeNotesTag(
+      @NotNull Document document,
+      @NotNull Element element,
+      final @NotNull GenealogyObject<?> o
+  ) {
+    o.notes().ifPresent(notes -> {
+      Element notesElement = (Element) element.appendChild(document.createElement(NOTES_TAG));
+      notesElement.setTextContent(notes);
+    });
+  }
+
+  private void writeSourcesTag(
+      @NotNull Document document,
+      @NotNull Element element,
+      final @NotNull GenealogyObject<?> o
+  ) {
+    o.sources().ifPresent(sources -> {
+      Element sourcesElement = (Element) element.appendChild(document.createElement(SOURCES_TAG));
+      sourcesElement.setTextContent(sources);
+    });
   }
 
   /**
@@ -281,84 +340,114 @@ public class TreeXMLWriter extends TreeXMLManager {
     });
   }
 
+  // endregion
+  // region Life events
+
   /**
    * Write a list of life events.
    *
    * @param document          Current XML document.
    * @param lifeEventsElement Element to write to.
-   * @param lifeEvents        List of life events to write.
+   * @param lifeEvents        Set of life events to write.
    * @param personIDs         Map to extract person IDs from.
    */
   private void writeEvents(
       @NotNull Document document,
       @NotNull Element lifeEventsElement,
-      final @NotNull List<LifeEvent> lifeEvents,
+      final @NotNull Set<LifeEvent> lifeEvents,
       final @NotNull Map<Person, Integer> personIDs
   ) {
     for (LifeEvent lifeEvent : lifeEvents) {
       Element lifeEventElement = (Element) lifeEventsElement.appendChild(document.createElement(LIFE_EVENT_TAG));
 
-      // Date
-      Element dateElement = (Element) lifeEventElement.appendChild(document.createElement(DATE_TAG));
-      DateTime date = lifeEvent.date();
-      String dateType;
-      if (date instanceof DateTimeWithPrecision d) {
-        dateType = DATE_WITH_PRECISION;
-        this.setAttr(document, dateElement, DATE_DATE_ATTR, d.date().toString());
-        this.setAttr(document, dateElement, DATE_PRECISION_ATTR, String.valueOf(d.precision().ordinal()));
-      } else if (date instanceof DateTimeRange d) {
-        dateType = DATE_RANGE;
-        this.setAttr(document, dateElement, DATE_START_ATTR, d.startDate().toString());
-        this.setAttr(document, dateElement, DATE_END_ATTR, d.endDate().toString());
-      } else if (date instanceof DateTimeAlternative d) {
-        dateType = DATE_ALTERNATIVE;
-        this.setAttr(document, dateElement, DATE_EARLIEST_ATTR, d.earliestDate().toString());
-        this.setAttr(document, dateElement, DATE_LATEST_ATTR, d.latestDate().toString());
-      } else {
-        throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
-      }
-      this.setAttr(document, dateElement, DATE_TYPE_ATTR, dateType);
-
-      // Type
-      Element typeElement = (Element) lifeEventElement.appendChild(document.createElement(TYPE_TAG));
-      this.setAttr(document, typeElement, "key", lifeEvent.type().key().fullName());
-
-      // Place
-      lifeEvent.place().ifPresent(place -> {
-        Element placeElement = (Element) lifeEventElement.appendChild(document.createElement(PLACE_TAG));
-        this.setAttr(document, placeElement, "value", place);
-      });
-
-      // Actors
-      Element actorsElement = (Element) lifeEventElement.appendChild(document.createElement(ACTORS_TAG));
-      lifeEvent.actors().forEach(person -> {
-        Element personElement = (Element) actorsElement.appendChild(document.createElement(PERSON_TAG));
-        this.setAttr(document, personElement, PERSON_ID_ATTR, String.valueOf(personIDs.get(person)));
-      });
-
-      // Witnesses
-      Element witnessesElement = document.createElement(WITNESSES_TAG);
-      lifeEvent.witnesses().forEach(person -> {
-        Element personElement = (Element) witnessesElement.appendChild(document.createElement(PERSON_TAG));
-        this.setAttr(document, personElement, PERSON_ID_ATTR, String.valueOf(personIDs.get(person)));
-      });
-      if (witnessesElement.hasChildNodes()) {
-        lifeEventElement.appendChild(witnessesElement);
-      }
-
-      // Notes
-      lifeEvent.notes().ifPresent(notes -> {
-        Element notesElement = (Element) lifeEventElement.appendChild(document.createElement(NOTES_TAG));
-        notesElement.setTextContent(notes);
-      });
-
-      // Sources
-      lifeEvent.sources().ifPresent(sources -> {
-        Element sourcesElement = (Element) lifeEventElement.appendChild(document.createElement(SOURCES_TAG));
-        sourcesElement.setTextContent(sources);
-      });
+      // TODO write pictures tag
+      this.writeDateTag(document, lifeEventElement, lifeEvent);
+      this.writeLifeEventTypeTag(document, lifeEventElement, lifeEvent);
+      this.writePlace(document, lifeEventElement, lifeEvent);
+      this.writeActorsTag(document, lifeEventElement, lifeEvent, personIDs);
+      this.writeWitnessesTag(document, lifeEventElement, lifeEvent, personIDs);
+      this.writeNotesTag(document, lifeEventElement, lifeEvent);
+      this.writeSourcesTag(document, lifeEventElement, lifeEvent);
     }
   }
+
+  private void writeDateTag(
+      @NotNull Document document,
+      @NotNull Element lifeEventElement,
+      final @NotNull LifeEvent lifeEvent
+  ) {
+    Element dateElement = (Element) lifeEventElement.appendChild(document.createElement(DATE_TAG));
+    DateTime date = lifeEvent.date();
+    String dateType;
+    if (date instanceof DateTimeWithPrecision d) {
+      dateType = DATE_WITH_PRECISION;
+      this.setAttr(document, dateElement, DATE_DATE_ATTR, d.date().toString());
+      this.setAttr(document, dateElement, DATE_PRECISION_ATTR, String.valueOf(d.precision().ordinal()));
+    } else if (date instanceof DateTimeRange d) {
+      dateType = DATE_RANGE;
+      this.setAttr(document, dateElement, DATE_START_ATTR, d.startDate().toString());
+      this.setAttr(document, dateElement, DATE_END_ATTR, d.endDate().toString());
+    } else if (date instanceof DateTimeAlternative d) {
+      dateType = DATE_ALTERNATIVE;
+      this.setAttr(document, dateElement, DATE_EARLIEST_ATTR, d.earliestDate().toString());
+      this.setAttr(document, dateElement, DATE_LATEST_ATTR, d.latestDate().toString());
+    } else {
+      throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
+    }
+    this.setAttr(document, dateElement, DATE_TYPE_ATTR, dateType);
+  }
+
+  private void writeLifeEventTypeTag(
+      @NotNull Document document,
+      @NotNull Element lifeEventElement,
+      final @NotNull LifeEvent lifeEvent
+  ) {
+    Element typeElement = (Element) lifeEventElement.appendChild(document.createElement(TYPE_TAG));
+    this.setAttr(document, typeElement, "key", lifeEvent.type().key().fullName());
+  }
+
+  private void writePlace(
+      @NotNull Document document,
+      @NotNull Element lifeEventElement,
+      final @NotNull LifeEvent lifeEvent
+  ) {
+    lifeEvent.place().ifPresent(place -> {
+      Element placeElement = (Element) lifeEventElement.appendChild(document.createElement(PLACE_TAG));
+      this.setAttr(document, placeElement, PLACE_VALUE_ATTR, place);
+    });
+  }
+
+  private void writeActorsTag(
+      @NotNull Document document,
+      @NotNull Element lifeEventElement,
+      final @NotNull LifeEvent lifeEvent,
+      final @NotNull Map<Person, Integer> personIDs
+  ) {
+    Element actorsElement = (Element) lifeEventElement.appendChild(document.createElement(ACTORS_TAG));
+    lifeEvent.actors().forEach(person -> {
+      Element personElement = (Element) actorsElement.appendChild(document.createElement(PERSON_TAG));
+      this.setAttr(document, personElement, PERSON_ID_ATTR, String.valueOf(personIDs.get(person)));
+    });
+  }
+
+  private void writeWitnessesTag(
+      @NotNull Document document,
+      @NotNull Element lifeEventElement,
+      final @NotNull LifeEvent lifeEvent,
+      final @NotNull Map<Person, Integer> personIDs
+  ) {
+    Element witnessesElement = document.createElement(WITNESSES_TAG);
+    lifeEvent.witnesses().forEach(person -> {
+      Element personElement = (Element) witnessesElement.appendChild(document.createElement(PERSON_TAG));
+      this.setAttr(document, personElement, PERSON_ID_ATTR, String.valueOf(personIDs.get(person)));
+    });
+    if (witnessesElement.hasChildNodes()) {
+      lifeEventElement.appendChild(witnessesElement);
+    }
+  }
+
+  // endregion
+  // region Utility methods
 
   /**
    * Set attribute value of an element.
@@ -392,7 +481,7 @@ public class TreeXMLWriter extends TreeXMLManager {
     } catch (TransformerConfigurationException e) {
       throw new RuntimeException(e);
     }
-    tr.setOutputProperty(OutputKeys.INDENT, "yes");
+    tr.setOutputProperty(OutputKeys.INDENT, App.config().isDebug() ? "yes" : "no");
     tr.setOutputProperty(OutputKeys.METHOD, "xml");
     tr.setOutputProperty(OutputKeys.STANDALONE, "yes");
     tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
@@ -402,4 +491,6 @@ public class TreeXMLWriter extends TreeXMLManager {
       throw new RuntimeException(e);
     }
   }
+
+  // endregion
 }

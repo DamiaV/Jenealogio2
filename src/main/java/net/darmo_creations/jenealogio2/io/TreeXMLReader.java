@@ -16,6 +16,8 @@ import java.util.function.*;
  * Deserializes {@link FamilyTree} objects from XML data.
  */
 public class TreeXMLReader extends TreeXMLManager {
+  // region Public methods
+
   /**
    * Read a family tree object from an input stream.
    *
@@ -24,9 +26,10 @@ public class TreeXMLReader extends TreeXMLManager {
    * @return The corresponding family tree object.
    * @throws IOException If any error occurs.
    */
-  public FamilyTree readFromStream(@NotNull InputStream inputStream,
-                                   @NotNull BiFunction<String, String, Optional<Picture>> imageProvider)
-      throws IOException {
+  public FamilyTree readFromStream(
+      @NotNull InputStream inputStream,
+      @NotNull BiFunction<String, String, Optional<Picture>> imageProvider
+  ) throws IOException {
     Document document = this.readFile(inputStream);
 
     NodeList childNodes = document.getChildNodes();
@@ -108,8 +111,10 @@ public class TreeXMLReader extends TreeXMLManager {
    * @param familyTree        Tree to update.
    * @throws IOException If any error occurs.
    */
-  private void loadUserRegistries(final @NotNull Element registriesElement, final @NotNull FamilyTree familyTree)
-      throws IOException {
+  private void loadUserRegistries(
+      final @NotNull Element registriesElement,
+      @NotNull FamilyTree familyTree
+  ) throws IOException {
     Optional<Element> gendersElement = this.getChildElement(registriesElement, GENDERS_TAG, true);
     if (gendersElement.isPresent()) {
       for (Element entryElement : this.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
@@ -159,6 +164,9 @@ public class TreeXMLReader extends TreeXMLManager {
     }
   }
 
+  // endregion
+  // region Pictures
+
   /**
    * Load the pictures from the {@code <Pictures>} tag.
    *
@@ -182,6 +190,9 @@ public class TreeXMLReader extends TreeXMLManager {
     }
   }
 
+  // endregion
+  // region Persons
+
   /**
    * Read all Person XML elements.
    *
@@ -201,123 +212,236 @@ public class TreeXMLReader extends TreeXMLManager {
     for (Element personElement : this.getChildElements(peopleElement, PERSON_TAG)) {
       Person person = new Person();
 
-      // Pictures
-      Optional<Element> picturesElement = this.getChildElement(personElement, PICTURES_TAG, true);
-      if (picturesElement.isPresent()) {
-        List<Element> pictureElements = this.getChildElements(picturesElement.get(), PICTURE_TAG);
-        for (Element pictureElement : pictureElements) {
-          String name = this.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
-          familyTree.addPictureToObject(name, person);
-          boolean isMain = this.getAttr(pictureElement, PICTURE_MAIN_ATTR, Boolean::parseBoolean, () -> false, false);
-          if (isMain) {
-            familyTree.setMainPictureOfObject(name, person);
-          }
-        }
-      }
-
-      // Disambiguation ID
-      Optional<Element> disambIDElement = this.getChildElement(personElement, DISAMBIGUATION_ID_TAG, true);
-      if (disambIDElement.isPresent()) {
-        try {
-          person.setDisambiguationID(this.getAttr(disambIDElement.get(), DISAMBIG_ID_VALUE_ATTR, Integer::parseInt, () -> null, false));
-        } catch (IllegalArgumentException e) {
-          throw new IOException(e);
-        }
-      }
-
-      // Life status
-      //noinspection OptionalGetWithoutIsPresent
-      Element lifeStatusElement = this.getChildElement(personElement, LIFE_STATUS_TAG, false).get();
-      try {
-        int ordinal = this.getAttr(lifeStatusElement, LIFE_STATUS_ORDINAL_ATTR, Integer::parseInt, null, false);
-        person.setLifeStatus(LifeStatus.values()[ordinal]);
-      } catch (IndexOutOfBoundsException e) {
-        throw new IOException(e);
-      }
-
+      this.readPicturesTag(personElement, person, familyTree);
+      this.readDisambiguationIdTag(personElement, person);
+      this.readLifeStatusTag(personElement, person);
       // Legal last name
       this.readName(personElement, LEGAL_LAST_NAME_TAG, person::setLegalLastName);
-
       // Legal first names
       this.readNames(personElement, LEGAL_FIRST_NAMES_TAG, person::setLegalFirstNames);
-
       // Public last name
       this.readName(personElement, PUBLIC_LAST_NAME_TAG, person::setPublicLastName);
-
       // Public first names
       this.readNames(personElement, PUBLIC_FIRST_NAMES_TAG, person::setPublicFirstNames);
-
       // Nicknames
       this.readNames(personElement, NICKNAMES_TAG, person::setNicknames);
-
-      // Gender
-      Optional<Element> genderElement = this.getChildElement(personElement, GENDER_TAG, true);
-      if (genderElement.isPresent()) {
-        try {
-          RegistryEntryKey key = new RegistryEntryKey(this.getAttr(genderElement.get(), GENDER_KEY_ATTR, s -> s, null, false));
-          Gender gender = familyTree.genderRegistry().getEntry(key);
-          if (gender == null) {
-            throw new IOException("Undefined gender registry key: " + key.fullName());
-          }
-          person.setGender(gender);
-        } catch (IllegalArgumentException e) {
-          throw new IOException(e);
-        }
-      }
-
-      Optional<Element> occupationElement = this.getChildElement(personElement, MAIN_OCCUPATION_TAG, true);
-      if (occupationElement.isPresent()) {
-        String occupation = this.getAttr(occupationElement.get(), MAIN_OCCUPATION_VALUE_ATTR, s -> s, null, true);
-        person.setMainOccupation(occupation);
-      }
-
-      // Parents
-      Optional<Element> parentsElement = this.getChildElement(personElement, PARENTS_TAG, true);
-      if (parentsElement.isPresent()) {
-        Integer id1 = this.getAttr(parentsElement.get(), PARENT_ID_1_ATTR, Integer::parseInt, () -> null, false);
-        Integer id2 = this.getAttr(parentsElement.get(), PARENT_ID_2_ATTR, Integer::parseInt, () -> null, false);
-        if (id1 != null && id2 != null && id1.intValue() == id2.intValue()) {
-          throw new IOException("Parents cannot be identical");
-        }
-        // Defer setting parents to when all person objects have been deserialized
-        parentIDS.put(person, new Pair<>(id1, id2));
-      }
-
-      // Relatives
-      Optional<Element> relativesElement = this.getChildElement(personElement, RELATIVES_TAG, true);
-      if (relativesElement.isPresent()) {
-        HashMap<Person.RelativeType, List<Integer>> groupsMap = new HashMap<>();
-        relativesIDs.put(person, groupsMap);
-        for (Element groupElement : this.getChildElements(relativesElement.get(), GROUP_TAG)) {
-          int ordinal = this.getAttr(groupElement, GROUP_ORDINAL_ATTR, Integer::parseInt, null, false);
-          Person.RelativeType relativeType;
-          try {
-            relativeType = Person.RelativeType.values()[ordinal];
-          } catch (IndexOutOfBoundsException e) {
-            throw new IOException(e);
-          }
-          LinkedList<Integer> relativesList = new LinkedList<>();
-          groupsMap.put(relativeType, relativesList);
-          for (Element relativeElement : this.getChildElements(groupElement, RELATIVE_TAG)) {
-            // Defer setting relatives to when all person objects have been deserialized
-            relativesList.add(this.getAttr(relativeElement, RELATIVE_ID_ATTR, Integer::parseInt, null, false));
-          }
-        }
-      }
-
-      // Notes
-      Optional<Element> notesElement = this.getChildElement(personElement, NOTES_TAG, true);
-      notesElement.ifPresent(element -> person.setNotes(element.getTextContent().strip()));
-
-      // Sources
-      Optional<Element> sourcesElement = this.getChildElement(personElement, SOURCES_TAG, true);
-      sourcesElement.ifPresent(element -> person.setSources(element.getTextContent().strip()));
+      this.readGenderTag(personElement, person, familyTree);
+      this.readMainOccupationTag(personElement, person);
+      this.readParentsTag(personElement, person, parentIDS);
+      this.readRelativesTag(personElement, person, relativesIDs);
+      this.readNotesTag(personElement, person);
+      this.readSourcesTag(personElement, person);
 
       familyTree.addPerson(person);
       persons.add(person);
     }
 
-    // Set parents once all person objects have been deserialized
+    this.setParents(persons, parentIDS);
+    this.setRelatives(persons, relativesIDs);
+
+    return persons;
+  }
+
+  /**
+   * Read the {@code <Pictures>} tag for the given object.
+   *
+   * @param element    XML element to extract the pictures from.
+   * @param o          The object corresponding to the tag.
+   * @param familyTree The tree the object belongs to.
+   */
+  private void readPicturesTag(
+      final @NotNull Element element,
+      @NotNull GenealogyObject<?> o,
+      @NotNull FamilyTree familyTree
+  ) throws IOException {
+    Optional<Element> picturesElement = this.getChildElement(element, PICTURES_TAG, true);
+    if (picturesElement.isPresent()) {
+      List<Element> pictureElements = this.getChildElements(picturesElement.get(), PICTURE_TAG);
+      for (Element pictureElement : pictureElements) {
+        String name = this.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
+        familyTree.addPictureToObject(name, o);
+        boolean isMain = this.getAttr(pictureElement, PICTURE_MAIN_ATTR, Boolean::parseBoolean, () -> false, false);
+        if (isMain) {
+          familyTree.setMainPictureOfObject(name, o);
+        }
+      }
+    }
+  }
+
+  /**
+   * Read the {@code <DisambiguationID>} tag for the given person.
+   *
+   * @param personElement {@code <Person>} element to extract the disambiguation ID from.
+   * @param person        The person corresponding to the {@code <Person>} tag.
+   */
+  private void readDisambiguationIdTag(
+      final @NotNull Element personElement,
+      @NotNull Person person
+  ) throws IOException {
+    Optional<Element> disambIDElement = this.getChildElement(personElement, DISAMBIGUATION_ID_TAG, true);
+    if (disambIDElement.isPresent()) {
+      try {
+        person.setDisambiguationID(this.getAttr(disambIDElement.get(), DISAMBIG_ID_VALUE_ATTR, Integer::parseInt, () -> null, false));
+      } catch (IllegalArgumentException e) {
+        throw new IOException(e);
+      }
+    }
+  }
+
+  /**
+   * Read the {@code <LifeStatus>} tag for the given person.
+   *
+   * @param personElement {@code <Person>} element to extract the life status from.
+   * @param person        The person corresponding to the {@code <Person>} tag.
+   */
+  private void readLifeStatusTag(
+      final @NotNull Element personElement,
+      @NotNull Person person
+  ) throws IOException {
+    //noinspection OptionalGetWithoutIsPresent
+    Element lifeStatusElement = this.getChildElement(personElement, LIFE_STATUS_TAG, false).get();
+    try {
+      int ordinal = this.getAttr(lifeStatusElement, LIFE_STATUS_ORDINAL_ATTR, Integer::parseInt, null, false);
+      person.setLifeStatus(LifeStatus.values()[ordinal]);
+    } catch (IndexOutOfBoundsException e) {
+      throw new IOException(e);
+    }
+  }
+
+  /**
+   * Read the {@code <Gender>} tag for the given person.
+   *
+   * @param personElement {@code <Person>} element to extract the gender from.
+   * @param person        The person corresponding to the {@code <Person>} tag.
+   * @param familyTree    The tree to get the {@link Gender} object from.
+   */
+  private void readGenderTag(
+      final @NotNull Element personElement,
+      @NotNull Person person,
+      final @NotNull FamilyTree familyTree
+  ) throws IOException {
+    Optional<Element> genderElement = this.getChildElement(personElement, GENDER_TAG, true);
+    if (genderElement.isPresent()) {
+      try {
+        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(genderElement.get(), GENDER_KEY_ATTR, s -> s, null, false));
+        Gender gender = familyTree.genderRegistry().getEntry(key);
+        if (gender == null) {
+          throw new IOException("Undefined gender registry key: " + key.fullName());
+        }
+        person.setGender(gender);
+      } catch (IllegalArgumentException e) {
+        throw new IOException(e);
+      }
+    }
+  }
+
+  /**
+   * Read the {@code <MainOccupation>} tag for the given person.
+   *
+   * @param personElement {@code <Person>} element to extract the main occupation from.
+   * @param person        The person corresponding to the {@code <Person>} tag.
+   */
+  private void readMainOccupationTag(
+      final @NotNull Element personElement,
+      @NotNull Person person
+  ) throws IOException {
+    Optional<Element> occupationElement = this.getChildElement(personElement, MAIN_OCCUPATION_TAG, true);
+    if (occupationElement.isPresent()) {
+      String occupation = this.getAttr(occupationElement.get(), MAIN_OCCUPATION_VALUE_ATTR, s -> s, null, true);
+      person.setMainOccupation(occupation);
+    }
+  }
+
+  /**
+   * Read the {@code <Parents>} tag for the given person and update the given map.
+   *
+   * @param personElement {@code <Person>} element to extract parents from.
+   * @param person        The person corresponding to the {@code <Person>} tag.
+   * @param parentIDS     Map into which to put all the parents of the given person.
+   */
+  private void readParentsTag(
+      final @NotNull Element personElement,
+      final @NotNull Person person,
+      @NotNull Map<Person, Pair<Integer, Integer>> parentIDS
+  ) throws IOException {
+    Optional<Element> parentsElement = this.getChildElement(personElement, PARENTS_TAG, true);
+    if (parentsElement.isPresent()) {
+      Integer id1 = this.getAttr(parentsElement.get(), PARENT_ID_1_ATTR, Integer::parseInt, () -> null, false);
+      Integer id2 = this.getAttr(parentsElement.get(), PARENT_ID_2_ATTR, Integer::parseInt, () -> null, false);
+      if (id1 != null && id2 != null && id1.intValue() == id2.intValue()) {
+        throw new IOException("Parents cannot be identical");
+      }
+      // Defer setting parents to when all person objects have been deserialized
+      parentIDS.put(person, new Pair<>(id1, id2));
+    }
+  }
+
+  /**
+   * Read the {@code <Relatives>} tag for the given person and update the given map.
+   *
+   * @param personElement {@code <Person>} element to extract relatives from.
+   * @param person        The person corresponding to the {@code <Person>} tag.
+   * @param relativesIDs  Map into which to put all the relatives of the given person.
+   */
+  private void readRelativesTag(
+      final @NotNull Element personElement,
+      final @NotNull Person person,
+      @NotNull Map<Person, Map<Person.RelativeType, List<Integer>>> relativesIDs
+  ) throws IOException {
+    Optional<Element> relativesElement = this.getChildElement(personElement, RELATIVES_TAG, true);
+    if (relativesElement.isPresent()) {
+      HashMap<Person.RelativeType, List<Integer>> groupsMap = new HashMap<>();
+      relativesIDs.put(person, groupsMap);
+      for (Element groupElement : this.getChildElements(relativesElement.get(), GROUP_TAG)) {
+        int ordinal = this.getAttr(groupElement, GROUP_ORDINAL_ATTR, Integer::parseInt, null, false);
+        Person.RelativeType relativeType;
+        try {
+          relativeType = Person.RelativeType.values()[ordinal];
+        } catch (IndexOutOfBoundsException e) {
+          throw new IOException(e);
+        }
+        LinkedList<Integer> relativesList = new LinkedList<>();
+        groupsMap.put(relativeType, relativesList);
+        for (Element relativeElement : this.getChildElements(groupElement, RELATIVE_TAG)) {
+          // Defer setting relatives to when all person objects have been deserialized
+          relativesList.add(this.getAttr(relativeElement, RELATIVE_ID_ATTR, Integer::parseInt, null, false));
+        }
+      }
+    }
+  }
+
+  /**
+   * Read the {@code <Notes>} tag for the given object.
+   *
+   * @param element XML element to extract notes from.
+   * @param o       The object corresponding to the tag.
+   */
+  private void readNotesTag(
+      final @NotNull Element element,
+      @NotNull GenealogyObject<?> o
+  ) throws IOException {
+    Optional<Element> notesElement = this.getChildElement(element, NOTES_TAG, true);
+    notesElement.ifPresent(e -> o.setNotes(e.getTextContent().strip()));
+  }
+
+  /**
+   * Read the {@code <Sources>} tag for the given object.
+   *
+   * @param element XML element to extract sources from.
+   * @param o       The object corresponding to the tag.
+   */
+  private void readSourcesTag(
+      final @NotNull Element element,
+      @NotNull GenealogyObject<?> o
+  ) throws IOException {
+    Optional<Element> sourcesElement = this.getChildElement(element, SOURCES_TAG, true);
+    sourcesElement.ifPresent(e -> o.setSources(e.getTextContent().strip()));
+  }
+
+  private void setParents(
+      final @NotNull List<Person> persons,
+      final @NotNull Map<Person, Pair<Integer, Integer>> parentIDS
+  ) throws IOException {
     for (var entry : parentIDS.entrySet()) {
       Person person = entry.getKey();
       Integer id1 = entry.getValue().left();
@@ -337,8 +461,12 @@ public class TreeXMLReader extends TreeXMLManager {
         }
       }
     }
+  }
 
-    // Set relatives once all person objects have been deserialized
+  private void setRelatives(
+      final @NotNull List<Person> persons,
+      final @NotNull Map<Person, Map<Person.RelativeType, List<Integer>>> relativesIDs
+  ) throws IOException {
     for (var entry : relativesIDs.entrySet()) {
       Person person = entry.getKey();
       for (var group : entry.getValue().entrySet()) {
@@ -352,8 +480,6 @@ public class TreeXMLReader extends TreeXMLManager {
         }
       }
     }
-
-    return persons;
   }
 
   /**
@@ -406,6 +532,9 @@ public class TreeXMLReader extends TreeXMLManager {
     }
   }
 
+  // endregion
+  // region Life events
+
   /**
    * Read all LifeEvent XML elements.
    *
@@ -416,62 +545,14 @@ public class TreeXMLReader extends TreeXMLManager {
   private void readLifeEvents(
       final @NotNull Element eventsElement,
       final @NotNull List<Person> persons,
-      final @NotNull FamilyTree familyTree
+      @NotNull FamilyTree familyTree
   ) throws IOException {
     for (Element eventElement : this.getChildElements(eventsElement, LIFE_EVENT_TAG)) {
-      // Date
-      //noinspection OptionalGetWithoutIsPresent
-      Element dateElement = this.getChildElement(eventElement, DATE_TAG, false).get();
-      String dateType = this.getAttr(dateElement, DATE_TYPE_ATTR, s -> s, null, false);
-      DateTime date = switch (dateType) {
-        case DATE_WITH_PRECISION -> {
-          int ordinal = this.getAttr(dateElement, DATE_PRECISION_ATTR, Integer::parseInt, null, false);
-          DateTimePrecision precision;
-          try {
-            precision = DateTimePrecision.values()[ordinal];
-          } catch (IndexOutOfBoundsException e) {
-            throw new IOException(e);
-          }
-          CalendarDateTime d = this.getAttr(dateElement, DATE_DATE_ATTR, CalendarDateTime::parse, null, false);
-          yield new DateTimeWithPrecision(d, precision);
-        }
-        case DATE_RANGE -> {
-          CalendarDateTime startDate = this.getAttr(dateElement, DATE_START_ATTR, CalendarDateTime::parse, null, false);
-          CalendarDateTime endDate = this.getAttr(dateElement, DATE_END_ATTR, CalendarDateTime::parse, null, false);
-          yield new DateTimeRange(startDate, endDate);
-        }
-        case DATE_ALTERNATIVE -> {
-          CalendarDateTime earliestDate = this.getAttr(dateElement, DATE_EARLIEST_ATTR, CalendarDateTime::parse, null, false);
-          CalendarDateTime latestDate = this.getAttr(dateElement, DATE_LATEST_ATTR, CalendarDateTime::parse, null, false);
-          yield new DateTimeAlternative(earliestDate, latestDate);
-        }
-        default -> throw new IOException("Undefined date type " + dateType);
-      };
-
-      // Type
-      LifeEventType type;
-      //noinspection OptionalGetWithoutIsPresent
-      Element typeElement = this.getChildElement(eventElement, TYPE_TAG, false).get();
-      try {
-        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(typeElement, TYPE_KEY_ATTR, s -> s, null, false));
-        type = familyTree.lifeEventTypeRegistry().getEntry(key);
-        if (type == null) {
-          throw new IOException("Undefined life event type registry key: " + key.fullName());
-        }
-      } catch (IllegalArgumentException e) {
-        throw new IOException(e);
-      }
-
-      List<Person> actors = new LinkedList<>();
-
-      this.extractPersons(eventElement, ACTORS_TAG, persons, actors::add, false);
-      int actorsNb = actors.size();
-      if (actorsNb < type.minActors() || actorsNb > type.maxActors()) {
-        throw new IOException("Wrong number of actors for event type '%s': %d"
-            .formatted(type.key().fullName(), actorsNb));
-      }
-
       LifeEvent lifeEvent;
+      DateTime date = this.readDateTag(eventElement);
+      LifeEventType type = this.readLifeEventTypeTag(eventElement, familyTree);
+      List<Person> actors = this.readActorsTag(eventElement, type, persons);
+
       try {
         lifeEvent = new LifeEvent(date, type);
         familyTree.setLifeEventActors(lifeEvent, new HashSet<>(actors));
@@ -479,24 +560,117 @@ public class TreeXMLReader extends TreeXMLManager {
         throw new IOException(e);
       }
 
+      this.readPicturesTag(eventElement, lifeEvent, familyTree);
       // Witnesses
       this.extractPersons(eventElement, WITNESSES_TAG, persons,
           p -> familyTree.addWitnessToLifeEvent(lifeEvent, p), true);
+      this.readPlaceTag(eventElement, lifeEvent);
+      this.readNotesTag(eventElement, lifeEvent);
+      this.readSourcesTag(eventElement, lifeEvent);
+    }
+  }
 
-      // Place
-      Optional<Element> placeElement = this.getChildElement(eventElement, PLACE_TAG, true);
-      placeElement.ifPresent(element -> lifeEvent.setPlace(element.getTextContent().strip()));
-      if (placeElement.isPresent()) {
-        lifeEvent.setPlace(this.getAttr(placeElement.get(), PLACE_VALUE_ATTR, s -> s, null, true));
+  /**
+   * Read the {@code <Date>} tag for the given event.
+   *
+   * @param eventElement {@code <LifeEvent>} element to extract the date from.
+   * @return The date of the event.
+   * @throws IOException If the subtree is malformed or the date type is undefined.
+   */
+  private DateTime readDateTag(final @NotNull Element eventElement) throws IOException {
+    //noinspection OptionalGetWithoutIsPresent
+    Element dateElement = this.getChildElement(eventElement, DATE_TAG, false).get();
+    String dateType = this.getAttr(dateElement, DATE_TYPE_ATTR, s -> s, null, false);
+    return switch (dateType) {
+      case DATE_WITH_PRECISION -> {
+        int ordinal = this.getAttr(dateElement, DATE_PRECISION_ATTR, Integer::parseInt, null, false);
+        DateTimePrecision precision;
+        try {
+          precision = DateTimePrecision.values()[ordinal];
+        } catch (IndexOutOfBoundsException e) {
+          throw new IOException(e);
+        }
+        CalendarDateTime d = this.getAttr(dateElement, DATE_DATE_ATTR, CalendarDateTime::parse, null, false);
+        yield new DateTimeWithPrecision(d, precision);
       }
+      case DATE_RANGE -> {
+        CalendarDateTime startDate = this.getAttr(dateElement, DATE_START_ATTR, CalendarDateTime::parse, null, false);
+        CalendarDateTime endDate = this.getAttr(dateElement, DATE_END_ATTR, CalendarDateTime::parse, null, false);
+        yield new DateTimeRange(startDate, endDate);
+      }
+      case DATE_ALTERNATIVE -> {
+        CalendarDateTime earliestDate = this.getAttr(dateElement, DATE_EARLIEST_ATTR, CalendarDateTime::parse, null, false);
+        CalendarDateTime latestDate = this.getAttr(dateElement, DATE_LATEST_ATTR, CalendarDateTime::parse, null, false);
+        yield new DateTimeAlternative(earliestDate, latestDate);
+      }
+      default -> throw new IOException("Undefined date type " + dateType);
+    };
+  }
 
-      // Notes
-      Optional<Element> notesElement = this.getChildElement(eventElement, NOTES_TAG, true);
-      notesElement.ifPresent(element -> lifeEvent.setNotes(element.getTextContent().strip()));
+  /**
+   * Read the {@code <Type>} tag for the given event.
+   *
+   * @param eventElement {@code <LifeEvent>} element to extract the type from.
+   * @param familyTree   The family tree to get {@link LifeEventType} objects from.
+   * @return The type of the event.
+   * @throws IOException If the event type is undefined or malformed.
+   */
+  private LifeEventType readLifeEventTypeTag(
+      final @NotNull Element eventElement,
+      final @NotNull FamilyTree familyTree
+  ) throws IOException {
+    LifeEventType type;
+    //noinspection OptionalGetWithoutIsPresent
+    Element typeElement = this.getChildElement(eventElement, TYPE_TAG, false).get();
+    try {
+      RegistryEntryKey key = new RegistryEntryKey(this.getAttr(typeElement, TYPE_KEY_ATTR, s -> s, null, false));
+      type = familyTree.lifeEventTypeRegistry().getEntry(key);
+      if (type == null) {
+        throw new IOException("Undefined life event type registry key: " + key.fullName());
+      }
+    } catch (IllegalArgumentException e) {
+      throw new IOException(e);
+    }
+    return type;
+  }
 
-      // Sources
-      Optional<Element> sourcesElement = this.getChildElement(eventElement, SOURCES_TAG, true);
-      sourcesElement.ifPresent(element -> lifeEvent.setSources(element.getTextContent().strip()));
+  /**
+   * Read the {@code <Actors>} tag for the given event.
+   *
+   * @param eventElement {@code <LifeEvent>} element to extract actors from.
+   * @param type         The type of the event.
+   * @param persons      List of all persons from the current family tree.
+   * @return The list of all actors for the event.
+   * @throws IOException If the XML subtree is malformed or the event has an invalid number of actors.
+   */
+  private List<Person> readActorsTag(
+      final @NotNull Element eventElement,
+      final @NotNull LifeEventType type,
+      final @NotNull List<Person> persons
+  ) throws IOException {
+    List<Person> actors = new LinkedList<>();
+    this.extractPersons(eventElement, ACTORS_TAG, persons, actors::add, false);
+    int actorsNb = actors.size();
+    if (actorsNb < type.minActors() || actorsNb > type.maxActors()) {
+      throw new IOException("Wrong number of actors for event type '%s': %d"
+          .formatted(type.key().fullName(), actorsNb));
+    }
+    return actors;
+  }
+
+  /**
+   * Read the {@code <Place>} tag for the given event.
+   *
+   * @param eventElement {@code <LifeEvent>} element to extract the place from.
+   * @param lifeEvent    The event corresponding to the {@code <LifeEvent>} tag.
+   */
+  private void readPlaceTag(
+      final @NotNull Element eventElement,
+      @NotNull LifeEvent lifeEvent
+  ) throws IOException {
+    Optional<Element> placeElement = this.getChildElement(eventElement, PLACE_TAG, true);
+    if (placeElement.isPresent()) {
+      lifeEvent.setPlace(this.getAttr(placeElement.get(), PLACE_VALUE_ATTR, s -> s, null, true));
     }
   }
 
@@ -531,6 +705,9 @@ public class TreeXMLReader extends TreeXMLManager {
       }
     }
   }
+
+  // endregion
+  // region Utility methods
 
   /**
    * Read a child element of an XML element.
@@ -631,4 +808,6 @@ public class TreeXMLReader extends TreeXMLManager {
       throw new IOException(e);
     }
   }
+
+  // endregion
 }
