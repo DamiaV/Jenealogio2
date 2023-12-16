@@ -123,10 +123,6 @@ public class EditPersonDialog extends DialogBase<Person> {
    * Set of pictures to add to this person.
    */
   private final Set<Picture> picturesToAdd = new HashSet<>();
-  /**
-   * Indicates whether the tree has been modified, even if the cancel button has been clicked.
-   */
-  private boolean treeChanged = false;
 
   /**
    * Create a person edit dialog.
@@ -162,13 +158,6 @@ public class EditPersonDialog extends DialogBase<Person> {
       }
       return null;
     });
-  }
-
-  /**
-   * Indicates whether the tree has been modified, even if the cancel button has been clicked.
-   */
-  public boolean hasTreeChanged() {
-    return this.treeChanged;
   }
 
   private Tab createProfileTab() {
@@ -493,7 +482,6 @@ public class EditPersonDialog extends DialogBase<Person> {
   public void setPerson(Person person, final @NotNull List<ChildInfo> childInfo, @NotNull FamilyTree familyTree) {
     this.childInfo = new ArrayList<>(childInfo);
     this.familyTree = Objects.requireNonNull(familyTree);
-    this.treeChanged = false;
     Language language = App.config().language();
 
     this.creating = person == null;
@@ -698,9 +686,6 @@ public class EditPersonDialog extends DialogBase<Person> {
       });
       this.updateImageButtons();
     });
-    if (!this.treeChanged && this.selectImageDialog.hasTreeChanged()) {
-      this.treeChanged = true;
-    }
   }
 
   private void onRemoveImages() {
@@ -849,7 +834,12 @@ public class EditPersonDialog extends DialogBase<Person> {
     // Pictures
     this.picturesToRemove.forEach(picture -> this.familyTree.removePictureFromObject(picture.name(), person));
     this.imagesList.getItems().forEach(pv -> pv.picture().setDescription(pv.imageDescription().orElse(null)));
-    this.picturesToAdd.forEach(p -> this.familyTree.addPictureToObject(p.name(), person));
+    this.picturesToAdd.forEach(p -> {
+      if (this.familyTree.getPicture(p.name()).isEmpty()) {
+        this.familyTree.addPicture(p);
+      }
+      this.familyTree.addPictureToObject(p.name(), person);
+    });
     if (this.mainPicture != null) {
       this.familyTree.setMainPictureOfObject(this.mainPicture.name(), person);
     } else {

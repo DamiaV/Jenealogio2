@@ -26,7 +26,6 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
   private final ListView<PictureView> imagesList = new ListView<>();
 
   private FamilyTree tree;
-  private boolean treeChanged = false;
 
   public SelectImageDialog() {
     super("select_images", true, ButtonTypes.OK, ButtonTypes.CANCEL);
@@ -101,13 +100,6 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
   }
 
   /**
-   * Indicate the passed {@link FamilyTree} has been updated, i.e. a file has been imported from the filesystem.
-   */
-  public boolean hasTreeChanged() {
-    return this.treeChanged;
-  }
-
-  /**
    * Update the list of images with the ones from the given tree, ignoring any that appear in the exclusion list.
    *
    * @param tree          Tree to pull images from.
@@ -115,7 +107,6 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
    */
   public void updateImageList(@NotNull FamilyTree tree, final @NotNull Collection<Picture> exclusionList) {
     this.tree = Objects.requireNonNull(tree);
-    this.treeChanged = false;
     this.imagesList.getItems().clear();
     tree.pictures().stream()
         .filter(p -> !exclusionList.contains(p))
@@ -200,8 +191,6 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     try (FileInputStream in = new FileInputStream(file)) {
       picture = new Picture(new Image(in), file.getName(), null);
     }
-    this.tree.addPicture(picture);
-    this.treeChanged = true;
     PictureView pv = new PictureView(picture);
     this.imagesList.getItems().add(pv);
     this.imagesList.scrollTo(pv);

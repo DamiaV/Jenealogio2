@@ -900,8 +900,6 @@ public class AppController {
       if (person == null && childInfo.isEmpty()) {
         this.onPersonClick(new PersonClickedEvent(p.get(), PersonClickedEvent.Action.SET_AS_TARGET), null);
       }
-    }
-    if (present || !this.unsavedChanges && this.editPersonDialog.hasTreeChanged()) {
       this.defaultEmptyTree = false;
       this.unsavedChanges = true;
       this.updateUI();
