@@ -3,8 +3,6 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.image.*;
-import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.converter.*;
@@ -40,15 +38,6 @@ public class EditPersonDialog extends DialogBase<Person> {
    * Index of the parents and relatives tab.
    */
   public static final int TAB_PARENTS = 2;
-  /**
-   * Index of the pictures tab.
-   */
-  public static final int TAB_PICTURES = 3;
-
-  private final SelectImageDialog selectImageDialog = new SelectImageDialog();
-  private final EditImageDialog editImageDialog = new EditImageDialog();
-
-  private final Label buttonDescriptionLabel = new Label();
 
   private final TabPane tabPane = new TabPane();
 
@@ -71,15 +60,6 @@ public class EditPersonDialog extends DialogBase<Person> {
   private final ComboBox<ComboBoxItem<Person>> parent2Combo = new ComboBox<>();
 
   private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
-
-  // TODO extract images tab to separate dialog
-  private final ImageView mainImageView = new ImageView();
-  private final Button removeMainImageButton = new Button();
-  private final Button addImageButton = new Button();
-  private final Button setAsMainImageButton = new Button();
-  private final Button removeImageButton = new Button();
-  private final Button editImageDescButton = new Button();
-  private final ListView<PictureView> imagesList = new ListView<>();
 
   /**
    * The person object being edited.
@@ -110,18 +90,6 @@ public class EditPersonDialog extends DialogBase<Person> {
    * Set of life events to delete.
    */
   private final Set<LifeEventView> eventsToDelete = new HashSet<>();
-  /**
-   * The person’s current main picture.
-   */
-  private Picture mainPicture;
-  /**
-   * Set of pictures to remove from the current person.
-   */
-  private final Set<Picture> picturesToRemove = new HashSet<>();
-  /**
-   * Set of pictures to add to this person.
-   */
-  private final Set<Picture> picturesToAdd = new HashSet<>();
 
   /**
    * Create a person edit dialog.
@@ -134,11 +102,8 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.tabPane.getTabs().add(this.createProfileTab());
     this.tabPane.getTabs().add(this.createEventsTab());
     this.tabPane.getTabs().add(this.createParentsTab());
-    this.tabPane.getTabs().add(this.createImagesTab());
 
-    this.buttonDescriptionLabel.getStyleClass().add("help-text");
-
-    this.getDialogPane().setContent(new VBox(5, this.tabPane, this.buttonDescriptionLabel));
+    this.getDialogPane().setContent(this.tabPane);
 
     Stage stage = this.stage();
     stage.setMinWidth(850);
@@ -375,78 +340,6 @@ public class EditPersonDialog extends DialogBase<Person> {
     return tab;
   }
 
-  private Tab createImagesTab() {
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
-
-    Tab tab = new Tab(language.translate("dialog.edit_person.images.title"));
-
-    VBox vBox = new VBox(5);
-    vBox.getChildren().add(new HBox(5,
-        new Label(language.translate("dialog.edit_person.images.main_image")),
-        this.removeMainImageButton
-    ));
-    this.mainImageView.setPreserveRatio(true);
-    this.mainImageView.setFitWidth(100);
-    this.mainImageView.setFitHeight(100);
-    vBox.getChildren().add(this.mainImageView);
-
-    Pane spacer = new Pane();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
-
-    this.removeMainImageButton.setText(language.translate("dialog.edit_person.images.remove_main_image"));
-    this.removeMainImageButton.setGraphic(theme.getIcon(Icon.REMOVE_MAIN_IMAGE, Icon.Size.SMALL));
-    this.removeMainImageButton.setOnAction(e -> this.onRemoveMainImage());
-    this.removeMainImageButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.edit_person.images.remove_main_image"));
-
-    this.addImageButton.setText(language.translate("dialog.edit_person.images.add_image"));
-    this.addImageButton.setGraphic(theme.getIcon(Icon.ADD_IMAGE, Icon.Size.SMALL));
-    this.addImageButton.setOnAction(e -> this.onAddImage());
-    this.addImageButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.edit_person.images.add_image"));
-
-    this.setAsMainImageButton.setText(language.translate("dialog.edit_person.images.set_as_main_image"));
-    this.setAsMainImageButton.setGraphic(theme.getIcon(Icon.SET_AS_MAIN_IMAGE, Icon.Size.SMALL));
-    this.setAsMainImageButton.setOnAction(e -> this.onSetAsMainImage());
-    this.setAsMainImageButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.edit_person.images.set_as_main_image"));
-
-    this.removeImageButton.setText(language.translate("dialog.edit_person.images.remove_image"));
-    this.removeImageButton.setGraphic(theme.getIcon(Icon.REMOVE_IMAGE, Icon.Size.SMALL));
-    this.removeImageButton.setOnAction(e -> this.onRemoveImages());
-    this.removeImageButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.edit_person.images.remove_image"));
-
-    this.editImageDescButton.setText(language.translate("dialog.edit_person.images.edit_image_desc"));
-    this.editImageDescButton.setGraphic(theme.getIcon(Icon.EDIT_IMAGE_DESC, Icon.Size.SMALL));
-    this.editImageDescButton.setOnAction(e -> this.onEditImageDesc());
-    this.editImageDescButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.edit_person.images.edit_image_desc"));
-
-    HBox title = new HBox(
-        5,
-        new Label(language.translate("dialog.edit_person.images.list")),
-        spacer,
-        this.setAsMainImageButton,
-        this.addImageButton,
-        this.removeImageButton,
-        this.editImageDescButton
-    );
-    vBox.getChildren().add(title);
-
-    this.imagesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    this.imagesList.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.updateImageButtons());
-    this.imagesList.setOnMouseClicked(this::onListClicked);
-    VBox.setVgrow(this.imagesList, Priority.ALWAYS);
-    vBox.getChildren().add(this.imagesList);
-
-    vBox.setPadding(new Insets(5, 0, 0, 0));
-    tab.setContent(vBox);
-    return tab;
-  }
-
   private void addRow(@NotNull GridPane gridPane, int index, @NotNull String text, @NotNull Node node) {
     gridPane.addRow(index, new Label(App.config().language().translate(text)), node);
   }
@@ -497,7 +390,6 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.setPersonProfileFields();
     this.setPersonLifeEventsFields();
     this.setPersonRelativesFields();
-    this.setPersonImagesFields();
     this.updateButtons();
   }
 
@@ -563,18 +455,6 @@ public class EditPersonDialog extends DialogBase<Person> {
       list.setPersons(this.person.getRelatives(type));
       list.setPotentialRelatives(potentialRelatives);
     }
-  }
-
-  private void setPersonImagesFields() {
-    Optional<Picture> image = this.person.mainPicture();
-    this.mainPicture = image.orElse(null);
-    this.mainImageView.setImage(image.map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
-    this.removeMainImageButton.setDisable(image.isEmpty());
-    this.imagesList.getItems().clear();
-    for (Picture picture : this.person.pictures()) {
-      this.imagesList.getItems().add(new PictureView(picture));
-    }
-    this.updateImageButtons();
   }
 
   /**
@@ -646,103 +526,6 @@ public class EditPersonDialog extends DialogBase<Person> {
       this.lifeEventsList.getItems().remove(lifeEventView);
       this.updateButtons();
     }
-  }
-
-  private void removeMainImage() {
-    this.mainPicture = null;
-    this.mainImageView.setImage(PersonWidget.DEFAULT_IMAGE);
-  }
-
-  private void onRemoveMainImage() {
-    if (this.mainPicture == null) {
-      return;
-    }
-    this.removeMainImage();
-    this.updateImageButtons();
-  }
-
-  private void onSetAsMainImage() {
-    List<PictureView> selection = this.getSelectedImages();
-    if (selection.size() != 1) {
-      return;
-    }
-    PictureView pv = selection.get(0);
-    this.mainPicture = pv.picture();
-    this.mainImageView.setImage(this.mainPicture.image());
-    this.updateImageButtons();
-  }
-
-  private void onAddImage() {
-    var exclusionList = new ArrayList<>(this.imagesList.getItems().stream().map(PictureView::picture).toList());
-    this.selectImageDialog.updateImageList(this.familyTree, exclusionList);
-    this.selectImageDialog.showAndWait().ifPresent(pictures -> {
-      pictures.forEach(p -> {
-        PictureView pv = new PictureView(p);
-        this.imagesList.getItems().add(pv);
-        this.imagesList.scrollTo(pv);
-        this.picturesToAdd.add(p);
-        this.picturesToRemove.remove(p);
-      });
-      this.updateImageButtons();
-    });
-  }
-
-  private void onRemoveImages() {
-    List<PictureView> selection = this.getSelectedImages();
-    if (selection.isEmpty()) {
-      return;
-    }
-    selection.forEach(pv -> {
-      Picture picture = pv.picture();
-      if (picture.equals(this.mainPicture)) {
-        this.removeMainImage();
-      }
-      this.picturesToRemove.add(picture);
-      this.imagesList.getItems().remove(pv);
-    });
-    this.updateImageButtons();
-  }
-
-  private void onEditImageDesc() {
-    List<PictureView> selection = this.getSelectedImages();
-    if (selection.size() == 1) {
-      this.openImageEditDialog(selection.get(0));
-    }
-  }
-
-  private void onListClicked(final @NotNull MouseEvent event) {
-    if (event.getClickCount() > 1) {
-      this.onEditImageDesc();
-    }
-  }
-
-  private void openImageEditDialog(@NotNull PictureView pictureView) {
-    this.editImageDialog.setPicture(pictureView.picture());
-    this.editImageDialog.showAndWait()
-        .ifPresent(pictureView::setImageDescription);
-    this.updateImageButtons();
-  }
-
-  private void showButtonDescription(boolean show, String i18nKey) {
-    this.buttonDescriptionLabel.setText(show ? App.config().language().translate(i18nKey + ".tooltip") : null);
-  }
-
-  private List<PictureView> getSelectedImages() {
-    return new ArrayList<>(this.imagesList.getSelectionModel().getSelectedItems());
-  }
-
-  private void updateImageButtons() {
-    this.removeMainImageButton.setDisable(this.mainPicture == null);
-    var selectionModel = this.imagesList.getSelectionModel();
-    this.removeImageButton.setDisable(selectionModel.isEmpty());
-    var selectedItems = selectionModel.getSelectedItems();
-    boolean not1Selected = selectedItems.size() != 1;
-    this.setAsMainImageButton.setDisable(
-        not1Selected ||
-            selectedItems.get(0) != null // Selection list sometimes contains null
-                && selectedItems.get(0).picture().equals(this.mainPicture)
-    );
-    this.editImageDescButton.setDisable(not1Selected);
   }
 
   /**
@@ -828,21 +611,6 @@ public class EditPersonDialog extends DialogBase<Person> {
       }
       // Add back the selected relatives
       this.relativesLists.get(type).getPersons().forEach(p -> this.person.addRelative(p, type));
-    }
-
-    // Pictures
-    this.picturesToRemove.forEach(picture -> this.familyTree.removePictureFromObject(picture.name(), person));
-    this.imagesList.getItems().forEach(pv -> pv.picture().setDescription(pv.imageDescription().orElse(null)));
-    this.picturesToAdd.forEach(p -> {
-      if (this.familyTree.getPicture(p.name()).isEmpty()) {
-        this.familyTree.addPicture(p);
-      }
-      this.familyTree.addPictureToObject(p.name(), person);
-    });
-    if (this.mainPicture != null) {
-      this.familyTree.setMainPictureOfObject(this.mainPicture.name(), person);
-    } else {
-      this.familyTree.setMainPictureOfObject(null, person);
     }
   }
 

@@ -88,6 +88,7 @@ public class AppController {
   // Dialogs
   private final RegistriesDialog editRegistriesDialog = new RegistriesDialog();
   private final EditPersonDialog editPersonDialog = new EditPersonDialog();
+  private final ManageObjectImagesDialog editPersonImagesDialog = new ManageObjectImagesDialog();
   private final BirthdaysDialog birthdaysDialog = new BirthdaysDialog();
   private final SettingsDialog settingsDialog = new SettingsDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
@@ -304,7 +305,7 @@ public class AppController {
     this.setPictureMenuItem.setText(language.translate("menu.edit.set_picture"));
     this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
     this.setPictureMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN));
-    this.setPictureMenuItem.setOnAction(event -> this.onEditPicturesAction());
+    this.setPictureMenuItem.setOnAction(event -> this.onEditPersonPicturesAction());
     editMenu.getItems().add(this.setPictureMenuItem);
 
     //
@@ -428,7 +429,7 @@ public class AppController {
 
     this.setPictureToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.set_picture")));
     this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
-    this.setPictureToolbarButton.setOnAction(event -> this.onEditPicturesAction());
+    this.setPictureToolbarButton.setOnAction(event -> this.onEditPersonPicturesAction());
     toolbar.getItems().add(this.setPictureToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
@@ -733,18 +734,30 @@ public class AppController {
   }
 
   /**
-   * Open person edit dialog to edit the life events of the selected person.
-   */
-  private void onEditPicturesAction() {
-    this.openEditPersonDialogOnTab(EditPersonDialog.TAB_PICTURES);
-  }
-
-  /**
    * Open person edit dialog to edit the specified tab.
    */
   private void openEditPersonDialogOnTab(int tabIndex) {
     this.getSelectedPerson().ifPresent(
         person -> this.openEditPersonDialog(person, List.of(), null, null, tabIndex));
+  }
+
+  /**
+   * Open dialog to edit the images of the selected person.
+   */
+  private void onEditPersonPicturesAction() {
+    this.getSelectedPerson().ifPresent(person -> {
+      this.editPersonImagesDialog.setObject(person, this.familyTree);
+      this.editPersonImagesDialog.showAndWait()
+          .ifPresent(b -> {
+            if (!b.getButtonData().isCancelButton()) {
+              this.familyTreeView.refresh();
+              this.familyTreePane.refresh();
+              this.defaultEmptyTree = false;
+              this.unsavedChanges = true;
+              this.updateUI();
+            }
+          });
+    });
   }
 
   /**
