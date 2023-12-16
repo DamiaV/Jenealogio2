@@ -25,12 +25,29 @@ public final class Picture {
     return this.name;
   }
 
-  public String description() {
-    return this.description;
+  public Optional<String> description() {
+    return Optional.ofNullable(this.description);
   }
 
-  public void setDescription(@NotNull String description) {
+  public void setDescription(String description) {
     this.description = StringUtils.stripNullable(description).orElse(null);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || this.getClass() != o.getClass()) {
+      return false;
+    }
+    Picture picture = (Picture) o;
+    return Objects.equals(this.name, picture.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.name);
   }
 
   @Override

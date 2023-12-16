@@ -144,7 +144,7 @@ public class TreeXMLWriter extends TreeXMLManager {
         Element pictureElement = (Element) picturesElement.appendChild(document.createElement(PICTURE_TAG));
         this.setAttr(document, pictureElement, PICTURE_NAME_ATTR, picture.name());
         Element descElement = document.createElement(PICTURE_DESC_TAG);
-        descElement.setTextContent(picture.description());
+        picture.description().ifPresent(descElement::setTextContent);
         pictureElement.appendChild(descElement);
       });
       familyTreeElement.appendChild(picturesElement);

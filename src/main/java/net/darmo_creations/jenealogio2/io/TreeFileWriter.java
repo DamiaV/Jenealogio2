@@ -6,7 +6,6 @@ import org.jetbrains.annotations.*;
 
 import javax.imageio.*;
 import java.io.*;
-import java.util.*;
 import java.util.zip.*;
 
 /**
@@ -25,11 +24,8 @@ public class TreeFileWriter extends TreeFileManager {
   public void saveToFile(final @NotNull FamilyTree familyTree, @NotNull File file) throws IOException {
     try (var out = new ZipOutputStream(new FileOutputStream(file))) {
       this.writeTreeXML(familyTree, out);
-      for (Person person : familyTree.persons()) {
-        Optional<Picture> image = person.mainPicture();
-        if (image.isPresent()) {
-          this.writeImageFile(image.get(), out);
-        }
+      for (Picture image : familyTree.pictures()) {
+        this.writeImageFile(image, out);
       }
     }
   }

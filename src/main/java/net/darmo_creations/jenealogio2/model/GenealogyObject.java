@@ -84,7 +84,7 @@ public abstract class GenealogyObject<T extends GenealogyObject<T>> {
    */
   void removePicture(@NotNull String name) {
     Objects.requireNonNull(name);
-    if (this.mainPicture.name().equals(name)) {
+    if (this.mainPicture != null && this.mainPicture.name().equals(name)) {
       this.setMainPicture(null);
     }
     this.pictures.remove(name);
