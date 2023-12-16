@@ -137,15 +137,14 @@ public class AppController {
     // Files drag-and-drop
     scene.setOnDragOver(event -> {
       if (event.getGestureSource() == null // From another application
-          && event.getDragboard().hasFiles()
-          && event.getDragboard().getFiles().size() == 1) {
+          && this.isDragAndDropValid(event.getDragboard())) {
         event.acceptTransferModes(TransferMode.COPY);
       }
       event.consume();
     });
     scene.setOnDragDropped(event -> {
       Dragboard db = event.getDragboard();
-      boolean success = db.hasFiles() && event.getDragboard().getFiles().size() == 1;
+      boolean success = this.isDragAndDropValid(db);
       if (success) {
         if (!this.defaultEmptyTree && this.unsavedChanges) {
           boolean open = Alerts.confirmation(
@@ -161,6 +160,13 @@ public class AppController {
       event.setDropCompleted(success);
       event.consume();
     });
+  }
+
+  private boolean isDragAndDropValid(final @NotNull Dragboard dragboard) {
+    List<File> files = dragboard.getFiles();
+    return dragboard.hasFiles()
+        && files.size() == 1
+        && files.get(0).getName().endsWith(TreeFileReader.EXTENSION);
   }
 
   private MenuBar createMenuBar() {
@@ -298,7 +304,7 @@ public class AppController {
     this.setPictureMenuItem.setText(language.translate("menu.edit.set_picture"));
     this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
     this.setPictureMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN));
-    this.setPictureMenuItem.setDisable(true); // TEMP disabled until implemented
+    this.setPictureMenuItem.setOnAction(event -> this.onEditPicturesAction());
     editMenu.getItems().add(this.setPictureMenuItem);
 
     //
@@ -422,7 +428,7 @@ public class AppController {
 
     this.setPictureToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.set_picture")));
     this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
-    this.setPictureToolbarButton.setDisable(true); // TEMP disabled until implemented
+    this.setPictureToolbarButton.setOnAction(event -> this.onEditPicturesAction());
     toolbar.getItems().add(this.setPictureToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
@@ -709,24 +715,36 @@ public class AppController {
    * Open person edit dialog to edit the selected person.
    */
   private void onEditPersonAction() {
-    this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, List.of(), null, null, EditPersonDialog.TAB_PROFILE));
+    this.openEditPersonDialogOnTab(EditPersonDialog.TAB_PROFILE);
   }
 
   /**
    * Open person edit dialog to edit the parents of the selected person.
    */
   private void onEditParentsAction() {
-    this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, List.of(), null, null, EditPersonDialog.TAB_PARENTS));
+    this.openEditPersonDialogOnTab(EditPersonDialog.TAB_PARENTS);
   }
 
   /**
    * Open person edit dialog to edit the life events of the selected person.
    */
   private void onEditLifeEventsAction() {
+    this.openEditPersonDialogOnTab(EditPersonDialog.TAB_EVENTS);
+  }
+
+  /**
+   * Open person edit dialog to edit the life events of the selected person.
+   */
+  private void onEditPicturesAction() {
+    this.openEditPersonDialogOnTab(EditPersonDialog.TAB_PICTURES);
+  }
+
+  /**
+   * Open person edit dialog to edit the specified tab.
+   */
+  private void openEditPersonDialogOnTab(int tabIndex) {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, List.of(), null, null, EditPersonDialog.TAB_EVENTS));
+        person -> this.openEditPersonDialog(person, List.of(), null, null, tabIndex));
   }
 
   /**
@@ -875,12 +893,15 @@ public class AppController {
     }
     this.editPersonDialog.selectTab(tabIndex);
     Optional<Person> p = this.editPersonDialog.showAndWait();
-    if (p.isPresent()) {
+    boolean present = p.isPresent();
+    if (present) {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
       if (person == null && childInfo.isEmpty()) {
         this.onPersonClick(new PersonClickedEvent(p.get(), PersonClickedEvent.Action.SET_AS_TARGET), null);
       }
+    }
+    if (present || !this.unsavedChanges && this.editPersonDialog.hasTreeChanged()) {
       this.defaultEmptyTree = false;
       this.unsavedChanges = true;
       this.updateUI();
@@ -891,7 +912,12 @@ public class AppController {
    * Update the UI, i.e. menu items, toolbar buttons and stage’s title.
    */
   private void updateUI() {
-    this.stage.setTitle("%s – %s%s".formatted(App.NAME, this.familyTree.name(), this.unsavedChanges ? "*" : ""));
+    this.stage.setTitle("%s%s – %s%s".formatted(
+        App.NAME,
+        App.config().isDebug() ? " (Debug)" : "",
+        this.familyTree.name(),
+        this.unsavedChanges ? "*" : ""
+    ));
 
     if (this.birthdaysDialog.isShowing()) {
       this.birthdaysDialog.refresh(this.familyTree);
@@ -910,7 +936,7 @@ public class AppController {
     this.addSiblingMenuItem.setDisable(!hasBothParents);
     this.editParentsMenuItem.setDisable(!selection);
     this.editLifeEventsMenuItem.setDisable(!selection);
-//    this.setPictureMenuItem.setDisable(!selection); // TEMP disabled until implemented
+    this.setPictureMenuItem.setDisable(!selection);
 
     this.saveToolbarButton.setDisable(!this.unsavedChanges);
     this.setAsRootToolbarButton.setDisable(!selection || selectedIsRoot);
@@ -918,7 +944,7 @@ public class AppController {
     this.addSiblingToolbarButton.setDisable(!hasBothParents);
     this.editParentsToolbarButton.setDisable(!selection);
     this.editLifeEventsToolbarButton.setDisable(!selection);
-//    this.setPictureToolbarButton.setDisable(!selection); // TEMP disabled until implemented
+    this.setPictureToolbarButton.setDisable(!selection);
   }
 
   /**

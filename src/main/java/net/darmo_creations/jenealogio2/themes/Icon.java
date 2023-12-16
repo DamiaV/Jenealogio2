@@ -1,8 +1,8 @@
 package net.darmo_creations.jenealogio2.themes;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Enumeration of all icons used throughout the app.
@@ -51,6 +51,14 @@ public enum Icon {
 
   ADD_PARENT("plus"),
   REMOVE_PARENT("delete"),
+
+  REMOVE_MAIN_IMAGE("arrow_down"),
+  ADD_IMAGE("plus"),
+  SET_AS_MAIN_IMAGE("arrow_up"),
+  REMOVE_IMAGE("delete"),
+  EDIT_IMAGE_DESC("pencil"),
+
+  OPEN_IMAGE_FILE("folder_picture"),
 
   TREE_ROOT("anchor"),
   MORE("plus"),

@@ -63,6 +63,10 @@ Text.hyperlink {
     -fx-background-color: derive(-fx-base, -20%);
 }
 
+.help-text {
+    -fx-text-fill: rgb(100, 100, 100);
+}
+
 *:invalid {
     -fx-border-color: red;
 }

@@ -6,9 +6,11 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-public final class Picture {
+public class Picture {
+  public static final String[] FILE_EXTENSIONS = {".jpg", ".jpeg", ".png"};
+
   private final Image image;
-  private final String name;
+  private final String name; // TODO allow renaming
   private String description;
 
   public Picture(final @NotNull Image image, @NotNull String name, String description) {

@@ -195,7 +195,7 @@ public class FamilyTree {
    */
   public Picture removePicture(@NotNull String name) {
     Objects.requireNonNull(name);
-    this.persons.forEach(p -> p.removePicture(name));
+    this.persons.forEach(p -> this.removePictureFromObject(name, p));
     return this.pictures.remove(name);
   }
 
@@ -225,7 +225,7 @@ public class FamilyTree {
    * @param name Name of the picture to set as main. May be null.
    * @param o    The object to update.
    */
-  public void setMainPictureOfObject(@NotNull String name, @NotNull GenealogyObject<?> o) {
+  public void setMainPictureOfObject(String name, @NotNull GenealogyObject<?> o) {
     o.setMainPicture(name);
   }
 
