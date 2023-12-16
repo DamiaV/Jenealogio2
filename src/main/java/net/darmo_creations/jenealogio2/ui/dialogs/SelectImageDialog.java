@@ -1,5 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
+import javafx.collections.*;
+import javafx.collections.transformation.*;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -23,7 +25,9 @@ import java.util.*;
  * Offers a button to import images directly from the filesystem.
  */
 public class SelectImageDialog extends DialogBase<Collection<Picture>> {
+  private final TextField filterTextInput = new TextField();
   private final ListView<PictureView> imagesList = new ListView<>();
+  private final ObservableList<PictureView> picturesList = FXCollections.observableArrayList();
 
   private FamilyTree tree;
 
@@ -45,6 +49,22 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     HBox hBox = new HBox(addImageButton);
     hBox.setAlignment(Pos.CENTER);
 
+    HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
+    this.filterTextInput.setPromptText(language.translate("dialog.select_images.filter"));
+    FilteredList<PictureView> filteredList = new FilteredList<>(this.picturesList, data -> true);
+    this.imagesList.setItems(filteredList);
+    this.filterTextInput.textProperty().addListener(((observable, oldValue, newValue) ->
+        filteredList.setPredicate(pictureView -> {
+          if (newValue == null || newValue.isEmpty()) {
+            return true;
+          }
+          String filter = newValue.toLowerCase();
+          Picture picture = pictureView.picture();
+          return picture.name().toLowerCase().contains(filter)
+              || picture.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
+        })
+    ));
+
     this.imagesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     this.imagesList.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.updateButtons());
@@ -55,7 +75,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
         5,
         label,
         hBox,
-        new Label(language.translate("dialog.select_images.images_list")),
+        new HBox(5, new Label(language.translate("dialog.select_images.images_list")), this.filterTextInput),
         this.imagesList
     );
     content.setPrefWidth(400);
@@ -107,10 +127,11 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
    */
   public void updateImageList(@NotNull FamilyTree tree, final @NotNull Collection<Picture> exclusionList) {
     this.tree = Objects.requireNonNull(tree);
-    this.imagesList.getItems().clear();
+    this.filterTextInput.setText(null);
+    this.picturesList.clear();
     tree.pictures().stream()
         .filter(p -> !exclusionList.contains(p))
-        .forEach(p -> this.imagesList.getItems().add(new PictureView(p)));
+        .forEach(p -> this.picturesList.add(new PictureView(p)));
   }
 
   private void onAddImage() {
@@ -192,7 +213,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
       picture = new Picture(new Image(in), file.getName(), null);
     }
     PictureView pv = new PictureView(picture);
-    this.imagesList.getItems().add(pv);
+    this.picturesList.add(pv);
     this.imagesList.scrollTo(pv);
   }
 

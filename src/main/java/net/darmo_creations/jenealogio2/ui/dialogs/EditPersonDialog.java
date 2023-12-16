@@ -72,6 +72,7 @@ public class EditPersonDialog extends DialogBase<Person> {
 
   private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
 
+  // TODO extract images tab to separate dialog
   private final ImageView mainImageView = new ImageView();
   private final Button removeMainImageButton = new Button();
   private final Button addImageButton = new Button();
