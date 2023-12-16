@@ -24,8 +24,6 @@ import java.text.*;
 import java.time.*;
 import java.util.*;
 
-// TODO split tabs into separate classes
-
 /**
  * Dialog to edit a {@link Person} object and its {@link LifeEvent}s.
  */
