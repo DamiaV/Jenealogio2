@@ -202,7 +202,9 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     }
     this.tree.addPicture(picture);
     this.treeChanged = true;
-    this.imagesList.getItems().add(new PictureView(picture));
+    PictureView pv = new PictureView(picture);
+    this.imagesList.getItems().add(pv);
+    this.imagesList.scrollTo(pv);
   }
 
   /**

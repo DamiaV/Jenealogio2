@@ -132,6 +132,7 @@ public class EditPersonDialog extends DialogBase<Person> {
   public EditPersonDialog() {
     super("edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
+    VBox.setVgrow(this.tabPane, Priority.ALWAYS);
     this.tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
     this.tabPane.getTabs().add(this.createProfileTab());
     this.tabPane.getTabs().add(this.createEventsTab());
@@ -686,7 +687,9 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.selectImageDialog.updateImageList(this.familyTree, exclusionList);
     this.selectImageDialog.showAndWait().ifPresent(pictures -> {
       pictures.forEach(p -> {
-        this.imagesList.getItems().add(new PictureView(p));
+        PictureView pv = new PictureView(p);
+        this.imagesList.getItems().add(pv);
+        this.imagesList.scrollTo(pv);
         this.picturesToAdd.add(p);
         this.picturesToRemove.remove(p);
       });
