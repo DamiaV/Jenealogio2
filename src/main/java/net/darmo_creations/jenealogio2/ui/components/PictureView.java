@@ -5,6 +5,7 @@ import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -18,14 +19,22 @@ public class PictureView extends HBox {
 
   private final Picture picture;
 
-  public PictureView(Picture picture) {
-    this.picture = picture;
+  public PictureView(@NotNull Picture picture) {
+    super(5);
+    this.picture = Objects.requireNonNull(picture);
     ImageView imageView = new ImageView(picture.image());
     imageView.setPreserveRatio(true);
     imageView.setFitHeight(IMAGE_SIZE);
     imageView.setFitWidth(IMAGE_SIZE);
     picture.description().ifPresent(this.imageDescLabel::setText);
-    this.getChildren().addAll(imageView, this.imageDescLabel);
+    this.getChildren().addAll(
+        imageView,
+        new VBox(
+            5,
+            new Label(picture.name()),
+            this.imageDescLabel
+        )
+    );
   }
 
   public Picture picture() {

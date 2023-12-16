@@ -4,6 +4,7 @@ import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.converter.*;
@@ -47,6 +48,7 @@ public class EditPersonDialog extends DialogBase<Person> {
   public static final int TAB_PICTURES = 3;
 
   private final SelectImageDialog selectImageDialog = new SelectImageDialog();
+  private final EditImageDialog editImageDialog = new EditImageDialog();
 
   private final Label buttonDescriptionLabel = new Label();
 
@@ -448,6 +450,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.imagesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     this.imagesList.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.updateImageButtons());
+    this.imagesList.setOnMouseClicked(this::onListClicked);
     VBox.setVgrow(this.imagesList, Priority.ALWAYS);
     vBox.getChildren().add(this.imagesList);
 
@@ -717,7 +720,23 @@ public class EditPersonDialog extends DialogBase<Person> {
   }
 
   private void onEditImageDesc() {
-    // TODO allow editing descriptions on item double-click
+    List<PictureView> selection = this.getSelectedImages();
+    if (selection.size() == 1) {
+      this.openImageEditDialog(selection.get(0));
+    }
+  }
+
+  private void onListClicked(final @NotNull MouseEvent event) {
+    if (event.getClickCount() > 1) {
+      this.onEditImageDesc();
+    }
+  }
+
+  private void openImageEditDialog(@NotNull PictureView pictureView) {
+    this.editImageDialog.setPicture(pictureView.picture());
+    this.editImageDialog.showAndWait()
+        .ifPresent(pictureView::setImageDescription);
+    this.updateImageButtons();
   }
 
   private void showButtonDescription(boolean show, String i18nKey) {
@@ -734,7 +753,11 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.removeImageButton.setDisable(selectionModel.isEmpty());
     var selectedItems = selectionModel.getSelectedItems();
     boolean not1Selected = selectedItems.size() != 1;
-    this.setAsMainImageButton.setDisable(not1Selected || selectedItems.get(0).picture() == this.mainPicture);
+    this.setAsMainImageButton.setDisable(
+        not1Selected ||
+            selectedItems.get(0) != null // Selection list sometimes contains null
+                && selectedItems.get(0).picture().equals(this.mainPicture)
+    );
     this.editImageDescButton.setDisable(not1Selected);
   }
 
