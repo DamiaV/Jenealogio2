@@ -28,7 +28,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final Tab eventsTab = new Tab();
   private final Tab familyTab = new Tab();
   private final Tab fosterParentsTab = new Tab();
-  private final Tab imagesTab = new Tab();
 
   private final ImageView imageView = new ImageView();
   private final Label fullNameLabel = new Label();
@@ -44,13 +43,14 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final ListView<LifeEventItem> lifeEventsList = new ListView<>();
   private final ListView<WitnessedEventItem> witnessedEventsList = new ListView<>();
 
-  private final VBox eventPane = new VBox();
+  private final SplitPane eventPane = new SplitPane();
   private final Label eventTypeLabel = new Label();
   private final Label eventDateLabel = new Label();
   private final VBox eventActorsPane = new VBox(4);
   private final Label eventPlaceLabel = new Label();
   private final TextFlow eventNotesTextFlow = new TextFlow();
   private final TextFlow eventSourcesTextFlow = new TextFlow();
+  private final ListView<PictureView> eventImagesList = new ListView<>();
 
   private final PersonCard parent1Card = new PersonCard(null);
   private final PersonCard parent2Card = new PersonCard(null);
@@ -82,14 +82,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.familyTab.setGraphic(theme.getIcon(Icon.FAMILY_TAB, Icon.Size.SMALL));
     this.fosterParentsTab.setText(language.translate("person_details_view.foster_parents_tab.title"));
     this.fosterParentsTab.setGraphic(theme.getIcon(Icon.FOSTER_PARENTS_TAB, Icon.Size.SMALL));
-    this.imagesTab.setText(language.translate("person_details_view.images_tab.title"));
-    this.imagesTab.setGraphic(theme.getIcon(Icon.IMAGES_TAB, Icon.Size.SMALL));
     this.getTabs().addAll(
         this.profileTab,
         this.eventsTab,
         this.familyTab,
-        this.fosterParentsTab,
-        this.imagesTab
+        this.fosterParentsTab
     );
     this.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
@@ -99,14 +96,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.setupEventsTab();
     this.setupFamilyTab();
     this.setupFosterParentsTab();
-    this.setupImagesTab();
   }
 
   private void setupProfileTab() {
     Language language = App.config().language();
 
-    VBox tabPane = new VBox();
-    tabPane.getStyleClass().add("person-details");
+    SplitPane tabPane = new SplitPane();
+    tabPane.setOrientation(Orientation.VERTICAL);
     this.profileTab.setContent(tabPane);
 
     VBox vHeader = new VBox(4);
@@ -139,14 +135,30 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     nnBox.getChildren().add(this.nicknamesLabel);
     publicNamesBox.getChildren().addAll(plnBox, pfnBox, nnBox);
 
-    tabPane.getChildren().addAll(
+    ScrollPane notesScroll = new ScrollPane(this.notesTextFlow);
+    VBox.setVgrow(notesScroll, Priority.ALWAYS);
+
+    VBox topBox = new VBox(
         vHeader,
         publicNamesBox,
         new SectionLabel("notes"),
-        this.notesTextFlow,
-        new SectionLabel("sources"),
-        this.sourcesTextFlow
+        notesScroll
     );
+    topBox.getStyleClass().add("person-details");
+    ScrollPane sourcesScroll = new ScrollPane(this.sourcesTextFlow);
+    VBox.setVgrow(sourcesScroll, Priority.ALWAYS);
+    VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
+    sourcesBox.getStyleClass().add("person-details");
+    this.imageList.setOnMouseClicked(this::onImageListClicked);
+    VBox.setVgrow(this.imageList, Priority.ALWAYS);
+    VBox imagesBox = new VBox(new SectionLabel("images"), this.imageList);
+    imagesBox.getStyleClass().add("person-details");
+    tabPane.getItems().addAll(
+        topBox,
+        sourcesBox,
+        imagesBox
+    );
+    tabPane.setDividerPositions(0.2, 0.4);
   }
 
   private void setupEventsTab() {
@@ -190,16 +202,32 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     HBox hBox = new HBox(4, this.eventTypeLabel, spacer, this.eventDateLabel, closeButton);
     hBox.getStyleClass().add("person-details-header");
 
-    this.eventPane.getStyleClass().add("person-details");
-    this.eventPane.getChildren().addAll(
+    ScrollPane notesScroll = new ScrollPane(this.eventNotesTextFlow);
+    VBox.setVgrow(notesScroll, Priority.ALWAYS);
+
+    VBox topBox = new VBox(
         hBox,
         this.eventActorsPane,
         this.eventPlaceLabel,
         new SectionLabel("notes"),
-        this.eventNotesTextFlow,
-        new SectionLabel("sources"),
-        this.eventSourcesTextFlow
+        notesScroll
     );
+    ScrollPane sourcesScroll = new ScrollPane(this.eventSourcesTextFlow);
+    VBox.setVgrow(sourcesScroll, Priority.ALWAYS);
+    VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
+    sourcesBox.getStyleClass().add("person-details");
+    this.eventImagesList.setOnMouseClicked(this::onImageListClicked);
+    VBox.setVgrow(this.eventImagesList, Priority.ALWAYS);
+    VBox imagesBox = new VBox(new SectionLabel("images"), this.eventImagesList);
+    imagesBox.getStyleClass().add("person-details");
+    this.eventPane.getItems().addAll(
+        topBox,
+        sourcesBox,
+        imagesBox
+    );
+    this.eventPane.setDividerPositions(0.2, 0.4);
+    this.eventPane.setOrientation(Orientation.VERTICAL);
+    this.eventPane.getStyleClass().add("person-details");
   }
 
   private void setupFamilyTab() {
@@ -248,11 +276,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     tabPane.getItems().addAll(topBox, middleBox, bottomBox);
     tabPane.setDividerPositions(0.33, 0.67);
-  }
-
-  private void setupImagesTab() {
-    this.imagesTab.setContent(this.imageList);
-    this.imageList.setOnMouseClicked(this::onImageListClicked);
   }
 
   private void onImageListClicked(final @NotNull MouseEvent event) {
@@ -309,6 +332,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.imageList.getItems().clear();
 
+    this.eventImagesList.getItems().clear();
     this.eventsTab.setContent(this.eventsTabPane);
   }
 
@@ -465,6 +489,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     lifeEvent.notes().ifPresent(s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
     this.eventSourcesTextFlow.getChildren().clear();
     lifeEvent.sources().ifPresent(s -> this.eventSourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+
+    this.eventImagesList.getItems().clear();
+    lifeEvent.pictures().forEach(p -> this.eventImagesList.getItems().add(new PictureView(p, false)));
+    this.eventImagesList.getItems().sort(null);
 
     this.eventsTab.setContent(this.eventPane);
   }

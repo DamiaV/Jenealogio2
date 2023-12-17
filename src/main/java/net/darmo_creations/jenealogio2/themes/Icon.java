@@ -82,7 +82,6 @@ public enum Icon {
   LIFE_EVENTS_TAB("clock"),
   FAMILY_TAB("users_5"),
   FOSTER_PARENTS_TAB("users_3"),
-  IMAGES_TAB("pictures"),
   ;
 
   private final String baseName;
