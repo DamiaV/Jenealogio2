@@ -68,7 +68,7 @@ public record CalendarDateTime(
   }
 
   private String formatField(int field, boolean isSet) {
-    return isSet ? ("%02d").formatted(field) : "#";
+    return isSet ? "%02d".formatted(field) : "#";
   }
 
   /**

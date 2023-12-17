@@ -1,12 +1,11 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import ca.rmen.lfrc.FrenchRevolutionaryCalendarDate;
-import org.jetbrains.annotations.NotNull;
+import ca.rmen.lfrc.*;
+import org.jetbrains.annotations.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Locale;
+import java.time.*;
+import java.util.GregorianCalendar;
+import java.util.*;
 
 /**
  * This class represents a date-time in the French republican/revolutionary calendar system with conventional time.
@@ -17,7 +16,7 @@ public final class FrenchRepublicanDateTime extends CalendarSpecificDateTime {
   public static final int HOURS_IN_DAY = 24;
   public static final int MINUTES_IN_HOUR = 60;
 
-  FrenchRepublicanDateTime(@NotNull FrenchRevolutionaryCalendarDate date, int hours, int minutes) {
+  FrenchRepublicanDateTime(@NotNull FrenchRevolutionaryCalendarDate date, Integer hours, Integer minutes) {
     super(
         date.year,
         date.month,
@@ -31,7 +30,9 @@ public final class FrenchRepublicanDateTime extends CalendarSpecificDateTime {
   public LocalDateTime toISO8601Date() {
     var date = new FrenchRevolutionaryCalendarDate(
         Locale.getDefault(), this.year(), this.month(), this.dayOfMonth(), 0, 0, 0);
-    LocalDate d = LocalDate.ofInstant(FrenchRepublicanCalendar.CAL.getDate(date).toInstant(), ZoneId.systemDefault());
+    GregorianCalendar gd = FrenchRepublicanCalendar.CAL.getDate(date);
+    // Converted gregorian date is in UTC, add 1h to account for France’s timezone offset
+    LocalDate d = LocalDate.ofInstant(gd.toInstant(), ZoneId.of("+01:00"));
     return d.atTime(this.hour().orElse(0), this.minute().orElse(0));
   }
 

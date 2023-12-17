@@ -1,13 +1,11 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import ca.rmen.lfrc.FrenchRevolutionaryCalendar;
-import ca.rmen.lfrc.FrenchRevolutionaryCalendarDate;
-import org.jetbrains.annotations.NotNull;
+import ca.rmen.lfrc.*;
+import org.jetbrains.annotations.*;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.*;
 import java.util.GregorianCalendar;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * The French republican/revolutionary calendar system with conventional time.
@@ -38,8 +36,8 @@ public final class FrenchRepublicanCalendar implements Calendar<FrenchRepublican
     cal.setGregorianChange(new Date(Long.MIN_VALUE));
     return new FrenchRepublicanDateTime(
         CAL.getDate(cal),
-        isTimeSet ? date.getHour() : 0,
-        isTimeSet ? date.getMinute() : 0
+        isTimeSet ? date.getHour() : null,
+        isTimeSet ? date.getMinute() : null
     );
   }
 

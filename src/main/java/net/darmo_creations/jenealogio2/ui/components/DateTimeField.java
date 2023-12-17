@@ -1,23 +1,16 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.geometry.Insets;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.util.converter.IntegerStringConverter;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Language;
+import javafx.geometry.*;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.util.converter.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
+import org.jetbrains.annotations.*;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * JavaFX component acting as a date-time text input.
