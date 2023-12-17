@@ -147,7 +147,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.witnessedEventsList.getStyleClass().add("life-event-list");
 
     VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
-    VBox vBox = new VBox(this.lifeEventsList);
+    VBox vBox = new VBox(new SectionLabel("lived_events"), this.lifeEventsList);
     vBox.getStyleClass().add("person-details");
     VBox.setVgrow(this.witnessedEventsList, Priority.ALWAYS);
     VBox vBox2 = new VBox(new SectionLabel("witnessed_events"), this.witnessedEventsList);
