@@ -19,7 +19,7 @@ public class PictureView extends HBox {
 
   private final Picture picture;
 
-  public PictureView(@NotNull Picture picture) {
+  public PictureView(final @NotNull Picture picture) {
     super(5);
     this.picture = Objects.requireNonNull(picture);
     ImageView imageView = new ImageView(picture.image());

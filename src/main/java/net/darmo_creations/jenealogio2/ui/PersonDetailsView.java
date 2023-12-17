@@ -11,11 +11,13 @@ import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.ui.dialogs.*;
 import net.darmo_creations.jenealogio2.ui.events.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.function.*;
 
 public class PersonDetailsView extends TabPane implements PersonClickObservable {
   private Person person;
@@ -60,8 +62,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
   private final List<NewParentClickListener> newParentClickListeners = new LinkedList<>();
+  private final List<Consumer<Picture>> imageEditedListeners = new LinkedList<>();
 
   private final ListView<PictureView> imageList = new ListView<>();
+
+  private final EditImageDialog editImageDialog = new EditImageDialog();
 
   public PersonDetailsView() {
     super();
@@ -246,7 +251,27 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private void setupImagesTab() {
     this.imagesTab.setContent(this.imageList);
-    // TODO open image on double-click
+    this.imageList.setOnMouseClicked(this::onImageListClicked);
+  }
+
+  private void onImageListClicked(final @NotNull MouseEvent event) {
+    if (event.getClickCount() > 1) {
+      this.onEditImageDesc();
+    }
+  }
+
+  private void onEditImageDesc() {
+    List<PictureView> selection = this.imageList.getSelectionModel().getSelectedItems();
+    if (selection.size() == 1) {
+      PictureView pictureView = selection.get(0);
+      Picture picture = pictureView.picture();
+      this.editImageDialog.setPicture(picture);
+      this.editImageDialog.showAndWait().ifPresent(desc -> {
+        pictureView.setImageDescription(desc);
+        picture.setDescription(desc);
+        this.imageEditedListeners.forEach(l -> l.accept(picture));
+      });
+    }
   }
 
   public void setPerson(final Person person, final FamilyTree familyTree) {
@@ -443,6 +468,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   public final List<NewParentClickListener> newParentClickListeners() {
     return this.newParentClickListeners;
+  }
+
+  public List<Consumer<Picture>> imageEditedListeners() {
+    return this.imageEditedListeners;
   }
 
   /**

@@ -475,6 +475,8 @@ public class AppController {
         .add(event -> this.onPersonClick(event, null));
     this.personDetailsView.newParentClickListeners()
         .add(this::onNewParentClick);
+    this.personDetailsView.imageEditedListeners()
+        .add(this::onImageEdited);
     splitPane.getItems().add(this.personDetailsView);
 
     splitPane.setDividerPositions(0.1, 0.9);
@@ -832,6 +834,17 @@ public class AppController {
    */
   private void onNewParentClick(@NotNull List<ChildInfo> childInfo) {
     this.openEditPersonDialog(null, childInfo, null, null, EditPersonDialog.TAB_PROFILE);
+  }
+
+  /**
+   * Called whenever a picture is edited in the {@link #personDetailsView}.
+   *
+   * @param picture The edited picture.
+   */
+  private void onImageEdited(@NotNull Picture picture) {
+    this.defaultEmptyTree = false;
+    this.unsavedChanges = true;
+    this.updateUI();
   }
 
   /**
