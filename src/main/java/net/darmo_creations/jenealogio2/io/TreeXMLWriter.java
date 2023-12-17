@@ -145,6 +145,7 @@ public class TreeXMLWriter extends TreeXMLManager {
         this.setAttr(document, pictureElement, PICTURE_NAME_ATTR, picture.name());
         Element descElement = document.createElement(PICTURE_DESC_TAG);
         picture.description().ifPresent(descElement::setTextContent);
+        picture.date().ifPresent(date -> this.writeDateTag(document, pictureElement, date));
         pictureElement.appendChild(descElement);
       });
       familyTreeElement.appendChild(picturesElement);
@@ -393,7 +394,7 @@ public class TreeXMLWriter extends TreeXMLManager {
       Element lifeEventElement = (Element) lifeEventsElement.appendChild(document.createElement(LIFE_EVENT_TAG));
 
       this.writePicturesTag(document, lifeEventElement, lifeEvent);
-      this.writeDateTag(document, lifeEventElement, lifeEvent);
+      this.writeDateTag(document, lifeEventElement, lifeEvent.date());
       this.writeLifeEventTypeTag(document, lifeEventElement, lifeEvent);
       this.writePlace(document, lifeEventElement, lifeEvent);
       this.writeActorsTag(document, lifeEventElement, lifeEvent, personIDs);
@@ -405,11 +406,10 @@ public class TreeXMLWriter extends TreeXMLManager {
 
   private void writeDateTag(
       @NotNull Document document,
-      @NotNull Element lifeEventElement,
-      final @NotNull LifeEvent lifeEvent
+      @NotNull Element element,
+      final @NotNull DateTime date
   ) {
-    Element dateElement = (Element) lifeEventElement.appendChild(document.createElement(DATE_TAG));
-    DateTime date = lifeEvent.date();
+    Element dateElement = (Element) element.appendChild(document.createElement(DATE_TAG));
     String dateType;
     if (date instanceof DateTimeWithPrecision d) {
       dateType = DATE_WITH_PRECISION;

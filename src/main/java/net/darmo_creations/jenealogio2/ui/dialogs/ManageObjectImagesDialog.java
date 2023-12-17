@@ -151,8 +151,9 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     this.removeMainImageButton.setDisable(image.isEmpty());
     this.imagesList.getItems().clear();
     for (Picture picture : this.genealogyObject.pictures()) {
-      this.imagesList.getItems().add(new PictureView(picture));
+      this.imagesList.getItems().add(new PictureView(picture, true));
     }
+    this.imagesList.getItems().sort(null);
     this.updateButtons();
   }
 
@@ -185,12 +186,13 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     this.selectImageDialog.updateImageList(this.familyTree, exclusionList);
     this.selectImageDialog.showAndWait().ifPresent(pictures -> {
       pictures.forEach(p -> {
-        PictureView pv = new PictureView(p);
+        PictureView pv = new PictureView(p, true);
         this.imagesList.getItems().add(pv);
         this.imagesList.scrollTo(pv);
         this.picturesToAdd.add(p);
         this.picturesToRemove.remove(p);
       });
+      this.imagesList.getItems().sort(null);
       this.updateButtons();
     });
   }
@@ -226,8 +228,10 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
 
   private void openImageEditDialog(@NotNull PictureView pictureView) {
     this.editImageDialog.setPicture(pictureView.picture());
-    this.editImageDialog.showAndWait()
-        .ifPresent(pictureView::setImageDescription);
+    this.editImageDialog.showAndWait().ifPresent(data -> {
+      pictureView.setImageDescription(data.description());
+      pictureView.setDate(data.date());
+    });
     this.updateButtons();
   }
 

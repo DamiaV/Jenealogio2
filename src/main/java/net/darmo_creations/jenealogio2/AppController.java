@@ -74,7 +74,6 @@ public class AppController {
   private final Button checkInconsistenciesToolbarButton = new Button();
 
   // File managers
-  private final TreeFileReader treeFileReader = new TreeFileReader();
   private final TreeFileWriter treeFileWriter = new TreeFileWriter();
 
   // Tree components
@@ -596,7 +595,7 @@ public class AppController {
     App.LOGGER.info("Loading tree from %s…".formatted(file));
     FamilyTree familyTree;
     try {
-      familyTree = this.treeFileReader.loadFile(file);
+      familyTree = new TreeFileReader().loadFile(file);
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(

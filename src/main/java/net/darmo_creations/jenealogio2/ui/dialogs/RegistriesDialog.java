@@ -42,7 +42,6 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private boolean changes;
 
   // File managers
-  private final TreeFileReader treeFileReader = new TreeFileReader();
   private final TreeXMLReader treeXMLReader = new TreeXMLReader();
   private final TreeXMLWriter treeXMLWriter = new TreeXMLWriter();
 
@@ -149,7 +148,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
     FamilyTree familyTree;
     try {
-      familyTree = this.treeFileReader.loadFile(file.get());
+      familyTree = new TreeFileReader().loadFile(file.get());
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(

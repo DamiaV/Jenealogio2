@@ -138,7 +138,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     this.picturesList.clear();
     tree.pictures().stream()
         .filter(p -> !exclusionList.contains(p))
-        .forEach(p -> this.picturesList.add(new PictureView(p)));
+        .forEach(p -> this.picturesList.add(new PictureView(p, true)));
   }
 
   private void onAddImage() {
@@ -217,9 +217,9 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
   private void importFile(final @NotNull File file) throws IOException {
     Picture picture;
     try (FileInputStream in = new FileInputStream(file)) {
-      picture = new Picture(new Image(in), file.getName(), null);
+      picture = new Picture(new Image(in), file.getName(), null, null);
     }
-    PictureView pv = new PictureView(picture);
+    PictureView pv = new PictureView(picture, true);
     this.picturesList.add(pv);
     this.imagesList.scrollTo(pv);
   }

@@ -21,14 +21,14 @@ public class TreeXMLReader extends TreeXMLManager {
   /**
    * Read a family tree object from an input stream.
    *
-   * @param inputStream   The stream to read from.
-   * @param imageProvider Function that provides an image for the given name and description.
+   * @param inputStream    The stream to read from.
+   * @param pictureBuilder Function that provides a picture for the given name and data.
    * @return The corresponding family tree object.
    * @throws IOException If any error occurs.
    */
   public FamilyTree readFromStream(
       @NotNull InputStream inputStream,
-      @NotNull BiFunction<String, String, Optional<Picture>> imageProvider
+      @NotNull PictureBuilder pictureBuilder
   ) throws IOException {
     Document document = this.readFile(inputStream);
 
@@ -58,7 +58,7 @@ public class TreeXMLReader extends TreeXMLManager {
 
     Optional<Element> picturesElement = this.getChildElement(familyTreeElement, PICTURES_TAG, true);
     if (picturesElement.isPresent()) {
-      this.loadPictures(picturesElement.get(), familyTree, imageProvider);
+      this.loadPictures(picturesElement.get(), familyTree, pictureBuilder);
     }
 
     List<Person> persons = this.readPersons(peopleElement, familyTree);
@@ -172,20 +172,21 @@ public class TreeXMLReader extends TreeXMLManager {
    *
    * @param picturesElement XML element containing the pictures’ definitions.
    * @param familyTree      The family tree to load pictures into.
-   * @param imageProvider   Function that provides an image for the given name.
+   * @param pictureBuilder  Function that provides a picture for the given name.
    * @throws IOException In any error occurs.
    */
   private void loadPictures(
       @NotNull Element picturesElement,
       @NotNull FamilyTree familyTree,
-      @NotNull BiFunction<String, String, Optional<Picture>> imageProvider
+      @NotNull PictureBuilder pictureBuilder
   ) throws IOException {
     List<Element> pictureElements = this.getChildElements(picturesElement, PICTURE_TAG);
     for (Element pictureElement : pictureElements) {
       String name = this.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
       Optional<Element> descElement = this.getChildElement(pictureElement, PICTURE_DESC_TAG, true);
       String desc = descElement.map(Element::getTextContent).orElse(null);
-      Optional<Picture> picture = imageProvider.apply(name, desc);
+      DateTime date = this.readDateTag(pictureElement, true);
+      Optional<Picture> picture = pictureBuilder.build(name, desc, date);
       picture.ifPresent(familyTree::addPicture);
     }
   }
@@ -549,11 +550,12 @@ public class TreeXMLReader extends TreeXMLManager {
   ) throws IOException {
     for (Element eventElement : this.getChildElements(eventsElement, LIFE_EVENT_TAG)) {
       LifeEvent lifeEvent;
-      DateTime date = this.readDateTag(eventElement);
+      DateTime date = this.readDateTag(eventElement, false);
       LifeEventType type = this.readLifeEventTypeTag(eventElement, familyTree);
       List<Person> actors = this.readActorsTag(eventElement, type, persons);
 
       try {
+        //noinspection DataFlowIssue
         lifeEvent = new LifeEvent(date, type);
         familyTree.setLifeEventActors(lifeEvent, new HashSet<>(actors));
       } catch (IllegalArgumentException e) {
@@ -577,9 +579,15 @@ public class TreeXMLReader extends TreeXMLManager {
    * @return The date of the event.
    * @throws IOException If the subtree is malformed or the date type is undefined.
    */
-  private DateTime readDateTag(final @NotNull Element eventElement) throws IOException {
-    //noinspection OptionalGetWithoutIsPresent
-    Element dateElement = this.getChildElement(eventElement, DATE_TAG, false).get();
+  private @Nullable DateTime readDateTag(final @NotNull Element eventElement, boolean allowMissing) throws IOException {
+    Optional<Element> childElement = this.getChildElement(eventElement, DATE_TAG, allowMissing);
+    if (childElement.isEmpty()) {
+      if (allowMissing) {
+        return null;
+      }
+      throw new IOException("Missing tag: " + DATE_TAG);
+    }
+    Element dateElement = childElement.get();
     String dateType = this.getAttr(dateElement, DATE_TYPE_ATTR, s -> s, null, false);
     return switch (dateType) {
       case DATE_WITH_PRECISION -> {

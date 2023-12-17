@@ -9,6 +9,7 @@ import javafx.scene.text.*;
 import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.ui.dialogs.*;
@@ -266,10 +267,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       PictureView pictureView = selection.get(0);
       Picture picture = pictureView.picture();
       this.editImageDialog.setPicture(picture);
-      this.editImageDialog.showAndWait().ifPresent(desc -> {
+      this.editImageDialog.showAndWait().ifPresent(data -> {
+        String desc = data.description();
+        DateTime date = data.date();
         pictureView.setImageDescription(desc);
+        pictureView.setDate(data.date());
         picture.setDescription(desc);
+        picture.setDate(date);
         this.imageEditedListeners.forEach(l -> l.accept(picture));
+        this.imageList.getItems().sort(null);
       });
     }
   }
@@ -382,7 +388,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted(Person.birthDateThenNameComparator(false))
         .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
 
-    this.person.pictures().forEach(p -> this.imageList.getItems().add(new PictureView(p)));
+    this.person.pictures().forEach(p -> this.imageList.getItems().add(new PictureView(p, false)));
+    this.imageList.getItems().sort(null);
   }
 
   private void populateParentCards() {
