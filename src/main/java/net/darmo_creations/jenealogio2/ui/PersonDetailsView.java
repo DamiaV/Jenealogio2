@@ -280,12 +280,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private void onImageListClicked(final @NotNull MouseEvent event) {
     if (event.getClickCount() > 1) {
-      this.onEditImageDesc();
+      //noinspection unchecked
+      this.onEditImageDesc((ListView<PictureView>) event.getSource());
     }
   }
 
-  private void onEditImageDesc() {
-    List<PictureView> selection = this.imageList.getSelectionModel().getSelectedItems();
+  private void onEditImageDesc(@NotNull ListView<PictureView> list) {
+    List<PictureView> selection = list.getSelectionModel().getSelectedItems();
     if (selection.size() == 1) {
       PictureView pictureView = selection.get(0);
       Picture picture = pictureView.picture();
@@ -298,7 +299,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         picture.setDescription(desc);
         picture.setDate(date);
         this.imageEditedListeners.forEach(l -> l.accept(picture));
-        this.imageList.getItems().sort(null);
+        list.getItems().sort(null);
       });
     }
   }
