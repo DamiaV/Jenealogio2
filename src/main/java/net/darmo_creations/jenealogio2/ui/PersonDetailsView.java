@@ -304,12 +304,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     }
   }
 
-  public void setPerson(final Person person, final FamilyTree familyTree) {
+  public void setPerson(final Person person, @NotNull final FamilyTree familyTree) {
     if (this.person == person) {
       return;
     }
     this.person = person;
-    this.familyTree = familyTree;
+    this.familyTree = Objects.requireNonNull(familyTree);
 
     this.resetLists();
 
