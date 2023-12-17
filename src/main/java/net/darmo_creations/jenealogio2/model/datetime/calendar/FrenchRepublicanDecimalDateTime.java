@@ -1,11 +1,11 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import ca.rmen.lfrc.FrenchRevolutionaryCalendarDate;
-import org.jetbrains.annotations.NotNull;
+import ca.rmen.lfrc.*;
+import org.jetbrains.annotations.*;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Locale;
+import java.time.*;
+import java.util.GregorianCalendar;
+import java.util.*;
 
 /**
  * This class represents a date-time in the French republican/revolutionary calendar system with decimal time.
@@ -37,7 +37,9 @@ public final class FrenchRepublicanDecimalDateTime extends CalendarSpecificDateT
     var date = new FrenchRevolutionaryCalendarDate(
         Locale.getDefault(), this.year(), this.month(), this.dayOfMonth(),
         this.hour().orElse(0), this.minute().orElse(0), this.seconds);
-    return LocalDateTime.ofInstant(FrenchRepublicanCalendar.CAL.getDate(date).toInstant(), ZoneId.systemDefault());
+    GregorianCalendar gd = FrenchRepublicanCalendar.CAL.getDate(date);
+    // Converted gregorian date is in UTC, add 1h to account for France’s timezone offset
+    return LocalDateTime.ofInstant(gd.toInstant(), ZoneId.of("+01:00"));
   }
 
   @Override
