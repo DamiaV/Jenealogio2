@@ -43,12 +43,12 @@ public class DateTimeField extends HBox {
   public DateTimeField() {
     super(4);
 
-    this.setupField(this.yearField, 50, "year");
+    this.setupField(this.yearField, 50, "year", true);
     this.monthField.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.notifyListeners());
-    this.setupField(this.dayField, 40, "day");
-    this.setupField(this.hourField, 40, "hour");
-    this.setupField(this.minuteField, 40, "minute");
+    this.setupField(this.dayField, 40, "day", false);
+    this.setupField(this.hourField, 40, "hour", false);
+    this.setupField(this.minuteField, 40, "minute", false);
 
     Language language = App.config().language();
     for (Calendar<?> calendar : CALENDARS) {
@@ -84,11 +84,12 @@ public class DateTimeField extends HBox {
    * @param width     Field’s width.
    * @param name      Field’s name.
    */
-  private void setupField(@NotNull TextField textField, int width, @NotNull String name) {
+  private void setupField(@NotNull TextField textField, int width, @NotNull String name, boolean allowNegative) {
+    String regex = allowNegative ? "^-?\\d*$" : "^\\d*$";
     textField.setTextFormatter(new TextFormatter<>(
         new IntegerStringConverter(),
         null,
-        change -> change.getControlNewText().matches("^\\d*$") ? change : null
+        change -> change.getControlNewText().matches(regex) ? change : null
     ));
     textField.setPrefWidth(width);
     textField.setPromptText(App.config().language().translate("date_time_field.%s.prompt".formatted(name)));

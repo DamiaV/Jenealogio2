@@ -111,8 +111,12 @@ public abstract sealed class CalendarSpecificDateTime implements Comparable<Cale
 
   @Override
   public final String toString() {
-    // FIXME negative years
-    String date = "%04d-%02d-%02d".formatted(this.year, this.month, this.day);
+    String date;
+    if (this.year >= 0) {
+      date = "%04d-%02d-%02d".formatted(this.year, this.month, this.day);
+    } else {
+      date = "-%04d-%02d-%02d".formatted(-this.year, this.month, this.day);
+    }
     String hour = this.hour != null ? "%02d".formatted(this.hour) : "#";
     String minute = this.minute != null ? "%02d".formatted(this.minute) : "#";
     if (this.isTimeSet) {
