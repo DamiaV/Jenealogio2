@@ -27,7 +27,7 @@ import java.util.*;
 /**
  * JavaFX component that presents a form to edit a {@link LifeEvent} object.
  */
-public class LifeEventView extends TitledPane {
+public class LifeEventView extends TitledPane { // TODO show icon if event has attached images/files
   private final Label titleLabel = new Label();
   private final Label dateLabel = new Label();
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();

@@ -85,6 +85,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(300);
+    this.setIcon(config.theme().getAppIcon());
     // Files drag-and-drop
     Scene scene = stage.getScene();
     scene.setOnDragOver(event -> {

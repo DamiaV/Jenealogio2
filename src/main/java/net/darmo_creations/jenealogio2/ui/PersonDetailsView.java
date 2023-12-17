@@ -25,6 +25,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final Tab eventsTab = new Tab();
   private final Tab familyTab = new Tab();
   private final Tab fosterParentsTab = new Tab();
+  private final Tab imagesTab = new Tab();
 
   private final ImageView imageView = new ImageView();
   private final Label fullNameLabel = new Label();
@@ -63,12 +64,25 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   public PersonDetailsView() {
     super();
     Language language = App.config().language();
+    Theme theme = App.config().theme();
 
     this.profileTab.setText(language.translate("person_details_view.profile_tab.title"));
+    this.profileTab.setGraphic(theme.getIcon(Icon.PROFILE_TAB, Icon.Size.SMALL));
     this.eventsTab.setText(language.translate("person_details_view.events_tab.title"));
+    this.eventsTab.setGraphic(theme.getIcon(Icon.LIFE_EVENTS_TAB, Icon.Size.SMALL));
     this.familyTab.setText(language.translate("person_details_view.family_tab.title"));
+    this.familyTab.setGraphic(theme.getIcon(Icon.FAMILY_TAB, Icon.Size.SMALL));
     this.fosterParentsTab.setText(language.translate("person_details_view.foster_parents_tab.title"));
-    this.getTabs().addAll(this.profileTab, this.eventsTab, this.familyTab, this.fosterParentsTab);
+    this.fosterParentsTab.setGraphic(theme.getIcon(Icon.FOSTER_PARENTS_TAB, Icon.Size.SMALL));
+    this.imagesTab.setText(language.translate("person_details_view.images_tab.title"));
+    this.imagesTab.setGraphic(theme.getIcon(Icon.IMAGES_TAB, Icon.Size.SMALL));
+    this.getTabs().addAll(
+        this.profileTab,
+        this.eventsTab,
+        this.familyTab,
+        this.fosterParentsTab,
+        this.imagesTab
+    );
     this.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
     this.setMinWidth(200);
@@ -77,6 +91,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.setupEventsTab();
     this.setupFamilyTab();
     this.setupFosterParentsTab();
+    this.setupImagesTab();
   }
 
   private void setupProfileTab() {
@@ -225,6 +240,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     tabPane.getItems().addAll(topBox, middleBox, bottomBox);
     tabPane.setDividerPositions(0.33, 0.67);
+  }
+
+  private void setupImagesTab() {
+//    this.imagesTab.setContent(tabPane);
   }
 
   public void setPerson(final Person person, final FamilyTree familyTree) {

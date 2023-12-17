@@ -52,8 +52,9 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   public RegistriesDialog() {
     super("edit_registries", true, ButtonTypes.CANCEL, ButtonTypes.OK, ButtonTypes.APPLY);
 
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
+    Config config = App.config();
+    Language language = config.language();
+    Theme theme = config.theme();
 
     Label helpLabel = new Label(language.translate("dialog.edit_registries.help"),
         theme.getIcon(Icon.INFO, Icon.Size.SMALL));
@@ -91,6 +92,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     Stage stage = this.stage();
     stage.setMinWidth(600);
     stage.setMinHeight(500);
+    this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (buttonType == ButtonTypes.OK) {

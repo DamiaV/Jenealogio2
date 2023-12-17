@@ -1,19 +1,13 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.geometry.Insets;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.utils.FormatArg;
+import javafx.geometry.*;
+import javafx.scene.control.*;
+import javafx.scene.image.*;
+import javafx.scene.layout.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.utils.*;
 
-import java.net.URL;
-import java.util.List;
+import java.util.*;
 
 /**
  * Dialog that displays information about this app. It is not resizable.
@@ -46,7 +40,8 @@ public class AboutDialog extends DialogBase<ButtonType> {
 
     VBox vBox = new VBox(10, titleLabel, contentView);
 
-    ImageView logo = new ImageView(createImage());
+    Image appIcon = App.config().theme().getAppIcon();
+    ImageView logo = new ImageView(appIcon);
     logo.setFitHeight(100);
     logo.setFitWidth(100);
 
@@ -54,21 +49,12 @@ public class AboutDialog extends DialogBase<ButtonType> {
     content.setPrefWidth(600);
     content.setPrefHeight(300);
     this.getDialogPane().setContent(content);
+
+    this.setIcon(appIcon);
   }
 
   @Override
   protected List<FormatArg> getTitleFormatArgs() {
     return List.of(new FormatArg("app_name", App.NAME));
-  }
-
-  /**
-   * Return an {@link Image} object of the app’s icon.
-   */
-  private static Image createImage() {
-    URL url = AboutDialog.class.getResource(App.IMAGES_PATH + "app-icon.png");
-    if (url == null) {
-      return null;
-    }
-    return new Image(url.toExternalForm());
   }
 }

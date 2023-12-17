@@ -1,22 +1,19 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTreeCell;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.util.StringConverter;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.Gender;
-import net.darmo_creations.jenealogio2.model.LifeEventType;
-import net.darmo_creations.jenealogio2.model.RegistryEntry;
-import net.darmo_creations.jenealogio2.themes.Icon;
+import javafx.scene.control.cell.*;
+import javafx.scene.layout.*;
+import javafx.stage.*;
+import javafx.util.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.utils.Pair;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.util.List;
-import java.util.function.Function;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * Simple dialog that allows selecting which registry entries to import/export.
@@ -27,10 +24,13 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
 
   public RegistriesImportExportDialog(boolean importing) {
     super(importing ? "registries_import" : "registries_export", true, ButtonTypes.OK, ButtonTypes.CANCEL);
-    Language language = App.config().language();
+    Config config = App.config();
+    Language language = config.language();
 
-    Label descLabel = new Label(language.translate("dialog.registries_%s.description".formatted(importing ? "import" : "export")),
-        App.config().theme().getIcon(Icon.INFO, Icon.Size.SMALL));
+    Label descLabel = new Label(
+        language.translate("dialog.registries_%s.description".formatted(importing ? "import" : "export")),
+        config.theme().getIcon(Icon.INFO, Icon.Size.SMALL)
+    );
     descLabel.setWrapText(true);
     this.eventTypesTab = new EntriesTab<>("life_event_types");
     this.gendersTab = new EntriesTab<>("genders");
@@ -41,6 +41,7 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
     Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(200);
+    this.setIcon(config.theme().getAppIcon());
   }
 
   public Pair<List<LifeEventType>, List<Gender>> getSelectedItems() {

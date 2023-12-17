@@ -1,16 +1,12 @@
 package net.darmo_creations.jenealogio2.themes;
 
-import com.google.gson.Gson;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import net.darmo_creations.jenealogio2.App;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.google.gson.*;
+import javafx.scene.image.*;
+import net.darmo_creations.jenealogio2.*;
+import org.jetbrains.annotations.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.util.*;
 
 /**
@@ -113,12 +109,38 @@ public final class Theme {
    * @return An {@link ImageView} object or null if the icon could not be loaded.
    */
   public @Nullable ImageView getIcon(@NotNull Icon icon, @NotNull Icon.Size size) {
+    Image image = this.getIconImage(icon, size);
+    return image != null ? new ImageView(image) : null;
+  }
+
+  /**
+   * Return an {@link Image} for the given icon.
+   *
+   * @param icon The icon to load.
+   * @param size Icon’s size.
+   * @return An {@link Image} object or null if the icon could not be loaded.
+   */
+  public @Nullable Image getIconImage(@NotNull Icon icon, @NotNull Icon.Size size) {
     InputStream stream = this.getClass().getResourceAsStream(
         "%s%s_%d.png".formatted(ICONS_PATH, icon.baseName(), size.pixels()));
     if (stream == null) {
+      App.LOGGER.warn("Missing icon: " + icon.baseName());
       return null;
     }
-    return new ImageView(new Image(stream));
+    return new Image(stream);
+  }
+
+  /**
+   * Get the app’s icon as an {@link Image}.
+   */
+  public @Nullable Image getAppIcon() {
+    InputStream stream = this.getClass().getResourceAsStream(
+        "%s%s.png".formatted(App.IMAGES_PATH, "app-icon"));
+    if (stream == null) {
+      App.LOGGER.warn("Missing icon: app-icon");
+      return null;
+    }
+    return new Image(stream);
   }
 
   /**

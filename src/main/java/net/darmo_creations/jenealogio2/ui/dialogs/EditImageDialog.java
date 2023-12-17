@@ -22,7 +22,8 @@ public class EditImageDialog extends DialogBase<String> {
   public EditImageDialog() {
     super("edit_image", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Language language = App.config().language();
+    Config config = App.config();
+    Language language = config.language();
 
     HBox hb = new HBox(this.imageView);
     hb.setAlignment(Pos.CENTER);
@@ -48,6 +49,7 @@ public class EditImageDialog extends DialogBase<String> {
     Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(300);
+    this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {

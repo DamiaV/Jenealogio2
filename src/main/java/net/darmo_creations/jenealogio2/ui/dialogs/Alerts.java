@@ -1,18 +1,16 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.application.Platform;
-import javafx.geometry.Pos;
+import javafx.application.*;
+import javafx.geometry.*;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.utils.FormatArg;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.layout.*;
+import javafx.stage.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * This class provides methods to open alert dialogs.
@@ -179,20 +177,22 @@ public final class Alerts {
       throw new IllegalArgumentException(type.name());
     }
     Alert alert = new Alert(type);
+    DialogPane dialogPane = alert.getDialogPane();
     // Replace default buttons to have proper translations
-    alert.getDialogPane().getButtonTypes().setAll(switch (type) {
+    dialogPane.getButtonTypes().setAll(switch (type) {
       case INFORMATION, WARNING, ERROR -> List.of(ButtonTypes.OK);
       case CONFIRMATION -> List.of(ButtonTypes.OK, ButtonTypes.CANCEL);
       case NONE -> throw new IllegalArgumentException(type.name()); // Should never happen
     });
     App.config().theme().getStyleSheets()
-        .forEach(url -> alert.getDialogPane().getStylesheets().add(url.toExternalForm()));
+        .forEach(url -> dialogPane.getStylesheets().add(url.toExternalForm()));
     if (titleKey == null) {
       titleKey = "alert.%s.title".formatted(type.name().toLowerCase());
     }
     Language language = App.config().language();
     alert.setTitle(language.translate(titleKey));
     alert.setHeaderText(language.translate(headerKey, contentArgs));
+    ((Stage) dialogPane.getScene().getWindow()).getIcons().add(App.config().theme().getAppIcon());
     return alert;
   }
 

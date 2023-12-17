@@ -108,6 +108,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     Stage stage = this.stage();
     stage.setMinWidth(850);
     stage.setMinHeight(650);
+    this.setIcon(App.config().theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
@@ -129,6 +130,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     Theme theme = App.config().theme();
 
     Tab tab = new Tab(language.translate("dialog.edit_person.profile.title"));
+    tab.setGraphic(theme.getIcon(Icon.PROFILE_TAB, Icon.Size.SMALL));
 
     GridPane gridPane = new GridPane();
     gridPane.setHgap(4);
@@ -269,6 +271,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     Theme theme = App.config().theme();
 
     Tab tab = new Tab(language.translate("dialog.edit_person.events.title"));
+    tab.setGraphic(theme.getIcon(Icon.LIFE_EVENTS_TAB, Icon.Size.SMALL));
 
     Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -296,8 +299,10 @@ public class EditPersonDialog extends DialogBase<Person> {
 
   private Tab createParentsTab() {
     Language language = App.config().language();
+    Theme theme = App.config().theme();
 
     Tab tab = new Tab(language.translate("dialog.edit_person.parents.title"));
+    tab.setGraphic(theme.getIcon(Icon.FAMILY_TAB, Icon.Size.SMALL));
 
     GridPane gridPane = new GridPane();
     gridPane.setHgap(4);

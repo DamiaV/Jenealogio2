@@ -77,6 +77,12 @@ public enum Icon {
   RESET_ENTRY("undo"),
 
   INFO("information"),
+
+  PROFILE_TAB("user_silhouette"),
+  LIFE_EVENTS_TAB("clock"),
+  FAMILY_TAB("users_5"),
+  FOSTER_PARENTS_TAB("users_3"),
+  IMAGES_TAB("pictures"),
   ;
 
   private final String baseName;

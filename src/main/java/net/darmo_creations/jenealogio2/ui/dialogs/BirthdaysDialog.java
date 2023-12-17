@@ -1,32 +1,21 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.geometry.*;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.FamilyTree;
-import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.model.datetime.DateTime;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimePrecision;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.ui.components.NoSelectionModel;
-import net.darmo_creations.jenealogio2.ui.events.NewParentClickListener;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
-import net.darmo_creations.jenealogio2.utils.FormatArg;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.layout.*;
+import javafx.stage.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.ui.events.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.io.*;
+import java.time.*;
 import java.util.*;
 
 /**
@@ -93,6 +82,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(300);
+    this.setIcon(config.theme().getAppIcon());
   }
 
   /**

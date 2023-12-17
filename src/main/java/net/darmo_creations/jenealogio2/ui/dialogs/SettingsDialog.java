@@ -1,24 +1,19 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
+import javafx.geometry.*;
+import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.config.DateFormat;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.config.TimeFormat;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.components.NotNullComboBoxItem;
-import net.darmo_creations.jenealogio2.utils.Pair;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.io.*;
+import java.time.*;
+import java.time.format.*;
 
 /**
  * Dialog to update the app’s settings. It is not resizable.
@@ -42,6 +37,8 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     VBox content = new VBox(this.createInterfaceForm(), new Separator(), this.createTreeForm());
     content.setPrefWidth(500);
     this.getDialogPane().setContent(content);
+
+    this.setIcon(App.config().theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {

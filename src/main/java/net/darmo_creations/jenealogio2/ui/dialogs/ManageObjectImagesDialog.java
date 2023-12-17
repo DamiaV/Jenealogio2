@@ -55,8 +55,9 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   public ManageObjectImagesDialog() {
     super("manage_object_images", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
+    Config config = App.config();
+    Language language = config.language();
+    Theme theme = config.theme();
 
     VBox content = new VBox(5);
     content.getChildren().add(new HBox(5,
@@ -131,6 +132,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     Stage stage = this.stage();
     stage.setMinWidth(400);
     stage.setMinHeight(400);
+    this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {

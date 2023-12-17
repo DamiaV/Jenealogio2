@@ -19,7 +19,6 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 /**
@@ -117,11 +116,10 @@ public class AppController {
    */
   public AppController(@NotNull Stage stage) {
     this.stage = Objects.requireNonNull(stage);
-    URL url = this.getClass().getResource(App.IMAGES_PATH + "app-icon.png");
-    if (url != null) {
-      stage.getIcons().add(new Image(url.toExternalForm()));
-    } else {
-      App.LOGGER.warn("Could not load app icon!");
+    Theme theme = App.config().theme();
+    Image icon = theme.getAppIcon();
+    if (icon != null) {
+      stage.getIcons().add(icon);
     }
     stage.setMinWidth(300);
     stage.setMinHeight(200);
@@ -129,8 +127,7 @@ public class AppController {
     stage.setMaximized(true);
     Scene scene = new Scene(new VBox(this.createMenuBar(), this.createToolBar(), this.createContent()));
     stage.setScene(scene);
-    App.config().theme().getStyleSheets()
-        .forEach(path -> scene.getStylesheets().add(path.toExternalForm()));
+    theme.getStyleSheets().forEach(path -> scene.getStylesheets().add(path.toExternalForm()));
 
     this.birthdaysDialog.personClickListeners()
         .add(event -> this.onPersonClick(event, null));

@@ -1,15 +1,14 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.utils.FormatArg;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.control.*;
+import javafx.scene.image.*;
+import javafx.stage.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Base class for this app’s dialogs.
@@ -59,5 +58,14 @@ public abstract class DialogBase<T> extends Dialog<T> {
    */
   protected Stage stage() {
     return (Stage) this.getDialogPane().getScene().getWindow();
+  }
+
+  /**
+   * Set this dialog’s icon image.
+   *
+   * @param image The image.
+   */
+  protected void setIcon(final Image image) {
+    this.stage().getIcons().add(image);
   }
 }
