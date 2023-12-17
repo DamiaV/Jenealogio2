@@ -61,6 +61,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
   private final List<NewParentClickListener> newParentClickListeners = new LinkedList<>();
 
+  private final ListView<PictureView> imageList = new ListView<>();
+
   public PersonDetailsView() {
     super();
     Language language = App.config().language();
@@ -243,7 +245,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void setupImagesTab() {
-//    this.imagesTab.setContent(tabPane);
+    this.imagesTab.setContent(this.imageList);
+    // TODO open image on double-click
   }
 
   public void setPerson(final Person person, final FamilyTree familyTree) {
@@ -272,6 +275,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.adoptiveParentsList.getItems().clear();
     this.godparentsList.getItems().clear();
     this.fosterParentsList.getItems().clear();
+
+    this.imageList.getItems().clear();
 
     this.eventsTab.setContent(this.eventsTabPane);
   }
@@ -351,6 +356,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.person.getRelatives(Person.RelativeType.FOSTER).stream()
         .sorted(Person.birthDateThenNameComparator(false))
         .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
+
+    this.person.pictures().forEach(p -> this.imageList.getItems().add(new PictureView(p)));
   }
 
   private void populateParentCards() {
