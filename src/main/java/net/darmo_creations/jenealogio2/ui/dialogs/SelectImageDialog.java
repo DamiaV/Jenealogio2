@@ -36,15 +36,21 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
 
     Config config = App.config();
     Language language = config.language();
+    Theme theme = config.theme();
 
-    Label label = new Label(language.translate("dialog.select_images.description"));
+    Label label = new Label(
+        language.translate("dialog.select_images.description"),
+        theme.getIcon(Icon.INFO, Icon.Size.SMALL)
+    );
     label.setWrapText(true);
     label.setPrefHeight(50);
     label.setMinHeight(50);
     label.setAlignment(Pos.TOP_LEFT);
 
-    Button addImageButton = new Button(language.translate("dialog.select_images.open_file"),
-        config.theme().getIcon(Icon.OPEN_IMAGE_FILE, Icon.Size.SMALL));
+    Button addImageButton = new Button(
+        language.translate("dialog.select_images.open_file"),
+        theme.getIcon(Icon.OPEN_IMAGE_FILE, Icon.Size.SMALL)
+    );
     addImageButton.setOnAction(e -> this.onAddImage());
     HBox hBox = new HBox(addImageButton);
     hBox.setAlignment(Pos.CENTER);
@@ -85,7 +91,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(300);
-    this.setIcon(config.theme().getAppIcon());
+    this.setIcon(theme.getAppIcon());
     // Files drag-and-drop
     Scene scene = stage.getScene();
     scene.setOnDragOver(event -> {
