@@ -225,25 +225,22 @@ public class PersonWidget extends AnchorPane {
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
-    String birthDate = this.person.getBirthDate().map(this::formatDate).orElse(EMPTY_LABEL_VALUE);
+    String birthDate = this.person.getBirthDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
     this.birthDateLabel.setText(birthDate);
     this.birthDateLabel.setGraphic(App.config().theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
     this.birthDateLabel.setTooltip(new Tooltip(birthDate));
 
     if (this.person.lifeStatus().isConsideredDeceased()) {
-      String deathDate = this.person.getDeathDate().map(this::formatDate).orElse(EMPTY_LABEL_VALUE);
+      String deathDate = this.person.getDeathDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
       this.deathDateLabel.setText(deathDate);
       this.deathDateLabel.setGraphic(App.config().theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.deathDateLabel.setTooltip(new Tooltip(deathDate));
     }
   }
 
-  /**
-   * Format a date’s year.
-   */
-  private String formatDate(@NotNull DateTime date) {
+  private String formatDateYear(@NotNull DateTime date) {
     if (date instanceof DateTimeWithPrecision d) {
-      int year = d.date().iso8601Date().getYear();
+      int year = d.date().toISO8601Date().getYear();
       return switch (d.precision()) {
         case EXACT -> String.valueOf(year);
         case ABOUT -> "~ " + year;
@@ -252,12 +249,12 @@ public class PersonWidget extends AnchorPane {
         case AFTER -> "> " + year;
       };
     } else if (date instanceof DateTimeRange d) {
-      int startYear = d.startDate().iso8601Date().getYear();
-      int endYear = d.endDate().iso8601Date().getYear();
+      int startYear = d.startDate().toISO8601Date().getYear();
+      int endYear = d.endDate().toISO8601Date().getYear();
       return startYear != endYear ? "%s-%s".formatted(startYear, endYear) : String.valueOf(startYear);
     } else if (date instanceof DateTimeAlternative d) {
-      int earliestYear = d.earliestDate().iso8601Date().getYear();
-      int latestYear = d.latestDate().iso8601Date().getYear();
+      int earliestYear = d.earliestDate().toISO8601Date().getYear();
+      int latestYear = d.latestDate().toISO8601Date().getYear();
       return earliestYear != latestYear ? "%s/%s".formatted(earliestYear, latestYear) : String.valueOf(earliestYear);
     }
     throw new IllegalArgumentException("unexpected date type: " + date.getClass());

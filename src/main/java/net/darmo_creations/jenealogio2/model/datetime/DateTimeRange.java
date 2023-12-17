@@ -1,9 +1,9 @@
 package net.darmo_creations.jenealogio2.model.datetime;
 
-import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class represents a date range.
@@ -12,11 +12,11 @@ import java.util.Objects;
  * @param startDate Range’s start date.
  * @param endDate   Range’s end date (included).
  */
-public record DateTimeRange(@NotNull CalendarDateTime startDate,
-                            @NotNull CalendarDateTime endDate)
+public record DateTimeRange(@NotNull CalendarSpecificDateTime startDate,
+                            @NotNull CalendarSpecificDateTime endDate)
     implements DateTime {
   public DateTimeRange {
-    if (startDate.iso8601Date().isAfter(endDate.iso8601Date())) {
+    if (startDate.toISO8601Date().isAfter(endDate.toISO8601Date())) {
       throw new IllegalArgumentException("start date is after end date");
     }
     Objects.requireNonNull(startDate);
@@ -24,7 +24,7 @@ public record DateTimeRange(@NotNull CalendarDateTime startDate,
   }
 
   @Override
-  public CalendarDateTime date() {
+  public CalendarSpecificDateTime date() {
     return this.startDate;
   }
 }

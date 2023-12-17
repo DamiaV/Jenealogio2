@@ -1,6 +1,6 @@
 package net.darmo_creations.jenealogio2.model.datetime;
 
-import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -14,7 +14,7 @@ public sealed interface DateTime extends Comparable<DateTime>
   /**
    * The date or earliest date this object represents.
    */
-  CalendarDateTime date();
+  CalendarSpecificDateTime date();
 
   /**
    * Compare this date to another one using their {@link #date()} attribute.

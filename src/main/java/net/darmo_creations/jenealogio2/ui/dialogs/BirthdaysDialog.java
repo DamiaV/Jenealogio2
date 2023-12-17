@@ -125,7 +125,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
           if (precision == DateTimePrecision.BEFORE || precision == DateTimePrecision.AFTER) {
             continue;
           }
-          this.addDate(perMonth, d.date().iso8601Date(), precision != DateTimePrecision.EXACT, person);
+          this.addDate(perMonth, d.date().toISO8601Date(), precision != DateTimePrecision.EXACT, person);
         }
       }
     }

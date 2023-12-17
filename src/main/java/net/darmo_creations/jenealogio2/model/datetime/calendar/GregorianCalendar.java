@@ -13,7 +13,12 @@ public final class GregorianCalendar implements Calendar<GregorianDateTime> {
 
   @Override
   public GregorianDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
-    return new GregorianDateTime(LocalDate.of(year, month, day), hour, minute);
+    return new GregorianDateTime(
+        LocalDate.of(year, month, day),
+        hour,
+        minute,
+        this
+    );
   }
 
   @Override
@@ -21,7 +26,8 @@ public final class GregorianCalendar implements Calendar<GregorianDateTime> {
     return new GregorianDateTime(
         date.toLocalDate(),
         isTimeSet ? date.getHour() : null,
-        isTimeSet ? date.getMinute() : null
+        isTimeSet ? date.getMinute() : null,
+        this
     );
   }
 

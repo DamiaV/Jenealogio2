@@ -1,9 +1,9 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import org.jetbrains.annotations.NotNull;
-import org.threeten.extra.chrono.JulianDate;
+import org.jetbrains.annotations.*;
+import org.threeten.extra.chrono.*;
 
-import java.time.LocalDateTime;
+import java.time.*;
 
 /**
  * The julian calendar system.
@@ -15,7 +15,12 @@ public final class JulianCalendar implements Calendar<JulianDateTime> {
 
   @Override
   public JulianDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
-    return new JulianDateTime(JulianDate.of(year, month, day), hour, minute);
+    return new JulianDateTime(
+        JulianDate.of(year, month, day),
+        hour,
+        minute,
+        this
+    );
   }
 
   @Override
@@ -23,7 +28,8 @@ public final class JulianCalendar implements Calendar<JulianDateTime> {
     return new JulianDateTime(
         JulianDate.from(date),
         isTimeSet ? date.getHour() : null,
-        isTimeSet ? date.getMinute() : null
+        isTimeSet ? date.getMinute() : null,
+        this
     );
   }
 

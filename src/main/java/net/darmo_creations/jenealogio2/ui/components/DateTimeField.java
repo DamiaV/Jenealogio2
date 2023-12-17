@@ -96,9 +96,9 @@ public class DateTimeField extends HBox {
   }
 
   /**
-   * Return the {@link CalendarDateTime} value corresponding to the field’s values.
+   * Return the {@link CalendarSpecificDateTime} value corresponding to the field’s values.
    */
-  public @Nullable CalendarDateTime getDate() {
+  public @Nullable CalendarSpecificDateTime getDate() {
     try {
       int y = Integer.parseInt(this.yearField.getText());
       int m = this.monthField.getSelectionModel().getSelectedIndex() + 1;
@@ -106,11 +106,7 @@ public class DateTimeField extends HBox {
       Integer h = this.getFieldValue(this.hourField);
       Integer mi = this.getFieldValue(this.minuteField);
       Calendar<?> calendar = this.calendarField.getSelectionModel().getSelectedItem().data();
-      return new CalendarDateTime(
-          calendar.getDate(y, m, d, h, mi).toISO8601Date(),
-          calendar,
-          h != null && mi != null
-      );
+      return calendar.getDate(y, m, d, h, mi);
     } catch (RuntimeException e) {
       return null;
     }
@@ -126,15 +122,14 @@ public class DateTimeField extends HBox {
    *
    * @param dateTime The date-time value.
    */
-  public void setDate(CalendarDateTime dateTime) {
+  public void setDate(CalendarSpecificDateTime dateTime) {
     if (dateTime != null) {
       this.calendarField.getSelectionModel().select(new NotNullComboBoxItem<>(dateTime.calendar()));
-      var calendarDate = dateTime.getCalendarDateTime();
-      this.yearField.setText(String.valueOf(calendarDate.year()));
-      this.monthField.getSelectionModel().select(calendarDate.month() - 1);
-      this.dayField.setText(String.valueOf(calendarDate.dayOfMonth()));
-      this.hourField.setText(calendarDate.hour().map(String::valueOf).orElse(null));
-      this.minuteField.setText(calendarDate.minute().map(String::valueOf).orElse(null));
+      this.yearField.setText(String.valueOf(dateTime.year()));
+      this.monthField.getSelectionModel().select(dateTime.month() - 1);
+      this.dayField.setText(String.valueOf(dateTime.dayOfMonth()));
+      this.hourField.setText(dateTime.hour().map(String::valueOf).orElse(null));
+      this.minuteField.setText(dateTime.minute().map(String::valueOf).orElse(null));
     } else {
       this.yearField.setText(null);
       this.monthField.getSelectionModel().select(0);

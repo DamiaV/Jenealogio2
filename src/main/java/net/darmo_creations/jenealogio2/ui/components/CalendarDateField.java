@@ -6,7 +6,7 @@ import javafx.scene.layout.HBox;
 import net.darmo_creations.jenealogio2.App;
 import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.datetime.*;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,8 +62,8 @@ public class CalendarDateField extends HBox {
   public boolean checkValidity() {
     this.dateTimeField.pseudoClassStateChanged(PseudoClasses.INVALID, false);
     this.secondDateTimeField.pseudoClassStateChanged(PseudoClasses.INVALID, false);
-    CalendarDateTime date = this.dateTimeField.getDate();
-    CalendarDateTime secondDate = this.secondDateTimeField.getDate();
+    CalendarSpecificDateTime date = this.dateTimeField.getDate();
+    CalendarSpecificDateTime secondDate = this.secondDateTimeField.getDate();
     boolean invalid = false;
     if (this.dateType.requiresTwoFields()) {
       if (date == null && secondDate != null) {
@@ -81,14 +81,14 @@ public class CalendarDateField extends HBox {
    * Return a {@link DateTime} object from the date fields.
    */
   public Optional<DateTime> getDate() {
-    CalendarDateTime date = this.dateTimeField.getDate();
-    CalendarDateTime secondDate = this.secondDateTimeField.getDate();
+    CalendarSpecificDateTime date = this.dateTimeField.getDate();
+    CalendarSpecificDateTime secondDate = this.secondDateTimeField.getDate();
     if (date == null || secondDate == null && this.dateType.requiresTwoFields()) {
       return Optional.empty();
     }
-    if (this.dateType.requiresTwoFields() && date.iso8601Date().isAfter(secondDate.iso8601Date())) {
+    if (this.dateType.requiresTwoFields() && date.toISO8601Date().isAfter(secondDate.toISO8601Date())) {
       // Swap dates if wrong way around
-      CalendarDateTime d = date;
+      CalendarSpecificDateTime d = date;
       date = secondDate;
       secondDate = d;
     }

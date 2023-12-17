@@ -25,8 +25,12 @@ public final class FrenchRepublicanCalendar implements Calendar<FrenchRepublican
 
   @Override
   public FrenchRepublicanDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
-    var date = new FrenchRevolutionaryCalendarDate(Locale.getDefault(), year, month, day, 0, 0, 0);
-    return new FrenchRepublicanDateTime(date, hour, minute);
+    return new FrenchRepublicanDateTime(
+        new FrenchRevolutionaryCalendarDate(Locale.getDefault(), year, month, day, 0, 0, 0),
+        hour,
+        minute,
+        this
+    );
   }
 
   @Override
@@ -37,7 +41,8 @@ public final class FrenchRepublicanCalendar implements Calendar<FrenchRepublican
     return new FrenchRepublicanDateTime(
         CAL.getDate(cal),
         isTimeSet ? date.getHour() : null,
-        isTimeSet ? date.getMinute() : null
+        isTimeSet ? date.getMinute() : null,
+        this
     );
   }
 

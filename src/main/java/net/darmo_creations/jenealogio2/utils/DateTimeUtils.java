@@ -7,7 +7,7 @@ import net.darmo_creations.jenealogio2.model.datetime.DateTime;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimeAlternative;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimeRange;
 import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
@@ -56,8 +56,8 @@ public final class DateTimeUtils {
     String timeFormat = config.timeFormat().getFormat();
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("%s %s".formatted(dateFormat, timeFormat));
     DateTimeFormatter dateFormatterNoHour = DateTimeFormatter.ofPattern(dateFormat);
-    Function<CalendarDateTime, String> formatter =
-        d -> (d.isTimeSet() ? dateFormatter : dateFormatterNoHour).format(d.iso8601Date());
+    Function<CalendarSpecificDateTime, String> formatter =
+        d -> (d.isTimeSet() ? dateFormatter : dateFormatterNoHour).format(d.toISO8601Date());
 
     if (date instanceof DateTimeWithPrecision d) {
       return language.translate(

@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.io;
 
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -9,6 +10,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import java.io.*;
+import java.time.format.*;
 import java.util.*;
 import java.util.function.*;
 
@@ -598,21 +600,34 @@ public class TreeXMLReader extends TreeXMLManager {
         } catch (IndexOutOfBoundsException e) {
           throw new IOException(e);
         }
-        CalendarDateTime d = this.getAttr(dateElement, DATE_DATE_ATTR, CalendarDateTime::parse, null, false);
+        CalendarSpecificDateTime d = this.getAttr(
+            dateElement, DATE_DATE_ATTR, this::deserializeDate, null, false);
         yield new DateTimeWithPrecision(d, precision);
       }
       case DATE_RANGE -> {
-        CalendarDateTime startDate = this.getAttr(dateElement, DATE_START_ATTR, CalendarDateTime::parse, null, false);
-        CalendarDateTime endDate = this.getAttr(dateElement, DATE_END_ATTR, CalendarDateTime::parse, null, false);
+        CalendarSpecificDateTime startDate = this.getAttr(
+            dateElement, DATE_START_ATTR, this::deserializeDate, null, false);
+        CalendarSpecificDateTime endDate = this.getAttr(
+            dateElement, DATE_END_ATTR, this::deserializeDate, null, false);
         yield new DateTimeRange(startDate, endDate);
       }
       case DATE_ALTERNATIVE -> {
-        CalendarDateTime earliestDate = this.getAttr(dateElement, DATE_EARLIEST_ATTR, CalendarDateTime::parse, null, false);
-        CalendarDateTime latestDate = this.getAttr(dateElement, DATE_LATEST_ATTR, CalendarDateTime::parse, null, false);
+        CalendarSpecificDateTime earliestDate = this.getAttr(
+            dateElement, DATE_EARLIEST_ATTR, this::deserializeDate, null, false);
+        CalendarSpecificDateTime latestDate = this.getAttr(
+            dateElement, DATE_LATEST_ATTR, this::deserializeDate, null, false);
         yield new DateTimeAlternative(earliestDate, latestDate);
       }
       default -> throw new IOException("Undefined date type " + dateType);
     };
+  }
+
+  private CalendarSpecificDateTime deserializeDate(@NotNull String s) {
+    String[] split = s.split(";", 2);
+    if (split.length != 2) {
+      throw new DateTimeParseException("Invalid date format: " + s, s, 0);
+    }
+    return Calendar.forName(split[1]).parse(split[0]);
   }
 
   /**

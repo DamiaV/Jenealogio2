@@ -1,12 +1,11 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import ca.rmen.lfrc.FrenchRevolutionaryCalendarDate;
-import org.jetbrains.annotations.NotNull;
+import ca.rmen.lfrc.*;
+import org.jetbrains.annotations.*;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.*;
 import java.util.GregorianCalendar;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * The French republican/revolutionary calendar system with decimal time.
@@ -20,9 +19,12 @@ public final class FrenchRepublicanDecimalCalendar implements Calendar<FrenchRep
 
   @Override
   public FrenchRepublicanDecimalDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
-    var date = new FrenchRevolutionaryCalendarDate(
-        Locale.getDefault(), year, month, day, hour != null ? hour : 0, minute != null ? minute : 0, 0);
-    return new FrenchRepublicanDecimalDateTime(date, hour != null && minute != null);
+    return new FrenchRepublicanDecimalDateTime(
+        new FrenchRevolutionaryCalendarDate(
+            Locale.getDefault(), year, month, day, hour != null ? hour : 0, minute != null ? minute : 0, 0),
+        hour != null && minute != null,
+        this
+    );
   }
 
   @Override
@@ -31,7 +33,11 @@ public final class FrenchRepublicanDecimalCalendar implements Calendar<FrenchRep
     var cal = new GregorianCalendar(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth(),
         date.getHour(), date.getMinute());
     cal.setGregorianChange(new Date(Long.MIN_VALUE));
-    return new FrenchRepublicanDecimalDateTime(FrenchRepublicanCalendar.CAL.getDate(cal), isTimeSet);
+    return new FrenchRepublicanDecimalDateTime(
+        FrenchRepublicanCalendar.CAL.getDate(cal),
+        isTimeSet,
+        this
+    );
   }
 
   @Override
@@ -42,6 +48,16 @@ public final class FrenchRepublicanDecimalCalendar implements Calendar<FrenchRep
   @Override
   public int lengthOfYearInMonths() {
     return 13;
+  }
+
+  @Override
+  public int hoursInDay() {
+    return 10;
+  }
+
+  @Override
+  public int minutesInHour() {
+    return 100;
   }
 
   FrenchRepublicanDecimalCalendar() {

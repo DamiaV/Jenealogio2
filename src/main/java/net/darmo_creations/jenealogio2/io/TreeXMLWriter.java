@@ -3,6 +3,7 @@ package net.darmo_creations.jenealogio2.io;
 import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 import org.w3c.dom.*;
@@ -413,20 +414,24 @@ public class TreeXMLWriter extends TreeXMLManager {
     String dateType;
     if (date instanceof DateTimeWithPrecision d) {
       dateType = DATE_WITH_PRECISION;
-      this.setAttr(document, dateElement, DATE_DATE_ATTR, d.date().toString());
+      this.setAttr(document, dateElement, DATE_DATE_ATTR, this.serializeDate(d.date()));
       this.setAttr(document, dateElement, DATE_PRECISION_ATTR, String.valueOf(d.precision().ordinal()));
     } else if (date instanceof DateTimeRange d) {
       dateType = DATE_RANGE;
-      this.setAttr(document, dateElement, DATE_START_ATTR, d.startDate().toString());
-      this.setAttr(document, dateElement, DATE_END_ATTR, d.endDate().toString());
+      this.setAttr(document, dateElement, DATE_START_ATTR, this.serializeDate(d.startDate()));
+      this.setAttr(document, dateElement, DATE_END_ATTR, this.serializeDate(d.endDate()));
     } else if (date instanceof DateTimeAlternative d) {
       dateType = DATE_ALTERNATIVE;
-      this.setAttr(document, dateElement, DATE_EARLIEST_ATTR, d.earliestDate().toString());
-      this.setAttr(document, dateElement, DATE_LATEST_ATTR, d.latestDate().toString());
+      this.setAttr(document, dateElement, DATE_EARLIEST_ATTR, this.serializeDate(d.earliestDate()));
+      this.setAttr(document, dateElement, DATE_LATEST_ATTR, this.serializeDate(d.latestDate()));
     } else {
       throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
     }
     this.setAttr(document, dateElement, DATE_TYPE_ATTR, dateType);
+  }
+
+  private String serializeDate(final @NotNull CalendarSpecificDateTime d) {
+    return d + ";" + d.calendar().name();
   }
 
   private void writeLifeEventTypeTag(

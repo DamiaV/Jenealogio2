@@ -1,9 +1,9 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import org.jetbrains.annotations.NotNull;
-import org.threeten.extra.chrono.EthiopicDate;
+import org.jetbrains.annotations.*;
+import org.threeten.extra.chrono.*;
 
-import java.time.LocalDateTime;
+import java.time.*;
 
 /**
  * The ethiopian calendar system.
@@ -15,7 +15,12 @@ public final class EthiopianCalendar implements Calendar<EthiopianDateTime> {
 
   @Override
   public EthiopianDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
-    return new EthiopianDateTime(EthiopicDate.of(year, month, day), hour, minute);
+    return new EthiopianDateTime(
+        EthiopicDate.of(year, month, day),
+        hour,
+        minute,
+        this
+    );
   }
 
   @Override
@@ -23,7 +28,8 @@ public final class EthiopianCalendar implements Calendar<EthiopianDateTime> {
     return new EthiopianDateTime(
         EthiopicDate.from(date),
         isTimeSet ? date.getHour() : null,
-        isTimeSet ? date.getMinute() : null
+        isTimeSet ? date.getMinute() : null,
+        this
     );
   }
 

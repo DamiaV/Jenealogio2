@@ -1,9 +1,9 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import org.jetbrains.annotations.NotNull;
-import org.threeten.extra.chrono.CopticDate;
+import org.jetbrains.annotations.*;
+import org.threeten.extra.chrono.*;
 
-import java.time.LocalDateTime;
+import java.time.*;
 
 /**
  * The coptic calendar system.
@@ -15,7 +15,12 @@ public final class CopticCalendar implements Calendar<CopticDateTime> {
 
   @Override
   public CopticDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
-    return new CopticDateTime(CopticDate.of(year, month, day), hour, minute);
+    return new CopticDateTime(
+        CopticDate.of(year, month, day),
+        hour,
+        minute,
+        this
+    );
   }
 
   @Override
@@ -23,7 +28,8 @@ public final class CopticCalendar implements Calendar<CopticDateTime> {
     return new CopticDateTime(
         CopticDate.from(date),
         isTimeSet ? date.getHour() : null,
-        isTimeSet ? date.getMinute() : null
+        isTimeSet ? date.getMinute() : null,
+        this
     );
   }
 

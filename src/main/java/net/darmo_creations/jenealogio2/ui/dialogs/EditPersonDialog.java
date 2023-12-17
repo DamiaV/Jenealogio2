@@ -11,7 +11,6 @@ import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
@@ -279,7 +278,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.addEventButton.setGraphic(theme.getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
     this.addEventButton.setOnAction(event -> {
       DateTimeWithPrecision date = new DateTimeWithPrecision(
-          new CalendarDateTime(LocalDateTime.now(), Calendar.GREGORIAN),
+          Calendar.GREGORIAN.convertDate(LocalDateTime.now(), true),
           DateTimePrecision.EXACT
       );
       LifeEventType birth = this.familyTree.lifeEventTypeRegistry()

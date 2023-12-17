@@ -13,16 +13,19 @@ import java.util.*;
  * @see FrenchRepublicanCalendar
  */
 public final class FrenchRepublicanDateTime extends CalendarSpecificDateTime {
-  public static final int HOURS_IN_DAY = 24;
-  public static final int MINUTES_IN_HOUR = 60;
-
-  FrenchRepublicanDateTime(@NotNull FrenchRevolutionaryCalendarDate date, Integer hours, Integer minutes) {
+  FrenchRepublicanDateTime(
+      @NotNull FrenchRevolutionaryCalendarDate date,
+      Integer hours,
+      Integer minutes,
+      @NotNull Calendar<FrenchRepublicanDateTime> calendar
+  ) {
     super(
         date.year,
         date.month,
         date.dayOfMonth,
         hours,
-        minutes
+        minutes,
+        calendar
     );
   }
 
@@ -34,15 +37,5 @@ public final class FrenchRepublicanDateTime extends CalendarSpecificDateTime {
     // Converted gregorian date is in UTC, add 1h to account for France’s timezone offset
     LocalDate d = LocalDate.ofInstant(gd.toInstant(), ZoneId.of("+01:00"));
     return d.atTime(this.hour().orElse(0), this.minute().orElse(0));
-  }
-
-  @Override
-  protected int hoursInDay() {
-    return HOURS_IN_DAY;
-  }
-
-  @Override
-  protected int minutesInHour() {
-    return MINUTES_IN_HOUR;
   }
 }

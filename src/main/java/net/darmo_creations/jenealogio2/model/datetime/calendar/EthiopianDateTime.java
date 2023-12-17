@@ -1,12 +1,10 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import org.jetbrains.annotations.NotNull;
-import org.threeten.extra.chrono.EthiopicDate;
+import org.jetbrains.annotations.*;
+import org.threeten.extra.chrono.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.ChronoField;
+import java.time.*;
+import java.time.temporal.*;
 
 /**
  * This class represents a date-time in the ethiopian calendar system.
@@ -14,16 +12,19 @@ import java.time.temporal.ChronoField;
  * @see EthiopianCalendar
  */
 public final class EthiopianDateTime extends CalendarSpecificDateTime {
-  public static final int HOURS_IN_DAY = 24;
-  public static final int MINUTES_IN_HOUR = 60;
-
-  EthiopianDateTime(@NotNull EthiopicDate date, int hours, int minutes) {
+  EthiopianDateTime(
+      @NotNull EthiopicDate date,
+      Integer hours,
+      Integer minutes,
+      @NotNull Calendar<EthiopianDateTime> calendar
+  ) {
     super(
         date.get(ChronoField.YEAR),
         date.get(ChronoField.MONTH_OF_YEAR),
         date.get(ChronoField.DAY_OF_MONTH),
         hours,
-        minutes
+        minutes,
+        calendar
     );
   }
 
@@ -31,15 +32,5 @@ public final class EthiopianDateTime extends CalendarSpecificDateTime {
   public LocalDateTime toISO8601Date() {
     return LocalDate.ofEpochDay(EthiopicDate.of(this.year(), this.month(), this.dayOfMonth()).toEpochDay())
         .atTime(LocalTime.of(this.hour().orElse(0), this.minute().orElse(0)));
-  }
-
-  @Override
-  protected int hoursInDay() {
-    return HOURS_IN_DAY;
-  }
-
-  @Override
-  protected int minutesInHour() {
-    return MINUTES_IN_HOUR;
   }
 }

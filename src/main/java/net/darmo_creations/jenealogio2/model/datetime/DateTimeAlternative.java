@@ -1,6 +1,6 @@
 package net.darmo_creations.jenealogio2.model.datetime;
 
-import net.darmo_creations.jenealogio2.model.datetime.calendar.CalendarDateTime;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -12,11 +12,11 @@ import java.util.Objects;
  * @param earliestDate The earliest date of the two.
  * @param latestDate   The latest date of the two.
  */
-public record DateTimeAlternative(@NotNull CalendarDateTime earliestDate,
-                                  @NotNull CalendarDateTime latestDate)
+public record DateTimeAlternative(@NotNull CalendarSpecificDateTime earliestDate,
+                                  @NotNull CalendarSpecificDateTime latestDate)
     implements DateTime {
   public DateTimeAlternative {
-    if (earliestDate.iso8601Date().isAfter(latestDate.iso8601Date())) {
+    if (earliestDate.toISO8601Date().isAfter(latestDate.toISO8601Date())) {
       throw new IllegalArgumentException("earliest date is after latest date");
     }
     Objects.requireNonNull(earliestDate);
@@ -24,7 +24,7 @@ public record DateTimeAlternative(@NotNull CalendarDateTime earliestDate,
   }
 
   @Override
-  public CalendarDateTime date() {
+  public CalendarSpecificDateTime date() {
     return this.earliestDate;
   }
 }

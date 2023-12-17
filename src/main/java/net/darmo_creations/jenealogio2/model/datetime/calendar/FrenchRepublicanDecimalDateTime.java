@@ -15,19 +15,21 @@ import java.util.*;
  * @see FrenchRepublicanDecimalCalendar
  */
 public final class FrenchRepublicanDecimalDateTime extends CalendarSpecificDateTime {
-  public static final int HOURS_IN_DAY = 10;
-  public static final int MINUTES_IN_HOUR = 100;
-
   // Seconds are kept for more accurate conversions to LocalDateTime
   private final int seconds;
 
-  FrenchRepublicanDecimalDateTime(@NotNull FrenchRevolutionaryCalendarDate date, boolean isTimeSet) {
+  FrenchRepublicanDecimalDateTime(
+      @NotNull FrenchRevolutionaryCalendarDate date,
+      boolean isTimeSet,
+      @NotNull Calendar<FrenchRepublicanDecimalDateTime> calendar
+  ) {
     super(
         date.year,
         date.month,
         date.dayOfMonth,
         isTimeSet ? date.hour : 0,
-        isTimeSet ? date.minute : 0
+        isTimeSet ? date.minute : 0,
+        calendar
     );
     this.seconds = isTimeSet ? date.second : 0;
   }
@@ -40,15 +42,5 @@ public final class FrenchRepublicanDecimalDateTime extends CalendarSpecificDateT
     GregorianCalendar gd = FrenchRepublicanCalendar.CAL.getDate(date);
     // Converted gregorian date is in UTC, add 1h to account for France’s timezone offset
     return LocalDateTime.ofInstant(gd.toInstant(), ZoneId.of("+01:00"));
-  }
-
-  @Override
-  protected int hoursInDay() {
-    return HOURS_IN_DAY;
-  }
-
-  @Override
-  protected int minutesInHour() {
-    return MINUTES_IN_HOUR;
   }
 }
