@@ -38,8 +38,8 @@ public final class FrenchRepublicanCalendar implements Calendar<FrenchRepublican
     cal.setGregorianChange(new Date(Long.MIN_VALUE));
     return new FrenchRepublicanDateTime(
         CAL.getDate(cal),
-        isTimeSet ? date.getHour() : null,
-        isTimeSet ? date.getMinute() : null
+        isTimeSet ? date.getHour() : 0,
+        isTimeSet ? date.getMinute() : 0
     );
   }
 
