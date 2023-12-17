@@ -420,9 +420,6 @@ public class EditPersonDialog extends DialogBase<Person> {
         this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
       }
     });
-    if (!this.lifeEventsList.getItems().isEmpty()) {
-      this.lifeEventsList.getItems().get(0).setExpanded(true);
-    }
   }
 
   private void setPersonRelativesFields() {
@@ -514,6 +511,7 @@ public class EditPersonDialog extends DialogBase<Person> {
       this.lifeStatusCombo.setDisable(anyDeath);
     });
     this.lifeEventsList.getItems().add(lifeEventView);
+    this.lifeEventsList.scrollTo(lifeEventView);
     this.updateButtons();
   }
 
