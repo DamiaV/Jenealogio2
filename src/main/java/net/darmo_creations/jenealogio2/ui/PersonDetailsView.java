@@ -364,9 +364,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.person.notes().ifPresent(s -> this.notesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
     this.person.sources().ifPresent(s -> this.sourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
 
-    this.person.getLifeEventsAsActor()
+    this.person.getLifeEventsAsActor().stream()
+        .sorted()
         .forEach(lifeEvent -> this.lifeEventsList.getItems().add(new LifeEventItem(lifeEvent, this.person)));
-    this.person.getLifeEventsAsWitness()
+    this.person.getLifeEventsAsWitness().stream()
+        .sorted()
         .forEach(lifeEvent -> this.witnessedEventsList.getItems().add(new WitnessedEventItem(lifeEvent)));
 
     this.populateParentCards();
