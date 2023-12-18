@@ -24,7 +24,7 @@
     -fx-font-style: italic;
 }
 
-.person-details .life-events-list-item {
+.person-details .life-events-list-item, .clickable-image {
     -fx-cursor: hand;
 }
 

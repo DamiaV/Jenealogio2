@@ -33,7 +33,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final Tab familyTab = new Tab();
   private final Tab fosterParentsTab = new Tab();
 
-  private final ImageView imageView = new ImageView();
+  private final ClickableImageView imageView = new ClickableImageView(PersonWidget.DEFAULT_IMAGE);
   private final Label fullNameLabel = new Label();
   private final Label genderLabel = new Label();
   private final Label occupationLabel = new Label();
@@ -48,7 +48,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final ListView<WitnessedEventItem> witnessedEventsList = new ListView<>();
 
   private final SplitPane eventPane = new SplitPane();
-  private final ImageView eventImageView = new ImageView();
+  private final ClickableImageView eventImageView = new ClickableImageView(DEFAULT_EVENT_IMAGE);
   private final Label eventTypeLabel = new Label();
   private final DateLabel eventDateLabel = new DateLabel(null);
   private final VBox eventActorsPane = new VBox(4);
@@ -118,6 +118,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView.setPreserveRatio(true);
     this.imageView.setFitWidth(100);
     this.imageView.setFitHeight(100);
+    this.imageView.setOnMouseClicked(e -> this.onMainImageClicked(this.person, this.imageList));
     this.fullNameLabel.getStyleClass().add("person-details-title");
     this.fullNameLabel.setWrapText(true);
     this.genderLabel.setWrapText(true);
@@ -208,6 +209,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventImageView.setPreserveRatio(true);
     this.eventImageView.setFitWidth(100);
     this.eventImageView.setFitHeight(100);
+    this.eventImageView.setOnMouseClicked(e -> this.onMainImageClicked(this.displayedLifeEvent, this.eventImagesList));
 
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
@@ -303,6 +305,25 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     tabPane.setDividerPositions(0.33, 0.67);
   }
 
+  /**
+   * Select the main picture of the given {@link GenealogyObject} in the given image list.
+   *
+   * @param object     The object whose main picture was clicked. May be null.
+   * @param imagesList The image list in which to select the picture.
+   */
+  private void onMainImageClicked(final GenealogyObject<?> object, @NotNull ListView<PictureView> imagesList) {
+    if (object != null) {
+      object.mainPicture()
+          .flatMap(mainPicture -> imagesList.getItems().stream()
+              .filter(pv -> pv.picture() == mainPicture)
+              .findFirst()
+          ).ifPresent(pv -> {
+            imagesList.scrollTo(pv);
+            imagesList.getSelectionModel().select(pv);
+          });
+    }
+  }
+
   private void onImageListClicked(final @NotNull MouseEvent event) {
     if (event.getClickCount() > 1) {
       //noinspection unchecked
@@ -373,7 +394,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void populateFields() {
-    this.imageView.setImage(this.person.mainPicture().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+    this.imageView.setImage(this.person.mainPicture().map(Picture::image).orElse(null));
     this.fullNameLabel.setText(this.person.toString());
     this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
     Optional<Gender> gender = this.person.gender();
@@ -475,7 +496,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void resetFields() {
-    this.imageView.setImage(PersonWidget.DEFAULT_IMAGE);
+    this.imageView.setImage(null);
     this.fullNameLabel.setText(null);
     this.fullNameLabel.setTooltip(null);
     this.genderLabel.setText(null);
@@ -497,9 +518,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
     this.displayedLifeEvent = lifeEvent;
+
+    Config config = App.config();
+    Language language = config.language();
+
     String text;
     if (lifeEvent.type().isBuiltin()) {
-      text = App.config().language().translate("life_event_types." + lifeEvent.type().key().name());
+      text = language.translate("life_event_types." + lifeEvent.type().key().name());
     } else {
       text = Objects.requireNonNull(lifeEvent.type().userDefinedName());
     }
@@ -511,8 +536,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted(Person.birthDateThenNameComparator(false)).toList();
     boolean first = true;
     for (Person actor : actors) {
-      Label label = new Label(App.config().language().translate("person_details_view.life_events." + (first ? "of" : "and")));
-      Button b = new Button(actor.toString(), App.config().theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+      Label label = new Label(language.translate("person_details_view.life_events." + (first ? "of" : "and")));
+      Button b = new Button(actor.toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
       b.setUserData(actor);
       HBox hBox = new HBox(4, label, b);
@@ -524,7 +549,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventDateLabel.setDateTime(lifeEvent.date());
     this.eventPlaceLabel.setText(lifeEvent.place().orElse("-"));
 
-    this.eventImageView.setImage(lifeEvent.mainPicture().map(Picture::image).orElse(DEFAULT_EVENT_IMAGE));
+    this.eventImageView.setImage(lifeEvent.mainPicture().map(Picture::image).orElse(null));
 
     this.eventNotesTextFlow.getChildren().clear();
     lifeEvent.notes().ifPresent(s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
@@ -836,6 +861,31 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
             hBox.setAlignment(Pos.CENTER_LEFT);
             this.getChildren().add(hBox);
           });
+    }
+  }
+
+  private static class ClickableImageView extends ImageView {
+    private boolean internalUpdate = false;
+
+    public ClickableImageView(final @NotNull Image defaultImage) {
+      Tooltip tooltip = new Tooltip(App.config().language().translate("person_details_view.main_image.tooltip"));
+      this.setImage(defaultImage);
+      this.imageProperty().addListener((observable, oldValue, newValue) -> {
+        if (this.internalUpdate) {
+          return;
+        }
+        this.internalUpdate = true;
+        if (newValue != null) {
+          this.getStyleClass().add("clickable-image");
+          Tooltip.install(this, tooltip);
+          this.setImage(newValue);
+        } else {
+          this.getStyleClass().remove("clickable-image");
+          Tooltip.uninstall(this, tooltip);
+          this.setImage(defaultImage);
+        }
+        this.internalUpdate = false;
+      });
     }
   }
 }
