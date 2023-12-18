@@ -21,7 +21,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * A dialog used to adding images to a {@link GenealogyObject}.
+ * A dialog used select images from the given {@link FamilyTree} object.
  * Offers a button to import images directly from the filesystem.
  */
 public class SelectImageDialog extends DialogBase<Collection<Picture>> {
@@ -85,12 +85,12 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
         this.imagesList
     );
     content.setPrefWidth(400);
-    content.setPrefHeight(300);
+    content.setPrefHeight(400);
     this.getDialogPane().setContent(content);
 
     Stage stage = this.stage();
-    stage.setMinWidth(300);
-    stage.setMinHeight(300);
+    stage.setMinWidth(400);
+    stage.setMinHeight(400);
     this.setIcon(theme.getAppIcon());
     // Files drag-and-drop
     Scene scene = stage.getScene();

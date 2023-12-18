@@ -296,6 +296,22 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
+   * Check whether any names of this person contain the given string, regardless of case.
+   *
+   * @param s String to check.
+   * @return True if any match was found, false otherwise.
+   */
+  public boolean matchesName(@NotNull String s) {
+    Objects.requireNonNull(s);
+    Predicate<String> p = n -> n != null && n.toLowerCase().contains(s);
+    return p.test(this.legalLastName)
+        || p.test(this.publicLastName)
+        || this.legalFirstNames.stream().anyMatch(p)
+        || this.publicFirstNames.stream().anyMatch(p)
+        || this.nicknames.stream().anyMatch(p);
+  }
+
+  /**
    * This person’s gender.
    */
   public Optional<Gender> gender() {
@@ -488,7 +504,7 @@ public class Person extends GenealogyObject<Person> {
    * @return A map associating a pair of parents to their children.
    * It is guaranted that at least one of the parents in each pair is a parent of this person.
    */
-  public Map<Pair<Person, Person>, Set<Person>> getAllSiblings() {
+  public Map<Pair<@Nullable Person, @Nullable Person>, Set<Person>> getAllSiblings() {
     Map<Pair<Person, Person>, Set<Person>> siblings = new HashMap<>();
     Person parent1 = this.parents[0];
     Person parent2 = this.parents[1];

@@ -32,6 +32,10 @@
     -fx-font-weight: bold;
 }
 
+.unknown {
+    -fx-font-style: italic;
+}
+
 .birth-day {
     -fx-font-weight: bold;
     -fx-font-size: 1.2em;

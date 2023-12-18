@@ -48,6 +48,10 @@ public enum Icon {
   DELETE_EVENT("cross"),
   ADD_WITNESS("plus"),
   REMOVE_WITNESS("delete"),
+  EDIT_PARTNER("pencil"),
+
+  EDIT_PARENT("pencil"),
+  SWAP_PARENTS("arrow_refresh"),
 
   ADD_PARENT("plus"),
   REMOVE_PARENT("delete"),

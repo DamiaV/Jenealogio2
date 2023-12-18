@@ -10,7 +10,6 @@ import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.*;
-import net.darmo_creations.jenealogio2.ui.dialogs.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -20,14 +19,15 @@ import java.util.*;
 /**
  * JavaFX component that presents a form to edit a {@link LifeEvent} object.
  */
-public class LifeEventView extends TitledPane {
+public class LifeEventView extends TitledPane implements PersonRequester {
   private final Label titleLabel = new Label();
   private final DateLabel dateLabel = new DateLabel(null);
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
   private final CalendarDateField dateField = new CalendarDateField();
   private final TextField placeField = new TextField();
-  private final ComboBox<NotNullComboBoxItem<Person>> partnerCombo = new ComboBox<>();
+  private final Label partnerLabel = new Label();
+  private final Button partnerButton = new Button();
   private final ListView<Person> witnessesList = new ListView<>();
   private final TextArea notesField = new TextArea();
   private final TextArea sourcesField = new TextArea();
@@ -35,18 +35,18 @@ public class LifeEventView extends TitledPane {
   private final FamilyTree familyTree;
   private final LifeEvent lifeEvent;
   private final Person person;
-  private final List<Person> persons;
+  private Person partner;
 
   private final List<DeletionListener> deletionListeners = new LinkedList<>();
   private final List<UpdateListener> updateListeners = new LinkedList<>();
   private final List<TypeListener> typeListeners = new LinkedList<>();
+  private PersonRequestListener personRequestListener;
 
   /**
    * Create a new {@link LifeEvent} editing form.
    *
    * @param lifeEvent Life event object to edit.
    * @param person    Person object that acts in the life event object.
-   * @param persons   List of persons that may be co-actors or witnesses.
    * @param expanded  Whether to expand this form by default.
    * @param parent    Parent {@link ListView} component.
    */
@@ -54,18 +54,12 @@ public class LifeEventView extends TitledPane {
       @NotNull FamilyTree familyTree,
       @NotNull LifeEvent lifeEvent,
       @NotNull Person person,
-      final @NotNull Collection<Person> persons,
       boolean expanded,
       final @NotNull ListView<LifeEventView> parent
   ) {
     this.familyTree = Objects.requireNonNull(familyTree);
     this.lifeEvent = Objects.requireNonNull(lifeEvent);
     this.person = Objects.requireNonNull(person);
-    // Get all persons except the one we are currently editing and sort by name
-    this.persons = persons.stream()
-        .filter(p -> p != person)
-        .sorted(Person.lastThenFirstNamesComparator())
-        .toList();
     this.setAnimated(false);
     this.setExpanded(expanded);
     Language language = App.config().language();
@@ -117,10 +111,14 @@ public class LifeEventView extends TitledPane {
 
     gridPane.addRow(2, new Label(language.translate("life_event_view.place")), this.placeField);
 
-    this.populatePartnerCombo();
-    this.partnerCombo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.notifyUpdateListeners());
-    gridPane.addRow(3, new Label(language.translate("life_event_view.partner")), this.partnerCombo);
+    this.partnerButton.setGraphic(theme.getIcon(Icon.EDIT_PARTNER, Icon.Size.SMALL));
+    this.partnerButton.setTooltip(new Tooltip(language.translate("life_event_view.partner.edit")));
+    this.partnerButton.setOnAction(e -> this.onPartnerSelect());
+    gridPane.addRow(
+        3,
+        new Label(language.translate("life_event_view.partner")),
+        new HBox(5, this.partnerLabel, this.partnerButton)
+    );
 
     VBox witnessesVBox = new VBox(4);
     HBox buttonsHBox = new HBox(4);
@@ -167,6 +165,13 @@ public class LifeEventView extends TitledPane {
     this.populateFields();
   }
 
+  private void onPartnerSelect() {
+    this.personRequestListener.onPersonRequest(this.getExclusionList()).ifPresent(p -> {
+      this.setPartner(p);
+      this.notifyUpdateListeners();
+    });
+  }
+
   /**
    * Update header’s date label text.
    */
@@ -186,17 +191,16 @@ public class LifeEventView extends TitledPane {
    * Called when the add witness button is clicked.
    */
   private void onAddWitness() {
-    List<Person> potentialWitnesses = this.persons.stream()
-        .filter(p -> !this.witnessesList.getItems().contains(p))
-        .toList();
-    // TODO use more practical chooser with search bar
-    Optional<Person> result = Alerts.chooser(
-        "alert.choose_witness.header",
-        "alert.choose_witness.label",
-        "alert.choose_witness.title",
-        potentialWitnesses
-    );
-    result.ifPresent(person -> this.witnessesList.getItems().add(person));
+    this.personRequestListener.onPersonRequest(this.getExclusionList())
+        .ifPresent(this.witnessesList.getItems()::add);
+  }
+
+  private List<Person> getExclusionList() {
+    List<Person> exclusionList = new LinkedList<>(this.witnessesList.getItems());
+    if (this.partner != null) {
+      exclusionList.add(this.partner);
+    }
+    return exclusionList;
   }
 
   /**
@@ -236,8 +240,8 @@ public class LifeEventView extends TitledPane {
       valid = false;
     }
     boolean invalidPartner = this.eventTypeCombo.getSelectionModel().getSelectedItem().data().maxActors() > 1
-        && this.partnerCombo.getItems().isEmpty();
-    this.partnerCombo.pseudoClassStateChanged(PseudoClasses.INVALID, invalidPartner);
+        && this.partner == null;
+    this.partnerLabel.pseudoClassStateChanged(PseudoClasses.INVALID, invalidPartner);
     valid &= !invalidPartner;
     this.pseudoClassStateChanged(PseudoClasses.INVALID, !valid);
     return valid;
@@ -250,8 +254,8 @@ public class LifeEventView extends TitledPane {
     this.lifeEvent.setType(this.eventTypeCombo.getSelectionModel().getSelectedItem().data());
     Set<Person> actors = new HashSet<>();
     actors.add(this.person);
-    if (!this.partnerCombo.isDisabled()) {
-      actors.add(this.partnerCombo.getSelectionModel().getSelectedItem().data());
+    if (!this.partnerButton.isDisabled()) {
+      actors.add(this.partner);
     }
     this.familyTree.setLifeEventActors(this.lifeEvent, actors);
 
@@ -300,6 +304,11 @@ public class LifeEventView extends TitledPane {
     return this.typeListeners;
   }
 
+  @Override
+  public void setPersonRequestListener(@NotNull PersonRequestListener listener) {
+    this.personRequestListener = listener;
+  }
+
   /**
    * Called when the event type is changed.
    *
@@ -307,7 +316,9 @@ public class LifeEventView extends TitledPane {
    */
   private void onEventTypeChange(@NotNull NotNullComboBoxItem<LifeEventType> item) {
     this.titleLabel.setText(item.text());
-    this.partnerCombo.setDisable(item.data().maxActors() == 1);
+    boolean oneActor = item.data().maxActors() == 1;
+    this.partnerButton.setDisable(oneActor);
+    this.setPartner(this.partner); // Refresh display
     this.notifyUpdateListeners();
     this.typeListeners.forEach(listener -> listener.onTypeUpdate(item.data()));
   }
@@ -352,15 +363,6 @@ public class LifeEventView extends TitledPane {
   }
 
   /**
-   * Populate the partner combobox from the {@link #persons} field.
-   */
-  private void populatePartnerCombo() {
-    for (Person person : this.persons) {
-      this.partnerCombo.getItems().add(new NotNullComboBoxItem<>(person, person.toString()));
-    }
-  }
-
-  /**
    * Populate this form’s fields with data from the wrapped life event object.
    */
   private void populateFields() {
@@ -371,18 +373,31 @@ public class LifeEventView extends TitledPane {
     this.dateField.setDate(this.lifeEvent.date());
     this.placeField.setText(this.lifeEvent.place().orElse(""));
     Optional<Person> otherActor = this.lifeEvent.actors().stream().filter(p -> p != this.person).findFirst();
-    if (otherActor.isPresent()) {
-      this.partnerCombo.getSelectionModel().select(new NotNullComboBoxItem<>(otherActor.get()));
-      this.partnerCombo.setDisable(false);
-    } else {
-      if (!this.partnerCombo.getItems().isEmpty()) {
-        this.partnerCombo.getSelectionModel().select(0);
-      }
-      this.partnerCombo.setDisable(true);
-    }
+    this.setPartner(otherActor.orElse(null));
     this.lifeEvent.witnesses().forEach(p -> this.witnessesList.getItems().add(p));
     this.notesField.setText(this.lifeEvent.notes().orElse(""));
     this.sourcesField.setText(this.lifeEvent.sources().orElse(""));
+  }
+
+  private void setPartner(final Person partner) {
+    NotNullComboBoxItem<LifeEventType> selectedItem = this.eventTypeCombo.getSelectionModel().getSelectedItem();
+    boolean oneActor = selectedItem.data().maxActors() == 1;
+    this.partnerButton.setDisable(oneActor);
+    this.partner = partner;
+    String cssClass = "unknown";
+    ObservableList<String> styleClass = this.partnerLabel.getStyleClass();
+    if (oneActor) {
+      this.partnerLabel.setText(null);
+      styleClass.remove(cssClass);
+    } else if (partner != null) {
+      this.partnerLabel.setText(this.partner.toString());
+      styleClass.remove(cssClass);
+    } else {
+      this.partnerLabel.setText(App.config().language().translate("life_event_view.partner.not_set"));
+      if (!styleClass.contains(cssClass)) {
+        styleClass.add(cssClass);
+      }
+    }
   }
 
   /**

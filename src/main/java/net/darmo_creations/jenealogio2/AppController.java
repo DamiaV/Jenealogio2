@@ -812,26 +812,10 @@ public class AppController {
 
   /**
    * Open person edit dialog to create a new child of the selected person.
-   * <p>
-   * Prompts the user to select the partner with whom the selected person had the child with.
    */
   private void onAddChildAction() {
-    this.getSelectedPerson().ifPresent(person -> {
-      List<Person> persons = this.familyTree.persons().stream()
-          .filter(p -> p != person)
-          .sorted(Person.lastThenFirstNamesComparator())
-          .toList();
-      Person partner = null;
-      if (!persons.isEmpty()) {
-        Optional<Person> selection = Alerts.chooser("alert.partner_chooser.header",
-            "alert.partner_chooser.label", "alert.partner_chooser.title", persons);
-        if (selection.isEmpty()) {
-          return;
-        }
-        partner = selection.get();
-      }
-      this.openEditPersonDialog(null, List.of(), person, partner, EditPersonDialog.TAB_PROFILE);
-    });
+    this.getSelectedPerson().ifPresent(
+        person -> this.openEditPersonDialog(null, List.of(), person, null, EditPersonDialog.TAB_PROFILE));
   }
 
   /**

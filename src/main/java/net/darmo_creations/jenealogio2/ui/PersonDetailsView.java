@@ -429,13 +429,33 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.person.getAllSiblings().entrySet().stream()
         // Sort according to first parent then second
         .sorted((e1, e2) -> {
-          Pair<Person, Person> key1 = e1.getKey();
-          Pair<Person, Person> key2 = e2.getKey();
-          int c = Person.birthDateThenNameComparator(false).compare(key1.left(), key2.left());
+          var key1 = e1.getKey();
+          var key2 = e2.getKey();
+          Person left1 = key1.left(), right1 = key1.right();
+          Person left2 = key2.left(), right2 = key2.right();
+          Supplier<Integer> testRight = () -> {
+            if (right1 == null) {
+              return right2 != null ? 1 : 0;
+            }
+            if (right2 == null) {
+              return -1;
+            }
+            return Person.birthDateThenNameComparator(false).compare(right1, right2);
+          };
+          if (left1 == null) {
+            if (left2 != null) {
+              return 1;
+            }
+            return testRight.get();
+          }
+          if (left2 == null) {
+            return -1;
+          }
+          int c = Person.birthDateThenNameComparator(false).compare(left1, left2);
           if (c != 0) {
             return c;
           }
-          return Person.birthDateThenNameComparator(false).compare(key1.right(), key2.right());
+          return testRight.get();
         })
         .forEach(e -> {
           // Sort children

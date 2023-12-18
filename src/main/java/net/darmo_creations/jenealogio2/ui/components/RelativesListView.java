@@ -1,34 +1,24 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.themes.*;
+import org.jetbrains.annotations.*;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * JavaFX component that presents a form to edit the relatives of a person.
  */
-public class RelativesListView extends VBox {
-  private final Button addWitnessButton;
+public class RelativesListView extends VBox implements PersonRequester {
   private final Button removeRelativeButton;
   private final ListView<Person> personsListView = new ListView<>();
 
-  private Collection<Person> persons = List.of();
+  private PersonRequestListener listener;
 
   /**
    * Create a new component.
@@ -40,16 +30,16 @@ public class RelativesListView extends VBox {
 
     HBox buttonsHBox = new HBox(4);
 
-    this.addWitnessButton = new Button(language.translate("relatives_list.add"),
+    Button addWitnessButton = new Button(language.translate("relatives_list.add"),
         theme.getIcon(Icon.ADD_PARENT, Icon.Size.SMALL));
-    this.addWitnessButton.setOnAction(event -> this.onAdd());
+    addWitnessButton.setOnAction(event -> this.onAdd());
     this.removeRelativeButton = new Button(language.translate("relatives_list.remove"),
         theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
     this.removeRelativeButton.setOnAction(event -> this.onRemove());
     this.removeRelativeButton.setDisable(true);
     Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
-    buttonsHBox.getChildren().addAll(spacer, this.addWitnessButton, this.removeRelativeButton);
+    buttonsHBox.getChildren().addAll(spacer, addWitnessButton, this.removeRelativeButton);
 
     VBox.setVgrow(this.personsListView, Priority.ALWAYS);
     this.personsListView.setPrefHeight(50);
@@ -62,7 +52,6 @@ public class RelativesListView extends VBox {
     });
 
     this.getChildren().addAll(buttonsHBox, this.personsListView);
-    this.updateButtons();
   }
 
   /**
@@ -74,19 +63,11 @@ public class RelativesListView extends VBox {
 
   /**
    * Called when the add relative button is clicked.
-   * Opens an alert dialog to choose a person.
+   * Opens an dialog to choose a person.
    */
   private void onAdd() {
-    Optional<Person> result = Alerts.chooser(
-        "alert.choose_relative.header",
-        "alert.choose_relative.label",
-        "alert.choose_relative.title",
-        this.getPotentialRelatives()
-    );
-    result.ifPresent(person -> {
-      this.personsListView.getItems().add(person);
-      this.updateButtons();
-    });
+    this.listener.onPersonRequest(new LinkedList<>(this.personsListView.getItems()))
+        .ifPresent(person -> this.personsListView.getItems().add(person));
   }
 
   /**
@@ -95,19 +76,6 @@ public class RelativesListView extends VBox {
   private void onRemove() {
     this.personsListView.getItems()
         .removeAll(new LinkedList<>(this.personsListView.getSelectionModel().getSelectedItems()));
-    this.updateButtons();
-  }
-
-  /**
-   * Set the list of relatives to choose from.
-   *
-   * @param persons List of potential relatives.
-   */
-  public void setPotentialRelatives(final @NotNull Collection<Person> persons) {
-    this.persons = persons.stream()
-        .sorted(Person.lastThenFirstNamesComparator())
-        .toList();
-    this.updateButtons();
   }
 
   /**
@@ -125,23 +93,10 @@ public class RelativesListView extends VBox {
   public void setPersons(final @NotNull Collection<Person> persons) {
     this.personsListView.getItems().clear();
     this.personsListView.getItems().addAll(persons.stream().sorted().toList());
-    this.updateButtons();
   }
 
-  /**
-   * Update the add witness button.
-   */
-  private void updateButtons() {
-    this.addWitnessButton.setDisable(this.getPotentialRelatives().isEmpty());
-  }
-
-  /**
-   * Return a list of potential relatives by removing all persons
-   * in the {@link #personsListView} from the {@link #persons} list.
-   */
-  private List<Person> getPotentialRelatives() {
-    return this.persons.stream()
-        .filter(p -> !this.personsListView.getItems().contains(p))
-        .toList();
+  @Override
+  public void setPersonRequestListener(@NotNull PersonRequestListener listener) {
+    this.listener = listener;
   }
 }

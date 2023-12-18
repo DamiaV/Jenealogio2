@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
+import javafx.collections.*;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -24,7 +25,7 @@ import java.util.*;
 /**
  * Dialog to edit a {@link Person} object and its {@link LifeEvent}s.
  */
-public class EditPersonDialog extends DialogBase<Person> {
+public class EditPersonDialog extends DialogBase<Person> implements PersonRequester.PersonRequestListener {
   /**
    * Index of the profile tab.
    */
@@ -55,15 +56,24 @@ public class EditPersonDialog extends DialogBase<Person> {
   private final Button addEventButton = new Button();
   private final ListView<LifeEventView> lifeEventsList = new ListView<>();
 
-  private final ComboBox<ComboBoxItem<Person>> parent1Combo = new ComboBox<>();
-  private final ComboBox<ComboBoxItem<Person>> parent2Combo = new ComboBox<>();
+  private final Label parent1Label = new Label();
+  private final Button removeParent1Button = new Button();
+  private final Label parent2Label = new Label();
+  private final Button removeParent2Button = new Button();
+  private final Button swapParentsButton = new Button();
 
   private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
+
+  private final SelectPersonDialog selectPersonDialog = new SelectPersonDialog();
 
   /**
    * The person object being edited.
    */
   private Person person;
+  /**
+   * The parents of the person.
+   */
+  private Person parent1, parent2;
   /**
    * If not null, indicates the person the one being edited should be a parent of.
    */
@@ -308,11 +318,33 @@ public class EditPersonDialog extends DialogBase<Person> {
     gridPane.setVgap(4);
 
     {
-      this.parent1Combo.getSelectionModel().selectedItemProperty()
-          .addListener((observable, oldValue, newValue) -> this.updateButtons());
-      this.parent2Combo.getSelectionModel().selectedItemProperty()
-          .addListener((observable, oldValue, newValue) -> this.updateButtons());
-      HBox parentsBox = new HBox(4, this.parent1Combo, this.parent2Combo);
+      Button parent1Button = new Button();
+      parent1Button.setGraphic(theme.getIcon(Icon.EDIT_PARENT, Icon.Size.SMALL));
+      parent1Button.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.edit_parent1")));
+      parent1Button.setOnAction(e -> this.onParentSelect(1));
+      this.removeParent1Button.setGraphic(theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
+      this.removeParent1Button.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.remove_parent1")));
+      this.removeParent1Button.setOnAction(e -> this.onRemoveParent(1));
+      Button parent2Button = new Button();
+      parent2Button.setGraphic(theme.getIcon(Icon.EDIT_PARENT, Icon.Size.SMALL));
+      parent2Button.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.edit_parent2")));
+      parent2Button.setOnAction(e -> this.onParentSelect(2));
+      this.removeParent2Button.setGraphic(theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
+      this.removeParent2Button.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.remove_parent2")));
+      this.removeParent2Button.setOnAction(e -> this.onRemoveParent(2));
+      this.swapParentsButton.setGraphic(theme.getIcon(Icon.SWAP_PARENTS, Icon.Size.SMALL));
+      this.swapParentsButton.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.swap")));
+      this.swapParentsButton.setOnAction(e -> this.onSwapParents());
+      HBox parentsBox = new HBox(
+          4,
+          this.parent1Label,
+          parent1Button,
+          this.removeParent1Button,
+          this.swapParentsButton,
+          this.parent2Label,
+          parent2Button,
+          this.removeParent2Button
+      );
       this.addRow(gridPane, 0, "dialog.edit_person.parents.parents", parentsBox);
       RowConstraints rc = new RowConstraints();
       rc.setValignment(VPos.TOP);
@@ -323,6 +355,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     int i = 1;
     for (Person.RelativeType type : Person.RelativeType.values()) {
       RelativesListView component = new RelativesListView();
+      component.setPersonRequestListener(this);
       this.relativesLists.put(type, component);
       Label label = new Label(language.translate(
           "dialog.edit_person.parents.%s_parents".formatted(type.name().toLowerCase())));
@@ -422,59 +455,54 @@ public class EditPersonDialog extends DialogBase<Person> {
   }
 
   private void setPersonRelativesFields() {
-    Language language = App.config().language();
-    List<Person> potentialRelatives = this.familyTree.persons().stream()
-        .filter(p -> p != this.person)
-        .sorted(Person.lastThenFirstNamesComparator())
-        .toList();
-    List<ComboBoxItem<Person>> relatives = potentialRelatives.stream()
-        .map(p -> new ComboBoxItem<>(p, p.toString()))
-        .toList();
-    this.parent1Combo.getItems().clear();
-    this.parent1Combo.getItems().add(new ComboBoxItem<>(null,
-        language.translate("dialog.edit_person.parents.parents.unknown")));
-    this.parent1Combo.getItems().addAll(relatives);
-    this.parent2Combo.getItems().clear();
-    this.parent2Combo.getItems().add(new ComboBoxItem<>(null,
-        language.translate("dialog.edit_person.parents.parents.unknown")));
-    this.parent2Combo.getItems().addAll(relatives);
     var parents = this.person.parents();
-    Optional<Person> leftParent = parents.left();
-    if (leftParent.isPresent()) {
-      this.parent1Combo.getSelectionModel().select(new ComboBoxItem<>(leftParent.get()));
-    } else {
-      this.parent1Combo.getSelectionModel().select(0);
-    }
-    Optional<Person> rightParent = parents.right();
-    if (rightParent.isPresent()) {
-      this.parent2Combo.getSelectionModel().select(new ComboBoxItem<>(rightParent.get()));
-    } else {
-      this.parent2Combo.getSelectionModel().select(0);
-    }
+    this.setParents(parents.left().orElse(null), parents.right().orElse(null));
     for (Person.RelativeType type : Person.RelativeType.values()) {
       RelativesListView list = this.relativesLists.get(type);
       list.setPersons(this.person.getRelatives(type));
-      list.setPotentialRelatives(potentialRelatives);
     }
   }
 
   /**
-   * Set the value of the parents fields.
+   * Set the values of the parents fields.
    *
    * @param parent1 Person to set as parent 1.
    * @param parent2 Person to set as parent 2.
    */
   public void setParents(Person parent1, Person parent2) {
+    Language language = App.config().language();
+    String cssClass = "unknown";
+    ObservableList<String> styleClass1 = this.parent1Label.getStyleClass();
     if (parent1 != null) {
-      this.parent1Combo.getSelectionModel().select(new ComboBoxItem<>(parent1));
+      this.parent1 = parent1;
+      this.parent1Label.setText(parent1.toString());
+      styleClass1.remove(cssClass);
     } else {
-      this.parent1Combo.getSelectionModel().select(0);
+      this.parent1 = null;
+      this.parent1Label.setText(language.translate("dialog.edit_person.parents.parents.unknown"));
+      if (!styleClass1.contains(cssClass)) {
+        styleClass1.add(cssClass);
+      }
     }
+    ObservableList<String> styleClass2 = this.parent2Label.getStyleClass();
     if (parent2 != null) {
-      this.parent2Combo.getSelectionModel().select(new ComboBoxItem<>(parent2));
+      this.parent2 = parent2;
+      this.parent2Label.setText(parent2.toString());
+      styleClass2.remove(cssClass);
     } else {
-      this.parent2Combo.getSelectionModel().select(0);
+      this.parent2 = null;
+      this.parent2Label.setText(language.translate("dialog.edit_person.parents.parents.unknown"));
+      if (!styleClass2.contains(cssClass)) {
+        styleClass2.add(cssClass);
+      }
     }
+  }
+
+  @Override
+  public Optional<Person> onPersonRequest(@NotNull List<Person> exclusionList) {
+    exclusionList.add(this.person);
+    this.selectPersonDialog.updatePersonList(this.familyTree, exclusionList);
+    return this.selectPersonDialog.showAndWait();
   }
 
   /**
@@ -487,6 +515,54 @@ public class EditPersonDialog extends DialogBase<Person> {
   }
 
   /**
+   * Open the parent selection dialog for the given parent index and
+   * replace the corresponding parent with the chosen person.
+   *
+   * @param parentIndex Either 1 or 2.
+   */
+  private void onParentSelect(int parentIndex) {
+    List<Person> excl = new LinkedList<>();
+    excl.add(this.person);
+    if (this.parent1 != null) {
+      excl.add(this.parent1);
+    }
+    if (this.parent2 != null) {
+      excl.add(this.parent2);
+    }
+    this.selectPersonDialog.updatePersonList(this.familyTree, excl);
+    this.selectPersonDialog.showAndWait().ifPresent(p -> {
+      if (parentIndex == 1) {
+        this.setParents(p, this.parent2);
+      } else if (parentIndex == 2) {
+        this.setParents(this.parent1, p);
+      } else {
+        throw new IllegalArgumentException("Invalid parent index: " + parentIndex);
+      }
+    });
+    this.updateButtons();
+  }
+
+  /**
+   * Remove the parent with the given index.
+   *
+   * @param parentIndex Index of the parent to remove.
+   */
+  private void onRemoveParent(int parentIndex) {
+    if (parentIndex == 1) {
+      this.setParents(null, this.parent2);
+    } else if (parentIndex == 2) {
+      this.setParents(this.parent1, null);
+    } else {
+      throw new IllegalArgumentException("Invalid parent index: " + parentIndex);
+    }
+    this.updateButtons();
+  }
+
+  private void onSwapParents() {
+    this.setParents(this.parent2, this.parent1);
+  }
+
+  /**
    * Add a {@link LifeEventView} form for the given {@link LifeEvent} object.
    *
    * @param lifeEvent The life event to create a form for.
@@ -494,7 +570,8 @@ public class EditPersonDialog extends DialogBase<Person> {
    */
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
     LifeEventView lifeEventView = new LifeEventView(
-        this.familyTree, lifeEvent, this.person, this.familyTree.persons(), expanded, this.lifeEventsList);
+        this.familyTree, lifeEvent, this.person, expanded, this.lifeEventsList);
+    lifeEventView.setPersonRequestListener(this);
     lifeEventView.getDeletionListeners().add(this::onEventDelete);
     lifeEventView.getUpdateListeners().add(this::updateButtons);
     lifeEventView.getTypeListeners().add(t -> {
@@ -561,16 +638,14 @@ public class EditPersonDialog extends DialogBase<Person> {
     }
     this.lifeStatusCombo.setDisable(anyDeath);
 
-    ComboBoxItem<Person> selectedParent1 = this.parent1Combo.getSelectionModel().getSelectedItem();
-    ComboBoxItem<Person> selectedParent2 = this.parent2Combo.getSelectionModel().getSelectedItem();
-    if (selectedParent1 != null && selectedParent2 != null) {
-      Person parent1 = selectedParent1.data();
-      Person parent2 = selectedParent2.data();
-      boolean sameParents = parent1 != null && parent1 == parent2;
-      this.parent1Combo.pseudoClassStateChanged(PseudoClasses.INVALID, sameParents);
-      this.parent2Combo.pseudoClassStateChanged(PseudoClasses.INVALID, sameParents);
-      invalid |= sameParents;
-    }
+    boolean sameParents = this.parent1 != null && this.parent1 == this.parent2;
+    this.parent1Label.pseudoClassStateChanged(PseudoClasses.INVALID, sameParents);
+    this.parent2Label.pseudoClassStateChanged(PseudoClasses.INVALID, sameParents);
+    invalid |= sameParents;
+
+    this.removeParent1Button.setDisable(this.parent1 == null);
+    this.removeParent2Button.setDisable(this.parent2 == null);
+    this.swapParentsButton.setDisable(this.parent1 == null && this.parent2 == null);
 
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(invalid);
   }
@@ -604,8 +679,8 @@ public class EditPersonDialog extends DialogBase<Person> {
     person.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
 
     // Relatives
-    person.setParent(0, this.parent1Combo.getSelectionModel().getSelectedItem().data());
-    person.setParent(1, this.parent2Combo.getSelectionModel().getSelectedItem().data());
+    person.setParent(0, this.parent1);
+    person.setParent(1, this.parent2);
     for (Person.RelativeType type : Person.RelativeType.values()) {
       // Clear relatives of the current type
       for (Person relative : this.person.getRelatives(type)) {
