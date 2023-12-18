@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -90,6 +91,11 @@ public class Person extends GenealogyObject<Person> {
    */
   void setFamilyTree(@NotNull FamilyTree familyTree) {
     this.familyTree = familyTree;
+  }
+
+  @Override
+  public String name(@NotNull Language language) {
+    return this.toString();
   }
 
   /**

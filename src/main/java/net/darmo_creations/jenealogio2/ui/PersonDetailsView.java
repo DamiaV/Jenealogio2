@@ -21,6 +21,10 @@ import java.util.*;
 import java.util.function.*;
 
 public class PersonDetailsView extends TabPane implements PersonClickObservable {
+  @SuppressWarnings("DataFlowIssue")
+  public static final Image DEFAULT_EVENT_IMAGE =
+      new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_event_image.png"));
+
   private Person person;
   private FamilyTree familyTree;
 
@@ -44,6 +48,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final ListView<WitnessedEventItem> witnessedEventsList = new ListView<>();
 
   private final SplitPane eventPane = new SplitPane();
+  private final ImageView eventImageView = new ImageView();
   private final Label eventTypeLabel = new Label();
   private final DateLabel eventDateLabel = new DateLabel(null);
   private final VBox eventActorsPane = new VBox(4);
@@ -68,6 +73,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final ListView<PictureView> imageList = new ListView<>();
 
   private final EditImageDialog editImageDialog = new EditImageDialog();
+
+  private LifeEvent displayedLifeEvent = null;
 
   public PersonDetailsView() {
     super();
@@ -163,6 +170,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private void setupEventsTab() {
     this.eventsTabPane.setOrientation(Orientation.VERTICAL);
+    this.eventsTab.contentProperty().addListener((observable, oldValue, newValue) -> {
+      if (newValue == this.eventsTabPane) {
+        this.displayedLifeEvent = null; // Reset whenever a life event’s detailled view is closed
+      }
+    });
     this.eventsTab.setContent(this.eventsTabPane);
 
     this.lifeEventsList.setOnMouseClicked(event -> {
@@ -192,6 +204,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventsTabPane.setDividerPositions(0.5);
 
     // Event pane, hidden by default
+
+    this.eventImageView.setPreserveRatio(true);
+    this.eventImageView.setFitWidth(100);
+    this.eventImageView.setFitHeight(100);
+
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.setGraphic(App.config().theme().getIcon(Icon.HELP, Icon.Size.SMALL));
@@ -200,7 +217,14 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     Button closeButton = new Button(null, App.config().theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
     closeButton.setTooltip(new Tooltip(App.config().language().translate("person_details_view.close_life_event")));
     closeButton.setOnAction(event -> this.eventsTab.setContent(this.eventsTabPane));
-    HBox hBox = new HBox(4, this.eventTypeLabel, spacer, this.eventDateLabel, closeButton);
+    HBox hBox = new HBox(
+        4,
+        this.eventImageView,
+        this.eventTypeLabel,
+        spacer,
+        this.eventDateLabel,
+        closeButton
+    );
     hBox.getStyleClass().add("person-details-header");
 
     ScrollPane notesScroll = new ScrollPane(this.eventNotesTextFlow);
@@ -213,6 +237,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         new SectionLabel("notes"),
         notesScroll
     );
+    topBox.getStyleClass().add("person-details");
     ScrollPane sourcesScroll = new ScrollPane(this.eventSourcesTextFlow);
     VBox.setVgrow(sourcesScroll, Priority.ALWAYS);
     VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
@@ -226,9 +251,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         sourcesBox,
         imagesBox
     );
-    this.eventPane.setDividerPositions(0.2, 0.4);
     this.eventPane.setOrientation(Orientation.VERTICAL);
-    this.eventPane.getStyleClass().add("person-details");
+    this.eventPane.setDividerPositions(0.2, 0.4);
   }
 
   private void setupFamilyTab() {
@@ -319,6 +343,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     } else {
       this.resetFields();
     }
+  }
+
+  /**
+   * The currently visible life event.
+   */
+  public Optional<LifeEvent> getDisplayedLifeEvent() {
+    return Optional.ofNullable(this.displayedLifeEvent);
   }
 
   private void resetLists() {
@@ -465,6 +496,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
+    this.displayedLifeEvent = lifeEvent;
     String text;
     if (lifeEvent.type().isBuiltin()) {
       text = App.config().language().translate("life_event_types." + lifeEvent.type().key().name());
@@ -490,7 +522,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     }
 
     this.eventDateLabel.setDateTime(lifeEvent.date());
-    this.eventPlaceLabel.setText(lifeEvent.place().orElse(null));
+    this.eventPlaceLabel.setText(lifeEvent.place().orElse("-"));
+
+    this.eventImageView.setImage(lifeEvent.mainPicture().map(Picture::image).orElse(DEFAULT_EVENT_IMAGE));
 
     this.eventNotesTextFlow.getChildren().clear();
     lifeEvent.notes().ifPresent(s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));

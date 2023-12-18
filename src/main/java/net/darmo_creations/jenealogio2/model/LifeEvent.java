@@ -1,12 +1,11 @@
 package net.darmo_creations.jenealogio2.model;
 
-import net.darmo_creations.jenealogio2.model.datetime.DateTime;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.model.datetime.*;
+import org.jetbrains.annotations.*;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.*;
 
 /**
  * A life event is an event a person may live through during their life or be associated with posthumously.
@@ -34,6 +33,13 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   public LifeEvent(@NotNull DateTime date, @NotNull LifeEventType type) {
     this.date = Objects.requireNonNull(date);
     this.type = Objects.requireNonNull(type);
+  }
+
+  @Override
+  public String name(@NotNull Language language) {
+    String name = language.translate("life_event_types." + this.type.key().name());
+    String actorsNames = this.actors.stream().map(a -> a.name(language)).collect(Collectors.joining(", "));
+    return "%s (%s)".formatted(name, actorsNames);
   }
 
   /**

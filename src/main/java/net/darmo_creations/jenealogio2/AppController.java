@@ -743,8 +743,16 @@ public class AppController {
    * Open dialog to edit the images of the selected person.
    */
   private void onEditPersonPicturesAction() {
-    this.getSelectedPerson().ifPresent(person -> {
-      this.editPersonImagesDialog.setObject(person, this.familyTree);
+    Optional<? extends GenealogyObject<?>> selectedObject = Optional.empty();
+    Optional<LifeEvent> selectedLifeEvent = this.personDetailsView.getDisplayedLifeEvent();
+    Optional<Person> selectedPerson = this.getSelectedPerson();
+    if (selectedLifeEvent.isPresent()) {
+      selectedObject = selectedLifeEvent;
+    } else if (selectedPerson.isPresent()) {
+      selectedObject = selectedPerson;
+    }
+    selectedObject.ifPresent(o -> {
+      this.editPersonImagesDialog.setObject(o, this.familyTree);
       this.editPersonImagesDialog.showAndWait()
           .ifPresent(b -> {
             if (!b.getButtonData().isCancelButton()) {

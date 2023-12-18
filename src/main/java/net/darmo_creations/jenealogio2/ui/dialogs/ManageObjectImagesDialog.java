@@ -9,7 +9,9 @@ import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -145,9 +147,13 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   public void setObject(@NotNull GenealogyObject<?> object, @NotNull FamilyTree familyTree) {
     this.genealogyObject = object;
     this.familyTree = familyTree;
+    Language language = App.config().language();
+    this.setTitle(language.translate("dialog.manage_object_images.title",
+        new FormatArg("name", object.name(language))));
     Optional<Picture> image = this.genealogyObject.mainPicture();
     this.mainPicture = image.orElse(null);
-    this.mainImageView.setImage(image.map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+    Image defaultImage = object instanceof Person ? PersonWidget.DEFAULT_IMAGE : PersonDetailsView.DEFAULT_EVENT_IMAGE;
+    this.mainImageView.setImage(image.map(Picture::image).orElse(defaultImage));
     this.removeMainImageButton.setDisable(image.isEmpty());
     this.imagesList.getItems().clear();
     for (Picture picture : this.genealogyObject.pictures()) {

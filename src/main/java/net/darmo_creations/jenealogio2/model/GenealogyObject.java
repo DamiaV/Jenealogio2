@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -15,6 +16,11 @@ public abstract class GenealogyObject<T extends GenealogyObject<T>> {
   private String sources;
   private final Map<String, Picture> pictures = new HashMap<>();
   private Picture mainPicture;
+
+  /**
+   * The name of this object in the given language.
+   */
+  public abstract String name(@NotNull Language language);
 
   /**
    * This object’s notes.
