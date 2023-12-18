@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
+import net.darmo_creations.jenealogio2.config.*;
 import org.jetbrains.annotations.*;
 
 import java.time.*;
@@ -12,48 +13,13 @@ import java.util.regex.*;
  *
  * @param <D> Type of custom dates for this calendar.
  */
-public sealed interface Calendar<D extends CalendarSpecificDateTime>
+public sealed abstract class Calendar<D extends CalendarSpecificDateTime>
     permits CopticCalendar, EthiopianCalendar, FrenchRepublicanDecimalCalendar, FrenchRepublicanCalendar,
     GregorianCalendar, JulianCalendar {
   /**
    * Pattern used to deserialize date-strings: [-]YYYY-MM-DD[Thh:mm]
    */
-  Pattern DATE_PATTERN = Pattern.compile("^(-?\\d{4,})-(\\d{2})-(\\d{2})(?:T(\\d{2}):(\\d{2}))?$");
-
-  /**
-   * The coptic calendar system.
-   *
-   * @see org.threeten.extra.chrono.CopticChronology
-   */
-  CopticCalendar COPTIC = new CopticCalendar();
-  /**
-   * The ethiopian calendar system.
-   *
-   * @see org.threeten.extra.chrono.EthiopicChronology
-   */
-  EthiopianCalendar ETHIOPIAN = new EthiopianCalendar();
-  /**
-   * The gregorian calendar system.
-   */
-  GregorianCalendar GREGORIAN = new GregorianCalendar();
-  /**
-   * The julian calendar system.
-   *
-   * @see org.threeten.extra.chrono.JulianChronology
-   */
-  JulianCalendar JULIAN = new JulianCalendar();
-  /**
-   * The julian calendar system.
-   *
-   * @see org.threeten.extra.chrono.JulianChronology
-   */
-  FrenchRepublicanCalendar FRENCH_REPUBLICAN_CALENDAR = new FrenchRepublicanCalendar();
-  /**
-   * The julian calendar system.
-   *
-   * @see org.threeten.extra.chrono.JulianChronology
-   */
-  FrenchRepublicanDecimalCalendar FRENCH_REPUBLICAN_DECIMAL_CALENDAR = new FrenchRepublicanDecimalCalendar();
+  private static final Pattern DATE_PATTERN = Pattern.compile("^(-?\\d{4,})-(\\d{2})-(\\d{2})(?:T(\\d{2}):(\\d{2}))?$");
 
   /**
    * Return the calendar instance for the given name.
@@ -62,14 +28,14 @@ public sealed interface Calendar<D extends CalendarSpecificDateTime>
    * @return The calendar instance.
    * @throws IllegalArgumentException If the name does not correspond to any calendar instance.
    */
-  static Calendar<?> forName(@NotNull String name) {
+  public static Calendar<?> forName(@NotNull String name) {
     return switch (name) {
-      case CopticCalendar.NAME -> COPTIC;
-      case EthiopianCalendar.NAME -> ETHIOPIAN;
-      case GregorianCalendar.NAME -> GREGORIAN;
-      case JulianCalendar.NAME -> JULIAN;
-      case FrenchRepublicanCalendar.NAME -> FRENCH_REPUBLICAN_CALENDAR;
-      case FrenchRepublicanDecimalCalendar.NAME -> FRENCH_REPUBLICAN_DECIMAL_CALENDAR;
+      case CopticCalendar.NAME -> Calendars.COPTIC;
+      case EthiopianCalendar.NAME -> Calendars.ETHIOPIAN;
+      case GregorianCalendar.NAME -> Calendars.GREGORIAN;
+      case JulianCalendar.NAME -> Calendars.JULIAN;
+      case FrenchRepublicanCalendar.NAME -> Calendars.FRENCH_REPUBLICAN_CALENDAR;
+      case FrenchRepublicanDecimalCalendar.NAME -> Calendars.FRENCH_REPUBLICAN_DECIMAL_CALENDAR;
       default -> throw new IllegalArgumentException("Undefined calendar name: " + name);
     };
   }
@@ -84,7 +50,7 @@ public sealed interface Calendar<D extends CalendarSpecificDateTime>
    * @param minute Date’s minute. May be null.
    * @return A new calendar-specific date.
    */
-  D getDate(int year, int month, int day, Integer hour, Integer minute);
+  public abstract D getDate(int year, int month, int day, Integer hour, Integer minute);
 
   /**
    * Convert an ISO-8601 date into one specific to this calendar.
@@ -93,17 +59,17 @@ public sealed interface Calendar<D extends CalendarSpecificDateTime>
    * @param isTimeSet Whether to take into account the time in the first argument
    * @return The equivalent calendar-specific date.
    */
-  D convertDate(@NotNull LocalDateTime date, boolean isTimeSet);
+  public abstract D convertDate(@NotNull LocalDateTime date, boolean isTimeSet);
 
   /**
-   * Parse a {@code YYYY-MM-DD hh:mm} string into a date from this calendar system.
+   * Parse a {@code -?YYYY-MM-DDThh:mm} string into a date from this calendar system.
    *
    * @param dateString String to parse.
    * @return A date object.
    * @throws DateTimeParseException If the string does not represent a valid date from this calender system.
    * @throws NullPointerException   If the string is null.
    */
-  default D parse(@NotNull String dateString) throws DateTimeParseException {
+  public final D parse(@NotNull String dateString) throws DateTimeParseException {
     Matcher matcher = DATE_PATTERN.matcher(dateString);
     if (!matcher.find()) {
       throw new DateTimeParseException("String \"%s\" does not represent a valid date".formatted(dateString), dateString, 0);
@@ -123,24 +89,41 @@ public sealed interface Calendar<D extends CalendarSpecificDateTime>
   /**
    * Name of this calendar.
    */
-  String name();
+  public abstract String name();
+
+  /**
+   * Return the localized name of a month of this calendar.
+   *
+   * @param language  Language to use.
+   * @param month     1-indexed number of the month.
+   * @param shortForm Whether to return the month name’s shot form.
+   * @return The month’s name.
+   */
+  public final String getMonthName(@NotNull Language language, int month, boolean shortForm) {
+    String key = "calendar.%s.month.%d".formatted(this.name(), month);
+    if (!shortForm) {
+      return language.translate(key);
+    }
+    String shortKey = key + ".short";
+    return language.translate(language.hasKey(shortKey) ? shortKey : key);
+  }
 
   /**
    * Number of months in a year of this calendar.
    */
-  int lengthOfYearInMonths();
+  public abstract int lengthOfYearInMonths();
 
   /**
    * The number of hours in an hour.
    */
-  default int hoursInDay() {
+  public int hoursInDay() {
     return 24;
   }
 
   /**
    * The number of minutes in an hour.
    */
-  default int minutesInHour() {
+  public int minutesInHour() {
     return 60;
   }
 }

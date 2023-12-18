@@ -12,7 +12,7 @@ import java.util.*;
  *
  * @see ca.rmen.lfrc.FrenchRevolutionaryCalendar
  */
-public final class FrenchRepublicanCalendar implements Calendar<FrenchRepublicanDateTime> {
+public final class FrenchRepublicanCalendar extends Calendar<FrenchRepublicanDateTime> {
   public static final String NAME = "french_republican";
 
   /**

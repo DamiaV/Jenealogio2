@@ -225,16 +225,16 @@ public class PersonWidget extends AnchorPane {
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
-    String birthDate = this.person.getBirthDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
-    this.birthDateLabel.setText(birthDate);
+    String birthYear = this.person.getBirthDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
+    this.birthDateLabel.setText(birthYear);
     this.birthDateLabel.setGraphic(App.config().theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
-    this.birthDateLabel.setTooltip(new Tooltip(birthDate));
+    this.birthDateLabel.setTooltip(new Tooltip(birthYear));
 
     if (this.person.lifeStatus().isConsideredDeceased()) {
-      String deathDate = this.person.getDeathDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
-      this.deathDateLabel.setText(deathDate);
+      String deathYear = this.person.getDeathDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
+      this.deathDateLabel.setText(deathYear);
       this.deathDateLabel.setGraphic(App.config().theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
-      this.deathDateLabel.setTooltip(new Tooltip(deathDate));
+      this.deathDateLabel.setTooltip(new Tooltip(deathYear));
     }
   }
 

@@ -1,19 +1,15 @@
 package net.darmo_creations.jenealogio2.utils;
 
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.datetime.DateTime;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimeAlternative;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimeRange;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.function.Function;
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * Class providing methods to handle objects from the {@link java.time} package.
@@ -45,19 +41,30 @@ public final class DateTimeUtils {
   /**
    * Format a {@link DateTime} object according to the current app configuration.
    *
-   * @param date Date to format.
+   * @param date       Date to format.
+   * @param useIsoDate If true, the corresponding ISO date will be formatted instead of the calendar-specific date.
    * @return The formatted date.
    */
-  public static String formatDateTime(@NotNull DateTime date) {
+  public static String formatDateTime(@NotNull DateTime date, boolean useIsoDate) {
     Objects.requireNonNull(date);
     Config config = App.config();
     Language language = config.language();
     String dateFormat = config.dateFormat().getFormat();
-    String timeFormat = config.timeFormat().getFormat();
-    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("%s %s".formatted(dateFormat, timeFormat));
-    DateTimeFormatter dateFormatterNoHour = DateTimeFormatter.ofPattern(dateFormat);
-    Function<CalendarSpecificDateTime, String> formatter =
-        d -> (d.isTimeSet() ? dateFormatter : dateFormatterNoHour).format(d.toISO8601Date());
+    TimeFormat tf = config.timeFormat();
+    String timeFormat = tf.getFormat();
+    String fullTimeFormat = tf.getFullVersion().getFormat();
+    var dateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, timeFormat));
+    var fullDateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, fullTimeFormat));
+    var dateFormatterNoHour = new CalendarDateTimeFormatter(language, dateFormat);
+    Function<CalendarSpecificDateTime, String> formatter = d -> {
+      CalendarDateTimeFormatter f;
+      if (d.isTimeSet()) {
+        f = useIsoDate || d.calendar().hoursInDay() == 24 ? dateFormatter : fullDateFormatter;
+      } else {
+        f = dateFormatterNoHour;
+      }
+      return useIsoDate ? f.format(d.toISO8601Date()) : f.format(d);
+    };
 
     if (date instanceof DateTimeWithPrecision d) {
       return language.translate(

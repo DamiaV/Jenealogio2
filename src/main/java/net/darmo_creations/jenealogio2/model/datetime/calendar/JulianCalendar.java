@@ -10,7 +10,7 @@ import java.time.*;
  *
  * @see org.threeten.extra.chrono.JulianChronology
  */
-public final class JulianCalendar implements Calendar<JulianDateTime> {
+public final class JulianCalendar extends Calendar<JulianDateTime> {
   public static final String NAME = "julian";
 
   @Override

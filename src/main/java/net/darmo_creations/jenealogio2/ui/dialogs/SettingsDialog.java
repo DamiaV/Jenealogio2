@@ -13,7 +13,6 @@ import org.jetbrains.annotations.*;
 
 import java.io.*;
 import java.time.*;
-import java.time.format.*;
 
 /**
  * Dialog to update the app’s settings. It is not resizable.
@@ -61,6 +60,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   }
 
   private BorderPane createInterfaceForm() {
+    Language language = App.config().language();
     this.languageCombo.getItems().addAll(Config.languages());
     this.languageCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
@@ -68,17 +68,17 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.themeCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onThemeSelect(newValue));
 
-    LocalDateTime sampleDate = LocalDateTime.of(1970, 1, 31, 1, 0);
+    LocalDateTime sampleDate = LocalDateTime.of(1970, 9, 1, 1, 2);
     for (DateFormat dateFormat : DateFormat.values()) {
       this.dateFormatCombo.getItems().add(new NotNullComboBoxItem<>(dateFormat,
-          DateTimeFormatter.ofPattern(dateFormat.getFormat()).format(sampleDate)));
+          new CalendarDateTimeFormatter(language, dateFormat.getFormat()).format(sampleDate)));
     }
     this.dateFormatCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onDateFormatSelect(newValue));
 
     for (TimeFormat timeFormat : TimeFormat.values()) {
       this.timeFormatCombo.getItems().add(new NotNullComboBoxItem<>(timeFormat,
-          DateTimeFormatter.ofPattern(timeFormat.getFormat()).format(sampleDate)));
+          new CalendarDateTimeFormatter(language, timeFormat.getFormat()).format(sampleDate)));
     }
     this.timeFormatCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onTimeFormatSelect(newValue));

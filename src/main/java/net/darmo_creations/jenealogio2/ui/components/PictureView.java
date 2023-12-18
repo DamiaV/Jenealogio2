@@ -57,7 +57,13 @@ public class PictureView extends HBox implements Comparable<PictureView> {
 
   public void setDate(final DateTime date) {
     this.date = date;
-    this.dateLabel.setText(date != null ? DateTimeUtils.formatDateTime(date) : "-");
+    if (date != null) {
+      String calDate = DateTimeUtils.formatDateTime(date, false);
+      String isoDate = DateTimeUtils.formatDateTime(date, true);
+      this.dateLabel.setText("%s (%s)".formatted(calDate, isoDate));
+    } else {
+      this.dateLabel.setText("-");
+    }
   }
 
   @Override

@@ -20,12 +20,12 @@ import java.util.*;
  */
 public class DateTimeField extends HBox {
   private static final Calendar<?>[] CALENDARS = {
-      Calendar.GREGORIAN,
-      Calendar.JULIAN,
-      Calendar.FRENCH_REPUBLICAN_DECIMAL_CALENDAR,
-      Calendar.FRENCH_REPUBLICAN_CALENDAR,
-      Calendar.COPTIC,
-      Calendar.ETHIOPIAN,
+      Calendars.GREGORIAN,
+      Calendars.JULIAN,
+      Calendars.FRENCH_REPUBLICAN_DECIMAL_CALENDAR,
+      Calendars.FRENCH_REPUBLICAN_CALENDAR,
+      Calendars.COPTIC,
+      Calendars.ETHIOPIAN,
   };
 
   private final TextField yearField = new TextField();

@@ -1,14 +1,13 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 
 /**
  * The gregorian calendar system.
  */
-public final class GregorianCalendar implements Calendar<GregorianDateTime> {
+public final class GregorianCalendar extends Calendar<GregorianDateTime> {
   public static final String NAME = "gregorian";
 
   @Override

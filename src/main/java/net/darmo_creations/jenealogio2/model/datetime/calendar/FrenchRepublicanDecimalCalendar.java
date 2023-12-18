@@ -14,7 +14,7 @@ import java.util.*;
  *
  * @see ca.rmen.lfrc.FrenchRevolutionaryCalendar
  */
-public final class FrenchRepublicanDecimalCalendar implements Calendar<FrenchRepublicanDecimalDateTime> {
+public final class FrenchRepublicanDecimalCalendar extends Calendar<FrenchRepublicanDecimalDateTime> {
   public static final String NAME = "french_republican_decimal";
 
   @Override

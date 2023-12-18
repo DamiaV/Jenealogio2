@@ -10,7 +10,7 @@ import java.time.*;
  *
  * @see org.threeten.extra.chrono.CopticChronology
  */
-public final class CopticCalendar implements Calendar<CopticDateTime> {
+public final class CopticCalendar extends Calendar<CopticDateTime> {
   public static final String NAME = "coptic";
 
   @Override

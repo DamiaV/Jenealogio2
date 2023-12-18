@@ -10,7 +10,7 @@ import java.time.*;
  *
  * @see org.threeten.extra.chrono.EthiopicChronology
  */
-public final class EthiopianCalendar implements Calendar<EthiopianDateTime> {
+public final class EthiopianCalendar extends Calendar<EthiopianDateTime> {
   public static final String NAME = "ethiopian";
 
   @Override

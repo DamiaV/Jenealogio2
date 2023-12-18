@@ -1,35 +1,28 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
-import javafx.geometry.VPos;
+import javafx.collections.*;
+import javafx.geometry.*;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.FamilyTree;
-import net.darmo_creations.jenealogio2.model.LifeEvent;
-import net.darmo_creations.jenealogio2.model.LifeEventType;
-import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.model.datetime.DateTime;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.PseudoClasses;
-import net.darmo_creations.jenealogio2.ui.dialogs.Alerts;
-import net.darmo_creations.jenealogio2.utils.DateTimeUtils;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.*;
+import net.darmo_creations.jenealogio2.ui.dialogs.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.text.Collator;
+import java.text.*;
 import java.util.*;
 
 /**
  * JavaFX component that presents a form to edit a {@link LifeEvent} object.
  */
-public class LifeEventView extends TitledPane { // TODO show icon if event has attached images/files
+public class LifeEventView extends TitledPane { // TODO show icon if event has attached images/files + add button to manage files
   private final Label titleLabel = new Label();
-  private final Label dateLabel = new Label();
+  private final DateLabel dateLabel = new DateLabel(null);
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
   private final CalendarDateField dateField = new CalendarDateField();
@@ -84,6 +77,7 @@ public class LifeEventView extends TitledPane { // TODO show icon if event has a
     deleteButton.setOnAction(event -> this.onDelete());
     BorderPane.setAlignment(this.titleLabel, Pos.CENTER_LEFT);
     borderPane.setLeft(this.titleLabel);
+    this.dateLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
     borderPane.setRight(new HBox(4, this.dateLabel, deleteButton));
     borderPane.prefWidthProperty().bind(parent.widthProperty().subtract(70));
     this.setGraphic(borderPane);
@@ -177,12 +171,7 @@ public class LifeEventView extends TitledPane { // TODO show icon if event has a
    * Update header’s date label text.
    */
   private void updateDateLabel() {
-    Optional<DateTime> date = this.dateField.getDate();
-    if (date.isPresent()) {
-      this.dateLabel.setText(DateTimeUtils.formatDateTime(date.get()));
-    } else {
-      this.dateLabel.setText(null);
-    }
+    this.dateLabel.setDateTime(this.dateField.getDate().orElse(null));
   }
 
   /**
@@ -200,6 +189,7 @@ public class LifeEventView extends TitledPane { // TODO show icon if event has a
     List<Person> potentialWitnesses = this.persons.stream()
         .filter(p -> !this.witnessesList.getItems().contains(p))
         .toList();
+    // TODO use more practical chooser with search bar
     Optional<Person> result = Alerts.chooser(
         "alert.choose_witness.header",
         "alert.choose_witness.label",

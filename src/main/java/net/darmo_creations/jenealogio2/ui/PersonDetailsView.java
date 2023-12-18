@@ -45,7 +45,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private final SplitPane eventPane = new SplitPane();
   private final Label eventTypeLabel = new Label();
-  private final Label eventDateLabel = new Label();
+  private final DateLabel eventDateLabel = new DateLabel(null);
   private final VBox eventActorsPane = new VBox(4);
   private final Label eventPlaceLabel = new Label();
   private final TextFlow eventNotesTextFlow = new TextFlow();
@@ -194,6 +194,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     // Event pane, hidden by default
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
+    this.eventDateLabel.setGraphic(App.config().theme().getIcon(Icon.HELP, Icon.Size.SMALL));
     Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
     Button closeButton = new Button(null, App.config().theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
@@ -488,7 +489,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       first = false;
     }
 
-    this.eventDateLabel.setText(DateTimeUtils.formatDateTime(lifeEvent.date()));
+    this.eventDateLabel.setDateTime(lifeEvent.date());
     this.eventPlaceLabel.setText(lifeEvent.place().orElse(null));
 
     this.eventNotesTextFlow.getChildren().clear();
@@ -563,8 +564,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     private final VBox imagePane = new VBox();
     private final ImageView imageView = new ImageView();
     private final Label nameLabel = new Label();
-    private final Label birthDateLabel = new Label();
-    private final Label deathDateLabel = new Label();
+    private final DateLabel birthDateLabel = new DateLabel("?");
+    private final DateLabel deathDateLabel = new DateLabel("?");
 
     private final List<ChildInfo> childInfo = new ArrayList<>();
 
@@ -657,16 +658,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         this.nameLabel.setGraphic(null);
       }
 
-      String birthDate = person.getBirthDate().map(DateTimeUtils::formatDateTime).orElse("?");
-      this.birthDateLabel.setText(birthDate);
-      this.birthDateLabel.setTooltip(new Tooltip(birthDate));
+      this.birthDateLabel.setDateTime(person.getBirthDate().orElse(null));
 
       boolean consideredDeceased = person.lifeStatus().isConsideredDeceased();
       this.deathDateLabel.setVisible(consideredDeceased);
       if (consideredDeceased) {
-        String deathDate = person.getDeathDate().map(DateTimeUtils::formatDateTime).orElse("?");
-        this.deathDateLabel.setText(deathDate);
-        this.deathDateLabel.setTooltip(new Tooltip(deathDate));
+        this.deathDateLabel.setDateTime(person.getDeathDate().orElse(null));
       }
     }
   }
@@ -693,9 +690,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
       }
       Label typeLabel = new Label(type);
-      Label dateLabel = new Label(DateTimeUtils.formatDateTime(lifeEvent.date()));
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
+      DateLabel dateLabel = new DateLabel(lifeEvent.date(), null);
+      dateLabel.setGraphic(config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
       this.getChildren().add(header);
 
@@ -746,9 +744,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
       }
       Label typeLabel = new Label(type);
-      Label dateLabel = new Label(DateTimeUtils.formatDateTime(lifeEvent.date()));
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
+      DateLabel dateLabel = new DateLabel(lifeEvent.date(), null);
+      dateLabel.setGraphic(App.config().theme().getIcon(Icon.HELP, Icon.Size.SMALL));
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
       this.getChildren().add(header);
 
