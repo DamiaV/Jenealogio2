@@ -105,7 +105,7 @@ public class EditPersonDialog extends DialogBase<Person> {
     this.getDialogPane().setContent(this.tabPane);
 
     Stage stage = this.stage();
-    stage.setMinWidth(850);
+    stage.setMinWidth(1000);
     stage.setMinHeight(650);
     this.setIcon(App.config().theme().getAppIcon());
 
