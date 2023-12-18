@@ -86,6 +86,6 @@ public class Picture implements Comparable<Picture> {
   }
 
   private int compareNames(final @NotNull Picture o) {
-    return this.name.compareTo(o.name);
+    return this.name.toLowerCase().compareTo(o.name.toLowerCase());
   }
 }

@@ -139,6 +139,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     tree.pictures().stream()
         .filter(p -> !exclusionList.contains(p))
         .forEach(p -> this.picturesList.add(new PictureView(p, true)));
+    this.picturesList.sort(null);
   }
 
   private void onAddImage() {
@@ -221,6 +222,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     }
     PictureView pv = new PictureView(picture, true);
     this.picturesList.add(pv);
+    this.picturesList.sort(null);
     this.imagesList.scrollTo(pv);
   }
 
