@@ -18,27 +18,27 @@
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-base</artifactId>
-      <version>21.0.1</version>
+      <version>20.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
-      <version>21.0.1</version>
+      <version>20.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-fxml</artifactId>
-      <version>21.0.1</version>
+      <version>20.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-web</artifactId>
-      <version>21.0.1</version>
+      <version>20.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-swing</artifactId>
-      <version>21.0.1</version>
+      <version>20.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.controlsfx</groupId>
@@ -78,7 +78,6 @@
       <artifactId>lib-french-revolutionary-calendar</artifactId>
       <version>1.8.2</version>
     </dependency>
-
     <!-- https://mvnrepository.com/artifact/org.ini4j/ini4j -->
     <dependency>
       <groupId>org.ini4j</groupId>
