@@ -123,14 +123,14 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     this.placeLatField.setTextFormatter(new TextFormatter<>(
         new DoubleStringConverter(),
         null,
-        change -> change.getControlNewText().matches("\\d+\\.?\\d*") ? change : null
+        null
     ));
     this.placeLatField.setPrefWidth(100);
     this.placeLonField.setPromptText(language.translate("life_event_view.place.longitude"));
     this.placeLonField.setTextFormatter(new TextFormatter<>(
         new DoubleStringConverter(),
         null,
-        change -> change.getControlNewText().matches("\\d+\\.?\\d*") ? change : null
+        null
     ));
     this.placeLonField.setPrefWidth(100);
     this.placeLatLonButton.setText(language.translate("life_event_view.place.lookup_latlon"));
@@ -446,11 +446,10 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     if (place.isPresent()) {
       Place p = place.get();
       this.placeAddressField.setText(p.address());
-      LatLon latLon = p.latLon();
-      if (latLon != null) {
+      p.latLon().ifPresent(latLon -> {
         this.placeLatField.setText(String.valueOf(latLon.lat()));
         this.placeLonField.setText(String.valueOf(latLon.lon()));
-      }
+      });
     } else {
       this.placeAddressField.setText(null);
       this.placeLatField.setText(null);
