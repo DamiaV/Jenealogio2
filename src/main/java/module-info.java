@@ -2,6 +2,7 @@
  * This module defines all requirements for the application.
  */
 module net.darmo_creations.jenealogio2 {
+  requires java.net.http;
   requires javafx.controls;
   requires javafx.fxml;
   requires javafx.web;

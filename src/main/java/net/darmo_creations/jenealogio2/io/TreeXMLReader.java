@@ -4,6 +4,7 @@ import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 import org.w3c.dom.*;
@@ -693,7 +694,10 @@ public class TreeXMLReader extends TreeXMLManager {
   ) throws IOException {
     Optional<Element> placeElement = this.getChildElement(eventElement, PLACE_TAG, true);
     if (placeElement.isPresent()) {
-      lifeEvent.setPlace(this.getAttr(placeElement.get(), PLACE_VALUE_ATTR, s -> s, null, true));
+      Element element = placeElement.get();
+      String address = this.getAttr(element, PLACE_ADDRESS_ATTR, s -> s, null, true);
+      LatLon latLon = this.getAttr(element, PLACE_LATLON_ATTR, LatLon::fromString, () -> null, false);
+      lifeEvent.setPlace(new Place(address, latLon));
     }
   }
 

@@ -1,10 +1,12 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
+import javafx.application.*;
 import javafx.collections.*;
 import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
+import javafx.util.converter.*;
 import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
@@ -25,7 +27,11 @@ public class LifeEventView extends TitledPane implements PersonRequester {
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
   private final CalendarDateField dateField = new CalendarDateField();
-  private final TextField placeField = new TextField();
+  private final TextField placeAddressField = new TextField();
+  private final TextField placeLatField = new TextField();
+  private final TextField placeLonField = new TextField();
+  private final Button placeLatLonButton = new Button();
+  private final Label loadingLabel = new Label();
   private final Label partnerLabel = new Label();
   private final Button partnerButton = new Button();
   private final ListView<Person> witnessesList = new ListView<>();
@@ -88,7 +94,7 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     AnchorPane.setRightAnchor(gridPane, 10.0);
     anchorPane.getChildren().add(gridPane);
 
-    this.populateEventTypeCombo();
+    populateEventTypeCombo(familyTree, this.eventTypeCombo);
     this.eventTypeCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onEventTypeChange(newValue));
     gridPane.addRow(0, new Label(language.translate("life_event_view.type")), this.eventTypeCombo);
@@ -109,7 +115,37 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     dateHBox.getChildren().add(this.dateField);
     gridPane.addRow(1, new Label(language.translate("life_event_view.date")), dateHBox);
 
-    gridPane.addRow(2, new Label(language.translate("life_event_view.place")), this.placeField);
+    HBox.setHgrow(this.placeAddressField, Priority.ALWAYS);
+    this.placeAddressField.setPromptText(language.translate("life_event_view.place.address"));
+    this.placeAddressField.textProperty().addListener((observableValue, oldValue, newValue)
+        -> this.placeLatLonButton.setDisable(StringUtils.stripNullable(newValue).isEmpty()));
+    this.placeLatField.setPromptText(language.translate("life_event_view.place.latitude"));
+    this.placeLatField.setTextFormatter(new TextFormatter<>(
+        new DoubleStringConverter(),
+        null,
+        change -> change.getControlNewText().matches("\\d+\\.?\\d*") ? change : null
+    ));
+    this.placeLatField.setPrefWidth(100);
+    this.placeLonField.setPromptText(language.translate("life_event_view.place.longitude"));
+    this.placeLonField.setTextFormatter(new TextFormatter<>(
+        new DoubleStringConverter(),
+        null,
+        change -> change.getControlNewText().matches("\\d+\\.?\\d*") ? change : null
+    ));
+    this.placeLonField.setPrefWidth(100);
+    this.placeLatLonButton.setText(language.translate("life_event_view.place.lookup_latlon"));
+    this.placeLatLonButton.setGraphic(theme.getIcon(Icon.GET_LATLON, Icon.Size.SMALL));
+    this.placeLatLonButton.setOnAction(e -> this.onLookupPlaceLatLon());
+    this.loadingLabel.setPrefWidth(30);
+    HBox placeBox = new HBox(
+        4,
+        this.placeAddressField,
+        this.placeLatField,
+        this.placeLonField,
+        this.placeLatLonButton,
+        this.loadingLabel
+    );
+    gridPane.addRow(2, new Label(language.translate("life_event_view.place")), placeBox);
 
     this.partnerButton.setGraphic(theme.getIcon(Icon.EDIT_PARTNER, Icon.Size.SMALL));
     this.partnerButton.setTooltip(new Tooltip(language.translate("life_event_view.partner.edit")));
@@ -163,6 +199,22 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     rowConstraints.get(6).setVgrow(Priority.ALWAYS);
 
     this.populateFields();
+  }
+
+  private void onLookupPlaceLatLon() {
+    this.loadingLabel.setGraphic(App.config().theme().getIcon(Icon.LOADING, Icon.Size.SMALL));
+    this.placeLatLonButton.setDisable(true);
+    StringUtils.stripNullable(this.placeAddressField.getText())
+        .ifPresent(address ->
+            GeoCoder.geoCode(address).thenAcceptAsync(latLon ->
+                Platform.runLater(() -> {
+                  this.loadingLabel.setGraphic(null);
+                  this.placeLatLonButton.setDisable(false);
+                  latLon.ifPresent(ll -> {
+                    this.placeLatField.setText(String.valueOf(ll.lat()));
+                    this.placeLonField.setText(String.valueOf(ll.lon()));
+                  });
+                })));
   }
 
   private void onPartnerSelect() {
@@ -268,7 +320,20 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     }
 
     this.lifeEvent.setDate(this.dateField.getDate().orElseThrow(() -> new IllegalArgumentException("missing date")));
-    this.lifeEvent.setPlace(StringUtils.stripNullable(this.placeField.getText()).orElse(null));
+    String address = StringUtils.stripNullable(this.placeAddressField.getText()).orElse(null);
+    if (address != null) {
+      LatLon latLon;
+      try {
+        double lat = Double.parseDouble(this.placeLatField.getText());
+        double lon = Double.parseDouble(this.placeLonField.getText());
+        latLon = new LatLon(lat, lon);
+      } catch (RuntimeException e) {
+        latLon = null;
+      }
+      this.lifeEvent.setPlace(new Place(address, latLon));
+    } else {
+      this.lifeEvent.setPlace(null);
+    }
     this.lifeEvent.setNotes(StringUtils.stripNullable(this.notesField.getText()).orElse(null));
     this.lifeEvent.setSources(StringUtils.stripNullable(this.sourcesField.getText()).orElse(null));
   }
@@ -324,11 +389,17 @@ public class LifeEventView extends TitledPane implements PersonRequester {
   }
 
   /**
-   * Populate the event type combobox.
+   * Populate the given event type combobox from the given family tree.
+   *
+   * @param familyTree     The tree to get {@link LifeEventType}s from.
+   * @param eventTypeCombo The {@link ComboBox} to populate.
    */
-  private void populateEventTypeCombo() {
+  public static void populateEventTypeCombo(
+      final @NotNull FamilyTree familyTree,
+      @NotNull ComboBox<? super NotNullComboBoxItem<LifeEventType>> eventTypeCombo
+  ) {
     Map<LifeEventType.Group, List<LifeEventType>> groups = new HashMap<>();
-    for (LifeEventType eventType : this.familyTree.lifeEventTypeRegistry().entries()) {
+    for (LifeEventType eventType : familyTree.lifeEventTypeRegistry().entries()) {
       LifeEventType.Group group = eventType.group();
       if (!groups.containsKey(group)) {
         groups.put(group, new LinkedList<>());
@@ -348,7 +419,7 @@ public class LifeEventView extends TitledPane implements PersonRequester {
             return new NotNullComboBoxItem<>(type, prefix + name);
           })
           .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
-          .forEach(item -> this.eventTypeCombo.getItems().add(item));
+          .forEach(item -> eventTypeCombo.getItems().add(item));
     }
   }
 
@@ -371,7 +442,20 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     this.datePrecisionCombo.getSelectionModel()
         .select(new NotNullComboBoxItem<>(CalendarDateField.DateType.fromDate(this.lifeEvent.date())));
     this.dateField.setDate(this.lifeEvent.date());
-    this.placeField.setText(this.lifeEvent.place().orElse(""));
+    Optional<Place> place = this.lifeEvent.place();
+    if (place.isPresent()) {
+      Place p = place.get();
+      this.placeAddressField.setText(p.address());
+      LatLon latLon = p.latLon();
+      if (latLon != null) {
+        this.placeLatField.setText(String.valueOf(latLon.lat()));
+        this.placeLonField.setText(String.valueOf(latLon.lon()));
+      }
+    } else {
+      this.placeAddressField.setText(null);
+      this.placeLatField.setText(null);
+      this.placeLonField.setText(null);
+    }
     Optional<Person> otherActor = this.lifeEvent.actors().stream().filter(p -> p != this.person).findFirst();
     this.setPartner(otherActor.orElse(null));
     this.lifeEvent.witnesses().forEach(p -> this.witnessesList.getItems().add(p));

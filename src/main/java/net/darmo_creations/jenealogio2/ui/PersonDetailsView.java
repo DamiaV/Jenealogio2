@@ -567,7 +567,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     }
 
     this.eventDateLabel.setDateTime(lifeEvent.date());
-    this.eventPlaceLabel.setText(lifeEvent.place().orElse("-"));
+    this.eventPlaceLabel.setText(lifeEvent.place().map(Place::address).orElse("-"));
 
     this.eventImageView.setImage(lifeEvent.mainPicture().map(Picture::image).orElse(null));
 
@@ -789,7 +789,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         }
       }
 
-      Label placeLabel = new Label(lifeEvent.place().orElse(""));
+      Label placeLabel = new Label(lifeEvent.place().map(Place::address).orElse(""));
       placeLabel.setWrapText(true);
       this.getChildren().add(placeLabel);
     }

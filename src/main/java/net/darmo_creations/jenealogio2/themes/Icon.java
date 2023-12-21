@@ -49,6 +49,8 @@ public enum Icon {
   ADD_WITNESS("plus"),
   REMOVE_WITNESS("delete"),
   EDIT_PARTNER("pencil"),
+  GET_LATLON("download_cloud"),
+  LOADING("arrow_refresh"),
 
   EDIT_PARENT("pencil"),
   SWAP_PARENTS("arrow_refresh"),

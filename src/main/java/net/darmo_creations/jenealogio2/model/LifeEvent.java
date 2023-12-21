@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.model;
 
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -22,7 +23,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   private final Set<Person> witnesses = new HashSet<>();
   private DateTime date;
   private LifeEventType type;
-  private String place;
+  private Place place;
 
   /**
    * Create a new life event.
@@ -81,7 +82,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
   /**
    * This event’s location.
    */
-  public Optional<String> place() {
+  public Optional<Place> place() {
     return Optional.ofNullable(this.place);
   }
 
@@ -91,7 +92,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
    * @param place The location.
    * @return This object.
    */
-  public LifeEvent setPlace(String place) {
+  public LifeEvent setPlace(Place place) {
     this.place = place;
     return this;
   }

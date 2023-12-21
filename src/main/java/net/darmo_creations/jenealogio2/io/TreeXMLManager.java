@@ -68,7 +68,8 @@ public abstract class TreeXMLManager {
   protected static final String TYPE_TAG = "Type";
   protected static final String TYPE_KEY_ATTR = "key";
   protected static final String PLACE_TAG = "Place";
-  protected static final String PLACE_VALUE_ATTR = "value";
+  protected static final String PLACE_ADDRESS_ATTR = "address";
+  protected static final String PLACE_LATLON_ATTR = "latlon";
   protected static final String ACTORS_TAG = "Actors";
   protected static final String WITNESSES_TAG = "Witnesses";
   protected static final String PERSON_TAG = "Person";
