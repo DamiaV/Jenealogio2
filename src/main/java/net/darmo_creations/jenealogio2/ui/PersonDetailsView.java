@@ -351,7 +351,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   public void setPerson(final Person person, @NotNull final FamilyTree familyTree) {
-    if (this.person == person) {
+    if (person != null && this.person == person) {
       return;
     }
     this.person = person;
@@ -516,6 +516,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void resetFields() {
+    System.out.println("reset");
     this.imageView.setImage(null);
     this.fullNameLabel.setText(null);
     this.fullNameLabel.setTooltip(null);
