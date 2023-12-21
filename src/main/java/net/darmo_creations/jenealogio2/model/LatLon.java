@@ -25,6 +25,6 @@ public record LatLon(double lat, double lon) {
 
   @Override
   public String toString() {
-    return "%f,%f".formatted(this.lat, this.lon);
+    return "%s,%s".formatted(Double.toString(this.lat), Double.toString(this.lon));
   }
 }
