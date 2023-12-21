@@ -121,26 +121,32 @@ public final class Theme {
    * @return An {@link Image} object or null if the icon could not be loaded.
    */
   public @Nullable Image getIconImage(@NotNull Icon icon, @NotNull Icon.Size size) {
-    InputStream stream = this.getClass().getResourceAsStream(
-        "%s%s_%d.png".formatted(ICONS_PATH, icon.baseName(), size.pixels()));
-    if (stream == null) {
-      App.LOGGER.warn("Missing icon: " + icon.baseName());
+    String path = "%s%s_%d.png".formatted(ICONS_PATH, icon.baseName(), size.pixels());
+    try (var stream = this.getClass().getResourceAsStream(path)) {
+      if (stream == null) {
+        App.LOGGER.warn("Missing icon: " + icon.baseName());
+        return null;
+      }
+      return new Image(stream);
+    } catch (IOException e) {
       return null;
     }
-    return new Image(stream);
   }
 
   /**
    * Get the app’s icon as an {@link Image}.
    */
   public @Nullable Image getAppIcon() {
-    InputStream stream = this.getClass().getResourceAsStream(
-        "%s%s.png".formatted(App.IMAGES_PATH, "app-icon"));
-    if (stream == null) {
-      App.LOGGER.warn("Missing icon: app-icon");
+    String path = "%s%s.png".formatted(App.IMAGES_PATH, "app-icon");
+    try (var stream = this.getClass().getResourceAsStream(path)) {
+      if (stream == null) {
+        App.LOGGER.warn("Missing icon: app-icon");
+        return null;
+      }
+      return new Image(stream);
+    } catch (IOException e) {
       return null;
     }
-    return new Image(stream);
   }
 
   /**
