@@ -452,7 +452,7 @@ public class TreeXMLWriter extends TreeXMLManager {
       Element placeElement = (Element) lifeEventElement.appendChild(document.createElement(PLACE_TAG));
       this.setAttr(document, placeElement, PLACE_ADDRESS_ATTR, place.address());
       place.latLon().ifPresent(
-          latLon -> this.setAttr(document, placeElement, PLACE_LATLON_ATTR, place.latLon().toString()));
+          latLon -> this.setAttr(document, placeElement, PLACE_LATLON_ATTR, latLon.toString()));
     });
   }
 
