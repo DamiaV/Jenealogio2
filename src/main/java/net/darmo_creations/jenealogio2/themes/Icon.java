@@ -84,6 +84,8 @@ public enum Icon {
 
   INFO("information"),
 
+  SEARCH("map_magnify"),
+
   PROFILE_TAB("user_silhouette"),
   LIFE_EVENTS_TAB("clock"),
   FAMILY_TAB("users_5"),
