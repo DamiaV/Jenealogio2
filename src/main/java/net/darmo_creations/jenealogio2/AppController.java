@@ -88,6 +88,7 @@ public class AppController {
   private final EditPersonDialog editPersonDialog = new EditPersonDialog();
   private final ManageObjectImagesDialog editPersonImagesDialog = new ManageObjectImagesDialog();
   private final BirthdaysDialog birthdaysDialog = new BirthdaysDialog();
+  private final MapDialog mapDialog = new MapDialog();
   private final SettingsDialog settingsDialog = new SettingsDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
 
@@ -323,7 +324,7 @@ public class AppController {
     this.mapMenuItem.setText(language.translate("menu.tools.map"));
     this.mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
     this.mapMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN));
-    this.mapMenuItem.setDisable(true); // TEMP disabled until implemented
+    this.mapMenuItem.setOnAction(event -> this.onShowMapDialog());
     toolsMenu.getItems().add(this.mapMenuItem);
 
     toolsMenu.getItems().add(new SeparatorMenuItem());
@@ -444,7 +445,7 @@ public class AppController {
 
     this.mapToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.map")));
     this.mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
-    this.mapToolbarButton.setDisable(true); // TEMP disabled until implemented
+    this.mapToolbarButton.setOnAction(event -> this.onShowMapDialog());
     toolbar.getItems().add(this.mapToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
@@ -934,6 +935,9 @@ public class AppController {
     if (this.birthdaysDialog.isShowing()) {
       this.birthdaysDialog.refresh(this.familyTree);
     }
+    if (this.mapDialog.isShowing()) {
+      this.mapDialog.refresh(this.familyTree);
+    }
 
     Optional<Person> selectedPerson = this.getSelectedPerson();
     boolean selection = selectedPerson.isPresent();
@@ -968,6 +972,17 @@ public class AppController {
     }
     this.birthdaysDialog.refresh(this.familyTree);
     this.birthdaysDialog.show();
+  }
+
+  /**
+   * Open map dialog.
+   */
+  private void onShowMapDialog() {
+    if (this.mapDialog.isShowing()) {
+      return;
+    }
+    this.mapDialog.refresh(this.familyTree);
+    this.mapDialog.show();
   }
 
   /**

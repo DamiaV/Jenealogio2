@@ -40,3 +40,7 @@
     -fx-font-weight: bold;
     -fx-font-size: 1.2em;
 }
+
+.map-pin {
+    -fx-cursor: hand;
+}
