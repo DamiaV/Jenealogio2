@@ -516,7 +516,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void resetFields() {
-    System.out.println("reset");
     this.imageView.setImage(null);
     this.fullNameLabel.setText(null);
     this.fullNameLabel.setTooltip(null);
