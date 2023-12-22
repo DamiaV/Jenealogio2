@@ -24,6 +24,7 @@ public final class Config implements Cloneable {
   private static final String[] LANGUAGE_CODES = {
       "en",
       "fr",
+      "eo",
   };
   private static final String DEFAULT_LANGUAGE_CODE = LANGUAGE_CODES[0];
   private static final Map<String, Language> LANGUAGES = new HashMap<>();
