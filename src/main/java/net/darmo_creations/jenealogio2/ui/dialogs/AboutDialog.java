@@ -32,6 +32,10 @@ public class AboutDialog extends DialogBase<ButtonType> {
                 
         Icons from FatCow (https://github.com/gammasoft/fatcow).
                 
+        Map view by Gluon Maps (https://github.com/gluonhq/maps).
+                
+        Map tile data and geocoding service by OpenStreetMap and its contributors (https://www.openstreetmap.org/copyright).
+                
         System properties:
         %s
         """.formatted(App.VERSION, App.getSystemProperties()));
