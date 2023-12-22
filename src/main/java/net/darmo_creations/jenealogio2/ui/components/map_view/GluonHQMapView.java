@@ -46,4 +46,11 @@ class GluonHQMapView extends com.gluonhq.maps.MapView {
     super.setCenter(lat + 0.00001, lon + 0.00001);
     super.setCenter(lat, lon);
   }
+
+  @Override
+  public void addLayer(MapLayer child) {
+    super.addLayer(child);
+    // Fix markers not being positioned correctly
+    this.markDirty();
+  }
 }
