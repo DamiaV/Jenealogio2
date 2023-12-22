@@ -15,6 +15,7 @@ import java.util.*;
  * This class is intended to abstract away the actual map view implementation
  * used by the app in case it changes in the future.
  */
+// TODO credit OSM contributors directly on the map
 public class MapView extends AnchorPane {
   private final com.gluonhq.maps.MapView mapView = new com.gluonhq.maps.MapView();
   private final Map<Integer, MapLayer> layers = new HashMap<>();
@@ -43,6 +44,7 @@ public class MapView extends AnchorPane {
    * @param latLon Coordinates to center around.
    */
   public void setCenter(@NotNull LatLon latLon) {
+    // FIXME does nothing if called on a position, user moves the map, then called on the same position
     this.mapView.setCenter(toMapPoint(latLon));
   }
 
@@ -51,13 +53,14 @@ public class MapView extends AnchorPane {
    *
    * @param latLon Marker’s coordinates.
    * @param color  Marker’s color.
-   * @return ID of the created marker.
+   * @return ID of the created marker, will always be > 0.
    */
   public int addMarker(@NotNull LatLon latLon, @NotNull MapView.MarkerColor color) {
     MarkerLayer layer = new MarkerLayer(latLon, color);
     this.mapView.addLayer(layer);
-    this.layers.put(++this.lastLayerID, layer);
-    return this.layers.size() - 1;
+    int id = this.lastLayerID++;
+    this.layers.put(id, layer);
+    return id;
   }
 
   /**
