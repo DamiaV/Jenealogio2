@@ -154,7 +154,7 @@ public class MapDialog extends DialogBase<ButtonType> {
     Map<LatLon, List<LifeEvent>> groupedEvents = new HashMap<>();
 
     for (LifeEvent lifeEvent : this.familyTree.lifeEvents()) {
-      if (type != null && lifeEvent.type() == type) {
+      if (type != null && lifeEvent.type() != type) {
         continue;
       }
       Optional<Place> place = lifeEvent.place();
