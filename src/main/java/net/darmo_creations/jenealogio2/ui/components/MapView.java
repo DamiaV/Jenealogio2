@@ -35,6 +35,8 @@ public class MapView extends AnchorPane {
    * @param zoom The new zoom level.
    */
   public void setZoom(double zoom) {
+    // Hack to trigger a the InvalidationListener of the underlying BaseMap object.
+    this.mapView.setZoom(zoom + 0.00001);
     this.mapView.setZoom(zoom);
   }
 
@@ -44,7 +46,8 @@ public class MapView extends AnchorPane {
    * @param latLon Coordinates to center around.
    */
   public void setCenter(@NotNull LatLon latLon) {
-    // FIXME does nothing if called on a position, user moves the map, then called on the same position
+    // Hack to trigger a the InvalidationListener of the underlying BaseMap object.
+    this.mapView.setCenter(new MapPoint(latLon.lat() + 0.00001, latLon.lon() + 0.00001));
     this.mapView.setCenter(toMapPoint(latLon));
   }
 
