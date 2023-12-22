@@ -1,22 +1,15 @@
 package net.darmo_creations.jenealogio2;
 
-import javafx.application.Application;
-import javafx.application.HostServices;
-import javafx.stage.Stage;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.config.ConfigException;
-import net.darmo_creations.jenealogio2.utils.DateTimeUtils;
-import net.darmo_creations.jenealogio2.utils.Logger;
+import javafx.application.*;
+import javafx.stage.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.utils.*;
 import org.apache.commons.cli.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.io.*;
-import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.StringJoiner;
+import java.time.*;
+import java.util.*;
 
 /**
  * Application’s main class.
@@ -110,6 +103,8 @@ public class App extends Application {
   }
 
   public static void main(String[] args) {
+    // For Gluon Maps
+    System.setProperty("javafx.platform", "desktop");
     Args parsedArgs;
     try {
       parsedArgs = parseArgs(args);
