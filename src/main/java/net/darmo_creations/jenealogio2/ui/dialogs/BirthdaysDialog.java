@@ -62,7 +62,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
         new Label(language.translate("dialog.birthdays.tab.upcoming.after_tomorrow")),
         this.afterTomorrowList
     );
-    vBox.setStyle("-fx-padding: 10px 0 0 0");
+    vBox.setPadding(new Insets(10, 0, 0, 0));
 
     this.tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
     Tab firstTab = new Tab(language.translate("dialog.birthdays.tab.upcoming"));
@@ -276,7 +276,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     private class DayItem extends VBox {
       public DayItem(int day, final @NotNull Set<BirthdayEntry> entries) {
         super(4);
-        Label dayLabel = new Label(String.valueOf(day));
+        Label dayLabel = new Label(day + App.config().language().getDaySuffix(day).orElse(""));
         dayLabel.getStyleClass().add("birth-day");
         this.getChildren().add(dayLabel);
         entries.stream()
