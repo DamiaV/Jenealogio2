@@ -11,13 +11,22 @@ import java.util.regex.*;
  * This class represents a language.
  */
 public final class Language {
-  private static final Pattern SUFFIX_PATTERN = Pattern.compile("^calendar\\.suffix\\.(\\*\\d*|\\d+)$");
+  private static final Pattern CALENDAR_SUFFIX_PATTERN =
+      Pattern.compile("^calendar\\.suffix\\.(\\*\\d*|\\d+)$");
+  private static final Pattern PLURAL_SUFFIX_PATTERN =
+      Pattern.compile("^(\\w+(?:\\.\\w+)*)\\.plural(?:_([2-9]|[1-9]\\d+))?$");
 
   private final String code;
   private final String name;
   private final Locale locale;
   private final ResourceBundle resources;
   private final List<Pair<Pattern, String>> daySuffixes = new LinkedList<>();
+  /**
+   * Mapping of plurals structured as
+   * {base key: {count: plural text template}}
+   */
+  private final Map<String, Map<Integer, String>> plurals = new HashMap<>();
+  private static final Integer DEFAULT_PLURAL_KEY = -1;
 
   /**
    * Create a language for the given code and resource.
@@ -37,31 +46,55 @@ public final class Language {
     this.name = Objects.requireNonNull(name);
     this.locale = Objects.requireNonNull(locale);
     this.resources = Objects.requireNonNull(resources);
-    this.extractDaySuffixes();
+    this.extractSuffixes();
   }
 
   /**
-   * Extract the day suffixes specified in the form {@code calendar.suffix.<pattern>} where pattern may be one of:
+   * Extract the plurals and day suffixes.
+   * <p>
+   * Day suffixes must be specified in the form {@code calendar.suffix.<pattern>} where pattern may be one of:
    * <li>{@code <digits>}: for a specific day number</li>
    * <li>{@code *<digits>}: for all days ending with specific digits</li>
    * <li>{@code *}: for all days</li>
+   * <p>
+   * Plurals must be specified in the form {@code <base_key>.plural[_<number>]}
+   * where base key is an existing translation key. If {@code <number>} is specified,
+   * the value is applied only when this specific count is passed
+   * to {@link #translate(String, Integer, FormatArg...)}.
    */
-  private void extractDaySuffixes() {
+  private void extractSuffixes() {
     Iterator<String> iterator = this.resources.getKeys().asIterator();
-    List<Pair<String, String>> suffixes = new ArrayList<>();
+    List<Pair<String, String>> calendarSuffixes = new LinkedList<>();
+    Map<String, Map<Integer, String>> plurals = new HashMap<>();
     while (iterator.hasNext()) {
       String key = iterator.next();
-      Matcher matcher = SUFFIX_PATTERN.matcher(key);
+      Matcher matcher = CALENDAR_SUFFIX_PATTERN.matcher(key);
       if (matcher.matches()) {
-        suffixes.add(new Pair<>(matcher.group(1), this.translate(key)));
+        calendarSuffixes.add(new Pair<>(matcher.group(1), this.translate(key)));
+      } else {
+        matcher = PLURAL_SUFFIX_PATTERN.matcher(key);
+        if (matcher.matches()) {
+          String baseKey = matcher.group(1);
+          if (!plurals.containsKey(baseKey)) {
+            plurals.put(baseKey, new HashMap<>());
+          }
+          String number = matcher.group(2);
+          String value = this.resources.getString(key);
+          if (number == null || number.isEmpty()) {
+            plurals.get(baseKey).put(DEFAULT_PLURAL_KEY, value);
+          } else {
+            plurals.get(baseKey).put(Integer.parseInt(number), value);
+          }
+        }
       }
     }
-    suffixes.stream()
+    calendarSuffixes.stream()
         .sorted((p1, p2) -> -p1.left().compareTo(p2.left()))
         .forEach(p -> {
           Pattern pattern = Pattern.compile("^" + p.left().replace("*", ".*") + "$");
           this.daySuffixes.add(new Pair<>(pattern, p.right()));
         });
+    this.plurals.putAll(plurals);
   }
 
   public String code() {
@@ -88,12 +121,35 @@ public final class Language {
    * @return The translated and formatted text.
    */
   public String translate(@NotNull String key, final FormatArg @NotNull ... formatArgs) {
-    String text;
-    try {
-      text = this.resources.getString(key);
-    } catch (MissingResourceException e) {
-      App.LOGGER.warn(e.getMessage());
-      return key;
+    return this.translate(key, null, formatArgs);
+  }
+
+  /**
+   * Translate a key and format the resulting text, using the given count as the grammatical number.
+   *
+   * @param key        Resource bundle key to translate.
+   * @param count      The grammatical number. May be null.
+   * @param formatArgs Format arguments to use to format the translated text.
+   * @return The translated and formatted text.
+   */
+  public String translate(@NotNull String key, Integer count, final FormatArg @NotNull ... formatArgs) {
+    String text = null;
+    if (count != null && count > 1) {
+      Map<Integer, String> p = this.plurals.get(key);
+      if (p != null) {
+        text = p.get(count);
+        if (text == null) {
+          text = p.get(DEFAULT_PLURAL_KEY);
+        }
+      }
+    }
+    if (text == null) {
+      try {
+        text = this.resources.getString(key);
+      } catch (MissingResourceException e) {
+        App.LOGGER.warn("Can’t find key " + key);
+        return key;
+      }
     }
     if (formatArgs.length != 0) {
       return StringUtils.format(text, formatArgs);

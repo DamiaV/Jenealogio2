@@ -16,6 +16,7 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * This dialog shows markers relating to a family tree’s persons.
@@ -105,7 +106,7 @@ public class MapDialog extends DialogBase<ButtonType> {
             latLon.ifPresent(ll -> {
               this.mapView.setCenter(ll);
               this.mapView.setZoom(10);
-              int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE);
+              int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE, null);
               this.resultMarkerId.set(id);
             });
           }));
@@ -172,17 +173,21 @@ public class MapDialog extends DialogBase<ButtonType> {
 
     groupedEvents.entrySet().stream()
         .sorted((e1, e2) -> { // Sort by list size then place address
-          int compare = -Integer.compare(e1.getValue().size(), e2.getValue().size());
+          List<LifeEvent> events1 = e1.getValue();
+          List<LifeEvent> events2 = e2.getValue();
+          int compare = -Integer.compare(events1.size(), events2.size());
           if (compare != 0) {
             return compare;
           }
           // place() will always return a non-empty value because we filtered events above
           //noinspection OptionalGetWithoutIsPresent
-          return e1.getValue().get(0).place().get().address()
-              .compareToIgnoreCase(e2.getValue().get(0).place().get().address());
+          return events1.get(0).place().get().address()
+              .compareToIgnoreCase(events2.get(0).place().get().address());
         })
         .forEach(e -> {
-          int nb = e.getValue().size();
+          LatLon latLon = e.getKey();
+          List<LifeEvent> events = e.getValue();
+          int nb = events.size();
           MapMarkerColor color;
           if (nb <= 5) {
             color = MapMarkerColor.GREEN;
@@ -195,9 +200,12 @@ public class MapDialog extends DialogBase<ButtonType> {
           } else {
             color = MapMarkerColor.RED;
           }
-          this.mapView.addMarker(e.getKey(), color);
           //noinspection OptionalGetWithoutIsPresent
-          this.placesList.getItems().add(new PlaceView(e.getValue().get(0).place().get(), nb));
+          Place place = events.get(0).place().get();
+          Map<LifeEventType, Integer> typeCounts = events.stream()
+              .collect(Collectors.groupingBy(LifeEvent::type, Collectors.reducing(0, i -> 1, Integer::sum)));
+          this.mapView.addMarker(latLon, color, new EventTypesTooltip(place.address(), typeCounts));
+          this.placesList.getItems().add(new PlaceView(place, nb));
         });
 
     if (resetView) {
@@ -228,15 +236,19 @@ public class MapDialog extends DialogBase<ButtonType> {
   }
 
   private static class PlaceView {
-    private final String address;
     private final LatLon latLon;
-    private final int nb;
+    private final String text;
 
     public PlaceView(@NotNull Place place, int nb) {
-      this.address = place.address();
+      String address = place.address();
       //noinspection OptionalGetWithoutIsPresent
       this.latLon = place.latLon().get();
-      this.nb = nb;
+      this.text = App.config().language().translate(
+          "dialog.map.place_count",
+          nb,
+          new FormatArg("address", address),
+          new FormatArg("count", nb)
+      );
     }
 
     public LatLon latLon() {
@@ -245,7 +257,7 @@ public class MapDialog extends DialogBase<ButtonType> {
 
     @Override
     public String toString() {
-      return "%s (%d)".formatted(this.address, this.nb);
+      return this.text;
     }
   }
 }

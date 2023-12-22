@@ -48,6 +48,11 @@ Text.hyperlink {
     -fx-prompt-text-fill: transparent;
 }
 
+/* From https://stackoverflow.com/a/36404968/3779986 */
+.popover > .border {
+    -fx-fill: rgba(50, 50, 50, 0.95);
+}
+
 /* Make background of title panes opaque for better integration in list views */
 .titled-pane {
     -fx-background: -fx-base;

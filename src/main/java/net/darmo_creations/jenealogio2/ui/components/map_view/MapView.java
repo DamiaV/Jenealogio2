@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.components.map_view;
 
 import com.gluonhq.maps.*;
+import javafx.scene.*;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.model.*;
 import org.jetbrains.annotations.*;
@@ -45,12 +46,13 @@ public class MapView extends AnchorPane {
   /**
    * Add a marker at the given coordinates.
    *
-   * @param latLon Marker’s coordinates.
-   * @param color  Marker’s color.
+   * @param latLon       Marker’s coordinates.
+   * @param color        Marker’s color.
+   * @param layerTooltip Optional tooltip to show on mouse click.
    * @return ID of the created marker, will always be > 0.
    */
-  public int addMarker(@NotNull LatLon latLon, @NotNull MapMarkerColor color) {
-    MarkerLayer layer = new MarkerLayer(latLon, color);
+  public int addMarker(@NotNull LatLon latLon, @NotNull MapMarkerColor color, Node layerTooltip) {
+    MarkerLayer layer = new MarkerLayer(latLon, color, layerTooltip);
     this.mapView.addLayer(layer);
     int id = this.lastLayerID++;
     this.layers.put(id, layer);

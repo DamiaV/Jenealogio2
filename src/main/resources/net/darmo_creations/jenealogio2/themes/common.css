@@ -41,7 +41,7 @@
     -fx-font-size: 1.2em;
 }
 
-.map-pin {
+.map-pin.has-tooltip {
     -fx-cursor: hand;
 }
 
@@ -56,4 +56,13 @@
 .map-attributions .hyperlink:visited, .map-attributions .hyperlink:armed {
     -fx-text-fill: -fx-accent;
     -fx-underline: false;
+}
+
+.events-map-tooltip > .title {
+    -fx-font-weight: bold;
+}
+
+.events-map-tooltip > .subtitle {
+    -fx-font-style: italic;
+    -fx-font-size: 90%;
 }

@@ -8,6 +8,7 @@ module net.darmo_creations.jenealogio2 {
   requires javafx.web;
   requires javafx.swing;
   requires java.desktop;
+  requires org.controlsfx.controls;
   requires org.jetbrains.annotations;
   requires ini4j;
   requires commons.cli;
