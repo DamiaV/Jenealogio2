@@ -11,6 +11,7 @@ import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.ui.components.map_view.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -104,7 +105,7 @@ public class MapDialog extends DialogBase<ButtonType> {
             latLon.ifPresent(ll -> {
               this.mapView.setCenter(ll);
               this.mapView.setZoom(10);
-              int id = this.mapView.addMarker(ll, MapView.MarkerColor.BLUE);
+              int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE);
               this.resultMarkerId.set(id);
             });
           }));
@@ -182,17 +183,17 @@ public class MapDialog extends DialogBase<ButtonType> {
         })
         .forEach(e -> {
           int nb = e.getValue().size();
-          MapView.MarkerColor color;
+          MapMarkerColor color;
           if (nb <= 5) {
-            color = MapView.MarkerColor.GREEN;
+            color = MapMarkerColor.GREEN;
           } else if (nb <= 10) {
-            color = MapView.MarkerColor.YELLOW_GREEN;
+            color = MapMarkerColor.YELLOW_GREEN;
           } else if (nb <= 15) {
-            color = MapView.MarkerColor.YELLOW;
+            color = MapMarkerColor.YELLOW;
           } else if (nb <= 20) {
-            color = MapView.MarkerColor.ORANGE;
+            color = MapMarkerColor.ORANGE;
           } else {
-            color = MapView.MarkerColor.RED;
+            color = MapMarkerColor.RED;
           }
           this.mapView.addMarker(e.getKey(), color);
           //noinspection OptionalGetWithoutIsPresent

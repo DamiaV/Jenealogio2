@@ -1,23 +1,20 @@
-package net.darmo_creations.jenealogio2.ui.components;
+package net.darmo_creations.jenealogio2.ui.components.map_view;
 
 import com.gluonhq.maps.*;
 import javafx.geometry.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.model.*;
 import org.jetbrains.annotations.*;
 
-import java.io.*;
 import java.util.*;
 
 /**
  * This class is intended to abstract away the actual map view implementation
  * used by the app in case it changes in the future.
  */
-// TODO credit OSM contributors directly on the map
 public class MapView extends AnchorPane {
-  private final com.gluonhq.maps.MapView mapView = new com.gluonhq.maps.MapView();
+  private final GluonHQMapView mapView = new GluonHQMapView();
   private final Map<Integer, MapLayer> layers = new HashMap<>();
   private int lastLayerID = 0;
 
@@ -35,8 +32,6 @@ public class MapView extends AnchorPane {
    * @param zoom The new zoom level.
    */
   public void setZoom(double zoom) {
-    // Hack to trigger a the InvalidationListener of the underlying BaseMap object.
-    this.mapView.setZoom(zoom + 0.00001);
     this.mapView.setZoom(zoom);
   }
 
@@ -46,8 +41,6 @@ public class MapView extends AnchorPane {
    * @param latLon Coordinates to center around.
    */
   public void setCenter(@NotNull LatLon latLon) {
-    // Hack to trigger a the InvalidationListener of the underlying BaseMap object.
-    this.mapView.setCenter(new MapPoint(latLon.lat() + 0.00001, latLon.lon() + 0.00001));
     this.mapView.setCenter(toMapPoint(latLon));
   }
 
@@ -58,7 +51,7 @@ public class MapView extends AnchorPane {
    * @param color  Marker’s color.
    * @return ID of the created marker, will always be > 0.
    */
-  public int addMarker(@NotNull LatLon latLon, @NotNull MapView.MarkerColor color) {
+  public int addMarker(@NotNull LatLon latLon, @NotNull MapMarkerColor color) {
     MarkerLayer layer = new MarkerLayer(latLon, color);
     this.mapView.addLayer(layer);
     int id = this.lastLayerID++;
@@ -112,7 +105,7 @@ public class MapView extends AnchorPane {
      * @param latLon The point where to show the marker.
      * @param color  The marker’s color.
      */
-    public MarkerLayer(final @NotNull LatLon latLon, @NotNull MapView.MarkerColor color) {
+    public MarkerLayer(final @NotNull LatLon latLon, @NotNull MapMarkerColor color) {
       this.latLon = latLon;
       Image markerIcon = color.image();
       this.markerWidth = markerIcon != null ? markerIcon.getWidth() : 32;
@@ -142,52 +135,6 @@ public class MapView extends AnchorPane {
       Point2D point2d = this.getMapPoint(this.latLon.lat(), this.latLon.lon());
       this.markerImageView.setTranslateX(point2d.getX() - this.markerWidth / 2);
       this.markerImageView.setTranslateY(point2d.getY() - this.markerHeight);
-    }
-  }
-
-  /**
-   * Enumeration of all available marker colors.
-   */
-  public enum MarkerColor {
-    GREEN("green"),
-    YELLOW_GREEN("yellow_green"),
-    YELLOW("yellow"),
-    ORANGE("orange"),
-    RED("red"),
-    BLUE("blue"),
-    ;
-
-    private final Image image;
-
-    MarkerColor(@NotNull String color) {
-      this.image = getMarkerIcon(Objects.requireNonNull(color));
-    }
-
-    /**
-     * The image associated to this marker color.
-     * <p>
-     * May be null if the image could not be found.
-     */
-    public @Nullable Image image() {
-      return this.image;
-    }
-
-    /**
-     * Get the marker icon for the given color as an {@link Image}.
-     */
-    private static @Nullable Image getMarkerIcon(@NotNull String color) {
-      Objects.requireNonNull(color);
-      String iconName = "map_pin_" + color;
-      String path = "%s%s.png".formatted(App.IMAGES_PATH, iconName);
-      try (var stream = MapView.class.getResourceAsStream(path)) {
-        if (stream == null) {
-          App.LOGGER.warn("Missing icon: " + iconName);
-          return null;
-        }
-        return new Image(stream);
-      } catch (IOException e) {
-        return null;
-      }
     }
   }
 }

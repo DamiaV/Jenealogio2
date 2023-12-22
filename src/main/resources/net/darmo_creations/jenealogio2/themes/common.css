@@ -44,3 +44,16 @@
 .map-pin {
     -fx-cursor: hand;
 }
+
+.map-attributions Text {
+    -fx-fill: black;
+}
+
+.map-attributions .hyperlink:hover {
+    -fx-underline: false;
+}
+
+.map-attributions .hyperlink:visited, .map-attributions .hyperlink:armed {
+    -fx-text-fill: -fx-accent;
+    -fx-underline: false;
+}
