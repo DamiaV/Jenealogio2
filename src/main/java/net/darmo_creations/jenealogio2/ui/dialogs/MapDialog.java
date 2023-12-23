@@ -90,7 +90,7 @@ public class MapDialog extends DialogBase<ButtonType> {
     PlaceView selectedItem = this.placesList.getSelectionModel().getSelectedItem();
     if (selectedItem != null) {
       this.mapView.setCenter(selectedItem.latLon());
-      this.mapView.setZoom(10);
+      this.mapView.setZoom(15);
     }
   }
 
