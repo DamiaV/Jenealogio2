@@ -1,21 +1,25 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.application.*;
-import javafx.collections.*;
-import javafx.geometry.*;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
-import javafx.util.converter.*;
-import net.darmo_creations.jenealogio2.*;
-import net.darmo_creations.jenealogio2.config.*;
+import javafx.util.converter.DoubleStringConverter;
+import net.darmo_creations.jenealogio2.App;
+import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.themes.*;
-import net.darmo_creations.jenealogio2.ui.*;
-import net.darmo_creations.jenealogio2.utils.*;
-import org.jetbrains.annotations.*;
+import net.darmo_creations.jenealogio2.themes.Icon;
+import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.PseudoClasses;
+import net.darmo_creations.jenealogio2.utils.GeoCoder;
+import net.darmo_creations.jenealogio2.utils.StringUtils;
+import org.controlsfx.control.textfield.AutoCompletionBinding;
+import org.jetbrains.annotations.NotNull;
 
-import java.text.*;
+import java.text.Collator;
 import java.util.*;
 
 /**
@@ -28,6 +32,7 @@ public class LifeEventView extends TitledPane implements PersonRequester {
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
   private final CalendarDateField dateField = new CalendarDateField();
   private final TextField placeAddressField = new TextField();
+  private final PlaceAutoCompletionBinding placeAutoCompletionBinding;
   private final TextField placeLatField = new TextField();
   private final TextField placeLonField = new TextField();
   private final Button placeLatLonButton = new Button();
@@ -119,6 +124,7 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     this.placeAddressField.setPromptText(language.translate("life_event_view.place.address"));
     this.placeAddressField.textProperty().addListener((observableValue, oldValue, newValue)
         -> this.placeLatLonButton.setDisable(StringUtils.stripNullable(newValue).isEmpty()));
+    this.placeAutoCompletionBinding = new PlaceAutoCompletionBinding(this.placeAddressField, this::onPlaceSuggestionRequest, this::onPlaceCompletion);
     this.placeLatField.setPromptText(language.translate("life_event_view.place.latitude"));
     this.placeLatField.setTextFormatter(new TextFormatter<>(
         new DoubleStringConverter(),
@@ -221,6 +227,23 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     this.personRequestListener.onPersonRequest(this.getExclusionList()).ifPresent(p -> {
       this.setPartner(p);
       this.notifyUpdateListeners();
+    });
+  }
+
+  private Collection<Place> onPlaceSuggestionRequest(@NotNull AutoCompletionBinding.ISuggestionRequest request) {
+    String userText = request.getUserText().toLowerCase();
+    //noinspection OptionalGetWithoutIsPresent
+    return this.familyTree.lifeEvents().stream()
+        .filter(e -> e.place().isPresent() && e.place().get().address().toLowerCase().contains(userText))
+        .map(e -> e.place().get())
+        .distinct()
+        .toList();
+  }
+
+  private void onPlaceCompletion(@NotNull Place place) {
+    place.latLon().ifPresent(latLon -> {
+      this.placeLatField.setText(String.valueOf(latLon.lat()));
+      this.placeLonField.setText(String.valueOf(latLon.lon()));
     });
   }
 
@@ -505,5 +528,9 @@ public class LifeEventView extends TitledPane implements PersonRequester {
   @FunctionalInterface
   public interface TypeListener {
     void onTypeUpdate(@NotNull LifeEventType lifeEventType);
+  }
+
+  public void dispose() {
+    this.placeAutoCompletionBinding.dispose();
   }
 }

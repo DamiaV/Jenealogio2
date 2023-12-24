@@ -1,25 +1,31 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.collections.*;
-import javafx.geometry.*;
-import javafx.scene.*;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.stage.*;
-import javafx.util.converter.*;
-import net.darmo_creations.jenealogio2.*;
-import net.darmo_creations.jenealogio2.config.*;
+import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
+import net.darmo_creations.jenealogio2.App;
+import net.darmo_creations.jenealogio2.config.Language;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.model.datetime.*;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
-import net.darmo_creations.jenealogio2.themes.*;
-import net.darmo_creations.jenealogio2.ui.*;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimePrecision;
+import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendars;
+import net.darmo_creations.jenealogio2.themes.Icon;
+import net.darmo_creations.jenealogio2.themes.Theme;
+import net.darmo_creations.jenealogio2.ui.ChildInfo;
+import net.darmo_creations.jenealogio2.ui.PseudoClasses;
 import net.darmo_creations.jenealogio2.ui.components.*;
-import net.darmo_creations.jenealogio2.utils.*;
-import org.jetbrains.annotations.*;
+import net.darmo_creations.jenealogio2.utils.FormatArg;
+import net.darmo_creations.jenealogio2.utils.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.text.*;
-import java.time.*;
+import java.text.Collator;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -128,10 +134,16 @@ public class EditPersonDialog extends DialogBase<Person> implements PersonReques
             info.child().setParent(info.parentIndex(), this.person);
           }
         }
+        this.dispose();
         return this.person;
       }
+      this.dispose();
       return null;
     });
+  }
+
+  private void dispose() {
+    this.lifeEventsList.getItems().forEach(LifeEventView::dispose);
   }
 
   private Tab createProfileTab() {
