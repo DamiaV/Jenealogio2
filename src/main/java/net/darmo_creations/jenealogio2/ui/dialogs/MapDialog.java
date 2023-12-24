@@ -105,7 +105,7 @@ public class MapDialog extends DialogBase<ButtonType> {
             this.searchField.setDisable(false);
             latLon.ifPresent(ll -> {
               this.mapView.setCenter(ll);
-              this.mapView.setZoom(10);
+              this.mapView.setZoom(15);
               int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE, null);
               this.resultMarkerId.set(id);
             });

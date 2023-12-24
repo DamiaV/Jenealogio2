@@ -1,37 +1,32 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
+import javafx.collections.*;
+import javafx.geometry.*;
+import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
-import javafx.util.converter.IntegerStringConverter;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Language;
+import javafx.stage.*;
+import javafx.util.converter.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimePrecision;
-import net.darmo_creations.jenealogio2.model.datetime.DateTimeWithPrecision;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendars;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.ChildInfo;
-import net.darmo_creations.jenealogio2.ui.PseudoClasses;
+import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
-import net.darmo_creations.jenealogio2.utils.FormatArg;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.text.Collator;
-import java.time.LocalDateTime;
+import java.text.*;
+import java.time.*;
 import java.util.*;
 
 /**
  * Dialog to edit a {@link Person} object and its {@link LifeEvent}s.
  */
-public class EditPersonDialog extends DialogBase<Person> implements PersonRequester.PersonRequestListener {
+public class EditPersonDialog extends DialogBase<Person>
+    implements PersonRequester.PersonRequestListener, CoordinatesRequester.CoordinatesRequestListener {
   /**
    * Index of the profile tab.
    */
@@ -71,6 +66,7 @@ public class EditPersonDialog extends DialogBase<Person> implements PersonReques
   private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
 
   private final SelectPersonDialog selectPersonDialog = new SelectPersonDialog();
+  private final SelectCoordinatesDialog selectCoordinatesDialog = new SelectCoordinatesDialog();
 
   /**
    * The person object being edited.
@@ -457,6 +453,7 @@ public class EditPersonDialog extends DialogBase<Person> implements PersonReques
   }
 
   private void setPersonLifeEventsFields() {
+    this.lifeEventsList.getItems().forEach(LifeEventView::dispose);
     this.lifeEventsList.getItems().clear();
     this.person.getLifeEventsAsActor().stream().sorted().forEach(lifeEvent -> {
       this.addEvent(lifeEvent, false);
@@ -515,6 +512,11 @@ public class EditPersonDialog extends DialogBase<Person> implements PersonReques
     exclusionList.add(this.person);
     this.selectPersonDialog.updatePersonList(this.familyTree, exclusionList);
     return this.selectPersonDialog.showAndWait();
+  }
+
+  @Override
+  public Optional<LatLon> onCoordinatesRequest() {
+    return this.selectCoordinatesDialog.showAndWait();
   }
 
   /**
@@ -584,6 +586,7 @@ public class EditPersonDialog extends DialogBase<Person> implements PersonReques
     LifeEventView lifeEventView = new LifeEventView(
         this.familyTree, lifeEvent, this.person, expanded, this.lifeEventsList);
     lifeEventView.setPersonRequestListener(this);
+    lifeEventView.setCoordinatesRequestListener(this);
     lifeEventView.getDeletionListeners().add(this::onEventDelete);
     lifeEventView.getUpdateListeners().add(this::updateButtons);
     lifeEventView.getTypeListeners().add(t -> {
@@ -615,6 +618,7 @@ public class EditPersonDialog extends DialogBase<Person> implements PersonReques
     if (delete) {
       this.eventsToDelete.add(lifeEventView);
       this.lifeEventsList.getItems().remove(lifeEventView);
+      lifeEventView.dispose();
       this.updateButtons();
     }
   }

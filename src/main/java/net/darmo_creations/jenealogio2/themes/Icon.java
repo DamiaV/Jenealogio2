@@ -50,6 +50,7 @@ public enum Icon {
   REMOVE_WITNESS("delete"),
   EDIT_PARTNER("pencil"),
   GET_LATLON("download_cloud"),
+  OPEN_LATLON_SELECTOR("google_map"),
   LOADING("arrow_refresh"),
 
   EDIT_PARENT("pencil"),

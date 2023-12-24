@@ -1,31 +1,28 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.application.Platform;
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
-import javafx.geometry.VPos;
+import javafx.application.*;
+import javafx.collections.*;
+import javafx.geometry.*;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
-import javafx.util.converter.DoubleStringConverter;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Language;
+import javafx.util.converter.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.PseudoClasses;
-import net.darmo_creations.jenealogio2.utils.GeoCoder;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.controlsfx.control.textfield.AutoCompletionBinding;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.controlsfx.control.textfield.*;
+import org.jetbrains.annotations.*;
 
-import java.text.Collator;
+import java.text.*;
 import java.util.*;
 
 /**
  * JavaFX component that presents a form to edit a {@link LifeEvent} object.
  */
-public class LifeEventView extends TitledPane implements PersonRequester {
+public class LifeEventView extends TitledPane implements PersonRequester, CoordinatesRequester {
   private final Label titleLabel = new Label();
   private final DateLabel dateLabel = new DateLabel(null);
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
@@ -35,7 +32,8 @@ public class LifeEventView extends TitledPane implements PersonRequester {
   private final PlaceAutoCompletionBinding placeAutoCompletionBinding;
   private final TextField placeLatField = new TextField();
   private final TextField placeLonField = new TextField();
-  private final Button placeLatLonButton = new Button();
+  private final Button fetchLatLonButton = new Button();
+  private final Button openMapDialogButton = new Button();
   private final Label loadingLabel = new Label();
   private final Label partnerLabel = new Label();
   private final Button partnerButton = new Button();
@@ -52,6 +50,7 @@ public class LifeEventView extends TitledPane implements PersonRequester {
   private final List<UpdateListener> updateListeners = new LinkedList<>();
   private final List<TypeListener> typeListeners = new LinkedList<>();
   private PersonRequestListener personRequestListener;
+  private CoordinatesRequestListener coordinatesRequestListener;
 
   /**
    * Create a new {@link LifeEvent} editing form.
@@ -122,9 +121,19 @@ public class LifeEventView extends TitledPane implements PersonRequester {
 
     HBox.setHgrow(this.placeAddressField, Priority.ALWAYS);
     this.placeAddressField.setPromptText(language.translate("life_event_view.place.address"));
-    this.placeAddressField.textProperty().addListener((observableValue, oldValue, newValue)
-        -> this.placeLatLonButton.setDisable(StringUtils.stripNullable(newValue).isEmpty()));
-    this.placeAutoCompletionBinding = new PlaceAutoCompletionBinding(this.placeAddressField, this::onPlaceSuggestionRequest, this::onPlaceCompletion);
+    this.placeAddressField.textProperty().addListener((observableValue, oldValue, newValue) -> {
+      boolean noAddress = StringUtils.stripNullable(newValue).isEmpty();
+      this.placeLatField.setDisable(noAddress);
+      this.placeLonField.setDisable(noAddress);
+      this.fetchLatLonButton.setDisable(noAddress);
+      this.openMapDialogButton.setDisable(noAddress);
+    });
+    this.placeAutoCompletionBinding = new PlaceAutoCompletionBinding(
+        this.placeAddressField,
+        this::onPlaceSuggestionRequest,
+        this::onPlaceCompletion
+    );
+
     this.placeLatField.setPromptText(language.translate("life_event_view.place.latitude"));
     this.placeLatField.setTextFormatter(new TextFormatter<>(
         new DoubleStringConverter(),
@@ -132,6 +141,7 @@ public class LifeEventView extends TitledPane implements PersonRequester {
         null
     ));
     this.placeLatField.setPrefWidth(100);
+
     this.placeLonField.setPromptText(language.translate("life_event_view.place.longitude"));
     this.placeLonField.setTextFormatter(new TextFormatter<>(
         new DoubleStringConverter(),
@@ -139,17 +149,25 @@ public class LifeEventView extends TitledPane implements PersonRequester {
         null
     ));
     this.placeLonField.setPrefWidth(100);
-    this.placeLatLonButton.setText(language.translate("life_event_view.place.lookup_latlon"));
-    this.placeLatLonButton.setGraphic(theme.getIcon(Icon.GET_LATLON, Icon.Size.SMALL));
-    this.placeLatLonButton.setOnAction(e -> this.onLookupPlaceLatLon());
+
+    this.fetchLatLonButton.setText(language.translate("life_event_view.place.lookup_latlon"));
+    this.fetchLatLonButton.setGraphic(theme.getIcon(Icon.GET_LATLON, Icon.Size.SMALL));
+    this.fetchLatLonButton.setOnAction(e -> this.onLookupPlaceLatLon());
+
     this.loadingLabel.setPrefWidth(30);
+
+    this.openMapDialogButton.setText(language.translate("life_event_view.place.select_latlon_from_map"));
+    this.openMapDialogButton.setGraphic(theme.getIcon(Icon.OPEN_LATLON_SELECTOR, Icon.Size.SMALL));
+    this.openMapDialogButton.setOnAction(e -> this.onSelectLatLonFromMap());
+
     HBox placeBox = new HBox(
         4,
         this.placeAddressField,
         this.placeLatField,
         this.placeLonField,
-        this.placeLatLonButton,
-        this.loadingLabel
+        this.fetchLatLonButton,
+        this.loadingLabel,
+        this.openMapDialogButton
     );
     gridPane.addRow(2, new Label(language.translate("life_event_view.place")), placeBox);
 
@@ -209,18 +227,25 @@ public class LifeEventView extends TitledPane implements PersonRequester {
 
   private void onLookupPlaceLatLon() {
     this.loadingLabel.setGraphic(App.config().theme().getIcon(Icon.LOADING, Icon.Size.SMALL));
-    this.placeLatLonButton.setDisable(true);
+    this.fetchLatLonButton.setDisable(true);
     StringUtils.stripNullable(this.placeAddressField.getText())
         .ifPresent(address ->
             GeoCoder.geoCode(address).thenAcceptAsync(latLon ->
                 Platform.runLater(() -> {
                   this.loadingLabel.setGraphic(null);
-                  this.placeLatLonButton.setDisable(false);
-                  latLon.ifPresent(ll -> {
-                    this.placeLatField.setText(String.valueOf(ll.lat()));
-                    this.placeLonField.setText(String.valueOf(ll.lon()));
-                  });
+                  this.fetchLatLonButton.setDisable(false);
+                  latLon.ifPresent(this::setLatLonFields);
                 })));
+  }
+
+  private void onSelectLatLonFromMap() {
+    this.coordinatesRequestListener.onCoordinatesRequest()
+        .ifPresent(this::setLatLonFields);
+  }
+
+  private void setLatLonFields(@NotNull LatLon latLon) {
+    this.placeLatField.setText(String.valueOf(latLon.lat()));
+    this.placeLonField.setText(String.valueOf(latLon.lon()));
   }
 
   private void onPartnerSelect() {
@@ -241,10 +266,7 @@ public class LifeEventView extends TitledPane implements PersonRequester {
   }
 
   private void onPlaceCompletion(@NotNull Place place) {
-    place.latLon().ifPresent(latLon -> {
-      this.placeLatField.setText(String.valueOf(latLon.lat()));
-      this.placeLonField.setText(String.valueOf(latLon.lon()));
-    });
+    place.latLon().ifPresent(this::setLatLonFields);
   }
 
   /**
@@ -397,6 +419,11 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     this.personRequestListener = listener;
   }
 
+  @Override
+  public void setCoordinatesRequestListener(@NotNull CoordinatesRequestListener listener) {
+    this.coordinatesRequestListener = listener;
+  }
+
   /**
    * Called when the event type is changed.
    *
@@ -469,10 +496,7 @@ public class LifeEventView extends TitledPane implements PersonRequester {
     if (place.isPresent()) {
       Place p = place.get();
       this.placeAddressField.setText(p.address());
-      p.latLon().ifPresent(latLon -> {
-        this.placeLatField.setText(String.valueOf(latLon.lat()));
-        this.placeLonField.setText(String.valueOf(latLon.lon()));
-      });
+      p.latLon().ifPresent(this::setLatLonFields);
     } else {
       this.placeAddressField.setText(null);
       this.placeLatField.setText(null);
