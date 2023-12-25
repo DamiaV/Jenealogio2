@@ -70,6 +70,8 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
       return null;
     });
 
+    this.mapView.setZoom(2);
+    this.mapView.setCenter(new LatLon(0, 0));
     this.updateButtons();
   }
 
