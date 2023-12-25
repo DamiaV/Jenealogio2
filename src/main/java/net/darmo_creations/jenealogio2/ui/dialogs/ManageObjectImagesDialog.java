@@ -30,18 +30,23 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   private final Button setAsMainImageButton = new Button();
   private final Button removeImageButton = new Button();
   private final Button editImageDescButton = new Button();
+  private final Button deleteImageButton = new Button();
   private final ListView<PictureView> imagesList = new ListView<>();
 
   /**
-   * The person’s current main picture.
+   * The object’s current main picture.
    */
   private Picture mainPicture;
   /**
-   * Set of pictures to remove from the current person.
+   * Set of pictures to remove from the current tree.
+   */
+  private final Set<Picture> picturesToDelete = new HashSet<>();
+  /**
+   * Set of pictures to remove from the current object.
    */
   private final Set<Picture> picturesToRemove = new HashSet<>();
   /**
-   * Set of pictures to add to this person.
+   * Set of pictures to add to the current object.
    */
   private final Set<Picture> picturesToAdd = new HashSet<>();
 
@@ -50,7 +55,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
    */
   private GenealogyObject<?> genealogyObject;
   /**
-   * The family tree the person belongs to..
+   * The family tree the object belongs to.
    */
   private FamilyTree familyTree;
 
@@ -106,6 +111,12 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     this.editImageDescButton.hoverProperty().addListener((observable, oldValue, newValue)
         -> this.showButtonDescription(newValue, "dialog.manage_object_images.edit_image_desc"));
 
+    this.deleteImageButton.setText(language.translate("dialog.manage_object_images.delete_image"));
+    this.deleteImageButton.setGraphic(theme.getIcon(Icon.DELETE_IMAGE, Icon.Size.SMALL));
+    this.deleteImageButton.setOnAction(e -> this.onDeleteImages());
+    this.deleteImageButton.hoverProperty().addListener((observable, oldValue, newValue)
+        -> this.showButtonDescription(newValue, "dialog.manage_object_images.delete_image"));
+
     HBox title = new HBox(
         5,
         new Label(language.translate("dialog.manage_object_images.list")),
@@ -113,7 +124,8 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
         this.setAsMainImageButton,
         addImageButton,
         this.removeImageButton,
-        this.editImageDescButton
+        this.editImageDescButton,
+        this.deleteImageButton
     );
     content.getChildren().add(title);
 
@@ -147,6 +159,9 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   public void setObject(@NotNull GenealogyObject<?> object, @NotNull FamilyTree familyTree) {
     this.genealogyObject = object;
     this.familyTree = familyTree;
+    this.picturesToDelete.clear();
+    this.picturesToRemove.clear();
+    this.picturesToAdd.clear();
     Language language = App.config().language();
     this.setTitle(language.translate("dialog.manage_object_images.title",
         new FormatArg("name", object.name(language))));
@@ -188,7 +203,8 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   }
 
   private void onAddImage() {
-    var exclusionList = new ArrayList<>(this.imagesList.getItems().stream().map(PictureView::picture).toList());
+    var exclusionList = new LinkedList<>(this.imagesList.getItems().stream().map(PictureView::picture).toList());
+    exclusionList.addAll(this.picturesToDelete);
     this.selectImageDialog.updateImageList(this.familyTree, exclusionList);
     this.selectImageDialog.showAndWait().ifPresent(pictures -> {
       pictures.forEach(p -> {
@@ -197,6 +213,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
         this.imagesList.scrollTo(pv);
         this.picturesToAdd.add(p);
         this.picturesToRemove.remove(p);
+        this.picturesToDelete.remove(p);
       });
       this.imagesList.getItems().sort(null);
       this.updateButtons();
@@ -214,6 +231,27 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
         this.removeMainImage();
       }
       this.picturesToRemove.add(picture);
+      this.picturesToAdd.remove(picture);
+      this.imagesList.getItems().remove(pv);
+    });
+    this.updateButtons();
+  }
+
+  private void onDeleteImages() {
+    List<PictureView> selection = this.getSelectedImages();
+    if (selection.isEmpty()) {
+      return;
+    }
+    if (!Alerts.confirmation("alert.delete_images.header", null, "alert.delete_images.title")) {
+      return;
+    }
+    selection.forEach(pv -> {
+      Picture picture = pv.picture();
+      if (picture.equals(this.mainPicture)) {
+        this.removeMainImage();
+      }
+      this.picturesToDelete.add(picture);
+      this.picturesToAdd.remove(picture);
       this.imagesList.getItems().remove(pv);
     });
     this.updateButtons();
@@ -252,7 +290,9 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   private void updateButtons() {
     this.removeMainImageButton.setDisable(this.mainPicture == null);
     var selectionModel = this.imagesList.getSelectionModel();
-    this.removeImageButton.setDisable(selectionModel.isEmpty());
+    boolean noSelection = selectionModel.isEmpty();
+    this.removeImageButton.setDisable(noSelection);
+    this.deleteImageButton.setDisable(noSelection);
     var selectedItems = selectionModel.getSelectedItems();
     boolean not1Selected = selectedItems.size() != 1;
     this.setAsMainImageButton.setDisable(
@@ -265,6 +305,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
 
   private void updateObject() {
     this.picturesToRemove.forEach(picture -> this.familyTree.removePictureFromObject(picture.name(), this.genealogyObject));
+    this.picturesToDelete.forEach(picture -> this.familyTree.removePicture(picture.name()));
     this.imagesList.getItems().forEach(pv -> pv.picture().setDescription(pv.imageDescription().orElse(null)));
     this.picturesToAdd.forEach(p -> {
       if (this.familyTree.getPicture(p.name()).isEmpty()) {

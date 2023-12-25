@@ -63,6 +63,7 @@ public enum Icon {
   ADD_IMAGE("plus"),
   SET_AS_MAIN_IMAGE("arrow_up"),
   REMOVE_IMAGE("delete"),
+  DELETE_IMAGE("cross"),
   EDIT_IMAGE_DESC("pencil"),
 
   OPEN_IMAGE_FILE("folder_picture"),
