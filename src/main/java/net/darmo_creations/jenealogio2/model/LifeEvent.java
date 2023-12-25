@@ -2,7 +2,6 @@ package net.darmo_creations.jenealogio2.model;
 
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
-import net.darmo_creations.jenealogio2.ui.components.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;

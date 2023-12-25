@@ -1,6 +1,5 @@
-package net.darmo_creations.jenealogio2.ui.components;
+package net.darmo_creations.jenealogio2.model;
 
-import net.darmo_creations.jenealogio2.model.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;

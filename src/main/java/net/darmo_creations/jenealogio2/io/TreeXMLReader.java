@@ -4,7 +4,6 @@ import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
-import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 import org.w3c.dom.*;

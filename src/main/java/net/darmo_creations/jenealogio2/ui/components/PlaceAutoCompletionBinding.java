@@ -1,14 +1,14 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.beans.value.ChangeListener;
-import javafx.scene.control.TextField;
-import javafx.util.Callback;
-import javafx.util.StringConverter;
-import org.controlsfx.control.textfield.AutoCompletionBinding;
-import org.jetbrains.annotations.NotNull;
+import javafx.beans.value.*;
+import javafx.scene.control.*;
+import javafx.util.*;
+import net.darmo_creations.jenealogio2.model.*;
+import org.controlsfx.control.textfield.*;
+import org.jetbrains.annotations.*;
 
-import java.util.Collection;
-import java.util.function.Consumer;
+import java.util.*;
+import java.util.function.*;
 
 class PlaceAutoCompletionBinding extends AutoCompletionBinding<Place> {
   private final ChangeListener<String> textChangeListener;
