@@ -137,10 +137,10 @@ public final class Theme {
    * Get the app’s icon as an {@link Image}.
    */
   public @Nullable Image getAppIcon() {
-    String path = "%s%s.png".formatted(App.IMAGES_PATH, "app-icon");
+    String path = "%s%s.png".formatted(App.IMAGES_PATH, "app_icon");
     try (var stream = this.getClass().getResourceAsStream(path)) {
       if (stream == null) {
-        App.LOGGER.warn("Missing icon: app-icon");
+        App.LOGGER.warn("Missing icon: app_icon");
         return null;
       }
       return new Image(stream);
