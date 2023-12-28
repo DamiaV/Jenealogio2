@@ -196,6 +196,7 @@ public class FamilyTree {
   public Picture removePicture(@NotNull String name) {
     Objects.requireNonNull(name);
     this.persons.forEach(p -> this.removePictureFromObject(name, p));
+    this.lifeEvents.forEach(l -> this.removePictureFromObject(name, l));
     return this.pictures.remove(name);
   }
 
