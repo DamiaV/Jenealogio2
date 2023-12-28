@@ -47,7 +47,7 @@ public enum Icon {
   ADD_EVENT("plus"),
   DELETE_EVENT("cross"),
   ADD_WITNESS("plus"),
-  REMOVE_WITNESS("delete"),
+  REMOVE_WITNESS("minus"),
   EDIT_PARTNER("pencil"),
   GET_LATLON("download_cloud"),
   OPEN_LATLON_SELECTOR("google_map"),
@@ -57,12 +57,12 @@ public enum Icon {
   SWAP_PARENTS("arrow_refresh"),
 
   ADD_PARENT("plus"),
-  REMOVE_PARENT("delete"),
+  REMOVE_PARENT("minus"),
 
   REMOVE_MAIN_IMAGE("arrow_down"),
   ADD_IMAGE("plus"),
   SET_AS_MAIN_IMAGE("arrow_up"),
-  REMOVE_IMAGE("delete"),
+  REMOVE_IMAGE("minus"),
   DELETE_IMAGE("cross"),
   EDIT_IMAGE_DESC("pencil"),
 
