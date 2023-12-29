@@ -20,4 +20,10 @@ module net.darmo_creations.jenealogio2 {
   // Make App accessible to JavaFX, other classes accessible from App’s public interface
   // are not exported because it’s not necessary
   exports net.darmo_creations.jenealogio2 to javafx.graphics;
+
+  // Open to JUnit tests
+  opens net.darmo_creations.jenealogio2.model;
+  opens net.darmo_creations.jenealogio2.model.datetime;
+  opens net.darmo_creations.jenealogio2.model.datetime.calendar;
+  opens net.darmo_creations.jenealogio2.utils;
 }

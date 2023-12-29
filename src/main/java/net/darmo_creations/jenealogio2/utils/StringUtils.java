@@ -1,15 +1,12 @@
 package net.darmo_creations.jenealogio2.utils;
 
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.paint.*;
+import javafx.scene.text.*;
+import org.jetbrains.annotations.*;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.function.*;
+import java.util.regex.*;
 
 /**
  * Class providing methods to handle strings.
@@ -42,8 +39,14 @@ public final class StringUtils {
    * @return The formatted string.
    */
   public static String format(@NotNull String pattern, final @NotNull FormatArg... args) {
-    for (FormatArg e : args) {
-      pattern = pattern.replace("{" + e.name() + "}", Objects.toString(e.value()));
+    Set<String> argNames = new HashSet<>();
+    for (FormatArg arg : args) {
+      String name = arg.name();
+      if (argNames.contains(name)) {
+        throw new IllegalArgumentException("Duplicate format argument: " + name);
+      }
+      argNames.add(name);
+      pattern = pattern.replace("{" + name + "}", Objects.toString(arg.value()));
     }
     return pattern;
   }
@@ -60,13 +63,23 @@ public final class StringUtils {
     StringBuilder builder = new StringBuilder();
     StringBuilder urlBuffer = new StringBuilder();
 
-    int[] codepoints = s.strip().replaceAll("\n?\r|\n\r?", "\n").chars().toArray();
+    int[] codepoints = s.strip().replaceAll("\r\n|\n|\r", "\n").chars().toArray();
     for (int i = 0; i < codepoints.length; i++) {
       int codepoint = codepoints[i];
       if (codepoint == 'h' || !urlBuffer.isEmpty()) { // Handle HTTP(S) urls
-        if (Character.isWhitespace(codepoint) || i == codepoints.length - 1) {
+        boolean lastChar = i == codepoints.length - 1;
+        if (Character.isWhitespace(codepoint) || lastChar) {
+          if (lastChar) {
+            urlBuffer.append(Character.toString(codepoint));
+          } else {
+            i--; // Step back to parse the whitespace char at next iteration
+          }
           String urlCandidate = urlBuffer.toString();
           if (URL_REGEX.matcher(urlCandidate).matches()) { // Text matched, treat as hyperlink and make clickable
+            if (!builder.isEmpty()) {
+              texts.add(new Text(builder.toString()));
+              builder.setLength(0); // Clear
+            }
             Text url = new Text(urlCandidate);
             url.getStyleClass().add("hyperlink"); // JavaFX adds some default styling with this class
             url.setOnMouseClicked(event -> urlClickListener.accept(urlCandidate));
@@ -74,7 +87,6 @@ public final class StringUtils {
           } else { // Text did not match, add it to the main builder as plain text
             builder.append(urlCandidate);
           }
-          i--; // Step back to parse the whitespace char at next iteration
           urlBuffer.setLength(0); // Clear
         } else {
           urlBuffer.append(Character.toString(codepoint));
@@ -101,13 +113,17 @@ public final class StringUtils {
    * Convert a {@link Color} into its CSS hexadecimal representation.
    *
    * @param color Color to convert.
-   * @return A string in the format {@code #RRGGBB}.
+   * @return A string in the format {@code #rrggbb}.
    */
   public static String colorToCSSHex(@NotNull Color color) {
     int r = (int) Math.round(color.getRed() * 255);
     int g = (int) Math.round(color.getGreen() * 255);
     int b = (int) Math.round(color.getBlue() * 255);
-    return String.format("#%02x%02x%02x", r, g, b);
+    if (color.isOpaque()) {
+      return String.format("#%02x%02x%02x", r, g, b);
+    }
+    int a = (int) Math.round(color.getOpacity() * 255);
+    return String.format("#%02x%02x%02x%02x", r, g, b, a);
   }
 
   private StringUtils() {
