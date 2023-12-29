@@ -110,6 +110,23 @@ public abstract sealed class CalendarSpecificDateTime implements Comparable<Cale
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || this.getClass() != o.getClass()) {
+      return false;
+    }
+    CalendarSpecificDateTime that = (CalendarSpecificDateTime) o;
+    return this.year == that.year && this.month == that.month && this.day == that.day && this.isTimeSet == that.isTimeSet && Objects.equals(this.calendar, that.calendar) && Objects.equals(this.hour, that.hour) && Objects.equals(this.minute, that.minute);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.calendar, this.year, this.month, this.day, this.hour, this.minute, this.isTimeSet);
+  }
+
+  @Override
   public final String toString() {
     String date;
     if (this.year >= 0) {
