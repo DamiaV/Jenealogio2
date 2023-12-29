@@ -13,70 +13,70 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 class StringUtilsTest {
   @Test
-  void stripNullableEmpty() {
+  void testStripNullableEmpty() {
     assertTrue(StringUtils.stripNullable("").isEmpty());
   }
 
   @ParameterizedTest
   @ValueSource(strings = {" ", "\t", "\n", "\r", "\f", "\u000b"})
-  void stripNullableBlank(String s) {
+  void testStripNullableBlank(String s) {
     assertTrue(StringUtils.stripNullable(s).isEmpty());
   }
 
   @Test
-  void stripNullableBlankLeading() {
+  void testStripNullableBlankLeading() {
     assertEquals("a", StringUtils.stripNullable(" a").get());
   }
 
   @Test
-  void stripNullableBlankTrailing() {
+  void testStripNullableBlankTrailing() {
     assertEquals("a", StringUtils.stripNullable("a ").get());
   }
 
   @Test
-  void stripNullableBlankLeadingTrailing() {
+  void testStripNullableBlankLeadingTrailing() {
     assertEquals("a", StringUtils.stripNullable(" a ").get());
   }
 
   @Test
-  void stripNullableNoBlank() {
+  void testStripNullableNoBlank() {
     assertEquals("a", StringUtils.stripNullable("a").get());
   }
 
   @Test
-  void formatOneArg() {
+  void testFormatOneArg() {
     assertEquals("aba", StringUtils.format("a{s}a", new FormatArg("s", "b")));
   }
 
   @Test
-  void formatOneArgTwice() {
+  void testFormatOneArgTwice() {
     assertEquals("ababa", StringUtils.format("a{s}a{s}a", new FormatArg("s", "b")));
   }
 
   @Test
-  void formatSeveralArgs() {
+  void testFormatSeveralArgs() {
     assertEquals("abaca", StringUtils.format("a{s1}a{s2}a",
         new FormatArg("s1", "b"), new FormatArg("s2", "c")));
   }
 
   @Test
-  void formatDuplicateArgs() {
+  void testFormatDuplicateArgs() {
     assertThrows(IllegalArgumentException.class, () -> StringUtils.format("a{s}a",
         new FormatArg("s", "b"), new FormatArg("s", "c")));
   }
 
   @Test
-  void formatMissingArg() {
+  void testFormatMissingArg() {
     assertEquals("a{s}a", StringUtils.format("a{s}a", new FormatArg("c", "b")));
   }
 
   @Test
-  void formatUnnecessaryArg() {
+  void testFormatUnnecessaryArg() {
     assertEquals("aa", StringUtils.format("aa", new FormatArg("s", "b")));
   }
 
   @Test
-  void parseTextOneLine() {
+  void testParseTextOneLine() {
     assertTextsEqual(
         List.of("this is some text"),
         StringUtils.parseText("this is some text", url -> {
@@ -85,7 +85,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextMultipleLines() {
+  void testParseTextMultipleLines() {
     assertTextsEqual(
         List.of("line 1\n", "line 2"),
         StringUtils.parseText("line 1\nline 2", url -> {
@@ -94,7 +94,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextLF() {
+  void testParseTextLF() {
     assertTextsEqual(
         List.of("line 1\n", "line 2"),
         StringUtils.parseText("line 1\nline 2", url -> {
@@ -103,7 +103,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextCR() {
+  void testParseTextCR() {
     assertTextsEqual(
         List.of("line 1\n", "line 2"),
         StringUtils.parseText("line 1\rline 2", url -> {
@@ -112,7 +112,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextCRLF() {
+  void testParseTextCRLF() {
     assertTextsEqual(
         List.of("line 1\n", "line 2"),
         StringUtils.parseText("line 1\r\nline 2", url -> {
@@ -121,7 +121,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextUrlAtStart() {
+  void testParseTextUrlAtStart() {
     assertTextsEqual(
         List.of("http://example.com", " blabla"),
         StringUtils.parseText("http://example.com blabla", url -> {
@@ -130,7 +130,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextUrlAtEnd() {
+  void testParseTextUrlAtEnd() {
     assertTextsEqual(
         List.of("blabla ", "http://example.com"),
         StringUtils.parseText("blabla http://example.com", url -> {
@@ -139,7 +139,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextOneUrl() {
+  void testParseTextOneUrl() {
     assertTextsEqual(
         List.of("address: ", "http://example.com", " blabla"),
         StringUtils.parseText("address: http://example.com blabla", url -> {
@@ -148,7 +148,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextTwoUrls() {
+  void testParseTextTwoUrls() {
     assertTextsEqual(
         List.of("address: ", "http://example.com", " ", "http://exemple.com", " blabla"),
         StringUtils.parseText("address: http://example.com http://exemple.com blabla", url -> {
@@ -157,7 +157,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextTwoUrlsTwoLines() {
+  void testParseTextTwoUrlsTwoLines() {
     assertTextsEqual(
         List.of("address: ", "http://example.com", "\n", "http://exemple.com", " blabla"),
         StringUtils.parseText("address: http://example.com\nhttp://exemple.com blabla", url -> {
@@ -166,7 +166,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void parseTextInvalidUrl() {
+  void testParseTextInvalidUrl() {
     assertTextsEqual(
         List.of("address: http://exam blabla"),
         StringUtils.parseText("address: http://exam blabla", url -> {
@@ -182,12 +182,12 @@ class StringUtilsTest {
   }
 
   @Test
-  void colorToCSSHex() {
+  void testColorToCSSHex() {
     assertEquals("#0080ff", StringUtils.colorToCSSHex(Color.color(0, 0.5, 1)));
   }
 
   @Test
-  void colorToCSSHexTransparent() {
+  void testColorToCSSHexTransparent() {
     assertEquals("#0080ff40", StringUtils.colorToCSSHex(Color.color(0, 0.5, 1, 0.25)));
   }
 }
