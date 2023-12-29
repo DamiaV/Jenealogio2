@@ -1,9 +1,8 @@
 package net.darmo_creations.jenealogio2.model;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A registry entry has an internal unique key in a {@link Registry}.
@@ -59,14 +58,6 @@ public abstract class RegistryEntry {
       throw new UnsupportedOperationException("Cannot modify property %s of builtin regitry entry.".formatted(property));
     }
   }
-
-  /**
-   * Create a copy of this entry with the given key.
-   *
-   * @param key A key.
-   * @return A copy of this entry.
-   */
-  public abstract RegistryEntry withKey(@NotNull RegistryEntryKey key);
 
   @Override
   public boolean equals(Object o) {
