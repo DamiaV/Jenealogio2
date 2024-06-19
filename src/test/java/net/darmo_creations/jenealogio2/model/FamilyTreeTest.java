@@ -89,29 +89,5 @@ class FamilyTreeTest {
     assertTrue(this.tree.getPicture("a").isEmpty());
   }
 
-  @Test
-  @Disabled("Not implemented yet")
-  void testGetPictureNotEmptyOnePerson() {
-    // TODO
-  }
-
-  @Test
-  @Disabled("Not implemented yet")
-  void testGetPictureNotEmptyTwoPersons() {
-    // TODO
-  }
-
-  @Test
-  @Disabled("Not implemented yet")
-  void testGetPictureNotEmptyOneLifeEvent() {
-    // TODO
-  }
-
-  @Test
-  @Disabled("Not implemented yet")
-  void testGetPictureNotEmptyTwoLifeEvents() {
-    // TODO
-  }
-
   // TODO
 }
