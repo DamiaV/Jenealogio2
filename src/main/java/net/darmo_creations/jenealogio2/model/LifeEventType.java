@@ -1,9 +1,9 @@
 package net.darmo_creations.jenealogio2.model;
 
-import net.darmo_creations.jenealogio2.App;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.*;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class represents a type of {@link LifeEvent}.
@@ -118,12 +118,12 @@ public final class LifeEventType extends RegistryEntry {
       throw new IllegalArgumentException("min must be > 0, got " + min);
     }
     if (max > 2) {
-      throw new IllegalArgumentException("max must be > 2, got" + max);
+      throw new IllegalArgumentException("max must be ≤ 2, got" + max);
     }
     if (max < min) {
       throw new IllegalArgumentException("max cannot be less than min");
     }
-    if (isUnion && max < 2) {
+    if (isUnion && min < 2) {
       throw new IllegalArgumentException("not enough max actors for union: " + max);
     }
     this.minActors = min;
