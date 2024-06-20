@@ -9,20 +9,13 @@ import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings({"OptionalGetWithoutIsPresent", "DataFlowIssue"})
+@SuppressWarnings({ "OptionalGetWithoutIsPresent", "DataFlowIssue" })
 class PictureTest {
   private Picture p;
 
   @BeforeEach
   void setUp() throws IOException {
-    Image image;
-    String path = "/net/darmo_creations/jenealogio2/images/app_icon.png";
-    try (var stream = this.getClass().getResourceAsStream(path)) {
-      if (stream == null) {
-        fail("Missing image: " + path);
-      }
-      image = new Image(stream);
-    }
+    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
     this.p = new Picture(
         image,
         "app_icon.png",
@@ -39,14 +32,7 @@ class PictureTest {
 
   @Test
   void testNullNameThrowsError() throws IOException {
-    Image image;
-    String path = "/net/darmo_creations/jenealogio2/images/app_icon.png";
-    try (var stream = this.getClass().getResourceAsStream(path)) {
-      if (stream == null) {
-        fail("Missing image: " + path);
-      }
-      image = new Image(stream);
-    }
+    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
     DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
     assertThrows(NullPointerException.class, () -> new Picture(image, null, "b", d));
   }
@@ -99,14 +85,7 @@ class PictureTest {
 
   @Test
   void testEqualsAllSame() throws IOException {
-    Image image;
-    String path = "/net/darmo_creations/jenealogio2/images/app_icon.png";
-    try (var stream = this.getClass().getResourceAsStream(path)) {
-      if (stream == null) {
-        fail("Missing image: " + path);
-      }
-      image = new Image(stream);
-    }
+    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
     Picture pp = new Picture(
         image,
         "app_icon.png",
@@ -118,14 +97,7 @@ class PictureTest {
 
   @Test
   void testEqualsAllDifferentButName() throws IOException {
-    Image image;
-    String path = "/net/darmo_creations/jenealogio2/images/add_person_image.png";
-    try (var stream = this.getClass().getResourceAsStream(path)) {
-      if (stream == null) {
-        fail("Missing image: " + path);
-      }
-      image = new Image(stream);
-    }
+    Image image = getImage("/net/darmo_creations/jenealogio2/images/add_person_image.png");
     Picture pp = new Picture(
         image,
         "app_icon.png",
@@ -137,14 +109,7 @@ class PictureTest {
 
   @Test
   void testEqualsAllSameButName() throws IOException {
-    Image image;
-    String path = "/net/darmo_creations/jenealogio2/images/app_icon.png";
-    try (var stream = this.getClass().getResourceAsStream(path)) {
-      if (stream == null) {
-        fail("Missing image: " + path);
-      }
-      image = new Image(stream);
-    }
+    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
     Picture pp = new Picture(
         image,
         "appicon.png",
@@ -152,5 +117,16 @@ class PictureTest {
         new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
     assertNotEquals(this.p, pp);
+  }
+
+  public static Image getImage(String path) throws IOException {
+    Image image;
+    try (var stream = PictureTest.class.getResourceAsStream(path)) {
+      if (stream == null) {
+        fail("Missing image: " + path);
+      }
+      image = new Image(stream);
+    }
+    return image;
   }
 }

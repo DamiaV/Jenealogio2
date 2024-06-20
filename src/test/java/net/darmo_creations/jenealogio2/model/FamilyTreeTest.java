@@ -7,12 +7,14 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
 
+import java.io.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("DataFlowIssue")
 class FamilyTreeTest {
+  private static final String IMG_PATH = "/net/darmo_creations/jenealogio2/images/app_icon.png";
   private static LifeEventTypeRegistry typeReg;
   private FamilyTree tree;
 
@@ -340,11 +342,100 @@ class FamilyTreeTest {
     assertFalse(w.getLifeEventsAsWitness().iterator().hasNext());
   }
 
-  // TODO addPicture
-  // TODO removePicture
-  // TODO addPictureToObject
-  // TODO removePictureFromObject
-  // TODO setMainPictureOfObject
+  @Test
+  void addPictureAddsPictureAndReturnsTrue() throws IOException {
+    Picture p = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    assertTrue(this.tree.addPicture(p));
+    assertSame(p, this.tree.pictures().iterator().next());
+  }
+
+  @Test
+  void addPictureReturnsFalseIfAlreadyAdded() throws IOException {
+    Picture p = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(p);
+    assertFalse(this.tree.addPicture(p));
+  }
+
+  @Test
+  void removePictureRemovesFromTree() throws IOException {
+    Picture p = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(p);
+    this.tree.removePicture(p.name());
+    assertTrue(this.tree.pictures().isEmpty());
+  }
+
+  @Test
+  void removePictureRemovesReturnsPicture() throws IOException {
+    Picture p = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(p);
+    assertSame(p, this.tree.removePicture(p.name()));
+  }
+
+  @Test
+  void removePictureRemovesFromGenealogyObjects() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(pic);
+    Person p = new Person();
+    p.addPicture(pic);
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    l.addPicture(pic);
+    this.tree.addPerson(p);
+    this.tree.setLifeEventActors(l, Set.of(p));
+    this.tree.removePicture(pic.name());
+    assertTrue(p.pictures().isEmpty());
+    assertTrue(l.pictures().isEmpty());
+  }
+
+  @Test
+  void addPictureToObjectAddsPicture() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(pic);
+    Person p = new Person();
+    this.tree.addPerson(p);
+    this.tree.addPictureToObject("test", p);
+    assertSame(pic, p.pictures().iterator().next());
+  }
+
+  @Test
+  void addPictureToObjectThrowsIfInvalidName() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(pic);
+    Person p = new Person();
+    this.tree.addPerson(p);
+    assertThrows(NoSuchElementException.class, () -> this.tree.addPictureToObject("invalid", p));
+  }
+
+  @Test
+  void removePictureFromObjectRemovesPicture() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(pic);
+    Person p = new Person();
+    this.tree.addPerson(p);
+    this.tree.removePictureFromObject("test", p);
+    assertTrue(p.pictures().isEmpty());
+  }
+
+  @Test
+  void setMainPictureOfObjectSetsMainPicture() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(pic);
+    Person p = new Person();
+    this.tree.addPerson(p);
+    this.tree.addPictureToObject("test", p);
+    this.tree.setMainPictureOfObject("test", p);
+    //noinspection OptionalGetWithoutIsPresent
+    assertSame(pic, p.mainPicture().get());
+  }
+
+  @Test
+  void setMainPictureOfObjectThrowsIfNotAddedToObject() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
+    this.tree.addPicture(pic);
+    Person p = new Person();
+    this.tree.addPerson(p);
+    assertThrows(IllegalArgumentException.class, () -> this.tree.setMainPictureOfObject("test", p));
+  }
 
   @Test
   void setRoot() {

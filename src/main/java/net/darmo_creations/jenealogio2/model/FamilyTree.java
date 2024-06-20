@@ -205,8 +205,11 @@ public class FamilyTree {
    *
    * @param name Name of the picture to add.
    * @param o    The object to update.
+   * @throws NoSuchElementException If no picture of this tree matches the given name.
    */
   public void addPictureToObject(@NotNull String name, @NotNull GenealogyObject<?> o) {
+    if (!this.pictures.containsKey(name))
+      throw new NoSuchElementException("No picture with name " + name);
     o.addPicture(this.pictures.get(Objects.requireNonNull(name)));
   }
 
@@ -225,6 +228,7 @@ public class FamilyTree {
    *
    * @param name Name of the picture to set as main. May be null.
    * @param o    The object to update.
+   * @throws IllegalArgumentException If no picture with the given name is associated with the object.
    */
   public void setMainPictureOfObject(String name, @NotNull GenealogyObject<?> o) {
     o.setMainPicture(name);
