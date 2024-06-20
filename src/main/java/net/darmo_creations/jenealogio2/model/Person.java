@@ -85,6 +85,13 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
+   * The family tree this person belongs to.
+   */
+  public FamilyTree familyTree() {
+    return this.familyTree;
+  }
+
+  /**
    * Set the {@link FamilyTree} this person belongs to.
    *
    * @param familyTree A family tree.
@@ -305,10 +312,10 @@ public class Person extends GenealogyObject<Person> {
     Objects.requireNonNull(s);
     Predicate<String> p = n -> n != null && n.toLowerCase().contains(s);
     return p.test(this.legalLastName)
-        || p.test(this.publicLastName)
-        || this.legalFirstNames.stream().anyMatch(p)
-        || this.publicFirstNames.stream().anyMatch(p)
-        || this.nicknames.stream().anyMatch(p);
+           || p.test(this.publicLastName)
+           || this.legalFirstNames.stream().anyMatch(p)
+           || this.publicFirstNames.stream().anyMatch(p)
+           || this.nicknames.stream().anyMatch(p);
   }
 
   /**
@@ -371,7 +378,7 @@ public class Person extends GenealogyObject<Person> {
    */
   public boolean hasSameParents(final Person person) {
     return this.hasAnyParents() && person.hasAnyParents() &&
-        (this.parents[0] == person.parents[0] && this.parents[1] == person.parents[1]
+           (this.parents[0] == person.parents[0] && this.parents[1] == person.parents[1]
             || this.parents[1] == person.parents[0] && this.parents[0] == person.parents[1]);
   }
 

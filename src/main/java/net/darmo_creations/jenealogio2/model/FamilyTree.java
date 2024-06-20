@@ -108,7 +108,7 @@ public class FamilyTree {
     for (Person child : person.children()) {
       child.removeParent(person);
     }
-    for (Person.RelativeType type : Person.RelativeType.values()) {
+    for (var type : Person.RelativeType.values()) {
       for (Person nonBiologicalChild : person.nonBiologicalChildren(type)) {
         nonBiologicalChild.removeRelative(person, type);
       }

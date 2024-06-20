@@ -112,7 +112,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
    */
   void setActors(final @NotNull Set<Person> actors) {
     if (actors.size() < this.type.minActors() || actors.size() > this.type.maxActors()) {
-      throw new IllegalStateException("invalid actors number: expected between %d and %d, got %d"
+      throw new IllegalArgumentException("invalid actors number: expected between %d and %d, got %d"
           .formatted(this.type.minActors(), this.type.maxActors(), actors.size()));
     }
     if (actors.stream().anyMatch(this::hasWitness)) {
