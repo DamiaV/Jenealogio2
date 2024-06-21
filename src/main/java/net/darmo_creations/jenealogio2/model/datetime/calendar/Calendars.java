@@ -27,15 +27,15 @@ public final class Calendars { // TODO arabic and hebrew calendars
    */
   public static final JulianCalendar JULIAN = new JulianCalendar();
   /**
-   * The julian calendar system.
+   * The French Republican calendar system.
    *
-   * @see org.threeten.extra.chrono.JulianChronology
+   * @see ca.rmen.lfrc.FrenchRevolutionaryCalendar
    */
   public static final FrenchRepublicanCalendar FRENCH_REPUBLICAN_CALENDAR = new FrenchRepublicanCalendar();
   /**
-   * The julian calendar system.
+   * The French Republican calendar system with decimal time.
    *
-   * @see org.threeten.extra.chrono.JulianChronology
+   * @see ca.rmen.lfrc.FrenchRevolutionaryCalendar
    */
   public static final FrenchRepublicanDecimalCalendar FRENCH_REPUBLICAN_DECIMAL_CALENDAR = new FrenchRepublicanDecimalCalendar();
 
