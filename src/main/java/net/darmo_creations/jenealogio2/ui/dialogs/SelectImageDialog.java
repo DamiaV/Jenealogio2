@@ -46,8 +46,8 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
         theme.getIcon(Icon.INFO, Icon.Size.SMALL)
     );
     label.setWrapText(true);
-    label.setPrefHeight(50);
-    label.setMinHeight(50);
+    label.setPrefHeight(70);
+    label.setMinHeight(70);
     label.setAlignment(Pos.TOP_LEFT);
 
     Button addImageButton = new Button(
