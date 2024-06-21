@@ -121,8 +121,8 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
     // Dissociate current actors
     this.actors.forEach(p -> p.removeLifeEvent(this));
     this.actors.clear();
-    this.actors.addAll(actors);
     // Associate new actors
+    this.actors.addAll(actors);
     actors.forEach(actor -> actor.addLifeEvent(this));
   }
 
@@ -130,7 +130,7 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
    * Remove an actor from this event. Updates the {@link Person} object.
    *
    * @param actor The actor to remove.
-   * @throws IllegalArgumentException If the number of actors is already at the allowed minimum.
+   * @throws IllegalStateException If the number of actors is already at the allowed minimum.
    */
   void removeActor(final @NotNull Person actor) {
     if (this.actors.size() == this.type.minActors() && this.hasActor(actor)) {

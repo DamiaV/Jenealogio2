@@ -97,7 +97,7 @@ public class Person extends GenealogyObject<Person> {
    * @param familyTree A family tree.
    */
   void setFamilyTree(@NotNull FamilyTree familyTree) {
-    this.familyTree = familyTree;
+    this.familyTree = Objects.requireNonNull(familyTree);
   }
 
   @Override
@@ -309,8 +309,8 @@ public class Person extends GenealogyObject<Person> {
    * @return True if any match was found, false otherwise.
    */
   public boolean matchesName(@NotNull String s) {
-    Objects.requireNonNull(s);
-    Predicate<String> p = n -> n != null && n.toLowerCase().contains(s);
+    final String ss = s.toLowerCase(); // TODO use language’s locale
+    Predicate<String> p = n -> n != null && n.toLowerCase().contains(ss);
     return p.test(this.legalLastName)
            || p.test(this.publicLastName)
            || this.legalFirstNames.stream().anyMatch(p)
@@ -599,7 +599,7 @@ public class Person extends GenealogyObject<Person> {
     LifeEventType birthEventType = this.familyTree.lifeEventTypeRegistry()
         .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
     return this.getActedInEventsStream()
-        .filter(lifeEvent -> lifeEvent.type() == birthEventType)
+        .filter(lifeEvent -> lifeEvent.type().equals(birthEventType))
         .findFirst()
         .map(LifeEvent::date);
   }
@@ -615,7 +615,7 @@ public class Person extends GenealogyObject<Person> {
     LifeEventType deathEventType = this.familyTree.lifeEventTypeRegistry()
         .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "death"));
     return this.getActedInEventsStream()
-        .filter(lifeEvent -> lifeEvent.type() == deathEventType)
+        .filter(lifeEvent -> lifeEvent.type().equals(deathEventType))
         .findFirst()
         .map(LifeEvent::date);
   }
@@ -659,7 +659,7 @@ public class Person extends GenealogyObject<Person> {
    */
   void addLifeEvent(final @NotNull LifeEvent event) {
     if (event.type().isUnique() && event.hasActor(this)
-        && this.getActedInEventsStream().anyMatch(e -> e.type() == event.type())) {
+        && this.getActedInEventsStream().anyMatch(e -> e.type().equals(event.type()))) {
       throw new IllegalArgumentException("%s already acts in an event of type '%s'"
           .formatted(this, event.type().key().fullName()));
     }

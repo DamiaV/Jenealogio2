@@ -1,9 +1,9 @@
 package net.darmo_creations.jenealogio2.model.datetime;
 
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class represents an alternative between two dates.
@@ -18,6 +18,9 @@ public record DateTimeAlternative(@NotNull CalendarSpecificDateTime earliestDate
   public DateTimeAlternative {
     if (earliestDate.toISO8601Date().isAfter(latestDate.toISO8601Date())) {
       throw new IllegalArgumentException("earliest date is after latest date");
+    }
+    if (earliestDate.toISO8601Date().equals(latestDate.toISO8601Date())) {
+      throw new IllegalArgumentException("earliest date is equal to latest date");
     }
     Objects.requireNonNull(earliestDate);
     Objects.requireNonNull(latestDate);

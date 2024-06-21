@@ -19,6 +19,9 @@ public record DateTimeRange(@NotNull CalendarSpecificDateTime startDate,
     if (startDate.toISO8601Date().isAfter(endDate.toISO8601Date())) {
       throw new IllegalArgumentException("start date is after end date");
     }
+    if (startDate.toISO8601Date().equals(endDate.toISO8601Date())) {
+      throw new IllegalArgumentException("start date is equal to end date");
+    }
     Objects.requireNonNull(startDate);
     Objects.requireNonNull(endDate);
   }
