@@ -3,6 +3,7 @@ package net.darmo_creations.jenealogio2.model;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.GregorianCalendar;
+import net.darmo_creations.jenealogio2.utils.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -14,11 +15,18 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("DataFlowIssue")
 class PersonTest {
   private Person person;
+  private Person parent1;
+  private Person parent2;
 
   @BeforeEach
   void setUp() {
-    this.person = new Person();
-    new FamilyTree("tree").addPerson(this.person);
+    FamilyTree tree = new FamilyTree("tree");
+    tree.addPerson(this.person = new Person());
+    this.person.setDisambiguationID(1);
+    tree.addPerson(this.parent1 = new Person());
+    this.parent1.setDisambiguationID(2);
+    tree.addPerson(this.parent2 = new Person());
+    this.parent2.setDisambiguationID(3);
   }
 
   @Test
@@ -211,12 +219,6 @@ class PersonTest {
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void matchesName() {
-    // TODO
-  }
-
-  @Test
   void setGender() {
     Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
     this.person.setGender(gender);
@@ -232,123 +234,392 @@ class PersonTest {
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void parents() {
-    // TODO
+  void parentsBothDefined() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    assertEquals(new Pair<>(Optional.of(this.parent1), Optional.of(this.parent2)), this.person.parents());
   }
 
   @Test
-  @Disabled("Not implemented yet")
+  void parentsFirstDefined() {
+    this.person.setParent(0, this.parent1);
+    assertEquals(new Pair<>(Optional.of(this.parent1), Optional.empty()), this.person.parents());
+  }
+
+  @Test
+  void parentsSecondDefined() {
+    this.person.setParent(1, this.parent2);
+    assertEquals(new Pair<>(Optional.empty(), Optional.of(this.parent2)), this.person.parents());
+  }
+
+  @Test
+  void parentsNoneDefined() {
+    assertEquals(new Pair<>(Optional.empty(), Optional.empty()), this.person.parents());
+  }
+
+  @Test
   void getParentIndex() {
-    // TODO
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    //noinspection OptionalGetWithoutIsPresent
+    assertEquals(0, this.person.getParentIndex(this.parent1).get());
+    //noinspection OptionalGetWithoutIsPresent
+    assertEquals(1, this.person.getParentIndex(this.parent2).get());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void hasSameParents() {
-    // TODO
+  void getParentIndexUndefined0() {
+    this.person.setParent(1, this.parent2);
+    assertTrue(this.person.getParentIndex(this.parent1).isEmpty());
+    //noinspection OptionalGetWithoutIsPresent
+    assertEquals(1, this.person.getParentIndex(this.parent2).get());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void hasAnyParents() {
-    // TODO
+  void getParentIndexUndefined1() {
+    this.person.setParent(0, this.parent1);
+    //noinspection OptionalGetWithoutIsPresent
+    assertEquals(0, this.person.getParentIndex(this.parent1).get());
+    assertTrue(this.person.getParentIndex(this.parent2).isEmpty());
   }
 
   @Test
-  @Disabled("Not implemented yet")
+  void hasSameParentsSameIndices() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    person2.setParent(1, this.parent2);
+    assertTrue(this.person.hasSameParents(person2));
+  }
+
+  @Test
+  void hasSameParentsSwappedIndices() {
+    this.person.setParent(1, this.parent1);
+    this.person.setParent(0, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    person2.setParent(1, this.parent2);
+    assertTrue(this.person.hasSameParents(person2));
+  }
+
+  @Test
+  void hasSameParentsFalseIfOnlyOneSame() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    person2.setParent(1, new Person());
+    assertFalse(this.person.hasSameParents(person2));
+  }
+
+  @Test
+  void hasSameParentsFalseIfOnlyNoneSame() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, new Person());
+    person2.setParent(1, new Person());
+    assertFalse(this.person.hasSameParents(person2));
+  }
+
+  @Test
+  void hasAnyParentsBothDefined() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    assertTrue(this.person.hasAnyParents());
+  }
+
+  @Test
+  void hasAnyParentsFirstDefined() {
+    this.person.setParent(0, this.parent1);
+    assertTrue(this.person.hasAnyParents());
+  }
+
+  @Test
+  void hasAnyParentsSecondDefined() {
+    this.person.setParent(1, this.parent1);
+    assertTrue(this.person.hasAnyParents());
+  }
+
+  @Test
   void hasBothParents() {
-    // TODO
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    assertTrue(this.person.hasBothParents());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void setParent() {
-    // TODO
+  void hasBothParentsFirstDefined() {
+    this.person.setParent(0, this.parent1);
+    assertFalse(this.person.hasBothParents());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void removeParent() {
-    // TODO
+  void hasBothParentsSecondDefined() {
+    this.person.setParent(1, this.parent1);
+    assertFalse(this.person.hasBothParents());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void children() {
-    // TODO
+  void setParentUpdatesPerson0() {
+    this.person.setParent(0, this.parent1);
+    //noinspection OptionalGetWithoutIsPresent
+    assertSame(this.parent1, this.person.parents().left().get());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void getPartnersAndChildren() {
-    // TODO
+  void setParentUpdatesPerson1() {
+    this.person.setParent(1, this.parent1);
+    //noinspection OptionalGetWithoutIsPresent
+    assertSame(this.parent1, this.person.parents().right().get());
   }
 
   @Test
-  @Disabled("Not implemented yet")
+  void setParentUpdatesParent() {
+    this.person.setParent(0, this.parent1);
+    assertSame(this.person, this.parent1.children().iterator().next());
+  }
+
+  @Test
+  void setParentUpdatesPreviousParent() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(0, this.parent2);
+    assertTrue(this.parent1.children().isEmpty());
+  }
+
+  @Test
+  void removeParent0() {
+    this.person.setParent(0, this.parent1);
+    this.person.removeParent(this.parent1);
+    assertTrue(this.person.parents().left().isEmpty());
+    assertTrue(this.person.parents().right().isEmpty());
+  }
+
+  @Test
+  void removeParent1() {
+    this.person.setParent(1, this.parent1);
+    this.person.removeParent(this.parent1);
+    assertTrue(this.person.parents().left().isEmpty());
+    assertTrue(this.person.parents().right().isEmpty());
+  }
+
+  @Test
+  void getPartnersAndChildrenExactSameParents() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    person2.setParent(1, this.parent2);
+    assertEquals(Map.of(
+        Optional.of(this.parent2),
+        Set.of(person2, this.person)
+    ), this.parent1.getPartnersAndChildren());
+  }
+
+  @Test
+  void getPartnersAndChildrenNoChildrenWithPartner() {
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
+    l.setActors(Set.of(this.parent1, this.parent2));
+    assertEquals(Map.of(
+        Optional.of(this.parent2),
+        Set.of()
+    ), this.parent1.getPartnersAndChildren());
+  }
+
+  @Test
+  void getPartnersAndChildrenOneCommonParents() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    Person parent3 = new Person();
+    person2.setParent(1, parent3);
+    assertEquals(Map.of(
+        Optional.of(this.parent2),
+        Set.of(this.person),
+        Optional.of(parent3),
+        Set.of(person2)
+    ), this.parent1.getPartnersAndChildren());
+  }
+
+  @Test
+  void getPartnersAndChildrenNoPartner() {
+    this.person.setParent(0, this.parent1);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    assertEquals(Map.of(
+        Optional.empty(),
+        Set.of(person2, this.person)
+    ), this.parent1.getPartnersAndChildren());
+  }
+
+  @Test
   void getSameParentsSiblings() {
-    // TODO
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    person2.setParent(1, this.parent2);
+    assertEquals(Set.of(person2), this.person.getSameParentsSiblings());
+    assertEquals(Set.of(this.person), person2.getSameParentsSiblings());
   }
 
   @Test
-  @Disabled("Not implemented yet")
+  void getSameParentsSiblingsEmptyIfOnlyOneCommon() {
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    person2.setParent(1, new Person());
+    assertTrue(this.person.getSameParentsSiblings().isEmpty());
+    assertTrue(person2.getSameParentsSiblings().isEmpty());
+  }
+
+  @Test
+  void getSameParentsSiblingsOneNull() {
+    this.person.setParent(0, this.parent1);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    assertEquals(Set.of(person2), this.person.getSameParentsSiblings());
+    assertEquals(Set.of(this.person), person2.getSameParentsSiblings());
+  }
+
+  @Test
   void getAllSiblings() {
-    // TODO
+    this.person.setParent(0, this.parent1);
+    this.person.setParent(1, this.parent2);
+    Person person2 = new Person();
+    person2.setParent(0, this.parent1);
+    Person parent3 = new Person();
+    person2.setParent(1, parent3);
+    Person person3 = new Person();
+    person3.setParent(0, parent3);
+    person3.setParent(1, this.parent2);
+    assertEquals(Map.of(
+        new Pair<>(this.parent1, parent3),
+        Set.of(person2),
+        new Pair<>(parent3, this.parent2),
+        Set.of(person3)
+    ), this.person.getAllSiblings());
+  }
+
+  @ParameterizedTest
+  @EnumSource(Person.RelativeType.class)
+  void addRelativeUpdatesPerson(Person.RelativeType type) {
+    this.person.addRelative(this.parent1, type);
+    assertEquals(Set.of(this.parent1), this.person.getRelatives(type));
+  }
+
+  @ParameterizedTest
+  @EnumSource(Person.RelativeType.class)
+  void addRelativeUpdatesRelative(Person.RelativeType type) {
+    this.person.addRelative(this.parent1, type);
+    assertEquals(Set.of(this.person), this.parent1.nonBiologicalChildren(type));
+  }
+
+  @ParameterizedTest
+  @EnumSource(Person.RelativeType.class)
+  void removeRelativeUpdatesPerson(Person.RelativeType type) {
+    this.person.addRelative(this.parent1, type);
+    this.person.removeRelative(this.parent1, type);
+    assertTrue(this.person.getRelatives(type).isEmpty());
+  }
+
+  @ParameterizedTest
+  @EnumSource(Person.RelativeType.class)
+  void removeRelativeUpdatesRelative(Person.RelativeType type) {
+    this.person.addRelative(this.parent1, type);
+    this.person.removeRelative(this.parent1, type);
+    assertTrue(this.parent1.nonBiologicalChildren(type).isEmpty());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void getRelatives() {
-    // TODO
+  void getBirthDateNoEvents() {
+    assertTrue(this.person.getBirthDate().isEmpty());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void addRelative() {
-    // TODO
+  void getBirthDateNonBirthEvent() {
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:diploma")));
+    l.setActors(Set.of(this.person));
+    assertTrue(this.person.getBirthDate().isEmpty());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void removeRelative() {
-    // TODO
+  void getBirthDateBirthEvent() {
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    l.setActors(Set.of(this.person));
+    //noinspection OptionalGetWithoutIsPresent
+    assertEquals(date, this.person.getBirthDate().get());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void nonBiologicalChildren() {
-    // TODO
+  void getDeathDateNoEvents() {
+    assertTrue(this.person.getDeathDate().isEmpty());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void getBirthDate() {
-    // TODO
+  void getDeathDateNonDeathEvent() {
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:diploma")));
+    l.setActors(Set.of(this.person));
+    assertTrue(this.person.getDeathDate().isEmpty());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void getDeathDate() {
-    // TODO
+  void getDeathDateDeathEvent() {
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
+    l.setActors(Set.of(this.person));
+    //noinspection OptionalGetWithoutIsPresent
+    assertEquals(date, this.person.getDeathDate().get());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void lifeEventsIsSortedByDates() {
-    // TODO
+  void lifeEventsAreSortedByDates() {
+    DateTime date2 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2084, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l2 = new LifeEvent(date2, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
+    l2.setActors(Set.of(this.person));
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    l.setActors(Set.of(this.person));
+    assertEquals(List.of(l, l2), this.person.lifeEvents());
   }
 
   @Test
-  @Disabled("Not implemented yet")
   void getLifeEventsAsActor() {
-    // TODO
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    l.setActors(Set.of(this.person));
+    assertEquals(List.of(l), this.person.getLifeEventsAsActor());
   }
 
   @Test
-  @Disabled("Not implemented yet")
+  void getLifeEventsAsActorIgnoresWitnessed() {
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    l.addWitness(this.person);
+    assertTrue(this.person.getLifeEventsAsActor().isEmpty());
+  }
+
+  @Test
   void getLifeEventsAsWitness() {
-    // TODO
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    l.addWitness(this.person);
+    assertEquals(List.of(l), this.person.getLifeEventsAsWitness());
+  }
+
+  @Test
+  void getLifeEventsAsWitnessIgnoresActed() {
+    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    l.setActors(Set.of(this.person));
+    assertTrue(this.person.getLifeEventsAsWitness().isEmpty());
   }
 
   @Test
@@ -360,14 +631,79 @@ class PersonTest {
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void removeLifeEvent() {
-    // TODO
+  void toStringNoNames() {
+    this.person.setDisambiguationID(null);
+    assertEquals("? ?", this.person.toString());
   }
 
   @Test
-  @Disabled("Not implemented yet")
-  void testToString() {
-    // TODO
+  void toStringShowsID() {
+    assertEquals("? ? (#1)", this.person.toString());
+  }
+
+  @Test
+  void toStringOnlyLegalFirstNames() {
+    this.person.setDisambiguationID(null);
+    this.person.setLegalFirstNames(List.of("a", "b"));
+    assertEquals("a b ?", this.person.toString());
+  }
+
+  @Test
+  void toStringOnlyPublicFirstNames() {
+    this.person.setDisambiguationID(null);
+    this.person.setPublicFirstNames(List.of("a", "b"));
+    assertEquals("a b ?", this.person.toString());
+  }
+
+  @Test
+  void toStringOnlyBothFirstNames() {
+    this.person.setDisambiguationID(null);
+    this.person.setLegalFirstNames(List.of("a", "b"));
+    this.person.setPublicFirstNames(List.of("c", "d"));
+    assertEquals("a b ?", this.person.toString());
+  }
+
+  @Test
+  void toStringOnlyLegalLastName() {
+    this.person.setDisambiguationID(null);
+    this.person.setLegalLastName("a");
+    assertEquals("? a", this.person.toString());
+  }
+
+  @Test
+  void toStringOnlyPublicLastName() {
+    this.person.setDisambiguationID(null);
+    this.person.setPublicLastName("a");
+    assertEquals("? a", this.person.toString());
+  }
+
+  @Test
+  void toStringOnlyBothLastNames() {
+    this.person.setDisambiguationID(null);
+    this.person.setLegalLastName("a");
+    this.person.setPublicLastName("b");
+    assertEquals("? a", this.person.toString());
+  }
+
+  @Test
+  void toStringFullName() {
+    this.person.setDisambiguationID(null);
+    this.person.setLegalFirstNames(List.of("a", "b"));
+    this.person.setLegalLastName("c");
+    assertEquals("a b c", this.person.toString());
+  }
+
+  @Test
+  void toStringFullNameAndID() {
+    this.person.setLegalFirstNames(List.of("a", "b"));
+    this.person.setLegalLastName("c");
+    assertEquals("a b c (#1)", this.person.toString());
+  }
+
+  @Test
+  void toStringNicknamesNotShown() {
+    this.person.setDisambiguationID(null);
+    this.person.setNicknames(List.of("a", "b"));
+    assertEquals("? ?", this.person.toString());
   }
 }

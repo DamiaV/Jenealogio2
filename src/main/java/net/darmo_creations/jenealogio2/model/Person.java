@@ -449,11 +449,9 @@ public class Person extends GenealogyObject<Person> {
    * Return a map associating persons and the children they had with this person, if any.
    * <p>
    * If a list is empty, the person has a union with this person but no children.
-   * <p>
-   * Children lists are not sorted.
    */
-  public Map<Optional<Person>, List<Person>> getPartnersAndChildren() {
-    Map<Person, List<Person>> partnersChildren = new HashMap<>();
+  public Map<Optional<Person>, Set<Person>> getPartnersAndChildren() {
+    Map<Person, Set<Person>> partnersChildren = new HashMap<>();
     for (Person child : this.children) {
       var childParents = child.parents();
       var parent1 = childParents.left();
@@ -465,7 +463,7 @@ public class Person extends GenealogyObject<Person> {
         parent = parent2.get();
       }
       if (!partnersChildren.containsKey(parent)) {
-        partnersChildren.put(parent, new LinkedList<>());
+        partnersChildren.put(parent, new HashSet<>());
       }
       partnersChildren.get(parent).add(child);
     }
@@ -477,7 +475,7 @@ public class Person extends GenealogyObject<Person> {
         .map(e -> e.actors().stream().filter(p -> p != this).findFirst().get())
         .forEach(person -> {
           if (!partnersChildren.containsKey(person)) {
-            partnersChildren.put(person, new LinkedList<>());
+            partnersChildren.put(person, new HashSet<>());
           }
         });
     return partnersChildren.entrySet().stream()

@@ -479,7 +479,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
           }
           return Person.birthDateThenNameComparator(false).compare(p1.get(), p2.get());
         })
-        .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey().orElse(null), null, e.getValue())));
+        .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey().orElse(null), null, new LinkedList<>(e.getValue()))));
 
     this.person.getRelatives(Person.RelativeType.ADOPTIVE).stream()
         .sorted(Person.birthDateThenNameComparator(false))

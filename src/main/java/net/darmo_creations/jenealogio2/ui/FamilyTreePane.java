@@ -1,23 +1,18 @@
 package net.darmo_creations.jenealogio2.ui;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.*;
 import javafx.scene.Node;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.shape.Line;
-import net.darmo_creations.jenealogio2.model.FamilyTree;
-import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
-import net.darmo_creations.jenealogio2.ui.events.DeselectPersonsEvent;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickEvent;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
+import javafx.scene.shape.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.ui.events.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * JavaFX component displaying a part of a family tree’s graph.
@@ -230,8 +225,12 @@ public class FamilyTreePane extends FamilyTreeComponent {
         .sorted(Person.birthDateThenNameComparator(true))
         .toList();
 
-    Map<Optional<Person>, List<Person>> childrenMap = rootPerson.getPartnersAndChildren();
-    childrenMap.forEach((key, value) -> value.sort(Person.birthDateThenNameComparator(false)));
+    Map<Optional<Person>, List<Person>> childrenMap = rootPerson.getPartnersAndChildren()
+        .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> {
+          var list = new ArrayList<Person>(e.getValue());
+          list.sort(Person.birthDateThenNameComparator(false));
+          return list;
+        }));
 
     List<Optional<Person>> partners = childrenMap.keySet().stream()
         .sorted((p1, p2) -> {
