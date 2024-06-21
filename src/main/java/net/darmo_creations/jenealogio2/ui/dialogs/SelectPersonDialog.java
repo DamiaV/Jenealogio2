@@ -38,7 +38,7 @@ public class SelectPersonDialog extends DialogBase<Person> {
           if (newValue == null || newValue.isEmpty()) {
             return true;
           }
-          return pictureView.person().matchesName(newValue.toLowerCase());
+          return pictureView.person().matchesName(newValue.toLowerCase(), language);
         })
     ));
 

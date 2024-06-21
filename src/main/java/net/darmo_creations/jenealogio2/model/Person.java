@@ -305,12 +305,14 @@ public class Person extends GenealogyObject<Person> {
   /**
    * Check whether any names of this person contain the given string, regardless of case.
    *
-   * @param s String to check.
+   * @param s        The string to check.
+   * @param language The language to use for lower-case conversions.
    * @return True if any match was found, false otherwise.
    */
-  public boolean matchesName(@NotNull String s) {
-    final String ss = s.toLowerCase(); // TODO use language’s locale
-    Predicate<String> p = n -> n != null && n.toLowerCase().contains(ss);
+  public boolean matchesName(@NotNull String s, @NotNull Language language) {
+    final Locale locale = language.locale();
+    final String lcString = s.toLowerCase(locale);
+    final Predicate<String> p = n -> n != null && n.toLowerCase(locale).contains(lcString);
     return p.test(this.legalLastName)
            || p.test(this.publicLastName)
            || this.legalFirstNames.stream().anyMatch(p)
