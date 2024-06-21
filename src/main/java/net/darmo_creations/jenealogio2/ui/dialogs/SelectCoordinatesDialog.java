@@ -5,7 +5,6 @@ import javafx.beans.property.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -19,15 +18,19 @@ import org.jetbrains.annotations.*;
 public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   private final TextField searchField = new TextField();
   private final Button searchButton = new Button();
-  private final MapView mapView = new MapView();
+  private final MapView mapView;
 
   private LatLon selectedPoint;
   private final IntegerProperty selectedMarkerId = new SimpleIntegerProperty(0);
 
-  public SelectCoordinatesDialog() {
-    super("select_coordinates", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+  /**
+   * Create a new dialog to select coordinates.
+   *
+   * @param config The app’s config.
+   */
+  public SelectCoordinatesDialog(final @NotNull Config config) {
+    super(config, "select_coordinates", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Config config = App.config();
     Language language = config.language();
     Theme theme = config.theme();
 
@@ -42,6 +45,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
     this.searchButton.setTooltip(new Tooltip(language.translate("dialog.select_coordinates.search.button")));
     this.searchButton.setOnAction(e -> this.onSearchAddress());
 
+    this.mapView = new MapView(config);
     VBox.setVgrow(this.mapView, Priority.ALWAYS);
     this.mapView.setOnPointClicked(this::onPointClicked);
 

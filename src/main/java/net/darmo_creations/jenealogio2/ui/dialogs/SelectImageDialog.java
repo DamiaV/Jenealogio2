@@ -9,7 +9,6 @@ import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -31,10 +30,14 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
 
   private FamilyTree tree;
 
-  public SelectImageDialog() {
-    super("select_images", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+  /**
+   * Create a new dialog to select images.
+   *
+   * @param config The app’s config.
+   */
+  public SelectImageDialog(final @NotNull Config config) {
+    super(config, "select_images", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Config config = App.config();
     Language language = config.language();
     Theme theme = config.theme();
 
@@ -67,7 +70,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
           String filter = newValue.toLowerCase();
           Picture picture = pictureView.picture();
           return picture.name().toLowerCase().contains(filter)
-              || picture.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
+                 || picture.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
         })
     ));
 
@@ -123,7 +126,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
   private boolean isDragAndDropValid(final @NotNull Dragboard dragboard) {
     List<File> files = dragboard.getFiles();
     return dragboard.hasFiles()
-        && files.stream().allMatch(f -> Arrays.stream(Picture.FILE_EXTENSIONS).anyMatch(e -> f.getName().endsWith(e)));
+           && files.stream().allMatch(f -> Arrays.stream(Picture.FILE_EXTENSIONS).anyMatch(e -> f.getName().endsWith(e)));
   }
 
   /**
@@ -138,16 +141,17 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     this.picturesList.clear();
     tree.pictures().stream()
         .filter(p -> !exclusionList.contains(p))
-        .forEach(p -> this.picturesList.add(new PictureView(p, true)));
+        .forEach(p -> this.picturesList.add(new PictureView(p, true, this.config)));
     this.picturesList.sort(null);
   }
 
   private void onAddImage() {
-    Optional<File> file = FileChoosers.showImageFileChooser(this.stage(), null);
+    Optional<File> file = FileChoosers.showImageFileChooser(this.config, this.stage(), null);
     if (file.isPresent()) {
       String name = file.get().getName();
       if (this.isFileImported(name)) {
         Alerts.warning(
+            this.config,
             "alert.image_already_imported.header",
             null,
             null,
@@ -158,6 +162,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
           this.importFile(file.get());
         } catch (IOException e) {
           Alerts.error(
+              this.config,
               "alert.load_error.header",
               "alert.load_error.content",
               "alert.load_error.title",
@@ -199,6 +204,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     }
     if (errorsNb != 0) {
       Alerts.error(
+          this.config,
           "alert.load_errors.header",
           "alert.load_errors.content",
           "alert.load_errors.title",
@@ -206,7 +212,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
       );
     }
     if (someAlreadyImported) {
-      Alerts.warning("alert.images_already_imported.header", null, null);
+      Alerts.warning(this.config, "alert.images_already_imported.header", null, null);
     }
   }
 
@@ -220,7 +226,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     try (FileInputStream in = new FileInputStream(file)) {
       picture = new Picture(new Image(in), file.getName(), null, null);
     }
-    PictureView pv = new PictureView(picture, true);
+    PictureView pv = new PictureView(picture, true, this.config);
     this.picturesList.add(pv);
     this.picturesList.sort(null);
     this.imagesList.scrollTo(pv);

@@ -5,7 +5,6 @@ import javafx.scene.control.cell.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -22,9 +21,14 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
   private final EntriesTab<LifeEventType> eventTypesTab;
   private final EntriesTab<Gender> gendersTab;
 
-  public RegistriesImportExportDialog(boolean importing) {
-    super(importing ? "registries_import" : "registries_export", true, ButtonTypes.OK, ButtonTypes.CANCEL);
-    Config config = App.config();
+  /**
+   * Create a new dialog to import or export registries.
+   *
+   * @param config    The app’s config.
+   * @param importing If true, setup as an import dialog, otherwise setup as an export dialog.
+   */
+  public RegistriesImportExportDialog(final @NotNull Config config, boolean importing) {
+    super(config, importing ? "registries_import" : "registries_export", true, ButtonTypes.OK, ButtonTypes.CANCEL);
     Language language = config.language();
 
     Label descLabel = new Label(
@@ -58,7 +62,7 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
 
   private void updateButtons() {
     boolean noSelection = !this.eventTypesTab.getSelectedItems().isEmpty()
-        && !this.gendersTab.getSelectedItems().isEmpty();
+                          && !this.gendersTab.getSelectedItems().isEmpty();
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(noSelection);
   }
 
@@ -66,8 +70,8 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
     private final TreeView<T> treeView = new TreeView<>();
 
     public EntriesTab(String registryName) {
-      super(App.config().language().translate("dialog.registries_import_export.tab." + registryName));
-      Language language = App.config().language();
+      super(RegistriesImportExportDialog.this.config.language().translate("dialog.registries_import_export.tab." + registryName));
+      Language language = RegistriesImportExportDialog.this.config.language();
       Button selectAllButton = new Button(language.translate("dialog.registries_import_export.select_all"));
       selectAllButton.setOnAction(event -> this.select(SelectionMode.ALL));
       Button deselectAllButton = new Button(language.translate("dialog.registries_import_export.deselect_all"));

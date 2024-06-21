@@ -4,6 +4,7 @@ import com.gluonhq.maps.*;
 import javafx.scene.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import org.jetbrains.annotations.*;
 
@@ -15,6 +16,8 @@ import java.util.function.*;
  * used by the app in case it changes in the future.
  */
 public class MapView extends AnchorPane {
+  private final Config config;
+
   private final GluonHQMapView mapView = new GluonHQMapView();
   private final Map<Integer, MapLayer> layers = new HashMap<>();
   private int lastLayerID = 0;
@@ -22,7 +25,13 @@ public class MapView extends AnchorPane {
 
   private final List<Consumer<LatLon>> pointClickListeners = new LinkedList<>();
 
-  public MapView() {
+  /**
+   * Create a new map view.
+   *
+   * @param config The app’s config.
+   */
+  public MapView(final @NotNull Config config) {
+    this.config = Objects.requireNonNull(config);
     AnchorPane.setTopAnchor(this.mapView, 0.0);
     AnchorPane.setBottomAnchor(this.mapView, 0.0);
     AnchorPane.setLeftAnchor(this.mapView, 0.0);
@@ -78,7 +87,7 @@ public class MapView extends AnchorPane {
    * @return ID of the created marker, will always be > 0.
    */
   public int addMarker(@NotNull LatLon latLon, @NotNull MapMarkerColor color, Node layerTooltip) {
-    MarkerLayer layer = new MarkerLayer(latLon, color, layerTooltip);
+    MarkerLayer layer = new MarkerLayer(latLon, color, layerTooltip, this.config);
     this.mapView.addLayer(layer);
     int id = ++this.lastLayerID;
     this.layers.put(id, layer);

@@ -5,7 +5,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
@@ -22,13 +21,17 @@ public class EditImageDialog extends DialogBase<EditImageDialog.PictureData> {
   private final ImageView imageView = new ImageView();
   private final Label imageNameLabel = new Label();
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
-  private final CalendarDateField dateField = new CalendarDateField();
+  private final CalendarDateField dateField;
   private final TextArea imageDescTextInput = new TextArea();
 
-  public EditImageDialog() {
-    super("edit_image", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+  /**
+   * Create a new dialog to edit images.
+   *
+   * @param config The app’s config.
+   */
+  public EditImageDialog(final @NotNull Config config) {
+    super(config, "edit_image", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Config config = App.config();
     Language language = config.language();
 
     HBox imageViewBox = new HBox(this.imageView);
@@ -38,6 +41,7 @@ public class EditImageDialog extends DialogBase<EditImageDialog.PictureData> {
     imageNameBox.setAlignment(Pos.TOP_CENTER);
 
     this.populateDatePrecisionCombo();
+    this.dateField = new CalendarDateField(config);
     this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> this.dateField.setDateType(newValue.data()));
     HBox.setHgrow(this.dateField, Priority.ALWAYS);
@@ -82,7 +86,7 @@ public class EditImageDialog extends DialogBase<EditImageDialog.PictureData> {
   private void populateDatePrecisionCombo() {
     for (CalendarDateField.DateType dateType : CalendarDateField.DateType.values()) {
       this.datePrecisionCombo.getItems()
-          .add(new NotNullComboBoxItem<>(dateType, App.config().language().translate(dateType.key())));
+          .add(new NotNullComboBoxItem<>(dateType, this.config.language().translate(dateType.key())));
     }
   }
 

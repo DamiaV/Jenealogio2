@@ -10,6 +10,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.text.*;
 import javafx.stage.*;
+import javafx.util.*;
 import javafx.util.converter.*;
 import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
@@ -18,6 +19,7 @@ import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
+import net.darmo_creations.jenealogio2.utils.Pair;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -35,8 +37,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private final Button exportButton;
   private final Button applyButton;
 
-  private final RegistriesImportExportDialog importDialog = new RegistriesImportExportDialog(true);
-  private final RegistriesImportExportDialog exportDialog = new RegistriesImportExportDialog(false);
+  private final RegistriesImportExportDialog importDialog;
+  private final RegistriesImportExportDialog exportDialog;
 
   private FamilyTree familyTree;
   private boolean changes;
@@ -47,13 +49,16 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
 
   /**
    * Create an about dialog.
+   *
+   * @param config The app’s config.
    */
-  public RegistriesDialog() {
-    super("edit_registries", true, ButtonTypes.CANCEL, ButtonTypes.OK, ButtonTypes.APPLY);
-
-    Config config = App.config();
+  public RegistriesDialog(final @NotNull Config config) {
+    super(config, "edit_registries", true, ButtonTypes.CANCEL, ButtonTypes.OK, ButtonTypes.APPLY);
     Language language = config.language();
     Theme theme = config.theme();
+
+    this.importDialog = new RegistriesImportExportDialog(config, true);
+    this.exportDialog = new RegistriesImportExportDialog(config, false);
 
     Label helpLabel = new Label(language.translate("dialog.edit_registries.help"),
         theme.getIcon(Icon.INFO, Icon.Size.SMALL));
@@ -111,7 +116,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private void onImport() {
-    Optional<File> file = FileChoosers.showRegistriesFileChooser(this.getOwner(), null);
+    Optional<File> file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
     if (file.isEmpty()) {
       return;
     }
@@ -121,6 +126,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
+          this.config,
           "alert.load_error.header",
           "alert.load_error.content",
           "alert.load_error.title",
@@ -142,7 +148,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private void onImportFromTree() {
-    Optional<File> file = FileChoosers.showTreeFileChooser(this.getOwner(), null);
+    Optional<File> file = FileChoosers.showTreeFileChooser(this.config, this.getOwner(), null);
     if (file.isEmpty()) {
       return;
     }
@@ -152,6 +158,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
+          this.config,
           "alert.load_error.header",
           "alert.load_error.content",
           "alert.load_error.title",
@@ -192,7 +199,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
       return;
     }
-    Optional<File> file = FileChoosers.showRegistriesFileSaver(this.getOwner(), "registries");
+    Optional<File> file = FileChoosers.showRegistriesFileSaver(this.config, this.getOwner(), "registries");
     if (file.isEmpty()) {
       return;
     }
@@ -202,10 +209,11 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         selectedItems.right().stream().map(RegistryEntry::key).toList()
     );
     try {
-      this.treeXMLWriter.saveRegistriesToFile(file.get(), this.familyTree, selectedKeys);
+      this.treeXMLWriter.saveRegistriesToFile(file.get(), this.familyTree, selectedKeys, this.config);
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
+          this.config,
           "alert.save_error.header",
           "alert.save_error.content",
           "alert.save_error.title",
@@ -217,14 +225,15 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private boolean checkNotEmpty(@NotNull List<LifeEventType> eventTypes, @NotNull List<Gender> genders, boolean exporting) {
     if (eventTypes.isEmpty() && genders.isEmpty()) {
       String key = exporting ? "export" : "import";
-      Alerts.warning("alert.nothing_to_%s.header".formatted(key), null, "alert.nothing_to_%s.title".formatted(key));
+      Alerts.warning(
+          this.config, "alert.nothing_to_%s.header".formatted(key), null, "alert.nothing_to_%s.title".formatted(key));
       return false;
     }
     return true;
   }
 
   private Tab createTab(@NotNull String name, final @NotNull RegistryView<?, ?, ?> registryView) {
-    Language language = App.config().language();
+    Language language = this.config.language();
     Tab tab = new Tab(language.translate("dialog.edit_registries.tab.%s.title".formatted(name)));
 
     Label description = new Label(language.translate("dialog.edit_registries.tab.%s.description".formatted(name)));
@@ -277,9 +286,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      */
     protected RegistryView() {
       super(4);
-      Config config = App.config();
-      Language language = config.language();
-      Theme theme = config.theme();
+      Language language = RegistriesDialog.this.config.language();
+      Theme theme = RegistriesDialog.this.config.theme();
 
       // Buttons
       Button addButton = new Button(language.translate("dialog.edit_registries.add_entry"),
@@ -452,28 +460,44 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private class LifeEventTypeRegistryView
       extends RegistryView<LifeEventTypeTableItem, LifeEventType, LifeEventTypeRegistry.RegistryArgs> {
     public LifeEventTypeRegistryView() {
-      Language language = App.config().language();
+      Language language = RegistriesDialog.this.config.language();
 
       TableColumn<LifeEventTypeTableItem, LifeEventType.Group> groupCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.life_event_types.group"));
       groupCol.setEditable(true);
-      groupCol.setCellFactory(param -> new ComboBoxTableCell<>(LifeEventType.Group.values()) {
-        @Override
-        public void updateItem(LifeEventType.Group item, boolean empty) {
-          super.updateItem(item, empty);
-          var row = this.getTableRow();
-          if (row == null) {
-            return;
+      groupCol.setCellFactory(param -> {
+        ComboBoxTableCell<LifeEventTypeTableItem, LifeEventType.Group> comboBoxTableCell =
+            new ComboBoxTableCell<>(LifeEventType.Group.values()) {
+              @Override
+              public void updateItem(LifeEventType.Group item, boolean empty) {
+                super.updateItem(item, empty);
+                this.setText(empty ? "" : language.translate("life_event_type_group." + item.name().toLowerCase()));
+                var row = this.getTableRow();
+                if (row == null) {
+                  return;
+                }
+                var rowItem = row.getItem();
+                if (rowItem == null) {
+                  return;
+                }
+                var value = rowItem.entry();
+                boolean editable = value == null || !value.isBuiltin();
+                this.setEditable(editable);
+                this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
+              }
+            };
+        comboBoxTableCell.setConverter(new StringConverter<>() {
+          @Override
+          public String toString(LifeEventType.Group group) {
+            return language.translate("life_event_type_group." + group.name().toLowerCase());
           }
-          var rowItem = row.getItem();
-          if (rowItem == null) {
-            return;
+
+          @Override
+          public LifeEventType.Group fromString(String s) {
+            return null; // No need to bother, combobox is not editable
           }
-          var value = rowItem.entry();
-          boolean editable = value == null || !value.isBuiltin();
-          this.setEditable(editable);
-          this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
-        }
+        });
+        return comboBoxTableCell;
       });
       groupCol.setCellValueFactory(param -> param.getValue().groupProperty());
 
@@ -583,10 +607,10 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     private final Button resetButton;
 
     public GenderRegistryView() {
-      Language language = App.config().language();
+      Language language = RegistriesDialog.this.config.language();
 
       this.resetButton = new Button(language.translate("dialog.edit_registries.reset_entry"),
-          App.config().theme().getIcon(Icon.RESET_ENTRY, Icon.Size.SMALL));
+          RegistriesDialog.this.config.theme().getIcon(Icon.RESET_ENTRY, Icon.Size.SMALL));
       this.resetButton.setOnAction(event -> {
         ObservableList<GenderTableItem> selectedCells = this.entriesTable.getSelectionModel().getSelectedItems();
         for (GenderTableItem selectedCell : selectedCells) {
@@ -667,7 +691,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       String label;
       boolean builtin = entry != null && entry.isBuiltin();
       if (builtin) {
-        label = App.config().language().translate(registryName + "." + entry.key().name());
+        label = RegistriesDialog.this.config.language().translate(registryName + "." + entry.key().name());
       } else if (entry != null) {
         label = Objects.requireNonNull(entry.userDefinedName());
       } else {

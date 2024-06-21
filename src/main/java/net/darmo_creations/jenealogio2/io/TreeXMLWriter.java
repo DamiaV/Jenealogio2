@@ -1,6 +1,6 @@
 package net.darmo_creations.jenealogio2.io;
 
-import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
@@ -28,8 +28,9 @@ public class TreeXMLWriter extends TreeXMLManager {
    *
    * @param familyTree   Family tree object to save.
    * @param outputStream Stream to write to.
+   * @param config       The app’s config.
    */
-  public void writeToStream(final @NotNull FamilyTree familyTree, @NotNull OutputStream outputStream) {
+  public void writeToStream(final @NotNull FamilyTree familyTree, @NotNull OutputStream outputStream, final @NotNull Config config) {
     Document document = this.newDocumentBuilder().newDocument();
 
     Element familyTreeElement = (Element) document.appendChild(document.createElement(FAMILY_TREE_TAG));
@@ -51,7 +52,7 @@ public class TreeXMLWriter extends TreeXMLManager {
       familyTreeElement.appendChild(lifeEventsElement);
     }
 
-    this.writeFile(outputStream, document);
+    this.writeFile(outputStream, document, config);
   }
 
   /**
@@ -60,12 +61,14 @@ public class TreeXMLWriter extends TreeXMLManager {
    * @param file       File to write to.
    * @param familyTree Family tree object containing entries to save.
    * @param keep       Lists of {@link RegistryEntryKey} of entries to save.
+   * @param config     The app’s config.
    * @throws IOException If any error occurs.
    */
   public void saveRegistriesToFile(
       @NotNull File file,
       final @NotNull FamilyTree familyTree,
-      final @NotNull Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep
+      final @NotNull Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep,
+      final @NotNull Config config
   ) throws IOException {
     Document document = this.newDocumentBuilder().newDocument();
     Element dummyElement = document.createElement("dummy");
@@ -74,7 +77,7 @@ public class TreeXMLWriter extends TreeXMLManager {
     document.appendChild(registriesElement);
     this.setAttr(document, registriesElement, REGISTRIES_VERSION_ATTR, String.valueOf(VERSION));
     try (var outputStream = new FileOutputStream(file)) {
-      this.writeFile(outputStream, document);
+      this.writeFile(outputStream, document, config);
     }
   }
 
@@ -512,15 +515,16 @@ public class TreeXMLWriter extends TreeXMLManager {
    *
    * @param outputStream Stream to write to.
    * @param document     XML document to write to.
+   * @param config       The app’s config.
    */
-  private void writeFile(@NotNull OutputStream outputStream, final @NotNull Document document) {
+  private void writeFile(@NotNull OutputStream outputStream, final @NotNull Document document, final @NotNull Config config) {
     Transformer tr;
     try {
       tr = this.transformerFactory.newTransformer();
     } catch (TransformerConfigurationException e) {
       throw new RuntimeException(e);
     }
-    tr.setOutputProperty(OutputKeys.INDENT, App.config().isDebug() ? "yes" : "no");
+    tr.setOutputProperty(OutputKeys.INDENT, config.isDebug() ? "yes" : "no");
     tr.setOutputProperty(OutputKeys.METHOD, "xml");
     tr.setOutputProperty(OutputKeys.STANDALONE, "yes");
     tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");

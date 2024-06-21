@@ -29,6 +29,7 @@ public class AppController {
    * The stage associated to this controller.
    */
   private final Stage stage;
+  private final Config config;
 
   private final MenuItem newFileMenuItem = new MenuItem();
   private final MenuItem openFileMenuItem = new MenuItem();
@@ -78,19 +79,19 @@ public class AppController {
 
   // Tree components
   private FamilyTreeComponent focusedComponent;
-  private final FamilyTreeView familyTreeView = new FamilyTreeView();
-  private final FamilyTreePane familyTreePane = new FamilyTreePane();
+  private final FamilyTreeView familyTreeView;
+  private final FamilyTreePane familyTreePane;
 
-  private final PersonDetailsView personDetailsView = new PersonDetailsView();
+  private final PersonDetailsView personDetailsView;
 
   // Dialogs
-  private final RegistriesDialog editRegistriesDialog = new RegistriesDialog();
-  private final EditPersonDialog editPersonDialog = new EditPersonDialog();
-  private final ManageObjectImagesDialog editPersonImagesDialog = new ManageObjectImagesDialog();
-  private final BirthdaysDialog birthdaysDialog = new BirthdaysDialog();
-  private final MapDialog mapDialog = new MapDialog();
-  private final SettingsDialog settingsDialog = new SettingsDialog();
-  private final AboutDialog aboutDialog = new AboutDialog();
+  private final RegistriesDialog editRegistriesDialog;
+  private final EditPersonDialog editPersonDialog;
+  private final ManageObjectImagesDialog editPersonImagesDialog;
+  private final BirthdaysDialog birthdaysDialog;
+  private final MapDialog mapDialog;
+  private final SettingsDialog settingsDialog;
+  private final AboutDialog aboutDialog;
 
   /**
    * Currently loaded family tree.
@@ -112,11 +113,13 @@ public class AppController {
   /**
    * Create the app’s controller.
    *
-   * @param stage App’s main stage.
+   * @param stage  App’s main stage.
+   * @param config The app’s config.
    */
-  public AppController(@NotNull Stage stage) {
+  public AppController(@NotNull Stage stage, @NotNull Config config) {
     this.stage = Objects.requireNonNull(stage);
-    Theme theme = App.config().theme();
+    this.config = Objects.requireNonNull(config);
+    Theme theme = config.theme();
     Image icon = theme.getAppIcon();
     if (icon != null) {
       stage.getIcons().add(icon);
@@ -125,10 +128,22 @@ public class AppController {
     stage.setMinHeight(200);
     stage.setTitle(App.NAME);
     stage.setMaximized(true);
+
+    this.personDetailsView = new PersonDetailsView(config);
+    this.familyTreeView = new FamilyTreeView(config);
+    this.familyTreePane = new FamilyTreePane(config);
+    this.editRegistriesDialog = new RegistriesDialog(config);
+    this.editPersonDialog = new EditPersonDialog(config);
+    this.editPersonImagesDialog = new ManageObjectImagesDialog(config);
+    this.mapDialog = new MapDialog(config);
+    this.settingsDialog = new SettingsDialog(config);
+    this.aboutDialog = new AboutDialog(config);
+
     Scene scene = new Scene(new VBox(this.createMenuBar(), this.createToolBar(), this.createContent()));
     stage.setScene(scene);
     theme.getStyleSheets().forEach(path -> scene.getStylesheets().add(path.toExternalForm()));
 
+    this.birthdaysDialog = new BirthdaysDialog(config);
     this.birthdaysDialog.personClickListeners()
         .add(event -> this.onPersonClick(event, null));
 
@@ -146,7 +161,7 @@ public class AppController {
       if (success) {
         if (!this.defaultEmptyTree && this.unsavedChanges) {
           boolean open = Alerts.confirmation(
-              "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+              config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
           if (!open) {
             success = false;
           }
@@ -163,14 +178,13 @@ public class AppController {
   private boolean isDragAndDropValid(final @NotNull Dragboard dragboard) {
     List<File> files = dragboard.getFiles();
     return dragboard.hasFiles()
-        && files.size() == 1
-        && files.get(0).getName().endsWith(TreeFileReader.EXTENSION);
+           && files.size() == 1
+           && files.get(0).getName().endsWith(TreeFileReader.EXTENSION);
   }
 
   private MenuBar createMenuBar() {
-    Config config = App.config();
-    Language language = config.language();
-    Theme theme = config.theme();
+    Language language = this.config.language();
+    Theme theme = this.config.theme();
 
     //
 
@@ -348,9 +362,8 @@ public class AppController {
   }
 
   private ToolBar createToolBar() {
-    Config config = App.config();
-    Language language = config.language();
-    Theme theme = config.theme();
+    Language language = this.config.language();
+    Theme theme = this.config.theme();
 
     ToolBar toolbar = new ToolBar();
 
@@ -468,7 +481,7 @@ public class AppController {
     this.familyTreePane.personClickListeners()
         .add(event -> this.onPersonClick(event, this.familyTreePane));
     this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
-    this.familyTreePane.setMaxHeight(App.config().maxTreeHeight());
+    this.familyTreePane.setMaxHeight(this.config.maxTreeHeight());
     splitPane.getItems().add(this.familyTreePane);
 
     this.personDetailsView.personClickListeners()
@@ -500,12 +513,12 @@ public class AppController {
       return;
     }
     this.defaultEmptyTree = true;
-    String defaultName = App.config().language().translate("app_title.undefined_tree_name");
+    String defaultName = this.config.language().translate("app_title.undefined_tree_name");
     this.setFamilyTree(new FamilyTree(defaultName), null);
   }
 
   public void onConfigUpdate() {
-    Config config = App.config();
+    Config config = this.config;
     this.familyTreePane.setMaxHeight(config.maxTreeHeight());
     this.familyTreePane.refresh();
     this.familyTreeView.refresh();
@@ -534,7 +547,7 @@ public class AppController {
    */
   private void onRenameTreeAction() {
     Optional<String> name = Alerts.textInput(
-        "alert.tree_name.header", "alert.tree_name.label", null, this.familyTree.name());
+        this.config, "alert.tree_name.header", "alert.tree_name.label", null, this.familyTree.name());
     if (name.isEmpty()) {
       return;
     }
@@ -552,13 +565,13 @@ public class AppController {
   private void onNewFileAction() {
     if (!this.defaultEmptyTree && this.unsavedChanges) {
       boolean open = Alerts.confirmation(
-          "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+          this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
       if (!open) {
         return;
       }
     }
     Optional<String> name = Alerts.textInput(
-        "alert.tree_name.header", "alert.tree_name.label", null, null);
+        this.config, "alert.tree_name.header", "alert.tree_name.label", null, null);
     if (name.isEmpty()) {
       return;
     }
@@ -574,12 +587,12 @@ public class AppController {
   private void onOpenFileAction() {
     if (!this.defaultEmptyTree && this.unsavedChanges) {
       boolean open = Alerts.confirmation(
-          "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+          this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
       if (!open) {
         return;
       }
     }
-    Optional<File> f = FileChoosers.showTreeFileChooser(this.stage, null);
+    Optional<File> f = FileChoosers.showTreeFileChooser(this.config, this.stage, null);
     if (f.isEmpty()) {
       return;
     }
@@ -600,6 +613,7 @@ public class AppController {
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
+          this.config,
           "alert.load_error.header",
           "alert.load_error.content",
           "alert.load_error.title",
@@ -622,7 +636,7 @@ public class AppController {
   private void onSaveAction() {
     File file;
     if (this.loadedFile == null) {
-      Optional<File> f = FileChoosers.showTreeFileSaver(this.stage, this.familyTree.name());
+      Optional<File> f = FileChoosers.showTreeFileSaver(this.config, this.stage, this.familyTree.name());
       if (f.isEmpty()) {
         return;
       }
@@ -645,7 +659,7 @@ public class AppController {
    * Open a file saver dialog to save the current tree to.
    */
   private void onSaveAsAction() {
-    Optional<File> f = FileChoosers.showTreeFileSaver(this.stage, this.familyTree.name());
+    Optional<File> f = FileChoosers.showTreeFileSaver(this.config, this.stage, this.familyTree.name());
     if (f.isEmpty()) {
       return;
     }
@@ -667,10 +681,11 @@ public class AppController {
   private boolean saveFile(@NotNull File file) {
     App.LOGGER.info("Saving tree to %s…".formatted(file));
     try {
-      this.treeFileWriter.saveToFile(this.familyTree, file);
+      this.treeFileWriter.saveToFile(this.familyTree, file, this.config);
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
+          this.config,
           "alert.save_error.header",
           "alert.save_error.content",
           "alert.save_error.title",
@@ -776,6 +791,7 @@ public class AppController {
     this.getSelectedPerson().ifPresent(person -> {
       if (this.familyTree.isRoot(person)) {
         Alerts.warning(
+            this.config,
             "alert.cannot_delete_root.header",
             "alert.cannot_delete_root.content",
             null,
@@ -785,7 +801,7 @@ public class AppController {
       }
 
       boolean delete = Alerts.confirmation(
-          "alert.delete_person.header", null, "alert.delete_person.title");
+          this.config, "alert.delete_person.header", null, "alert.delete_person.title");
       if (delete) {
         this.familyTree.removePerson(person);
 
@@ -852,7 +868,7 @@ public class AppController {
       fromNode = this.familyTreePane;
     }
     this.focusedComponent = fromNode;
-    if (App.config().shouldSyncTreeWithMainPane()) {
+    if (this.config.shouldSyncTreeWithMainPane()) {
       if (fromNode == this.familyTreeView) {
         this.updateSelection(event, this.familyTreePane);
       } else {
@@ -927,7 +943,7 @@ public class AppController {
   private void updateUI() {
     this.stage.setTitle("%s%s – %s%s".formatted(
         App.NAME,
-        App.config().isDebug() ? " (Debug)" : "",
+        this.config.isDebug() ? " (Debug)" : "",
         this.familyTree.name(),
         this.unsavedChanges ? "*" : ""
     ));
@@ -989,7 +1005,7 @@ public class AppController {
    * Open settings dialog.
    */
   private void onSettingsAction() {
-    this.settingsDialog.resetLocalConfig();
+    this.settingsDialog.resetLocalConfig(this.config);
     this.settingsDialog.showAndWait();
   }
 
@@ -1006,7 +1022,7 @@ public class AppController {
   private void onQuitAction() {
     if (!this.defaultEmptyTree && this.unsavedChanges) {
       boolean close = Alerts.confirmation(
-          "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+          this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
       if (!close) {
         return;
       }

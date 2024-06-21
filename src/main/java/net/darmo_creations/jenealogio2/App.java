@@ -40,13 +40,6 @@ public class App extends Application {
   private static Config config;
 
   /**
-   * Return the application’s configuration object.
-   */
-  public static Config config() {
-    return config;
-  }
-
-  /**
    * Application’s resource bundlo for the currently selected language.
    */
   private static ResourceBundle resourceBundle;
@@ -56,7 +49,7 @@ public class App extends Application {
    */
   public static ResourceBundle getResourceBundle() {
     if (resourceBundle == null) {
-      resourceBundle = config().language().resources();
+      resourceBundle = config.language().resources();
     }
     return resourceBundle;
   }
@@ -98,7 +91,7 @@ public class App extends Application {
       LOGGER.info("Debug mode is ON");
     }
     hostServices = this.getHostServices();
-    controller = new AppController(stage);
+    controller = new AppController(stage, config);
     controller.show(file);
   }
 
@@ -202,12 +195,12 @@ public class App extends Application {
         .filter(entry -> {
           String key = entry.getKey().toString();
           return !key.startsWith("user.")
-              && !key.startsWith("file.")
-              && !key.startsWith("jdk.")
-              && !key.contains(".path")
-              && !key.contains("path.")
-              && !key.equals("line.separator")
-              && !key.equals("java.home");
+                 && !key.startsWith("file.")
+                 && !key.startsWith("jdk.")
+                 && !key.contains(".path")
+                 && !key.contains("path.")
+                 && !key.equals("line.separator")
+                 && !key.equals("java.home");
         })
         .sorted(Comparator.comparing(entry -> entry.getKey().toString()))
         .forEach(property -> systemProperties.add("%s: %s".formatted(property.getKey(), property.getValue())));

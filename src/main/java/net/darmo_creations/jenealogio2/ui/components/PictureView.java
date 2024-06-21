@@ -3,6 +3,7 @@ package net.darmo_creations.jenealogio2.ui.components;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.utils.*;
@@ -21,10 +22,23 @@ public class PictureView extends HBox implements Comparable<PictureView> {
 
   private final Picture picture;
   private DateTime date;
+  private final Config config;
 
-  public PictureView(final @NotNull Picture picture, boolean showName) {
+  /**
+   * Create a new picture view.
+   *
+   * @param picture  The picture to show.
+   * @param showName Whether to show the picture’s name.
+   * @param config   The app’s config.
+   */
+  public PictureView(
+      final @NotNull Picture picture,
+      boolean showName,
+      @NotNull Config config
+  ) {
     super(5);
     this.picture = Objects.requireNonNull(picture);
+    this.config = Objects.requireNonNull(config);
     ImageView imageView = new ImageView(picture.image());
     imageView.setPreserveRatio(true);
     imageView.setFitHeight(IMAGE_SIZE);
@@ -58,8 +72,8 @@ public class PictureView extends HBox implements Comparable<PictureView> {
   public void setDate(final DateTime date) {
     this.date = date;
     if (date != null) {
-      String calDate = DateTimeUtils.formatDateTime(date, false);
-      String isoDate = DateTimeUtils.formatDateTime(date, true);
+      String calDate = DateTimeUtils.formatDateTime(date, false, this.config);
+      String isoDate = DateTimeUtils.formatDateTime(date, true, this.config);
       this.dateLabel.setText("%s (%s)".formatted(calDate, isoDate));
     } else {
       this.dateLabel.setText("-");

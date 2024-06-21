@@ -35,15 +35,15 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
 
   /**
    * Create a dialog that shows birthdays of a family tree.
+   *
+   * @param config The app’s config.
    */
-  public BirthdaysDialog() {
-    super("birthdays", true, false, ButtonTypes.CLOSE);
-
-    Config config = App.config();
-    Language language = config.language();
+  public BirthdaysDialog(final @NotNull Config config) {
+    super(config, "birthdays", true, false, ButtonTypes.CLOSE);
+    Language language = this.config.language();
 
     this.showDeceasedCheckBox.setText(language.translate("dialog.birthdays.show_deceased_birthdays"));
-    this.showDeceasedCheckBox.setSelected(config.shouldShowDeceasedPersonsBirthdays());
+    this.showDeceasedCheckBox.setSelected(this.config.shouldShowDeceasedPersonsBirthdays());
     this.showDeceasedCheckBox.selectedProperty()
         .addListener((observable, oldValue, newValue) -> this.onCheckBoxSelection(newValue));
     HBox.setMargin(this.showDeceasedCheckBox, new Insets(4));
@@ -82,7 +82,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(300);
-    this.setIcon(config.theme().getAppIcon());
+    this.setIcon(this.config.theme().getAppIcon());
   }
 
   /**
@@ -91,10 +91,9 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
    * @param selected Whether it is selected or not.
    */
   private void onCheckBoxSelection(boolean selected) {
-    Config config = App.config();
-    config.setShouldShowDeceasedPersonsBirthdays(selected);
+    this.config.setShouldShowDeceasedPersonsBirthdays(selected);
     try {
-      config.save();
+      this.config.save();
     } catch (IOException e) {
       App.LOGGER.exception(e);
     }
@@ -112,7 +111,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     this.familyTree = Objects.requireNonNull(familyTree);
     Map<Integer, Map<Integer, Set<BirthdayEntry>>> perMonth = new HashMap<>();
 
-    boolean hideDeceased = !App.config().shouldShowDeceasedPersonsBirthdays();
+    boolean hideDeceased = !this.config.shouldShowDeceasedPersonsBirthdays();
     for (Person person : familyTree.persons()) {
       if (hideDeceased && person.lifeStatus().isConsideredDeceased()) {
         continue;
@@ -198,7 +197,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     public PersonItem(@NotNull Person person, int year) {
       super(4);
       this.setAlignment(Pos.CENTER_LEFT);
-      Button button = new Button(person.toString(), App.config().theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+      Button button = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       button.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
       this.getChildren().addAll(button, new Label(String.valueOf(year)));
     }
@@ -235,7 +234,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       if (month < 1 || month > 12) {
         throw new IllegalArgumentException("invalid month value: " + month);
       }
-      this.baseTitle = App.config().language().translate("calendar.gregorian.month." + month);
+      this.baseTitle = BirthdaysDialog.this.config.language().translate("calendar.gregorian.month." + month);
       this.setText(this.baseTitle);
 
       this.entriesList.setSelectionModel(new NoSelectionModel<>());
@@ -265,7 +264,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
         return;
       }
 
-      String title = App.config().language().translate(
+      String title = BirthdaysDialog.this.config.language().translate(
           "dialog.birthdays.tab.title_amount_format",
           new FormatArg("title", this.baseTitle),
           new FormatArg("number", nb)
@@ -276,21 +275,21 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     private class DayItem extends VBox {
       public DayItem(int day, final @NotNull Set<BirthdayEntry> entries) {
         super(4);
-        Label dayLabel = new Label(day + App.config().language().getDaySuffix(day).orElse(""));
+        Label dayLabel = new Label(day + BirthdaysDialog.this.config.language().getDaySuffix(day).orElse(""));
         dayLabel.getStyleClass().add("birth-day");
         this.getChildren().add(dayLabel);
         entries.stream()
             .sorted((e1, e2) -> Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
             .forEach(e -> {
               Person person = e.person();
-              Button personButton = new Button(person.toString(), App.config().theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+              Button personButton = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
               personButton.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
               Label yearLabel = new Label(String.valueOf(e.date().getYear()));
               HBox row = new HBox(4, personButton, yearLabel);
               row.setAlignment(Pos.CENTER_LEFT);
               if (e.uncertain()) {
-                Label uncertainIcon = new Label(null, App.config().theme().getIcon(Icon.UNCERTAIN, Icon.Size.SMALL));
-                uncertainIcon.setTooltip(new Tooltip(App.config().language().translate("dialog.birthdays.uncertain")));
+                Label uncertainIcon = new Label(null, BirthdaysDialog.this.config.theme().getIcon(Icon.UNCERTAIN, Icon.Size.SMALL));
+                uncertainIcon.setTooltip(new Tooltip(BirthdaysDialog.this.config.language().translate("dialog.birthdays.uncertain")));
                 row.getChildren().add(uncertainIcon);
               }
               this.getChildren().add(row);

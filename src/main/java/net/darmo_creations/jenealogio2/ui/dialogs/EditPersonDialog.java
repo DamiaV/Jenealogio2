@@ -7,7 +7,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.converter.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
@@ -65,8 +64,8 @@ public class EditPersonDialog extends DialogBase<Person>
 
   private final Map<Person.RelativeType, RelativesListView> relativesLists = new HashMap<>();
 
-  private final SelectPersonDialog selectPersonDialog = new SelectPersonDialog();
-  private final SelectCoordinatesDialog selectCoordinatesDialog = new SelectCoordinatesDialog();
+  private final SelectPersonDialog selectPersonDialog;
+  private final SelectCoordinatesDialog selectCoordinatesDialog;
 
   /**
    * The person object being edited.
@@ -104,9 +103,13 @@ public class EditPersonDialog extends DialogBase<Person>
 
   /**
    * Create a person edit dialog.
+   *
+   * @param config The app’s config.
    */
-  public EditPersonDialog() {
-    super("edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+  public EditPersonDialog(final @NotNull Config config) {
+    super(config, "edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+    this.selectPersonDialog = new SelectPersonDialog(config);
+    this.selectCoordinatesDialog = new SelectCoordinatesDialog(config);
 
     VBox.setVgrow(this.tabPane, Priority.ALWAYS);
     this.tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -119,7 +122,7 @@ public class EditPersonDialog extends DialogBase<Person>
     Stage stage = this.stage();
     stage.setMinWidth(1000);
     stage.setMinHeight(650);
-    this.setIcon(App.config().theme().getAppIcon());
+    this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
@@ -143,8 +146,8 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private Tab createProfileTab() {
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
+    Language language = this.config.language();
+    Theme theme = this.config.theme();
 
     Tab tab = new Tab(language.translate("dialog.edit_person.profile.title"));
     tab.setGraphic(theme.getIcon(Icon.PROFILE_TAB, Icon.Size.SMALL));
@@ -284,8 +287,8 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private Tab createEventsTab() {
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
+    Language language = this.config.language();
+    Theme theme = this.config.theme();
 
     Tab tab = new Tab(language.translate("dialog.edit_person.events.title"));
     tab.setGraphic(theme.getIcon(Icon.LIFE_EVENTS_TAB, Icon.Size.SMALL));
@@ -315,8 +318,8 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private Tab createParentsTab() {
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
+    Language language = this.config.language();
+    Theme theme = this.config.theme();
 
     Tab tab = new Tab(language.translate("dialog.edit_person.parents.title"));
     tab.setGraphic(theme.getIcon(Icon.FAMILY_TAB, Icon.Size.SMALL));
@@ -362,7 +365,7 @@ public class EditPersonDialog extends DialogBase<Person>
 
     int i = 1;
     for (Person.RelativeType type : Person.RelativeType.values()) {
-      RelativesListView component = new RelativesListView();
+      RelativesListView component = new RelativesListView(this.config);
       component.setPersonRequestListener(this);
       this.relativesLists.put(type, component);
       Label label = new Label(language.translate(
@@ -386,14 +389,14 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private void addRow(@NotNull GridPane gridPane, int index, @NotNull String text, @NotNull Node node) {
-    gridPane.addRow(index, new Label(App.config().language().translate(text)), node);
+    gridPane.addRow(index, new Label(this.config.language().translate(text)), node);
   }
 
   /**
    * Update the gender entries in the genders combobox.
    */
   public void updateGendersList() {
-    Language language = App.config().language();
+    Language language = this.config.language();
     Collator collator = Collator.getInstance(language.locale());
     this.genderCombo.getItems().clear();
     this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("genders.unknown")));
@@ -419,7 +422,7 @@ public class EditPersonDialog extends DialogBase<Person>
   public void setPerson(Person person, final @NotNull List<ChildInfo> childInfo, @NotNull FamilyTree familyTree) {
     this.childInfo = new ArrayList<>(childInfo);
     this.familyTree = Objects.requireNonNull(familyTree);
-    Language language = App.config().language();
+    Language language = this.config.language();
 
     this.creating = person == null;
     if (!this.creating) {
@@ -479,7 +482,7 @@ public class EditPersonDialog extends DialogBase<Person>
    * @param parent2 Person to set as parent 2.
    */
   public void setParents(Person parent1, Person parent2) {
-    Language language = App.config().language();
+    Language language = this.config.language();
     String cssClass = "unknown";
     ObservableList<String> styleClass1 = this.parent1Label.getStyleClass();
     if (parent1 != null) {
@@ -584,7 +587,7 @@ public class EditPersonDialog extends DialogBase<Person>
    */
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
     LifeEventView lifeEventView = new LifeEventView(
-        this.familyTree, lifeEvent, this.person, expanded, this.lifeEventsList);
+        this.familyTree, lifeEvent, this.person, expanded, this.lifeEventsList, this.config);
     lifeEventView.setPersonRequestListener(this);
     lifeEventView.setCoordinatesRequestListener(this);
     lifeEventView.getDeletionListeners().add(this::onEventDelete);
@@ -614,7 +617,8 @@ public class EditPersonDialog extends DialogBase<Person>
    */
   private void onEventDelete(@NotNull LifeEventView lifeEventView) {
     String prefix = "alert.delete_life_event.";
-    boolean delete = Alerts.confirmation(prefix + "header", prefix + "content", prefix + "title");
+    boolean delete = Alerts.confirmation(
+        this.config, prefix + "header", prefix + "content", prefix + "title");
     if (delete) {
       this.eventsToDelete.add(lifeEventView);
       this.lifeEventsList.getItems().remove(lifeEventView);

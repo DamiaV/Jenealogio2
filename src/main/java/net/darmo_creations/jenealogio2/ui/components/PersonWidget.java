@@ -6,6 +6,7 @@ import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -30,6 +31,7 @@ public class PersonWidget extends AnchorPane {
   public static final Image ADD_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "add_person_image.png"));
 
+  private final Config config;
   private final List<ClickListener> clickListeners = new LinkedList<>();
 
   private final Person person;
@@ -54,10 +56,18 @@ public class PersonWidget extends AnchorPane {
    * @param showMoreIcon Whether to show the “plus” icon.
    * @param isTarget     Whether the widget is targetted.
    * @param isRoot       Whether the person is the tree’s root.
+   * @param config       The app’s config.
    */
-  public PersonWidget(final Person person, final @NotNull List<ChildInfo> childInfo,
-                      boolean showMoreIcon, boolean isTarget, boolean isRoot) {
+  public PersonWidget(
+      final Person person,
+      final @NotNull List<ChildInfo> childInfo,
+      boolean showMoreIcon,
+      boolean isTarget,
+      boolean isRoot,
+      final @NotNull Config config
+  ) {
     this.person = person;
+    this.config = Objects.requireNonNull(config);
     this.childInfo.addAll(childInfo);
     this.getStyleClass().add("person-widget");
     if (isTarget) {
@@ -87,13 +97,13 @@ public class PersonWidget extends AnchorPane {
     HBox iconsRightBox = new HBox(4);
     iconsBox.setRight(iconsRightBox);
     if (isRoot) {
-      Label rootIcon = new Label("", App.config().theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
-      rootIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.root.tooltip")));
+      Label rootIcon = new Label("", config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+      rootIcon.setTooltip(new Tooltip(config.language().translate("person_widget.root.tooltip")));
       iconsRightBox.getChildren().add(rootIcon);
     }
     if (showMoreIcon) {
-      Label moreIcon = new Label("", App.config().theme().getIcon(Icon.MORE, Icon.Size.SMALL));
-      moreIcon.setTooltip(new Tooltip(App.config().language().translate("person_widget.more_icon.tooltip")));
+      Label moreIcon = new Label("", config.theme().getIcon(Icon.MORE, Icon.Size.SMALL));
+      moreIcon.setTooltip(new Tooltip(config.language().translate("person_widget.more_icon.tooltip")));
       iconsRightBox.getChildren().add(moreIcon);
     }
     pane.getChildren().add(iconsBox);
@@ -227,13 +237,13 @@ public class PersonWidget extends AnchorPane {
 
     String birthYear = this.person.getBirthDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
     this.birthDateLabel.setText(birthYear);
-    this.birthDateLabel.setGraphic(App.config().theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
+    this.birthDateLabel.setGraphic(this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
     this.birthDateLabel.setTooltip(new Tooltip(birthYear));
 
     if (this.person.lifeStatus().isConsideredDeceased()) {
       String deathYear = this.person.getDeathDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
       this.deathDateLabel.setText(deathYear);
-      this.deathDateLabel.setGraphic(App.config().theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
+      this.deathDateLabel.setGraphic(this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.deathDateLabel.setTooltip(new Tooltip(deathYear));
     }
   }

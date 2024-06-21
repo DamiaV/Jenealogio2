@@ -24,20 +24,21 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   private final ComboBox<NotNullComboBoxItem<TimeFormat>> timeFormatCombo = new ComboBox<>();
   private final Spinner<Integer> maxTreeHeightField = new Spinner<>(1, 7, 1);
 
-  private Config initialConfig;
   private Config localConfig;
 
   /**
    * Create a settings dialog.
+   *
+   * @param config The app’s config.
    */
-  public SettingsDialog() {
-    super("settings", false, ButtonTypes.OK, ButtonTypes.CANCEL);
+  public SettingsDialog(final @NotNull Config config) {
+    super(config, "settings", false, ButtonTypes.OK, ButtonTypes.CANCEL);
 
     VBox content = new VBox(this.createInterfaceForm(), new Separator(), this.createTreeForm());
     content.setPrefWidth(500);
     this.getDialogPane().setContent(content);
 
-    this.setIcon(App.config().theme().getAppIcon());
+    this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
@@ -47,11 +48,11 @@ public class SettingsDialog extends DialogBase<ButtonType> {
             App.updateConfig(this.localConfig);
             this.localConfig.save();
             if (changeType.needsRestart()) {
-              Alerts.info("dialog.settings.alert.needs_restart.header", null, null);
+              Alerts.info(config, "dialog.settings.alert.needs_restart.header", null, null);
             }
           } catch (IOException e) {
             App.LOGGER.exception(e);
-            Alerts.error("dialog.settings.alert.save_error.header", null, null);
+            Alerts.error(config, "dialog.settings.alert.save_error.header", null, null);
           }
         }
       }
@@ -60,7 +61,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   }
 
   private BorderPane createInterfaceForm() {
-    Language language = App.config().language();
+    Language language = this.config.language();
     this.languageCombo.getItems().addAll(Config.languages());
     this.languageCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
@@ -106,7 +107,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
 
   @SuppressWarnings("unchecked")
   private BorderPane getBorderPane(@NotNull String title, final Pair<String, ? extends Control>... rows) {
-    Label titleLabel = new Label(App.config().language().translate(title));
+    Label titleLabel = new Label(this.config.language().translate(title));
     BorderPane.setAlignment(titleLabel, Pos.CENTER);
 
     GridPane gridPane = new GridPane();
@@ -116,7 +117,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     BorderPane.setAlignment(gridPane, Pos.CENTER);
 
     for (int i = 0; i < rows.length; i++) {
-      Label nodeLabel = new Label(App.config().language().translate(rows[i].left()));
+      Label nodeLabel = new Label(this.config.language().translate(rows[i].left()));
       GridPane.setHalignment(nodeLabel, HPos.RIGHT);
       Node node = rows[i].right();
       GridPane.setHalignment(node, HPos.LEFT);
@@ -138,10 +139,12 @@ public class SettingsDialog extends DialogBase<ButtonType> {
 
   /**
    * Reset the local {@link Config} object of this dialog.
+   *
+   * @param config The app’s config.
    */
-  public void resetLocalConfig() {
-    this.localConfig = App.config().clone();
-    this.initialConfig = this.localConfig.clone();
+  public void resetLocalConfig(final @NotNull Config config) {
+    this.config = config.clone();
+    this.localConfig = config.clone();
 
     this.languageCombo.getSelectionModel().select(this.localConfig.language());
     this.themeCombo.getSelectionModel().select(this.localConfig.theme());
@@ -166,11 +169,11 @@ public class SettingsDialog extends DialogBase<ButtonType> {
    * @return The type of change.
    */
   private ChangeType configChanged() {
-    if (!this.localConfig.language().equals(this.initialConfig.language())
-        || !this.localConfig.theme().equals(this.initialConfig.theme())) {
+    if (!this.localConfig.language().equals(this.config.language())
+        || !this.localConfig.theme().equals(this.config.theme())) {
       return ChangeType.NEEDS_RESTART;
     }
-    return !this.localConfig.equals(this.initialConfig) ? ChangeType.NO_RESTART_NEEDED : ChangeType.NONE;
+    return !this.localConfig.equals(this.config) ? ChangeType.NO_RESTART_NEEDED : ChangeType.NONE;
   }
 
   private void onLanguageSelect(@NotNull Language newValue) {

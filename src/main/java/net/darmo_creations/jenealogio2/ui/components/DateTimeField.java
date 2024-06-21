@@ -4,7 +4,6 @@ import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.util.converter.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
@@ -28,6 +27,7 @@ public class DateTimeField extends HBox {
       Calendars.ETHIOPIAN,
   };
 
+  private final Config config;
   private final TextField yearField = new TextField();
   private final ComboBox<String> monthField = new ComboBox<>();
   private final TextField dayField = new TextField();
@@ -39,9 +39,12 @@ public class DateTimeField extends HBox {
 
   /**
    * Create an empty date-time field.
+   *
+   * @param config The app’s config.
    */
-  public DateTimeField() {
+  public DateTimeField(final @NotNull Config config) {
     super(4);
+    this.config = config;
 
     this.setupField(this.yearField, 50, "year", true);
     this.monthField.getSelectionModel().selectedItemProperty()
@@ -50,7 +53,7 @@ public class DateTimeField extends HBox {
     this.setupField(this.hourField, 40, "hour", false);
     this.setupField(this.minuteField, 40, "minute", false);
 
-    Language language = App.config().language();
+    Language language = this.config.language();
     for (Calendar<?> calendar : CALENDARS) {
       this.calendarField.getItems()
           .add(new NotNullComboBoxItem<>(calendar, language.translate("calendar.%s.name".formatted(calendar.name()))));
@@ -92,7 +95,7 @@ public class DateTimeField extends HBox {
         change -> change.getControlNewText().matches(regex) ? change : null
     ));
     textField.setPrefWidth(width);
-    textField.setPromptText(App.config().language().translate("date_time_field.%s.prompt".formatted(name)));
+    textField.setPromptText(this.config.language().translate("date_time_field.%s.prompt".formatted(name)));
     textField.textProperty().addListener((observable, oldValue, newValue) -> this.notifyListeners());
   }
 
@@ -147,7 +150,7 @@ public class DateTimeField extends HBox {
    */
   private void updateMonths(@NotNull Calendar<?> calendar) {
     this.monthField.getItems().clear();
-    Language language = App.config().language();
+    Language language = this.config.language();
     String name = calendar.name();
     for (int i = 1; i <= calendar.lengthOfYearInMonths(); i++) {
       this.monthField.getItems().add(language.translate("calendar.%s.month.%d".formatted(name, i)));

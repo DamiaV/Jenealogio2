@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.ui.events.*;
@@ -25,6 +26,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
   private static final int HGAP = 10;
   private static final int VGAP = 20;
 
+  private final Config config;
   private final ObservableList<PersonWidget> personWidgets = FXCollections.observableList(new ArrayList<>());
   private final Pane pane = new Pane();
   private final ScrollPane scrollPane = new ScrollPane(this.pane);
@@ -35,8 +37,11 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
   /**
    * Create an empty family tree pane.
+   *
+   * @param config The app’s config.
    */
-  public FamilyTreePane() {
+  public FamilyTreePane(final @NotNull Config config) {
+    this.config = Objects.requireNonNull(config);
     this.setOnMouseClicked(this::onBackgroundClicked);
     this.scrollPane.setPannable(true);
     this.scrollPane.getStyleClass().add("no-focus-scroll-pane");
@@ -367,7 +372,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    */
   private PersonWidget createWidget(final Person person, final @NotNull List<ChildInfo> childInfo,
                                     boolean showMoreIcon, boolean isTarget, @NotNull FamilyTree familyTree) {
-    PersonWidget w = new PersonWidget(person, childInfo, showMoreIcon, isTarget, familyTree.isRoot(person));
+    PersonWidget w = new PersonWidget(person, childInfo, showMoreIcon, isTarget, familyTree.isRoot(person), this.config);
     this.pane.getChildren().add(w);
     this.personWidgets.add(w);
     w.clickListeners().add(this::onPersonWidgetClick);

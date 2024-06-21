@@ -3,7 +3,6 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.stage.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -16,27 +15,31 @@ import java.util.*;
  * @param <T> Type of returned values.
  */
 public abstract class DialogBase<T> extends Dialog<T> {
+  protected Config config;
+
   /**
    * Create a modal dialog.
    *
+   * @param config      The app’s config.
    * @param name        Dialog’s name. Used for the title’s translation key.
    * @param resizable   Whether the dialog should be resizable.
    * @param buttonTypes The dialog’s button types.
    */
-  public DialogBase(@NotNull String name, boolean resizable, ButtonType @NotNull ... buttonTypes) {
-    this(name, resizable, true, buttonTypes);
+  public DialogBase(@NotNull Config config, @NotNull String name, boolean resizable, ButtonType @NotNull ... buttonTypes) {
+    this(config, name, resizable, true, buttonTypes);
   }
 
   /**
    * Create a dialog.
    *
+   * @param config      The app’s config.
    * @param name        Dialog’s name. Used for the title’s translation key.
    * @param resizable   Whether the dialog should be resizable.
    * @param modal       Whether this dialog should be modal.
    * @param buttonTypes The dialog’s button types.
    */
-  public DialogBase(@NotNull String name, boolean resizable, boolean modal, ButtonType @NotNull ... buttonTypes) {
-    Config config = App.config();
+  public DialogBase(@NotNull Config config, @NotNull String name, boolean resizable, boolean modal, ButtonType @NotNull ... buttonTypes) {
+    this.config = config;
     config.theme().getStyleSheets()
         .forEach(url -> this.stage().getScene().getStylesheets().add(url.toExternalForm()));
     this.initModality(modal ? Modality.APPLICATION_MODAL : Modality.NONE);

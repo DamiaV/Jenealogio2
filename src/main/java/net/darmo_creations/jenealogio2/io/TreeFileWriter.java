@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.io;
 
 import javafx.embed.swing.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import org.jetbrains.annotations.*;
 
@@ -19,20 +20,21 @@ public class TreeFileWriter extends TreeFileManager {
    *
    * @param familyTree Family tree object to save.
    * @param file       File to write to.
+   * @param config     The app’s config.
    * @throws IOException If any error occurs.
    */
-  public void saveToFile(final @NotNull FamilyTree familyTree, @NotNull File file) throws IOException {
+  public void saveToFile(final @NotNull FamilyTree familyTree, @NotNull File file, final @NotNull Config config) throws IOException {
     try (var out = new ZipOutputStream(new FileOutputStream(file))) {
-      this.writeTreeXML(familyTree, out);
+      this.writeTreeXML(familyTree, out, config);
       for (Picture image : familyTree.pictures()) {
         this.writeImageFile(image, out);
       }
     }
   }
 
-  private void writeTreeXML(@NotNull FamilyTree familyTree, ZipOutputStream out) throws IOException {
+  private void writeTreeXML(@NotNull FamilyTree familyTree, ZipOutputStream out, final @NotNull Config config) throws IOException {
     out.putNextEntry(new ZipEntry(TREE_FILE));
-    this.treeXMLWriter.writeToStream(familyTree, out);
+    this.treeXMLWriter.writeToStream(familyTree, out, config);
     out.closeEntry();
   }
 

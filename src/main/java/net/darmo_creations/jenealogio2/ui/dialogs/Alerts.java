@@ -5,7 +5,6 @@ import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -19,45 +18,64 @@ public final class Alerts {
   /**
    * Open an alert dialog to show some information.
    *
+   * @param config      The app’s config.
    * @param headerKey   Header text key.
    * @param contentKey  Content text key.
    * @param titleKey    Title key.
    * @param contentArgs Format arguments to apply to the header, content and title.
    */
   public static void info(
-      @NotNull String headerKey, String contentKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
-    alert(Alert.AlertType.INFORMATION, headerKey, contentKey, titleKey, contentArgs);
+      final @NotNull Config config,
+      @NotNull String headerKey,
+      String contentKey,
+      String titleKey,
+      final FormatArg @NotNull ... contentArgs
+  ) {
+    alert(config, Alert.AlertType.INFORMATION, headerKey, contentKey, titleKey, contentArgs);
   }
 
   /**
    * Open an alert dialog to show a warning message.
    *
+   * @param config      The app’s config.
    * @param headerKey   Header text key.
    * @param contentKey  Content text key.
    * @param titleKey    Title key.
    * @param contentArgs Format arguments to apply to the header, content and title.
    */
   public static void warning(
-      @NotNull String headerKey, String contentKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
-    alert(Alert.AlertType.WARNING, headerKey, contentKey, titleKey, contentArgs);
+      final @NotNull Config config,
+      @NotNull String headerKey,
+      String contentKey,
+      String titleKey,
+      final FormatArg @NotNull ... contentArgs
+  ) {
+    alert(config, Alert.AlertType.WARNING, headerKey, contentKey, titleKey, contentArgs);
   }
 
   /**
    * Open an alert dialog to show an error message.
    *
+   * @param config      The app’s config.
    * @param headerKey   Header text key.
    * @param contentKey  Content text key.
    * @param titleKey    Title key.
    * @param contentArgs Format arguments to apply to the header, content and title.
    */
   public static void error(
-      @NotNull String headerKey, String contentKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
-    alert(Alert.AlertType.ERROR, headerKey, contentKey, titleKey, contentArgs);
+      final @NotNull Config config,
+      @NotNull String headerKey,
+      String contentKey,
+      String titleKey,
+      final FormatArg @NotNull ... contentArgs
+  ) {
+    alert(config, Alert.AlertType.ERROR, headerKey, contentKey, titleKey, contentArgs);
   }
 
   /**
    * Open an alert dialog to prompt the user for confirmation.
    *
+   * @param config      The app’s config.
    * @param headerKey   Header text key.
    * @param contentKey  Content text key.
    * @param titleKey    Title key.
@@ -65,14 +83,20 @@ public final class Alerts {
    * @return True if the user clicked OK, false if they clicked CANCEL or dismissed the dialog.
    */
   public static boolean confirmation(
-      @NotNull String headerKey, String contentKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
-    Optional<ButtonType> result = alert(Alert.AlertType.CONFIRMATION, headerKey, contentKey, titleKey, contentArgs);
+      final @NotNull Config config,
+      @NotNull String headerKey,
+      String contentKey,
+      String titleKey,
+      final FormatArg @NotNull ... contentArgs
+  ) {
+    Optional<ButtonType> result = alert(config, Alert.AlertType.CONFIRMATION, headerKey, contentKey, titleKey, contentArgs);
     return result.isPresent() && !result.get().getButtonData().isCancelButton();
   }
 
   /**
    * Open an alert dialog to ask the user to choose an option from a combobox.
    *
+   * @param config      The app’s config.
    * @param headerKey   Header text key.
    * @param labelKey    Combobox label text key.
    * @param titleKey    Title key.
@@ -81,6 +105,7 @@ public final class Alerts {
    * @return The selected item.
    */
   public static <T> Optional<T> chooser(
+      final @NotNull Config config,
       @NotNull String headerKey,
       @NotNull String labelKey,
       String titleKey,
@@ -90,12 +115,12 @@ public final class Alerts {
     if (choices.isEmpty()) {
       throw new IllegalArgumentException("empty choices");
     }
-    Alert alert = getAlert(Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
+    Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
     HBox hBox = new HBox(4);
     ComboBox<T> choicesCombo = new ComboBox<>();
     choicesCombo.getItems().addAll(choices);
     choicesCombo.getSelectionModel().select(0);
-    Label label = new Label(App.config().language().translate(labelKey, contentArgs));
+    Label label = new Label(config.language().translate(labelKey, contentArgs));
     hBox.getChildren().addAll(label, choicesCombo);
     hBox.setAlignment(Pos.CENTER);
     alert.getDialogPane().setContent(hBox);
@@ -113,6 +138,7 @@ public final class Alerts {
   /**
    * Open an alert dialog to prompt the use to input some text.
    *
+   * @param config      The app’s config.
    * @param headerKey   Header text key.
    * @param labelKey    Text field label text key.
    * @param titleKey    Title key.
@@ -121,19 +147,20 @@ public final class Alerts {
    * @return The selected item.
    */
   public static Optional<String> textInput(
+      final @NotNull Config config,
       @NotNull String headerKey,
       @NotNull String labelKey,
       String titleKey,
       String defaultText,
       final FormatArg @NotNull ... contentArgs
   ) {
-    Alert alert = getAlert(Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
+    Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
     HBox hBox = new HBox(4);
     TextField textField = new TextField();
     textField.textProperty().addListener((observable, oldValue, newValue) ->
         alert.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(StringUtils.stripNullable(newValue).isEmpty()));
     textField.setText(defaultText);
-    Label label = new Label(App.config().language().translate(labelKey, contentArgs));
+    Label label = new Label(config.language().translate(labelKey, contentArgs));
     hBox.getChildren().addAll(label, textField);
     hBox.setAlignment(Pos.CENTER);
     alert.getDialogPane().setContent(hBox);
@@ -149,15 +176,16 @@ public final class Alerts {
   }
 
   private static Optional<ButtonType> alert(
+      final @NotNull Config config,
       @NotNull Alert.AlertType type,
       @NotNull String headerKey,
       String contentKey,
       String titleKey,
       final @NotNull FormatArg... contentArgs
   ) {
-    Alert alert = getAlert(type, headerKey, titleKey, contentArgs);
+    Alert alert = getAlert(config, type, headerKey, titleKey, contentArgs);
     if (contentKey != null) {
-      alert.setContentText(App.config().language().translate(contentKey, contentArgs));
+      alert.setContentText(config.language().translate(contentKey, contentArgs));
     }
     return alert.showAndWait();
   }
@@ -165,6 +193,7 @@ public final class Alerts {
   /**
    * Create a basic alert dialog.
    *
+   * @param config      The app’s config.
    * @param type        Alert type. {@link Alert.AlertType#NONE} is not allowed.
    * @param headerKey   Header text key.
    * @param titleKey    Title key.
@@ -172,7 +201,12 @@ public final class Alerts {
    * @return The alert dialog.
    */
   private static Alert getAlert(
-      @NotNull Alert.AlertType type, @NotNull String headerKey, String titleKey, final FormatArg @NotNull ... contentArgs) {
+      final @NotNull Config config,
+      @NotNull Alert.AlertType type,
+      @NotNull String headerKey,
+      String titleKey,
+      final FormatArg @NotNull ... contentArgs
+  ) {
     if (type == Alert.AlertType.NONE) {
       throw new IllegalArgumentException(type.name());
     }
@@ -184,15 +218,15 @@ public final class Alerts {
       case CONFIRMATION -> List.of(ButtonTypes.OK, ButtonTypes.CANCEL);
       case NONE -> throw new IllegalArgumentException(type.name()); // Should never happen
     });
-    App.config().theme().getStyleSheets()
+    config.theme().getStyleSheets()
         .forEach(url -> dialogPane.getStylesheets().add(url.toExternalForm()));
     if (titleKey == null) {
       titleKey = "alert.%s.title".formatted(type.name().toLowerCase());
     }
-    Language language = App.config().language();
+    Language language = config.language();
     alert.setTitle(language.translate(titleKey));
     alert.setHeaderText(language.translate(headerKey, contentArgs));
-    ((Stage) dialogPane.getScene().getWindow()).getIcons().add(App.config().theme().getAppIcon());
+    ((Stage) dialogPane.getScene().getWindow()).getIcons().add(config.theme().getAppIcon());
     return alert;
   }
 

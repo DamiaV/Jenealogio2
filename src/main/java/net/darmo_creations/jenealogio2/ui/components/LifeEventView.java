@@ -7,7 +7,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.util.converter.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -24,10 +23,10 @@ import java.util.*;
  */
 public class LifeEventView extends TitledPane implements PersonRequester, CoordinatesRequester {
   private final Label titleLabel = new Label();
-  private final DateLabel dateLabel = new DateLabel(null);
+  private final DateLabel dateLabel;
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
-  private final CalendarDateField dateField = new CalendarDateField();
+  private final CalendarDateField dateField;
   private final TextField placeAddressField = new TextField();
   private final PlaceAutoCompletionBinding placeAutoCompletionBinding;
   private final TextField placeLatField = new TextField();
@@ -44,6 +43,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   private final FamilyTree familyTree;
   private final LifeEvent lifeEvent;
   private final Person person;
+  private final Config config;
   private Person partner;
 
   private final List<DeletionListener> deletionListeners = new LinkedList<>();
@@ -59,21 +59,24 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    * @param person    Person object that acts in the life event object.
    * @param expanded  Whether to expand this form by default.
    * @param parent    Parent {@link ListView} component.
+   * @param config    The app’s config.
    */
   public LifeEventView(
       @NotNull FamilyTree familyTree,
       @NotNull LifeEvent lifeEvent,
       @NotNull Person person,
       boolean expanded,
-      final @NotNull ListView<LifeEventView> parent
+      final @NotNull ListView<LifeEventView> parent,
+      final @NotNull Config config
   ) {
     this.familyTree = Objects.requireNonNull(familyTree);
     this.lifeEvent = Objects.requireNonNull(lifeEvent);
     this.person = Objects.requireNonNull(person);
+    this.config = config;
     this.setAnimated(false);
     this.setExpanded(expanded);
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
+    Language language = config.language();
+    Theme theme = config.theme();
 
     BorderPane borderPane = new BorderPane();
     Button deleteButton = new Button("", theme.getIcon(Icon.DELETE_EVENT, Icon.Size.SMALL));
@@ -81,6 +84,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     deleteButton.setOnAction(event -> this.onDelete());
     BorderPane.setAlignment(this.titleLabel, Pos.CENTER_LEFT);
     borderPane.setLeft(this.titleLabel);
+    this.dateLabel = new DateLabel(null, this.config);
     this.dateLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
     borderPane.setRight(new HBox(4, this.dateLabel, deleteButton));
     borderPane.prefWidthProperty().bind(parent.widthProperty().subtract(70));
@@ -98,12 +102,13 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     AnchorPane.setRightAnchor(gridPane, 10.0);
     anchorPane.getChildren().add(gridPane);
 
-    populateEventTypeCombo(familyTree, this.eventTypeCombo);
+    populateEventTypeCombo(familyTree, this.eventTypeCombo, config);
     this.eventTypeCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onEventTypeChange(newValue));
     gridPane.addRow(0, new Label(language.translate("life_event_view.type")), this.eventTypeCombo);
 
     this.populateDatePrecisionCombo();
+    this.dateField = new CalendarDateField(config);
     this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> {
           this.dateField.setDateType(newValue.data());
@@ -226,7 +231,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   }
 
   private void onLookupPlaceLatLon() {
-    this.loadingLabel.setGraphic(App.config().theme().getIcon(Icon.LOADING, Icon.Size.SMALL));
+    this.loadingLabel.setGraphic(this.config.theme().getIcon(Icon.LOADING, Icon.Size.SMALL));
     this.fetchLatLonButton.setDisable(true);
     StringUtils.stripNullable(this.placeAddressField.getText())
         .ifPresent(address ->
@@ -337,7 +342,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       valid = false;
     }
     boolean invalidPartner = this.eventTypeCombo.getSelectionModel().getSelectedItem().data().maxActors() > 1
-        && this.partner == null;
+                             && this.partner == null;
     this.partnerLabel.pseudoClassStateChanged(PseudoClasses.INVALID, invalidPartner);
     valid &= !invalidPartner;
     this.pseudoClassStateChanged(PseudoClasses.INVALID, !valid);
@@ -443,10 +448,12 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    *
    * @param familyTree     The tree to get {@link LifeEventType}s from.
    * @param eventTypeCombo The {@link ComboBox} to populate.
+   * @param config         The app’s config.
    */
   public static void populateEventTypeCombo(
       final @NotNull FamilyTree familyTree,
-      @NotNull ComboBox<? super NotNullComboBoxItem<LifeEventType>> eventTypeCombo
+      @NotNull ComboBox<? super NotNullComboBoxItem<LifeEventType>> eventTypeCombo,
+      final @NotNull Config config
   ) {
     Map<LifeEventType.Group, List<LifeEventType>> groups = new HashMap<>();
     for (LifeEventType eventType : familyTree.lifeEventTypeRegistry().entries()) {
@@ -457,7 +464,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       groups.get(group).add(eventType);
     }
 
-    Language language = App.config().language();
+    Language language = config.language();
     Collator collator = Collator.getInstance(language.locale());
     for (LifeEventType.Group group : LifeEventType.Group.values()) {
       List<LifeEventType> types = groups.get(group);
@@ -479,7 +486,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   private void populateDatePrecisionCombo() {
     for (CalendarDateField.DateType dateType : CalendarDateField.DateType.values()) {
       this.datePrecisionCombo.getItems()
-          .add(new NotNullComboBoxItem<>(dateType, App.config().language().translate(dateType.key())));
+          .add(new NotNullComboBoxItem<>(dateType, this.config.language().translate(dateType.key())));
     }
   }
 
@@ -523,7 +530,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       this.partnerLabel.setText(this.partner.toString());
       styleClass.remove(cssClass);
     } else {
-      this.partnerLabel.setText(App.config().language().translate("life_event_view.partner.not_set"));
+      this.partnerLabel.setText(this.config.language().translate("life_event_view.partner.not_set"));
       if (!styleClass.contains(cssClass)) {
         styleClass.add(cssClass);
       }

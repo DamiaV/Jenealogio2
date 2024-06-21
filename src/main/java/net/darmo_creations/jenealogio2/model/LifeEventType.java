@@ -1,6 +1,5 @@
 package net.darmo_creations.jenealogio2.model;
 
-import net.darmo_creations.jenealogio2.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -174,12 +173,6 @@ public final class LifeEventType extends RegistryEntry {
     RELATIONSHIP,
     RELIGION,
 
-    OTHER;
-
-    @Override
-    public String toString() {
-      String key = "life_event_type_group." + this.name().toLowerCase();
-      return App.config().language().translate(key);
-    }
+    OTHER,
   }
 }

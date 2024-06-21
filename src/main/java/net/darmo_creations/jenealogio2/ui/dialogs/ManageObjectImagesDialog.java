@@ -5,7 +5,6 @@ import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -20,8 +19,8 @@ import java.util.*;
  * This dialog manages the images of {@link GenealogyObject}s.
  */
 public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
-  private final SelectImageDialog selectImageDialog = new SelectImageDialog();
-  private final EditImageDialog editImageDialog = new EditImageDialog();
+  private final SelectImageDialog selectImageDialog;
+  private final EditImageDialog editImageDialog;
 
   private final Label buttonDescriptionLabel = new Label();
 
@@ -59,12 +58,19 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
    */
   private FamilyTree familyTree;
 
-  public ManageObjectImagesDialog() {
-    super("manage_object_images", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+  /**
+   * Create a new dialog to manage images.
+   *
+   * @param config The app’s config.
+   */
+  public ManageObjectImagesDialog(final @NotNull Config config) {
+    super(config, "manage_object_images", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Config config = App.config();
     Language language = config.language();
     Theme theme = config.theme();
+
+    this.selectImageDialog = new SelectImageDialog(config);
+    this.editImageDialog = new EditImageDialog(config);
 
     VBox content = new VBox(5);
     content.getChildren().add(new HBox(5,
@@ -162,7 +168,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     this.picturesToDelete.clear();
     this.picturesToRemove.clear();
     this.picturesToAdd.clear();
-    Language language = App.config().language();
+    Language language = this.config.language();
     this.setTitle(language.translate("dialog.manage_object_images.title",
         new FormatArg("name", object.name(language))));
     Optional<Picture> image = this.genealogyObject.mainPicture();
@@ -172,7 +178,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     this.removeMainImageButton.setDisable(image.isEmpty());
     this.imagesList.getItems().clear();
     for (Picture picture : this.genealogyObject.pictures()) {
-      this.imagesList.getItems().add(new PictureView(picture, true));
+      this.imagesList.getItems().add(new PictureView(picture, true, this.config));
     }
     this.imagesList.getItems().sort(null);
     this.updateButtons();
@@ -208,7 +214,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     this.selectImageDialog.updateImageList(this.familyTree, exclusionList);
     this.selectImageDialog.showAndWait().ifPresent(pictures -> {
       pictures.forEach(p -> {
-        PictureView pv = new PictureView(p, true);
+        PictureView pv = new PictureView(p, true, this.config);
         this.imagesList.getItems().add(pv);
         this.imagesList.scrollTo(pv);
         this.picturesToAdd.add(p);
@@ -242,7 +248,8 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     if (selection.isEmpty()) {
       return;
     }
-    if (!Alerts.confirmation("alert.delete_images.header", null, "alert.delete_images.title")) {
+    if (!Alerts.confirmation(
+        this.config, "alert.delete_images.header", null, "alert.delete_images.title")) {
       return;
     }
     selection.forEach(pv -> {
@@ -280,7 +287,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   }
 
   private void showButtonDescription(boolean show, String i18nKey) {
-    this.buttonDescriptionLabel.setText(show ? App.config().language().translate(i18nKey + ".tooltip") : null);
+    this.buttonDescriptionLabel.setText(show ? this.config.language().translate(i18nKey + ".tooltip") : null);
   }
 
   private List<PictureView> getSelectedImages() {
@@ -297,8 +304,8 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     boolean not1Selected = selectedItems.size() != 1;
     this.setAsMainImageButton.setDisable(
         not1Selected ||
-            selectedItems.get(0) != null // Selection list sometimes contains null
-                && selectedItems.get(0).picture().equals(this.mainPicture)
+        selectedItems.get(0) != null // Selection list sometimes contains null
+        && selectedItems.get(0).picture().equals(this.mainPicture)
     );
     this.editImageDescButton.setDisable(not1Selected);
   }

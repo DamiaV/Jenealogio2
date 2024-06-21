@@ -5,7 +5,9 @@ import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -15,9 +17,11 @@ import java.util.*;
 public class AboutDialog extends DialogBase<ButtonType> {
   /**
    * Create an about dialog.
+   *
+   * @param config The app’s config.
    */
-  public AboutDialog() {
-    super("about", false, ButtonTypes.CLOSE);
+  public AboutDialog(final @NotNull Config config) {
+    super(config, "about", false, ButtonTypes.CLOSE);
     Label titleLabel = new Label();
     titleLabel.setText(App.NAME);
     titleLabel.setStyle("-fx-font-size: 1.2em; -fx-font-weight: bold");
@@ -44,7 +48,7 @@ public class AboutDialog extends DialogBase<ButtonType> {
 
     VBox vBox = new VBox(10, titleLabel, contentView);
 
-    Image appIcon = App.config().theme().getAppIcon();
+    Image appIcon = config.theme().getAppIcon();
     ImageView logo = new ImageView(appIcon);
     logo.setFitHeight(100);
     logo.setFitWidth(100);

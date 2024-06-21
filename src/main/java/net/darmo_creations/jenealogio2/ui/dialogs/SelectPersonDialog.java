@@ -7,7 +7,6 @@ import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -24,9 +23,13 @@ public class SelectPersonDialog extends DialogBase<Person> {
   private final ListView<PersonView> personListView = new ListView<>();
   private final ObservableList<PersonView> personList = FXCollections.observableArrayList();
 
-  public SelectPersonDialog() {
-    super("select_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
-    Config config = App.config();
+  /**
+   * Create a new dialog to select a person.
+   *
+   * @param config The app’s config.
+   */
+  public SelectPersonDialog(final @NotNull Config config) {
+    super(config, "select_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
     Language language = config.language();
 
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
@@ -103,7 +106,7 @@ public class SelectPersonDialog extends DialogBase<Person> {
   /**
    * Simple widget that shows the name, birth/death dates, and main picture of a given person.
    */
-  private static class PersonView extends HBox {
+  private class PersonView extends HBox {
     private static final int IMAGE_SIZE = 100;
 
     private final Person person;
@@ -116,10 +119,10 @@ public class SelectPersonDialog extends DialogBase<Person> {
       imageView.setFitWidth(IMAGE_SIZE);
       imageView.setFitHeight(IMAGE_SIZE);
       Label nameLabel = new Label(person.toString());
-      DateLabel birthLabel = new DateLabel(person.getBirthDate().orElse(null), "?");
-      birthLabel.setGraphic(App.config().theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
-      DateLabel deathLabel = new DateLabel(person.getDeathDate().orElse(null), "?");
-      deathLabel.setGraphic(App.config().theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
+      DateLabel birthLabel = new DateLabel(person.getBirthDate().orElse(null), "?", SelectPersonDialog.this.config);
+      birthLabel.setGraphic(SelectPersonDialog.this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
+      DateLabel deathLabel = new DateLabel(person.getDeathDate().orElse(null), "?", SelectPersonDialog.this.config);
+      deathLabel.setGraphic(SelectPersonDialog.this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.getChildren().addAll(imageView, new VBox(5, nameLabel, birthLabel, deathLabel));
     }
 

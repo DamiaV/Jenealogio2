@@ -3,7 +3,6 @@ package net.darmo_creations.jenealogio2.ui.components;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -22,11 +21,13 @@ public class RelativesListView extends VBox implements PersonRequester {
 
   /**
    * Create a new component.
+   *
+   * @param config The app’s config.
    */
-  public RelativesListView() {
+  public RelativesListView(final @NotNull Config config) {
     super(4);
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
+    Language language = config.language();
+    Theme theme = config.theme();
 
     HBox buttonsHBox = new HBox(4);
 

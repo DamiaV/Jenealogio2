@@ -20,10 +20,15 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 import java.util.function.*;
 
+/**
+ * This view shows all available information about a specific {@link Person} object.
+ */
 public class PersonDetailsView extends TabPane implements PersonClickObservable {
   @SuppressWarnings("DataFlowIssue")
   public static final Image DEFAULT_EVENT_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_event_image.png"));
+
+  private final Config config;
 
   private Person person;
   private FamilyTree familyTree;
@@ -33,7 +38,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final Tab familyTab = new Tab();
   private final Tab fosterParentsTab = new Tab();
 
-  private final ClickableImageView imageView = new ClickableImageView(PersonWidget.DEFAULT_IMAGE);
+  private final ClickableImageView imageView;
   private final Label fullNameLabel = new Label();
   private final Label genderLabel = new Label();
   private final Label occupationLabel = new Label();
@@ -48,17 +53,17 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final ListView<WitnessedEventItem> witnessedEventsList = new ListView<>();
 
   private final SplitPane eventPane = new SplitPane();
-  private final ClickableImageView eventImageView = new ClickableImageView(DEFAULT_EVENT_IMAGE);
+  private final ClickableImageView eventImageView;
   private final Label eventTypeLabel = new Label();
-  private final DateLabel eventDateLabel = new DateLabel(null);
+  private final DateLabel eventDateLabel;
   private final VBox eventActorsPane = new VBox(4);
   private final Label eventPlaceLabel = new Label();
   private final TextFlow eventNotesTextFlow = new TextFlow();
   private final TextFlow eventSourcesTextFlow = new TextFlow();
   private final ListView<PictureView> eventImagesList = new ListView<>();
 
-  private final PersonCard parent1Card = new PersonCard(null);
-  private final PersonCard parent2Card = new PersonCard(null);
+  private final PersonCard parent1Card;
+  private final PersonCard parent2Card;
   private final ListView<ChildrenItem> siblingsList = new ListView<>();
   private final ListView<ChildrenItem> childrenList = new ListView<>();
 
@@ -72,14 +77,27 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private final ListView<PictureView> imageList = new ListView<>();
 
-  private final EditImageDialog editImageDialog = new EditImageDialog();
+  private final EditImageDialog editImageDialog;
 
   private LifeEvent displayedLifeEvent = null;
 
-  public PersonDetailsView() {
+  /**
+   * Create a new person view.
+   *
+   * @param config The app’s config.
+   */
+  public PersonDetailsView(final @NotNull Config config) {
     super();
-    Language language = App.config().language();
-    Theme theme = App.config().theme();
+    this.config = config;
+    Language language = config.language();
+    Theme theme = config.theme();
+
+    this.editImageDialog = new EditImageDialog(config);
+    this.imageView = new ClickableImageView(PersonWidget.DEFAULT_IMAGE);
+    this.eventImageView = new ClickableImageView(DEFAULT_EVENT_IMAGE);
+    this.eventDateLabel = new DateLabel(null, config);
+    this.parent1Card = new PersonCard(null);
+    this.parent2Card = new PersonCard(null);
 
     this.profileTab.setText(language.translate("person_details_view.profile_tab.title"));
     this.profileTab.setGraphic(theme.getIcon(Icon.PROFILE_TAB, Icon.Size.SMALL));
@@ -106,7 +124,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void setupProfileTab() {
-    Language language = App.config().language();
+    Language language = this.config.language();
 
     SplitPane tabPane = new SplitPane();
     tabPane.setOrientation(Orientation.VERTICAL);
@@ -213,11 +231,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
-    this.eventDateLabel.setGraphic(App.config().theme().getIcon(Icon.HELP, Icon.Size.SMALL));
+    this.eventDateLabel.setGraphic(this.config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
     Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
-    Button closeButton = new Button(null, App.config().theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
-    closeButton.setTooltip(new Tooltip(App.config().language().translate("person_details_view.close_life_event")));
+    Button closeButton = new Button(null, this.config.theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
+    closeButton.setTooltip(new Tooltip(this.config.language().translate("person_details_view.close_life_event")));
     closeButton.setOnAction(event -> this.eventsTab.setContent(this.eventsTabPane));
     HBox hBox = new HBox(
         4,
@@ -402,7 +420,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     if (gender.isPresent()) {
       RegistryEntryKey key = gender.get().key();
       String name = key.name();
-      g = key.isBuiltin() ? App.config().language().translate("genders." + name) : gender.get().userDefinedName();
+      g = key.isBuiltin() ? this.config.language().translate("genders." + name) : gender.get().userDefinedName();
     }
     this.genderLabel.setText(g);
     this.genderLabel.setTooltip(g != null ? new Tooltip(g) : null);
@@ -491,7 +509,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted(Person.birthDateThenNameComparator(false))
         .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
 
-    this.person.pictures().forEach(p -> this.imageList.getItems().add(new PictureView(p, false)));
+    this.person.pictures().forEach(p -> this.imageList.getItems().add(new PictureView(p, false, this.config)));
     this.imageList.getItems().sort(null);
   }
 
@@ -539,8 +557,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
     this.displayedLifeEvent = lifeEvent;
 
-    Config config = App.config();
-    Language language = config.language();
+    Language language = this.config.language();
 
     String text;
     if (lifeEvent.type().isBuiltin()) {
@@ -557,7 +574,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     boolean first = true;
     for (Person actor : actors) {
       Label label = new Label(language.translate("person_details_view.life_events." + (first ? "of" : "and")));
-      Button b = new Button(actor.toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+      Button b = new Button(actor.toString(), this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
       b.setUserData(actor);
       HBox hBox = new HBox(4, label, b);
@@ -577,7 +594,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     lifeEvent.sources().ifPresent(s -> this.eventSourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
 
     this.eventImagesList.getItems().clear();
-    lifeEvent.pictures().forEach(p -> this.eventImagesList.getItems().add(new PictureView(p, false)));
+    lifeEvent.pictures().forEach(p -> this.eventImagesList.getItems().add(new PictureView(p, false, this.config)));
     this.eventImagesList.getItems().sort(null);
 
     this.eventsTab.setContent(this.eventPane);
@@ -618,7 +635,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   /**
    * Label that displays some text in bold and bigger font on a darker background.
    */
-  private static class SectionLabel extends AnchorPane {
+  private class SectionLabel extends AnchorPane {
     /**
      * Create a label.
      *
@@ -626,7 +643,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      */
     public SectionLabel(@NotNull String key) {
       this.getStyleClass().add("person-details-header");
-      Label label = new Label(App.config().language().translate("person_details_view." + key));
+      Label label = new Label(PersonDetailsView.this.config.language().translate("person_details_view." + key));
       label.getStyleClass().add("person-details-title");
       AnchorPane.setTopAnchor(label, 0.0);
       AnchorPane.setBottomAnchor(label, 0.0);
@@ -643,8 +660,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     private final VBox imagePane = new VBox();
     private final ImageView imageView = new ImageView();
     private final Label nameLabel = new Label();
-    private final DateLabel birthDateLabel = new DateLabel("?");
-    private final DateLabel deathDateLabel = new DateLabel("?");
+    private final DateLabel birthDateLabel = new DateLabel("?", PersonDetailsView.this.config);
+    private final DateLabel deathDateLabel = new DateLabel("?", PersonDetailsView.this.config);
 
     private final List<ChildInfo> childInfo = new ArrayList<>();
 
@@ -684,7 +701,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       this.imageView.setFitWidth(imageSize);
       this.imagePane.getChildren().add(this.imageView);
 
-      Theme theme = App.config().theme();
+      Theme theme = PersonDetailsView.this.config.theme();
       this.birthDateLabel.setGraphic(theme.getIcon(Icon.BIRTH, Icon.Size.SMALL));
       this.deathDateLabel.setGraphic(theme.getIcon(Icon.DEATH, Icon.Size.SMALL));
 
@@ -732,7 +749,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       this.nameLabel.setText(name);
       this.nameLabel.setTooltip(new Tooltip(name));
       if (PersonDetailsView.this.familyTree.isRoot(person)) {
-        this.nameLabel.setGraphic(App.config().theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+        this.nameLabel.setGraphic(PersonDetailsView.this.config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
       } else {
         this.nameLabel.setGraphic(null);
       }
@@ -757,7 +774,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       super(4);
       this.lifeEvent = lifeEvent;
       this.getStyleClass().add("life-events-list-item");
-      Config config = App.config();
+      Config config = PersonDetailsView.this.config;
       Language language = config.language();
       HBox header = new HBox(4);
       header.getStyleClass().add("life-events-list-item-header");
@@ -771,7 +788,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       Label typeLabel = new Label(type);
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
-      DateLabel dateLabel = new DateLabel(lifeEvent.date(), null);
+      DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, config);
       dateLabel.setGraphic(config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
       this.getChildren().add(header);
@@ -812,7 +829,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       super(4);
       this.lifeEvent = lifeEvent;
       this.getStyleClass().add("life-events-list-item");
-      Language language = App.config().language();
+      Language language = PersonDetailsView.this.config.language();
       HBox header = new HBox(4);
       header.getStyleClass().add("life-events-list-item-header");
       RegistryEntryKey typeKey = lifeEvent.type().key();
@@ -825,8 +842,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       Label typeLabel = new Label(type);
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
-      DateLabel dateLabel = new DateLabel(lifeEvent.date(), null);
-      dateLabel.setGraphic(App.config().theme().getIcon(Icon.HELP, Icon.Size.SMALL));
+      DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, PersonDetailsView.this.config);
+      dateLabel.setGraphic(PersonDetailsView.this.config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
       this.getChildren().add(header);
 
@@ -836,7 +853,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       boolean first = true;
       for (Person actor : actors) {
         Label label = new Label(language.translate("person_details_view.life_events." + (first ? "of" : "and")));
-        Button b = new Button(actor.toString(), App.config().theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+        Button b = new Button(actor.toString(), PersonDetailsView.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
         b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
         b.setUserData(actor);
         HBox hBox = new HBox(4, label, b);
@@ -874,7 +891,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       children.stream()
           .sorted(Person.birthDateThenNameComparator(false))
           .forEach(child -> {
-            Label arrow = new Label("", App.config().theme().getIcon(Icon.GO_TO, Icon.Size.BIG));
+            Label arrow = new Label("", PersonDetailsView.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.BIG));
             PersonCard childCard = new PersonCard(child);
             HBox.setHgrow(childCard, Priority.ALWAYS);
             HBox hBox = new HBox(8, arrow, childCard);
@@ -884,11 +901,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     }
   }
 
-  private static class ClickableImageView extends ImageView {
+  private class ClickableImageView extends ImageView {
     private boolean internalUpdate = false;
 
     public ClickableImageView(final @NotNull Image defaultImage) {
-      Tooltip tooltip = new Tooltip(App.config().language().translate("person_details_view.main_image.tooltip"));
+      Tooltip tooltip = new Tooltip(PersonDetailsView.this.config.language().translate("person_details_view.main_image.tooltip"));
       this.setImage(defaultImage);
       this.imageProperty().addListener((observable, oldValue, newValue) -> {
         if (this.internalUpdate) {

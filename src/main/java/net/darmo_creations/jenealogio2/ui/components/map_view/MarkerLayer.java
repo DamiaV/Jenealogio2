@@ -5,15 +5,18 @@ import javafx.collections.*;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.image.*;
-import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import org.controlsfx.control.*;
 import org.jetbrains.annotations.*;
+
+import java.util.*;
 
 /**
  * Shows a custom marker on the map.
  */
 class MarkerLayer extends MapLayer {
+  private final Config config;
   private final LatLon latLon;
   private final ImageView markerImageView;
   private final double markerWidth, markerHeight;
@@ -26,8 +29,15 @@ class MarkerLayer extends MapLayer {
    * @param latLon  The point where to show the marker.
    * @param color   The marker’s color.
    * @param tooltip Optional tooltip.
+   * @param config  The app’s config.
    */
-  MarkerLayer(final @NotNull LatLon latLon, @NotNull MapMarkerColor color, Node tooltip) {
+  MarkerLayer(
+      final @NotNull LatLon latLon,
+      @NotNull MapMarkerColor color,
+      Node tooltip,
+      final @NotNull Config config
+  ) {
+    this.config = Objects.requireNonNull(config);
     this.latLon = latLon;
     Image markerIcon = color.image();
     this.markerWidth = markerIcon != null ? markerIcon.getWidth() : 32;
@@ -50,7 +60,7 @@ class MarkerLayer extends MapLayer {
       if (!this.popOverStyleInitialized) {
         // From https://stackoverflow.com/a/36404968/3779986
         ObservableList<String> stylesheets = ((Parent) this.popOver.getSkin().getNode()).getStylesheets();
-        App.config().theme().getStyleSheets()
+        this.config.theme().getStyleSheets()
             .forEach(path -> stylesheets.add(path.toExternalForm()));
         this.popOverStyleInitialized = true;
       }

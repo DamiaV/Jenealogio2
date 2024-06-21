@@ -1,27 +1,24 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.geometry.Insets;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Language;
+import javafx.geometry.*;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
-import net.darmo_creations.jenealogio2.ui.PseudoClasses;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.ui.*;
+import org.jetbrains.annotations.*;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * A JavaFX component containing two date fields.
  * It returns a {@link DateTime} from the fields’ values.
  */
 public class CalendarDateField extends HBox {
-  private final DateTimeField dateTimeField = new DateTimeField();
-  private final DateTimeField secondDateTimeField = new DateTimeField();
+  private final Config config;
+  private final DateTimeField dateTimeField;
+  private final DateTimeField secondDateTimeField;
   private final Label label = new Label();
 
   private DateType dateType;
@@ -30,9 +27,14 @@ public class CalendarDateField extends HBox {
 
   /**
    * Create a field with the type {@link DateType#EXACT}.
+   *
+   * @param config The app’s config.
    */
-  public CalendarDateField() {
+  public CalendarDateField(final @NotNull Config config) {
     super(4);
+    this.config = Objects.requireNonNull(config);
+    this.dateTimeField = new DateTimeField(config);
+    this.secondDateTimeField = new DateTimeField(config);
     this.getChildren().addAll(this.dateTimeField, this.label, this.secondDateTimeField);
     HBox.setMargin(this.label, new Insets(4, 0, 0, 0));
     this.setDateType(DateType.EXACT);
@@ -138,7 +140,7 @@ public class CalendarDateField extends HBox {
    */
   public void setDateType(@NotNull DateType dateType) {
     this.dateType = Objects.requireNonNull(dateType);
-    Language language = App.config().language();
+    Language language = this.config.language();
     if (dateType == DateType.OR) {
       this.label.setText(language.translate("date_field.or"));
       this.label.setVisible(true);

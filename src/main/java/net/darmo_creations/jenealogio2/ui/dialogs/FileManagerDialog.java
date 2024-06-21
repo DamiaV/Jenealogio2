@@ -1,14 +1,21 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.scene.control.*;
+import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This dialog allows managing of all files for the given {@link FamilyTree}.
  */
 public class FileManagerDialog extends DialogBase<ButtonType> {
-  public FileManagerDialog() {
-    super("file_manager", true, ButtonTypes.CLOSE);
+  /**
+   * Create a new file manager dialog.
+   *
+   * @param config The app’s config.
+   */
+  public FileManagerDialog(final @NotNull Config config) {
+    super(config, "file_manager", true, ButtonTypes.CLOSE);
   }
 
   /*

@@ -6,7 +6,6 @@ import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -22,7 +21,7 @@ import java.util.stream.*;
  * This dialog shows markers relating to a family tree’s persons.
  */
 public class MapDialog extends DialogBase<ButtonType> {
-  private final MapView mapView = new MapView();
+  private final MapView mapView;
   private final ComboBox<ComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
   private final TextField searchField = new TextField();
   private final Button searchButton = new Button();
@@ -33,10 +32,13 @@ public class MapDialog extends DialogBase<ButtonType> {
 
   private FamilyTree familyTree;
 
-  public MapDialog() {
-    super("map", true, false, ButtonTypes.CLOSE);
-
-    Config config = App.config();
+  /**
+   * Create a new map dialog.
+   *
+   * @param config The app’s config.
+   */
+  public MapDialog(final @NotNull Config config) {
+    super(config, "map", true, false, ButtonTypes.CLOSE);
     Language language = config.language();
     Theme theme = config.theme();
 
@@ -60,6 +62,7 @@ public class MapDialog extends DialogBase<ButtonType> {
 
     this.placesList.setOnMouseClicked(e -> this.onPlaceClick());
 
+    this.mapView = new MapView(config);
     SplitPane content = new SplitPane(
         new VBox(
             5,
@@ -204,7 +207,7 @@ public class MapDialog extends DialogBase<ButtonType> {
           Place place = events.get(0).place().get();
           Map<LifeEventType, Integer> typeCounts = events.stream()
               .collect(Collectors.groupingBy(LifeEvent::type, Collectors.reducing(0, i -> 1, Integer::sum)));
-          this.mapView.addMarker(latLon, color, new EventTypesTooltip(place.address(), typeCounts));
+          this.mapView.addMarker(latLon, color, new EventTypesTooltip(place.address(), typeCounts, this.config));
           this.placesList.getItems().add(new PlaceView(place, nb));
         });
 
@@ -220,12 +223,12 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.internalUpdate = true;
     var selectedItem = this.eventTypeCombo.getSelectionModel().getSelectedItem();
 
-    Language language = App.config().language();
+    Language language = this.config.language();
 
     this.eventTypeCombo.getItems().clear();
     this.eventTypeCombo.getItems().add(new ComboBoxItem<>(null, language.translate("dialog.map.event_type.all")));
 
-    LifeEventView.populateEventTypeCombo(this.familyTree, this.eventTypeCombo);
+    LifeEventView.populateEventTypeCombo(this.familyTree, this.eventTypeCombo, this.config);
 
     if (selectedItem != null && this.eventTypeCombo.getItems().contains(selectedItem)) {
       this.eventTypeCombo.getSelectionModel().select(selectedItem);
@@ -235,7 +238,7 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.internalUpdate = false;
   }
 
-  private static class PlaceView {
+  private class PlaceView {
     private final LatLon latLon;
     private final String text;
 
@@ -243,7 +246,7 @@ public class MapDialog extends DialogBase<ButtonType> {
       String address = place.address();
       //noinspection OptionalGetWithoutIsPresent
       this.latLon = place.latLon().get();
-      this.text = App.config().language().translate(
+      this.text = MapDialog.this.config.language().translate(
           "dialog.map.place_count",
           nb,
           new FormatArg("address", address),

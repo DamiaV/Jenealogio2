@@ -1,36 +1,25 @@
 package net.darmo_creations.jenealogio2.ui;
 
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
+import javafx.beans.binding.*;
+import javafx.collections.*;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.config.Config;
-import net.darmo_creations.jenealogio2.config.Language;
-import net.darmo_creations.jenealogio2.model.FamilyTree;
-import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.themes.Icon;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.events.DeselectPersonsEvent;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickedEvent;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.layout.*;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.events.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.jetbrains.annotations.*;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 /**
  * JavaFX component displaying the list of all persons in a family tree.
  */
 public class FamilyTreeView extends FamilyTreeComponent {
+  private final Config config;
   private final TextField searchField = new TextField();
   private final ObservableSet<TreeItem<Object>> searchMatches = FXCollections.observableSet(new HashSet<>());
   private final TreeView<Object> treeView = new TreeView<>();
@@ -42,11 +31,13 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
   /**
    * Create an empty family tree view.
+   *
+   * @param config The app’s config.
    */
-  public FamilyTreeView() {
-    Config config = App.config();
-    Language language = config.language();
-    Theme theme = config.theme();
+  public FamilyTreeView(final @NotNull Config config) {
+    this.config = config;
+    Language language = this.config.language();
+    Theme theme = this.config.theme();
 
     VBox vBox = new VBox(4);
     AnchorPane.setTopAnchor(vBox, 4.0);
@@ -77,12 +68,12 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
     this.syncTreeButton = new ToggleButton("", theme.getIcon(Icon.SYNC_TREE, Icon.Size.SMALL));
     this.syncTreeButton.setTooltip(new Tooltip(language.translate("treeview.sync_tree")));
-    this.syncTreeButton.setSelected(config.shouldSyncTreeWithMainPane());
+    this.syncTreeButton.setSelected(this.config.shouldSyncTreeWithMainPane());
     this.syncTreeButton.selectedProperty().addListener(
         (observable, oldValue, newValue) -> {
-          config.setShouldSyncTreeWithMainPane(newValue);
+          this.config.setShouldSyncTreeWithMainPane(newValue);
           try {
-            config.save();
+            this.config.save();
           } catch (IOException e) {
             App.LOGGER.exception(e);
           }
@@ -120,7 +111,6 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
   @Override
   public void refresh() {
-    Config config = App.config();
     this.personsItem.getChildren().clear();
     this.searchField.clear();
     this.familyTree().ifPresent(familyTree -> {
@@ -130,7 +120,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
       this.personsItem.setExpanded(true);
     });
     // Option may have been updated from elsewhere
-    this.syncTreeButton.setSelected(config.shouldSyncTreeWithMainPane());
+    this.syncTreeButton.setSelected(this.config.shouldSyncTreeWithMainPane());
   }
 
   @Override
@@ -222,7 +212,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
       this.setText(empty ? null : item.toString());
       Optional<FamilyTree> familyTree = FamilyTreeView.this.familyTree();
       if (familyTree.isPresent() && item instanceof Person p && familyTree.get().isRoot(p)) {
-        this.setGraphic(App.config().theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+        this.setGraphic(FamilyTreeView.this.config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
       } else {
         this.setGraphic(null);
       }

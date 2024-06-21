@@ -1,6 +1,5 @@
 package net.darmo_creations.jenealogio2.utils;
 
-import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
@@ -43,11 +42,11 @@ public final class DateTimeUtils {
    *
    * @param date       Date to format.
    * @param useIsoDate If true, the corresponding ISO date will be formatted instead of the calendar-specific date.
+   * @param config     The app’s config.
    * @return The formatted date.
    */
-  public static String formatDateTime(@NotNull DateTime date, boolean useIsoDate) {
+  public static String formatDateTime(@NotNull DateTime date, boolean useIsoDate, final @NotNull Config config) {
     Objects.requireNonNull(date);
-    Config config = App.config();
     Language language = config.language();
     String dateFormat = config.dateFormat().getFormat();
     TimeFormat tf = config.timeFormat();
