@@ -17,6 +17,6 @@ class LatLonTest {
 
   @Test
   void testToString() {
-    assertEquals("4.0,5.0", new LatLon(4, 5).toString());
+    assertEquals("4.0,5.6", new LatLon(4, 5.6).toString());
   }
 }
