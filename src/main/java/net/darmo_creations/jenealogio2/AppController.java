@@ -62,6 +62,8 @@ public class AppController {
   private final Button saveAsToolbarButton = new Button();
   private final Button undoToolbarButton = new Button();
   private final Button redoToolbarButton = new Button();
+  private final Button previousSelectionToolbarButton = new Button();
+  private final Button nextSelectionToolbarButton = new Button();
   private final Button setAsRootToolbarButton = new Button();
   private final Button addPersonToolbarButton = new Button();
   private final Button addChildToolbarButton = new Button();
@@ -83,6 +85,9 @@ public class AppController {
   private final FamilyTreePane familyTreePane;
 
   private final PersonDetailsView personDetailsView;
+
+  private final List<Person> selectionHistory = new ArrayList<>();
+  private int selectionIndex = -1;
 
   // Dialogs
   private final RegistriesDialog editRegistriesDialog;
@@ -407,6 +412,22 @@ public class AppController {
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
+    //
+
+    this.previousSelectionToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.previous_selection")));
+    this.previousSelectionToolbarButton.setGraphic(theme.getIcon(Icon.PERSON_BACK, Icon.Size.BIG));
+    this.previousSelectionToolbarButton.setOnAction(event -> this.onNavigateSelectionHistory(-1));
+    toolbar.getItems().add(this.previousSelectionToolbarButton);
+
+    this.nextSelectionToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.next_selection")));
+    this.nextSelectionToolbarButton.setGraphic(theme.getIcon(Icon.PERSON_NEXT, Icon.Size.BIG));
+    this.nextSelectionToolbarButton.setOnAction(event -> this.onNavigateSelectionHistory(1));
+    toolbar.getItems().add(this.nextSelectionToolbarButton);
+
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
+    //
+
     this.setAsRootToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.set_as_root")));
     this.setAsRootToolbarButton.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.BIG));
     this.setAsRootToolbarButton.setOnAction(event -> this.onSetAsRootAction());
@@ -537,6 +558,8 @@ public class AppController {
     this.personDetailsView.setPerson(null, this.familyTree);
     this.familyTreeView.refresh();
     this.familyTreePane.refresh();
+    this.selectionHistory.clear();
+    this.selectionIndex = -1;
     this.loadedFile = file;
     this.unsavedChanges = file == null;
     this.updateUI();
@@ -708,6 +731,23 @@ public class AppController {
   }
 
   /**
+   * Navigate the selection history, selecting the neighbor item in the given direction.
+   *
+   * @param direction The navigation direction, either -1 or 1.
+   */
+  private void onNavigateSelectionHistory(int direction) {
+    if (this.selectionIndex == -1
+        || direction < 0 && this.selectionIndex == 0
+        || direction > 0 && this.selectionIndex == this.selectionHistory.size() - 1)
+      return;
+    this.selectionIndex += direction;
+    var selection = this.selectionHistory.get(this.selectionIndex);
+    PersonClickedEvent event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
+    this.updateWidgetsSelection(event, this.familyTreePane);
+    this.updateUI();
+  }
+
+  /**
    * Set the selected person as the root of the current tree.
    */
   private void onSetAsRootAction() {
@@ -864,18 +904,26 @@ public class AppController {
   private void onPersonClick(@NotNull PersonClickEvent event, FamilyTreeComponent fromNode) {
     if (fromNode == null) {
       // Click occurred outside of tree pane and tree view, select person in tree pane
-      this.updateSelection(event, this.familyTreePane);
+      this.updateWidgetsSelection(event, this.familyTreePane);
       fromNode = this.familyTreePane;
     }
     this.focusedComponent = fromNode;
     if (this.config.shouldSyncTreeWithMainPane()) {
       if (fromNode == this.familyTreeView) {
-        this.updateSelection(event, this.familyTreePane);
+        this.updateWidgetsSelection(event, this.familyTreePane);
       } else {
-        this.updateSelection(event, this.familyTreeView);
+        this.updateWidgetsSelection(event, this.familyTreeView);
       }
     }
-    Person person = event instanceof PersonClickedEvent e ? e.person() : null;
+    Person person = null;
+    if (event instanceof PersonClickedEvent e) {
+      person = e.person();
+      if (this.selectionIndex == -1 || this.selectionHistory.get(this.selectionIndex) != person) {
+        if (this.selectionIndex == -1 || this.selectionHistory.get(this.selectionHistory.size() - 1) != person)
+          this.selectionHistory.add(person); // Only add if not already at the end
+        this.selectionIndex = this.selectionHistory.size() - 1;
+      }
+    }
     this.personDetailsView.setPerson(person, this.familyTree);
     if (event instanceof PersonClickedEvent e && e.action() == PersonClickedEvent.Action.EDIT) {
       this.openEditPersonDialog(person, List.of(), null, null, EditPersonDialog.TAB_PROFILE);
@@ -886,7 +934,7 @@ public class AppController {
   /**
    * Update the selection of a {@link FamilyTreeComponent} depending on the given {@link PersonClickEvent}.
    */
-  private void updateSelection(@NotNull PersonClickEvent event, @NotNull FamilyTreeComponent component) {
+  private void updateWidgetsSelection(@NotNull PersonClickEvent event, @NotNull FamilyTreeComponent component) {
     if (event instanceof DeselectPersonsEvent) {
       component.deselectAll();
     } else if (event instanceof PersonClickedEvent e) {
@@ -971,6 +1019,8 @@ public class AppController {
     this.setPictureMenuItem.setDisable(!selection);
 
     this.saveToolbarButton.setDisable(!this.unsavedChanges);
+    this.previousSelectionToolbarButton.setDisable(this.selectionIndex <= 0);
+    this.nextSelectionToolbarButton.setDisable(this.selectionIndex == -1 || this.selectionIndex == this.selectionHistory.size() - 1);
     this.setAsRootToolbarButton.setDisable(!selection || selectedIsRoot);
     this.addChildToolbarButton.setDisable(!selection);
     this.addSiblingToolbarButton.setDisable(!hasBothParents);

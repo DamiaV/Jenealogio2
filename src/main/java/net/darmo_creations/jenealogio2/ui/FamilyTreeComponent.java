@@ -1,16 +1,11 @@
 package net.darmo_creations.jenealogio2.ui;
 
-import javafx.scene.layout.AnchorPane;
-import net.darmo_creations.jenealogio2.model.FamilyTree;
-import net.darmo_creations.jenealogio2.model.Person;
-import net.darmo_creations.jenealogio2.ui.events.NewParentClickListener;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickListener;
-import net.darmo_creations.jenealogio2.ui.events.PersonClickObservable;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.layout.*;
+import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.ui.events.*;
+import org.jetbrains.annotations.*;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * A JavaFX component that shows data from a family tree.
@@ -58,6 +53,8 @@ public abstract class FamilyTreeComponent extends AnchorPane implements PersonCl
    *
    * @param person       A person object.
    * @param updateTarget Whether to update the targetted person (center the view around it).
+   *                     The component may choose to update the target even if this argument is false
+   *                     when the person is not currently visible.
    */
   public abstract void select(@NotNull Person person, boolean updateTarget);
 

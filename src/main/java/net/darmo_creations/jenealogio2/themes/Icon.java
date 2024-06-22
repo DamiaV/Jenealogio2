@@ -17,6 +17,8 @@ public enum Icon {
 
   UNDO("undo"),
   REDO("redo"),
+  PERSON_BACK("user_back"),
+  PERSON_NEXT("user_go"),
   EDIT_REGISTRIES("tag_blue_edit"),
   RENAME_TREE("tree_textfield"),
   SET_AS_ROOT("anchor"),

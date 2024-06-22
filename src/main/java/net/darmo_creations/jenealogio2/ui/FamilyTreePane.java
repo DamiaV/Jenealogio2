@@ -396,7 +396,9 @@ public class FamilyTreePane extends FamilyTreeComponent {
   @Override
   public void select(@NotNull Person person, boolean updateTarget) {
     Objects.requireNonNull(person);
-    if (updateTarget) {
+    if (updateTarget
+        // Update target if the person is not currently visible
+        || this.personWidgets.stream().noneMatch(w -> w.person().map(p -> p.equals(person)).orElse(false))) {
       this.targettedPerson = person;
       this.refresh();
     }
