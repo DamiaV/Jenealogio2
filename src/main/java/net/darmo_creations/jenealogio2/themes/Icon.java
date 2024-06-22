@@ -72,6 +72,7 @@ public enum Icon {
   MORE("plus"),
 
   GO_TO("arrow_right"),
+  PLUS("plus"),
   CLOSE_LIFE_EVENT("arrow_left"),
 
   UNCERTAIN("help"),

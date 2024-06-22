@@ -884,14 +884,26 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         int parentIndex = child.getParentIndex(parent1).get(); // Will always exist in this context
         childInfo.add(new ChildInfo(child, parentIndex));
       }
-      this.getChildren().add(new PersonCard(parent1, childInfo));
+      Theme theme = PersonDetailsView.this.config.theme();
+      HBox parentsBox = new HBox(4);
+      PersonCard parent1Card = new PersonCard(parent1, childInfo);
+      HBox.setHgrow(parent1Card, Priority.ALWAYS);
+      parentsBox.getChildren().add(parent1Card);
       if (parent2 != null) {
-        this.getChildren().add(new PersonCard(parent2));
+        PersonCard parent2Card = new PersonCard(parent2);
+        HBox.setHgrow(parent2Card, Priority.ALWAYS);
+        Label plus = new Label("", theme.getIcon(Icon.PLUS, Icon.Size.BIG));
+        parentsBox.setAlignment(Pos.CENTER);
+        parentsBox.getChildren().addAll(
+            plus,
+            parent2Card
+        );
       }
+      this.getChildren().add(parentsBox);
       children.stream()
           .sorted(Person.birthDateThenNameComparator(false))
           .forEach(child -> {
-            Label arrow = new Label("", PersonDetailsView.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.BIG));
+            Label arrow = new Label("", theme.getIcon(Icon.GO_TO, Icon.Size.BIG));
             PersonCard childCard = new PersonCard(child);
             HBox.setHgrow(childCard, Priority.ALWAYS);
             HBox hBox = new HBox(8, arrow, childCard);
