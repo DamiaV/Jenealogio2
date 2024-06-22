@@ -178,6 +178,13 @@ public class AppController {
       event.setDropCompleted(success);
       event.consume();
     });
+
+    scene.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+      if (event.isBackButtonDown())
+        this.onNavigateSelectionHistory(-1);
+      else if (event.isForwardButtonDown())
+        this.onNavigateSelectionHistory(1);
+    });
   }
 
   private boolean isDragAndDropValid(final @NotNull Dragboard dragboard) {
