@@ -232,7 +232,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
     Map<Optional<Person>, List<Person>> childrenMap = rootPerson.getPartnersAndChildren()
         .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> {
-          var list = new ArrayList<Person>(e.getValue());
+          var list = new ArrayList<>(e.getValue());
           list.sort(Person.birthDateThenNameComparator(false));
           return list;
         }));
@@ -444,8 +444,6 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @param event The mouse event.
    */
   private void onBackgroundClicked(MouseEvent event) {
-    this.deselectAll();
-    this.firePersonClickEvent(new DeselectPersonsEvent());
     this.pane.requestFocus();
   }
 
