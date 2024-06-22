@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * This dialog manages the images of {@link GenealogyObject}s.
  */
-public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
+public class ManageObjectImagesDialog extends DialogBase<ManageObjectImagesDialog.Result> {
   private final SelectImageDialog selectImageDialog;
   private final EditImageDialog editImageDialog;
 
@@ -48,6 +48,8 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
    * Set of pictures to add to the current object.
    */
   private final Set<Picture> picturesToAdd = new HashSet<>();
+
+  private boolean anyImageUpdated = false;
 
   /**
    * The object to manage the images of.
@@ -155,10 +157,10 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
-      if (!buttonType.getButtonData().isCancelButton()) {
+      boolean updated = !buttonType.getButtonData().isCancelButton();
+      if (updated)
         this.updateObject();
-      }
-      return buttonType;
+      return new Result(updated, this.anyImageUpdated);
     });
   }
 
@@ -181,6 +183,7 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
       this.imagesList.getItems().add(new PictureView(picture, true, this.config));
     }
     this.imagesList.getItems().sort(null);
+    this.anyImageUpdated = false;
     this.updateButtons();
   }
 
@@ -278,10 +281,10 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   }
 
   private void openImageEditDialog(@NotNull PictureView pictureView) {
-    this.editImageDialog.setPicture(pictureView.picture());
-    this.editImageDialog.showAndWait().ifPresent(data -> {
-      pictureView.setImageDescription(data.description());
-      pictureView.setDate(data.date());
+    this.editImageDialog.setPicture(pictureView.picture(), this.familyTree);
+    this.editImageDialog.showAndWait().ifPresent(b -> {
+      pictureView.refresh();
+      this.anyImageUpdated = true;
     });
     this.updateButtons();
   }
@@ -313,7 +316,6 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
   private void updateObject() {
     this.picturesToRemove.forEach(picture -> this.familyTree.removePictureFromObject(picture.name(), this.genealogyObject));
     this.picturesToDelete.forEach(picture -> this.familyTree.removePicture(picture.name()));
-    this.imagesList.getItems().forEach(pv -> pv.picture().setDescription(pv.imageDescription().orElse(null)));
     this.picturesToAdd.forEach(p -> {
       if (this.familyTree.getPicture(p.name()).isEmpty()) {
         this.familyTree.addPicture(p);
@@ -325,5 +327,8 @@ public class ManageObjectImagesDialog extends DialogBase<ButtonType> {
     } else {
       this.familyTree.setMainPictureOfObject(null, this.genealogyObject);
     }
+  }
+
+  public record Result(boolean personUpdated, boolean anyImageUpdated) {
   }
 }

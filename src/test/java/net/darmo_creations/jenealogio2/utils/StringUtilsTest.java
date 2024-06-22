@@ -18,7 +18,7 @@ class StringUtilsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {" ", "\t", "\n", "\r", "\f", "\u000b"})
+  @ValueSource(strings = { " ", "\t", "\n", "\r", "\f", "\u000b" })
   void testStripNullableBlank(String s) {
     assertTrue(StringUtils.stripNullable(s).isEmpty());
   }
@@ -189,5 +189,20 @@ class StringUtilsTest {
   @Test
   void testColorToCSSHexTransparent() {
     assertEquals("#0080ff40", StringUtils.colorToCSSHex(Color.color(0, 0.5, 1, 0.25)));
+  }
+
+  @Test
+  void splitExtension() {
+    assertEquals(new Pair<>("a", Optional.of(".png")), StringUtils.splitExtension("a.png"));
+  }
+
+  @Test
+  void splitExtensionMultipleDots() {
+    assertEquals(new Pair<>("a.b", Optional.of(".png")), StringUtils.splitExtension("a.b.png"));
+  }
+
+  @Test
+  void splitExtensionNoExtension() {
+    assertEquals(new Pair<>("a", Optional.empty()), StringUtils.splitExtension("a"));
   }
 }

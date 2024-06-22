@@ -201,6 +201,26 @@ public class FamilyTree {
   }
 
   /**
+   * Rename the given picture.
+   *
+   * @param oldName The name of the picture to rename.
+   * @param newName The new name.
+   * @throws IllegalArgumentException If both names are equal, the old name is not registered,
+   *                                  or the new name is already registered.
+   */
+  public void renamePicture(@NotNull String oldName, @NotNull String newName) {
+    if (oldName.equals(newName))
+      throw new IllegalArgumentException("old and new name should not be the same");
+    if (!this.pictures.containsKey(oldName))
+      throw new IllegalArgumentException("no picture with name \"%s\"".formatted(oldName));
+    if (this.pictures.containsKey(newName))
+      throw new IllegalArgumentException("a picture with the name \"%s\" already exists".formatted(newName));
+    Picture picture = this.pictures.remove(oldName);
+    picture.setName(newName);
+    this.pictures.put(newName, picture);
+  }
+
+  /**
    * Add a picture from this tree to the given {@link GenealogyObject}.
    *
    * @param name Name of the picture to add.

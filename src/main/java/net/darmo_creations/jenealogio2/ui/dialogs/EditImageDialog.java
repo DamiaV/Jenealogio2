@@ -17,9 +17,21 @@ import java.util.*;
 /**
  * This dialog allows editing the description of a {@link Picture}.
  */
-public class EditImageDialog extends DialogBase<EditImageDialog.PictureData> {
+public class EditImageDialog extends DialogBase<ButtonType> {
+  private static final List<Character> INVALID_CHARS;
+
+  static {
+    List<Character> invalidChars = new LinkedList<>();
+    "<>:\"/\\|?*".chars().forEach(c -> invalidChars.add((char) c));
+    for (int i = 0; i < 32; i++)
+      invalidChars.add((char) i);
+    INVALID_CHARS = Collections.unmodifiableList(invalidChars);
+  }
+
+  private Picture picture;
+  private FamilyTree familyTree;
   private final ImageView imageView = new ImageView();
-  private final Label imageNameLabel = new Label();
+  private final TextField imageNameField = new TextField();
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
   private final CalendarDateField dateField;
   private final TextArea imageDescTextInput = new TextArea();
@@ -37,11 +49,22 @@ public class EditImageDialog extends DialogBase<EditImageDialog.PictureData> {
     HBox imageViewBox = new HBox(this.imageView);
     imageViewBox.setAlignment(Pos.CENTER);
     this.imageView.setPreserveRatio(true);
-    HBox imageNameBox = new HBox(this.imageNameLabel);
-    imageNameBox.setAlignment(Pos.TOP_CENTER);
+
+    HBox.setHgrow(this.imageNameField, Priority.ALWAYS);
+    this.imageNameField.textProperty().addListener((observableValue, oldValue, newValue) -> this.updateUI());
+    this.imageNameField.setTextFormatter(new TextFormatter<>(change -> {
+      if (INVALID_CHARS.stream().anyMatch(s -> change.getControlNewText().contains(s.toString())))
+        return null;
+      return change;
+    }));
+    HBox imageNameBox = new HBox(
+        new Label(language.translate("dialog.edit_image.name")),
+        this.imageNameField
+    );
 
     this.populateDatePrecisionCombo();
     this.dateField = new CalendarDateField(config);
+    this.dateField.getUpdateListeners().add(this::updateUI);
     this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> this.dateField.setDateType(newValue.data()));
     HBox.setHgrow(this.dateField, Priority.ALWAYS);
@@ -72,19 +95,33 @@ public class EditImageDialog extends DialogBase<EditImageDialog.PictureData> {
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
-        String desc = StringUtils.stripNullable(this.imageDescTextInput.getText()).orElse(null);
-        DateTime date = this.dateField.getDate().orElse(null);
-        return new PictureData(desc, date);
+        String ext = StringUtils.splitExtension(this.picture.name()).right()
+            .orElseThrow(() -> new IllegalArgumentException("missing extension"));
+        String newName = StringUtils.stripNullable(this.imageNameField.getText())
+                             .orElseThrow(() -> new RuntimeException("image name cannot be empty")) + ext;
+        String currentName = this.picture.name();
+        if (!currentName.equals(newName))
+          this.familyTree.renamePicture(currentName, newName);
+        this.picture.setDescription(StringUtils.stripNullable(this.imageDescTextInput.getText()).orElse(null));
+        this.picture.setDate(this.dateField.getDate().orElse(null));
       }
-      return null;
+      return buttonType;
     });
+
+    this.updateUI();
+  }
+
+  private void updateUI() {
+    var name = StringUtils.stripNullable(this.imageNameField.getText());
+    this.getDialogPane().lookupButton(ButtonTypes.OK)
+        .setDisable(name.isEmpty() || this.familyTree.getPicture(name.get()).isPresent());
   }
 
   /**
    * Populate the date precision combobox.
    */
   private void populateDatePrecisionCombo() {
-    for (CalendarDateField.DateType dateType : CalendarDateField.DateType.values()) {
+    for (var dateType : CalendarDateField.DateType.values()) {
       this.datePrecisionCombo.getItems()
           .add(new NotNullComboBoxItem<>(dateType, this.config.language().translate(dateType.key())));
     }
@@ -93,13 +130,16 @@ public class EditImageDialog extends DialogBase<EditImageDialog.PictureData> {
   /**
    * Set the picture to edit.
    *
-   * @param picture A picture.
+   * @param picture    A picture.
+   * @param familyTree The family tree the picture belongs to.
    */
-  public void setPicture(@NotNull Picture picture) {
+  public void setPicture(@NotNull Picture picture, @NotNull FamilyTree familyTree) {
+    this.picture = Objects.requireNonNull(picture);
+    this.familyTree = Objects.requireNonNull(familyTree);
     this.imageView.setImage(picture.image());
-    this.imageNameLabel.setText(picture.name());
+    this.imageNameField.setText(StringUtils.splitExtension(picture.name()).left());
     this.imageDescTextInput.setText(picture.description().orElse(""));
-    Optional<DateTime> date = picture.date();
+    var date = picture.date();
     if (date.isPresent()) {
       DateTime d = date.get();
       this.datePrecisionCombo.getSelectionModel()
@@ -109,8 +149,5 @@ public class EditImageDialog extends DialogBase<EditImageDialog.PictureData> {
       this.datePrecisionCombo.getSelectionModel().select(0);
       this.dateField.setDate(null);
     }
-  }
-
-  public record PictureData(String description, DateTime date) {
   }
 }

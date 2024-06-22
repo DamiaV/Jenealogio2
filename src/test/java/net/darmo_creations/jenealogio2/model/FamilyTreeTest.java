@@ -388,6 +388,47 @@ class FamilyTreeTest {
   }
 
   @Test
+  void renamePictureRenamesPicture() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
+    this.tree.addPicture(pic);
+    this.tree.renamePicture("test.png", "test1.png");
+    assertEquals("test1.png", pic.name());
+  }
+
+  @Test
+  void renamePictureRenamesPictureInTree() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
+    this.tree.addPicture(pic);
+    this.tree.renamePicture("test.png", "test1.png");
+    //noinspection OptionalGetWithoutIsPresent
+    assertSame(pic, this.tree.getPicture("test1.png").get());
+    assertTrue(this.tree.getPicture("test.png").isEmpty());
+  }
+
+  @Test
+  void renamePictureRenamesThrowsIfBothArgsEqual() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
+    this.tree.addPicture(pic);
+    assertThrows(IllegalArgumentException.class, () -> this.tree.renamePicture("test.png", "test.png"));
+  }
+
+  @Test
+  void renamePictureRenamesThrowsIfOldNameNotRegistered() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
+    this.tree.addPicture(pic);
+    assertThrows(IllegalArgumentException.class, () -> this.tree.renamePicture("test1.png", "test2.png"));
+  }
+
+  @Test
+  void renamePictureRenamesThrowsIfNewNameAlreadyRegistered() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
+    this.tree.addPicture(pic);
+    Picture pic1 = new Picture(PictureTest.getImage(IMG_PATH), "test1.png", null, null);
+    this.tree.addPicture(pic1);
+    assertThrows(IllegalArgumentException.class, () -> this.tree.renamePicture("test.png", "test1.png"));
+  }
+
+  @Test
   void addPictureToObjectAddsPicture() throws IOException {
     Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
     this.tree.addPicture(pic);

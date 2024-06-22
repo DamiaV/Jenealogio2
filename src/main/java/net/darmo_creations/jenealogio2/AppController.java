@@ -816,16 +816,15 @@ public class AppController {
     }
     selectedObject.ifPresent(o -> {
       this.editPersonImagesDialog.setObject(o, this.familyTree);
-      this.editPersonImagesDialog.showAndWait()
-          .ifPresent(b -> {
-            if (!b.getButtonData().isCancelButton()) {
-              this.familyTreeView.refresh();
-              this.familyTreePane.refresh();
-              this.defaultEmptyTree = false;
-              this.unsavedChanges = true;
-              this.updateUI();
-            }
-          });
+      this.editPersonImagesDialog.showAndWait().ifPresent(result -> {
+        if (result.personUpdated() || result.anyImageUpdated()) {
+          this.familyTreeView.refresh();
+          this.familyTreePane.refresh();
+          this.defaultEmptyTree = false;
+          this.unsavedChanges = true;
+          this.updateUI();
+        }
+      });
     });
   }
 

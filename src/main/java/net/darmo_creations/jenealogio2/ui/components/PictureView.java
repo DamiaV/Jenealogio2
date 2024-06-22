@@ -17,11 +17,11 @@ import java.util.*;
 public class PictureView extends HBox implements Comparable<PictureView> {
   private static final int IMAGE_SIZE = 100;
 
+  private final Label nameLabel = new Label();
   private final Label dateLabel = new Label();
   private final Label imageDescLabel = new Label();
 
   private final Picture picture;
-  private DateTime date;
   private final Config config;
 
   /**
@@ -43,45 +43,36 @@ public class PictureView extends HBox implements Comparable<PictureView> {
     imageView.setPreserveRatio(true);
     imageView.setFitHeight(IMAGE_SIZE);
     imageView.setFitWidth(IMAGE_SIZE);
-    this.setDate(picture.date().orElse(null));
-    picture.description().ifPresent(this.imageDescLabel::setText);
     VBox vBox = new VBox(5);
     if (showName) {
-      vBox.getChildren().add(new Label(picture.name()));
+      vBox.getChildren().add(this.nameLabel);
     }
     vBox.getChildren().addAll(this.dateLabel, this.imageDescLabel);
     this.getChildren().addAll(imageView, vBox);
+    this.refresh();
   }
 
   public Picture picture() {
     return this.picture;
   }
 
-  public Optional<String> imageDescription() {
-    return StringUtils.stripNullable(this.imageDescLabel.getText());
-  }
-
-  public void setImageDescription(String text) {
-    this.imageDescLabel.setText(text);
-  }
-
-  public Optional<DateTime> date() {
-    return Optional.ofNullable(this.date);
-  }
-
-  public void setDate(final DateTime date) {
-    this.date = date;
-    if (date != null) {
-      String calDate = DateTimeUtils.formatDateTime(date, false, this.config);
-      String isoDate = DateTimeUtils.formatDateTime(date, true, this.config);
-      this.dateLabel.setText("%s (%s)".formatted(calDate, isoDate));
-    } else {
-      this.dateLabel.setText("-");
-    }
-  }
-
   @Override
   public int compareTo(final @NotNull PictureView o) {
     return this.picture().compareTo(o.picture());
+  }
+
+  /**
+   * Refresh the displayed picture information.
+   */
+  public void refresh() {
+    this.nameLabel.setText(this.picture.name());
+    this.dateLabel.setText(this.picture.date().map(this::formatDate).orElse("-"));
+    this.imageDescLabel.setText(this.picture.description().orElse(""));
+  }
+
+  private String formatDate(@NotNull DateTime date) {
+    String calDate = DateTimeUtils.formatDateTime(date, false, this.config);
+    String isoDate = DateTimeUtils.formatDateTime(date, true, this.config);
+    return "%s (%s)".formatted(calDate, isoDate);
   }
 }

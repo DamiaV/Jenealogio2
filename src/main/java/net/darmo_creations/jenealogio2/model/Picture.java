@@ -8,18 +8,18 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 
 public class Picture implements Comparable<Picture> {
-  public static final String[] FILE_EXTENSIONS = {".jpg", ".jpeg", ".png"};
+  public static final String[] FILE_EXTENSIONS = { ".jpg", ".jpeg", ".png" };
 
   private final Image image;
-  private final String name; // TODO allow renaming
+  private String name;
   private String description;
   private DateTime date;
 
   public Picture(final @NotNull Image image, @NotNull String name, String description, DateTime date) {
     this.image = Objects.requireNonNull(image);
-    this.name = Objects.requireNonNull(name);
-    this.description = description;
-    this.date = date;
+    this.setName(name);
+    this.setDescription(description);
+    this.setDate(date);
   }
 
   public Image image() {
@@ -28,6 +28,10 @@ public class Picture implements Comparable<Picture> {
 
   public String name() {
     return this.name;
+  }
+
+  public void setName(@NotNull String name) {
+    this.name = Objects.requireNonNull(name);
   }
 
   public Optional<String> description() {

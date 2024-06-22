@@ -126,6 +126,25 @@ public final class StringUtils {
     return String.format("#%02x%02x%02x%02x", r, g, b, a);
   }
 
+  /**
+   * Split the name and extension of the given file name.
+   *
+   * @param fileName The file name to split.
+   * @return A pair containing the file’s name and its extension.
+   * If the file name has no extension, the returned value will be empty.
+   * The extension includes the dot.
+   */
+  public static Pair<String, Optional<String>> splitExtension(@NotNull String fileName) {
+    if (fileName.contains(".")) {
+      int lastDotIndex = fileName.lastIndexOf(".");
+      return new Pair<>(
+          fileName.substring(0, lastDotIndex),
+          Optional.of(fileName.substring(lastDotIndex))
+      );
+    }
+    return new Pair<>(fileName, Optional.empty());
+  }
+
   private StringUtils() {
   }
 }
