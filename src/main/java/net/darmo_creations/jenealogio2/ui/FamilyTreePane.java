@@ -128,14 +128,14 @@ public class FamilyTreePane extends FamilyTreeComponent {
             PersonWidget parent1Widget = this.createWidget(
                 parents.left().orElse(null),
                 List.of(new ChildInfo(c, 0)),
-                this.hasHiddenRelatives(parents.left(), i, c),
+                this.hasHiddenRelatives(parents.left(), i, c, 1),
                 false,
                 familyTree
             );
             PersonWidget parent2Widget = this.createWidget(
                 parents.right().orElse(null),
                 List.of(new ChildInfo(c, 1)),
-                this.hasHiddenRelatives(parents.right(), i, c),
+                this.hasHiddenRelatives(parents.right(), i, c, 1),
                 false,
                 familyTree
             );
@@ -175,10 +175,10 @@ public class FamilyTreePane extends FamilyTreeComponent {
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private boolean hasHiddenRelatives(@NotNull Optional<Person> parent, int treeLevel, final @NotNull Person child) {
+  private boolean hasHiddenRelatives(@NotNull Optional<Person> parent, int treeLevel, final Person child, int minPartners) {
     boolean hasHiddenParents = treeLevel == this.maxHeight && parent.map(Person::hasAnyParents).orElse(false);
     boolean hasHiddenChildren = treeLevel > 1 && parent.map(p -> p.children().stream().anyMatch(p_ -> p_ != child)).orElse(false);
-    boolean hasHiddenPartners = parent.map(p -> p.getPartnersAndChildren().size() > 1).orElse(false);
+    boolean hasHiddenPartners = parent.map(p -> p.getPartnersAndChildren().size() > minPartners).orElse(false);
     return hasHiddenParents || hasHiddenChildren || hasHiddenPartners;
   }
 
@@ -257,17 +257,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
     double x = rootX;
     for (int i = olderSiblings.size() - 1; i >= 0; i--) {
       x -= personW + HGAP;
-      Person sibling = olderSiblings.get(i);
-      boolean hasHiddenChildren = !sibling.children().isEmpty();
-      PersonWidget widget = this.createWidget(sibling, List.of(), hasHiddenChildren, false, familyTree);
-      widget.setLayoutX(x);
-      widget.setLayoutY(rootY);
-      widget.setParentWidget1(root.parentWidget1().orElse(null));
-      widget.setParentWidget2(root.parentWidget2().orElse(null));
-      double lineX = x + personW / 2;
-      double lineY = rootY - VGAP / 2.0;
-      this.drawLine(lineX, rootY, lineX, lineY);
-      this.drawLine(lineX, lineY, rootX + personW / 2.0, lineY);
+      this.drawSibling(familyTree, root, olderSiblings.get(i), x, rootX, rootY);
       if (x < minX) {
         minX = x;
       }
@@ -314,7 +304,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
         minX = childX;
       }
       for (Person child : children) {
-        boolean hasHiddenChildren = !child.children().isEmpty();
+        boolean hasHiddenChildren = this.hasHiddenRelatives(Optional.ofNullable(child), 0, null, 0);
         PersonWidget childWidget = this.createWidget(child, List.of(), hasHiddenChildren, false, familyTree);
         childWidget.setLayoutX(childX);
         childWidget.setLayoutY(childY);
@@ -334,20 +324,31 @@ public class FamilyTreePane extends FamilyTreeComponent {
     // Render younger sibling to the right of root’s partners
     for (int i = youngerSiblings.size() - 1; i >= 0; i--) {
       x += HGAP + personW;
-      Person sibling = youngerSiblings.get(i);
-      boolean hasHiddenChildren = !sibling.children().isEmpty();
-      PersonWidget widget = this.createWidget(sibling, List.of(), hasHiddenChildren, false, familyTree);
-      widget.setLayoutX(x);
-      widget.setLayoutY(rootY);
-      widget.setParentWidget1(root.parentWidget1().orElse(null));
-      widget.setParentWidget2(root.parentWidget2().orElse(null));
-      double lineX = x + personW / 2;
-      double lineY = rootY - VGAP / 2.0;
-      this.drawLine(lineX, rootY, lineX, lineY);
-      this.drawLine(lineX, lineY, rootX + personW / 2.0, lineY);
+      this.drawSibling(familyTree, root, youngerSiblings.get(i), x, rootX, rootY);
     }
 
     return minX;
+  }
+
+  private void drawSibling(
+      @NotNull FamilyTree familyTree,
+      @NotNull PersonWidget root,
+      @NotNull Person sibling,
+      double x,
+      double rootX,
+      double rootY
+  ) {
+    final double personW = PersonWidget.WIDTH;
+    boolean hasHiddenChildren = this.hasHiddenRelatives(Optional.of(sibling), 0, null, 0);
+    PersonWidget widget = this.createWidget(sibling, List.of(), hasHiddenChildren, false, familyTree);
+    widget.setLayoutX(x);
+    widget.setLayoutY(rootY);
+    widget.setParentWidget1(root.parentWidget1().orElse(null));
+    widget.setParentWidget2(root.parentWidget2().orElse(null));
+    double lineX = x + personW / 2;
+    double lineY = rootY - VGAP / 2.0;
+    this.drawLine(lineX, rootY, lineX, lineY);
+    this.drawLine(lineX, lineY, rootX + personW / 2.0, lineY);
   }
 
   /**
