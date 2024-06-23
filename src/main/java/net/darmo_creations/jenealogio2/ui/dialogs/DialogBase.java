@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.scene.control.*;
 import javafx.scene.image.*;
+import javafx.scene.input.*;
 import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.utils.*;
@@ -47,6 +48,10 @@ public abstract class DialogBase<T> extends Dialog<T> {
     this.setTitle(config.language().translate("dialog.%s.title".formatted(name),
         this.getTitleFormatArgs().toArray(FormatArg[]::new)));
     this.getDialogPane().getButtonTypes().addAll(buttonTypes);
+    this.stage().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+      if (event.getCode() == KeyCode.ESCAPE) // Avoid event being consumed by focused widget
+        this.hide();
+    });
   }
 
   /**
