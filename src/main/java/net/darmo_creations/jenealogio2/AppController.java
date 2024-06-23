@@ -751,6 +751,8 @@ public class AppController {
     var selection = this.selectionHistory.get(this.selectionIndex);
     PersonClickedEvent event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
     this.updateWidgetsSelection(event, this.familyTreePane);
+    this.updateWidgetsSelection(event, this.familyTreeView);
+    this.personDetailsView.setPerson(selection, this.familyTree);
     this.updateUI();
   }
 
