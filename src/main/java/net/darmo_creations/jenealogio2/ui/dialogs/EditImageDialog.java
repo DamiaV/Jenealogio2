@@ -58,6 +58,7 @@ public class EditImageDialog extends DialogBase<ButtonType> {
       return change;
     }));
     HBox imageNameBox = new HBox(
+        4,
         new Label(language.translate("dialog.edit_image.name")),
         this.imageNameField
     );
