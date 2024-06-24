@@ -27,8 +27,8 @@ import java.util.*;
  */
 public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument>> {
   private final TextField filterTextInput = new TextField();
-  private final ListView<DocumentView<AttachedDocument>> documentsList = new ListView<>();
-  private final ObservableList<DocumentView<AttachedDocument>> documentsList_ = FXCollections.observableArrayList();
+  private final ListView<DocumentView> documentsList = new ListView<>();
+  private final ObservableList<DocumentView> documentsList_ = FXCollections.observableArrayList();
 
   private FamilyTree tree;
 
@@ -62,7 +62,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
 
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
     this.filterTextInput.setPromptText(language.translate("dialog.select_documents.filter"));
-    FilteredList<DocumentView<AttachedDocument>> filteredList = new FilteredList<>(this.documentsList_, data -> true);
+    FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
     this.documentsList.setItems(filteredList);
     this.filterTextInput.textProperty().addListener(((observable, oldValue, newValue) ->
         filteredList.setPredicate(documentView -> {
@@ -140,7 +140,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     this.documentsList_.clear();
     tree.documents().stream()
         .filter(p -> !exclusionList.contains(p))
-        .forEach(p -> this.documentsList_.add(new DocumentView<>(p, true, this.config)));
+        .forEach(p -> this.documentsList_.add(new DocumentView(p, true, this.config)));
     this.documentsList_.sort(null);
   }
 
@@ -229,7 +229,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
       }
     else
       document = new AttachedDocument(file, null, null);
-    DocumentView<AttachedDocument> dv = new DocumentView<>(document, true, this.config);
+    DocumentView dv = new DocumentView(document, true, this.config);
     this.documentsList_.add(dv);
     this.documentsList_.sort(null);
     this.documentsList.scrollTo(dv);

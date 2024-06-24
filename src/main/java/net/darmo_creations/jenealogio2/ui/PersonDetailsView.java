@@ -60,7 +60,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final TextFlow eventNotesTextFlow = new TextFlow();
   private final TextFlow eventSourcesTextFlow = new TextFlow();
   private final ListView<PersonCard> eventWitnessesList = new ListView<>();
-  private final ListView<DocumentView<AttachedDocument>> eventDocumentsList = new ListView<>();
+  private final ListView<DocumentView> eventDocumentsList = new ListView<>();
 
   private final PersonCard parent1Card;
   private final PersonCard parent2Card;
@@ -75,7 +75,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final List<NewParentClickListener> newParentClickListeners = new LinkedList<>();
   private final List<Consumer<AttachedDocument>> documentEditedListeners = new LinkedList<>();
 
-  private final ListView<DocumentView<AttachedDocument>> documentsList = new ListView<>();
+  private final ListView<DocumentView> documentsList = new ListView<>();
 
   private final EditDocumentDialog editDocumentDialog;
 
@@ -332,7 +332,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    * @param object        The object whose main picture was clicked. May be null.
    * @param documentsList The document list in which to select the picture.
    */
-  private void onMainImageClicked(final GenealogyObject<?> object, @NotNull ListView<DocumentView<AttachedDocument>> documentsList) {
+  private void onMainImageClicked(final GenealogyObject<?> object, @NotNull ListView<DocumentView> documentsList) {
     if (object != null) {
       object.mainPicture()
           .flatMap(mainPicture -> documentsList.getItems().stream()
@@ -348,14 +348,14 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private void onDocumentListClicked(final @NotNull MouseEvent event) {
     if (event.getClickCount() > 1) {
       //noinspection unchecked
-      this.onEditDocument((ListView<DocumentView<AttachedDocument>>) event.getSource());
+      this.onEditDocument((ListView<DocumentView>) event.getSource());
     }
   }
 
-  private void onEditDocument(@NotNull ListView<DocumentView<AttachedDocument>> list) {
-    List<DocumentView<AttachedDocument>> selection = list.getSelectionModel().getSelectedItems();
+  private void onEditDocument(@NotNull ListView<DocumentView> list) {
+    List<DocumentView> selection = list.getSelectionModel().getSelectedItems();
     if (selection.size() == 1) {
-      DocumentView<AttachedDocument> documentView = selection.get(0);
+      DocumentView documentView = selection.get(0);
       AttachedDocument document = documentView.document();
       this.editDocumentDialog.setDocument(document, this.familyTree);
       this.editDocumentDialog.showAndWait().ifPresent(b -> {
@@ -507,7 +507,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted(Person.birthDateThenNameComparator(false))
         .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
 
-    this.person.documents().forEach(p -> this.documentsList.getItems().add(new DocumentView<>(p, false, this.config)));
+    this.person.documents().forEach(p -> this.documentsList.getItems().add(new DocumentView(p, false, this.config)));
     this.documentsList.getItems().sort(null);
   }
 
@@ -597,7 +597,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .forEach(w -> this.eventWitnessesList.getItems().add(new PersonCard(w)));
 
     this.eventDocumentsList.getItems().clear();
-    lifeEvent.documents().forEach(p -> this.eventDocumentsList.getItems().add(new DocumentView<>(p, false, this.config)));
+    lifeEvent.documents().forEach(p -> this.eventDocumentsList.getItems().add(new DocumentView(p, false, this.config)));
     this.eventDocumentsList.getItems().sort(null);
 
     this.eventsTab.setContent(this.eventPane);

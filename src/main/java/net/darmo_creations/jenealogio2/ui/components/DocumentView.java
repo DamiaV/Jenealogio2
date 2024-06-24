@@ -18,14 +18,15 @@ import java.util.*;
 /**
  * This component shows an {@link AttachedDocument} along with its description and date.
  */
-public class DocumentView<T extends AttachedDocument> extends HBox implements Comparable<DocumentView<T>> {
+// TODO add button to open the document in the file explorer or default system application
+public class DocumentView extends HBox implements Comparable<DocumentView> {
   private static final int IMAGE_SIZE = 100;
 
   private final Label nameLabel = new Label();
   private final Label dateLabel = new Label();
   private final Label descLabel = new Label();
 
-  private final T document;
+  private final AttachedDocument document;
   private final Config config;
 
   /**
@@ -36,7 +37,7 @@ public class DocumentView<T extends AttachedDocument> extends HBox implements Co
    * @param config   The app’s config.
    */
   public DocumentView(
-      final @NotNull T document,
+      final @NotNull AttachedDocument document,
       boolean showName,
       @NotNull Config config
   ) {
@@ -81,12 +82,12 @@ public class DocumentView<T extends AttachedDocument> extends HBox implements Co
     this.refresh();
   }
 
-  public T document() {
+  public AttachedDocument document() {
     return this.document;
   }
 
   @Override
-  public int compareTo(final @NotNull DocumentView<T> o) {
+  public int compareTo(final @NotNull DocumentView o) {
     return this.document().compareTo(o.document());
   }
 

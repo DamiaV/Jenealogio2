@@ -31,7 +31,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
   private final Button removeDocumentButton = new Button();
   private final Button editDocumentDescButton = new Button();
   private final Button deleteDocumentButton = new Button();
-  private final ListView<DocumentView<AttachedDocument>> documentsList = new ListView<>();
+  private final ListView<DocumentView> documentsList = new ListView<>();
   private final Button applyButton;
 
   /**
@@ -188,7 +188,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     this.removeMainImageButton.setDisable(image.isEmpty());
     this.documentsList.getItems().clear();
     for (var document : this.genealogyObject.documents()) {
-      this.documentsList.getItems().add(new DocumentView<>(document, true, this.config));
+      this.documentsList.getItems().add(new DocumentView(document, true, this.config));
     }
     this.documentsList.getItems().sort(null);
     this.pendingUpdates = false;
@@ -210,10 +210,10 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
   }
 
   private void onSetAsMainImage() {
-    List<DocumentView<AttachedDocument>> selection = this.getSelectedDocuments();
+    List<DocumentView> selection = this.getSelectedDocuments();
     if (selection.size() != 1)
       return;
-    DocumentView<AttachedDocument> dv = selection.get(0);
+    DocumentView dv = selection.get(0);
     if (!(dv.document() instanceof Picture pic))
       return;
     this.mainPicture = pic;
@@ -228,7 +228,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     this.selectDocumentDialog.updateDocumentsList(this.familyTree, exclusionList);
     this.selectDocumentDialog.showAndWait().ifPresent(documents -> {
       documents.forEach(p -> {
-        DocumentView<AttachedDocument> dv = new DocumentView<>(p, true, this.config);
+        DocumentView dv = new DocumentView(p, true, this.config);
         this.documentsList.getItems().add(dv);
         this.documentsList.scrollTo(dv);
         this.documentsToAdd.add(p);
@@ -242,7 +242,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
   }
 
   private void onRemoveDocuments() {
-    List<DocumentView<AttachedDocument>> selection = this.getSelectedDocuments();
+    List<DocumentView> selection = this.getSelectedDocuments();
     if (selection.isEmpty())
       return;
     selection.forEach(dv -> {
@@ -258,7 +258,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
   }
 
   private void onDeleteDocuments() {
-    List<DocumentView<AttachedDocument>> selection = this.getSelectedDocuments();
+    List<DocumentView> selection = this.getSelectedDocuments();
     if (selection.isEmpty())
       return;
     if (!Alerts.confirmation(
@@ -277,7 +277,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
   }
 
   private void onEditDocumentDesc() {
-    List<DocumentView<AttachedDocument>> selection = this.getSelectedDocuments();
+    List<DocumentView> selection = this.getSelectedDocuments();
     if (selection.size() == 1) {
       this.openDocumentEditDialog(selection.get(0));
     }
@@ -289,7 +289,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     }
   }
 
-  private void openDocumentEditDialog(@NotNull DocumentView<AttachedDocument> documentView) {
+  private void openDocumentEditDialog(@NotNull DocumentView documentView) {
     this.editDocumentDialog.setDocument(documentView.document(), this.familyTree);
     this.editDocumentDialog.showAndWait().ifPresent(b -> {
       documentView.refresh();
@@ -303,7 +303,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     this.buttonDescriptionLabel.setText(show ? this.config.language().translate(i18nKey + ".tooltip") : null);
   }
 
-  private List<DocumentView<AttachedDocument>> getSelectedDocuments() {
+  private List<DocumentView> getSelectedDocuments() {
     return new ArrayList<>(this.documentsList.getSelectionModel().getSelectedItems());
   }
 
