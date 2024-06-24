@@ -59,6 +59,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final Label eventPlaceLabel = new Label();
   private final TextFlow eventNotesTextFlow = new TextFlow();
   private final TextFlow eventSourcesTextFlow = new TextFlow();
+  private final ListView<PersonCard> eventWitnessesList = new ListView<>();
   private final ListView<PictureView> eventImagesList = new ListView<>();
 
   private final PersonCard parent1Card;
@@ -261,18 +262,20 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     VBox.setVgrow(sourcesScroll, Priority.ALWAYS);
     VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
     sourcesBox.getStyleClass().add("person-details");
+    VBox witnessesBox = new VBox(new SectionLabel("witnesses"), this.eventWitnessesList);
+    witnessesBox.getStyleClass().add("person-details");
     this.eventImagesList.setOnMouseClicked(this::onImageListClicked);
     VBox.setVgrow(this.eventImagesList, Priority.ALWAYS);
     VBox imagesBox = new VBox(new SectionLabel("images"), this.eventImagesList);
     imagesBox.getStyleClass().add("person-details");
     this.eventPane.getItems().addAll(
         topBox,
+        witnessesBox,
         sourcesBox,
         imagesBox
     );
-    // TODO show witnesses
     this.eventPane.setOrientation(Orientation.VERTICAL);
-    this.eventPane.setDividerPositions(0.2, 0.4);
+    this.eventPane.setDividerPositions(0.25, 0.5, 0.75);
   }
 
   private void setupFamilyTab() {
@@ -587,6 +590,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     lifeEvent.notes().ifPresent(s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
     this.eventSourcesTextFlow.getChildren().clear();
     lifeEvent.sources().ifPresent(s -> this.eventSourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+
+    this.eventWitnessesList.getItems().clear();
+    lifeEvent.witnesses().stream()
+        .sorted(Person.birthDateThenNameComparator(false))
+        .forEach(w -> this.eventWitnessesList.getItems().add(new PersonCard(w)));
 
     this.eventImagesList.getItems().clear();
     lifeEvent.pictures().forEach(p -> this.eventImagesList.getItems().add(new PictureView(p, false, this.config)));
