@@ -299,7 +299,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     bottomBox.getStyleClass().add("person-details");
 
     tabPane.getItems().addAll(topBox, middleBox, bottomBox);
-    tabPane.setDividerPositions(0.2, 0.6);
+    tabPane.setDividerPositions(0.33, 0.67);
   }
 
   private void setupFosterParentsTab() {
