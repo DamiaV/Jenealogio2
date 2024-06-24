@@ -3,11 +3,13 @@ package net.darmo_creations.jenealogio2;
 import javafx.application.*;
 import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.apache.commons.cli.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.nio.file.*;
 import java.time.*;
 import java.util.*;
 
@@ -28,6 +30,10 @@ public class App extends Application {
    * Jar path to the images directory.
    */
   public static final String IMAGES_PATH = RESOURCES_ROOT + "images/";
+
+  public static final Path CURRENT_DIR = Paths.get("").toAbsolutePath();
+  public static final Path TEMP_DIR = CURRENT_DIR.resolve("temp");
+  public static final Path USER_DATA_DIR = CURRENT_DIR.resolve("user_data");
 
   /**
    * Application’s controller.
@@ -54,7 +60,13 @@ public class App extends Application {
     return resourceBundle;
   }
 
-  private static File file;
+  private static TreesManager treesManager;
+
+  public static TreesManager treesManager() {
+    return treesManager;
+  }
+
+  private static String treeName;
 
   /**
    * Update the current configuration object with the given one.
@@ -91,8 +103,9 @@ public class App extends Application {
       LOGGER.info("Debug mode is ON");
     }
     hostServices = this.getHostServices();
+    treesManager = new TreesManager();
     controller = new AppController(stage, config);
-    controller.show(file);
+    controller.show(treeName);
   }
 
   public static void main(String[] args) {
@@ -107,7 +120,7 @@ public class App extends Application {
       System.exit(1);
       return; // To shut up compiler errors
     }
-    file = parsedArgs.file();
+    treeName = parsedArgs.treeName();
     try {
       launch();
     } catch (Exception e) {
@@ -132,13 +145,8 @@ public class App extends Application {
         .build());
     CommandLine commandLine = parser.parse(options, args);
     List<String> argList = commandLine.getArgList();
-    File file;
-    if (argList.isEmpty()) {
-      file = null;
-    } else {
-      file = new File(argList.get(0));
-    }
-    return new Args(commandLine.hasOption('d'), file);
+    String treeName = argList.isEmpty() ? null : argList.get(0);
+    return new Args(commandLine.hasOption('d'), treeName);
   }
 
   /**
@@ -210,9 +218,9 @@ public class App extends Application {
   /**
    * Class holding parsed CLI arguments.
    *
-   * @param debug Whether to run the app in debug mode.
-   * @param file  Optional file to load.
+   * @param debug    Whether to run the app in debug mode.
+   * @param treeName Optional name of a tree to open.
    */
-  private record Args(boolean debug, @Nullable File file) {
+  private record Args(boolean debug, @Nullable String treeName) {
   }
 }

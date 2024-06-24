@@ -48,8 +48,7 @@ public class AboutDialog extends DialogBase<ButtonType> {
 
     VBox vBox = new VBox(10, titleLabel, contentView);
 
-    Image appIcon = config.theme().getAppIcon();
-    ImageView logo = new ImageView(appIcon);
+    ImageView logo = new ImageView(config.theme().getAppIcon());
     logo.setFitHeight(100);
     logo.setFitWidth(100);
 
@@ -57,8 +56,6 @@ public class AboutDialog extends DialogBase<ButtonType> {
     content.setPrefWidth(600);
     content.setPrefHeight(300);
     this.getDialogPane().setContent(content);
-
-    this.setIcon(appIcon);
   }
 
   @Override

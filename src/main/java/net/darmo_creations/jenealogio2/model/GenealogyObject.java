@@ -14,7 +14,7 @@ import java.util.*;
 public abstract class GenealogyObject<T extends GenealogyObject<T>> {
   private String notes;
   private String sources;
-  private final Map<String, Picture> pictures = new HashMap<>();
+  private final Map<String, AttachedDocument> documents = new HashMap<>();
   private Picture mainPicture;
 
   /**
@@ -61,10 +61,17 @@ public abstract class GenealogyObject<T extends GenealogyObject<T>> {
   }
 
   /**
-   * A view of this object’s pictures.
+   * A unmodifiable view of this object’s documents.
    */
-  public Collection<Picture> pictures() {
-    return this.pictures.values();
+  public @UnmodifiableView Collection<AttachedDocument> documents() {
+    return Collections.unmodifiableCollection(this.documents.values());
+  }
+
+  /**
+   * An unmodifiable view of this object’s pictures.
+   */
+  public @UnmodifiableView Collection<Picture> pictures() {
+    return new FilteredView<>(this.documents.values(), d -> d instanceof Picture);
   }
 
   /**
@@ -75,39 +82,40 @@ public abstract class GenealogyObject<T extends GenealogyObject<T>> {
   }
 
   /**
-   * Add a picture to this object.
+   * Add a document to this object.
    *
-   * @param picture The picture to add.
+   * @param document The document to add.
    */
-  void addPicture(@NotNull Picture picture) {
-    this.pictures.put(picture.name(), picture);
+  void addDocument(@NotNull AttachedDocument document) {
+    this.documents.put(document.fileName(), document);
   }
 
   /**
-   * Remove from this object the picture with the given ID.
+   * Remove from this object the document with the given ID.
    *
-   * @param name Name of the picture to remove.
+   * @param fileName Name of the document to remove.
    */
-  void removePicture(@NotNull String name) {
-    Objects.requireNonNull(name);
-    if (this.mainPicture != null && this.mainPicture.name().equals(name)) {
+  void removeDocument(@NotNull String fileName) {
+    Objects.requireNonNull(fileName);
+    if (this.mainPicture != null && this.mainPicture.fileName().equals(fileName))
       this.setMainPicture(null);
-    }
-    this.pictures.remove(name);
+    this.documents.remove(fileName);
   }
 
   /**
    * Set the main picture of this object.
    *
-   * @param name Name of the picture to set as main. May be null.
+   * @param fileName Name of the picture to set as main. May be null.
    * @throws IllegalArgumentException If no picture with the given name is associated with this object.
+   * @throws ClassCastException       If the file is not a picture.
    */
-  void setMainPicture(String name) {
-    if (name != null) {
-      if (!this.pictures.containsKey(name)) {
-        throw new IllegalArgumentException("No such picture: " + name);
-      }
-      this.mainPicture = this.pictures.get(name);
+  void setMainPicture(String fileName) {
+    if (fileName != null) {
+      if (!this.documents.containsKey(fileName))
+        throw new IllegalArgumentException("No such picture: " + fileName);
+      if (!(this.documents.get(fileName) instanceof Picture p))
+        throw new ClassCastException("File \"%s\" is not an image".formatted(fileName));
+      this.mainPicture = p;
     } else {
       this.mainPicture = null;
     }

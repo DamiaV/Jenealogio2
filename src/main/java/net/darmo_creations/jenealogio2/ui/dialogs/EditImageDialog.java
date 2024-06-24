@@ -18,16 +18,6 @@ import java.util.*;
  * This dialog allows editing the description of a {@link Picture}.
  */
 public class EditImageDialog extends DialogBase<ButtonType> {
-  private static final List<Character> INVALID_CHARS;
-
-  static {
-    List<Character> invalidChars = new LinkedList<>();
-    "<>:\"/\\|?*".chars().forEach(c -> invalidChars.add((char) c));
-    for (int i = 0; i < 32; i++)
-      invalidChars.add((char) i);
-    INVALID_CHARS = Collections.unmodifiableList(invalidChars);
-  }
-
   private Picture picture;
   private FamilyTree familyTree;
   private final ImageView imageView = new ImageView();
@@ -52,11 +42,7 @@ public class EditImageDialog extends DialogBase<ButtonType> {
 
     HBox.setHgrow(this.imageNameField, Priority.ALWAYS);
     this.imageNameField.textProperty().addListener((observableValue, oldValue, newValue) -> this.updateUI());
-    this.imageNameField.setTextFormatter(new TextFormatter<>(change -> {
-      if (INVALID_CHARS.stream().anyMatch(s -> change.getControlNewText().contains(s.toString())))
-        return null;
-      return change;
-    }));
+    this.imageNameField.setTextFormatter(StringUtils.filePathTextFormatter());
     HBox imageNameBox = new HBox(
         4,
         new Label(language.translate("dialog.edit_image.name")),
@@ -87,22 +73,18 @@ public class EditImageDialog extends DialogBase<ButtonType> {
     this.getDialogPane().setContent(content);
 
     this.imageView.fitWidthProperty().bind(this.stage().widthProperty().subtract(20));
-    this.imageView.fitHeightProperty().bind(this.stage().heightProperty().subtract(250));
+    this.imageView.fitHeightProperty().bind(this.stage().heightProperty().subtract(300));
 
     Stage stage = this.stage();
     stage.setMinWidth(850);
     stage.setMinHeight(650);
-    this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
-        String ext = StringUtils.splitExtension(this.picture.name()).right()
-            .orElseThrow(() -> new IllegalArgumentException("missing extension"));
         String newName = StringUtils.stripNullable(this.imageNameField.getText())
-                             .orElseThrow(() -> new RuntimeException("image name cannot be empty")) + ext;
-        String currentName = this.picture.name();
-        if (!currentName.equals(newName))
-          this.familyTree.renamePicture(currentName, newName);
+            .orElseThrow(() -> new RuntimeException("Image name cannot be empty"));
+        if (!this.picture.name().equals(newName))
+          this.familyTree.renameDocument(this.picture.fileName(), newName);
         this.picture.setDescription(StringUtils.stripNullable(this.imageDescTextInput.getText()).orElse(null));
         this.picture.setDate(this.dateField.getDate().orElse(null));
       }
@@ -137,8 +119,10 @@ public class EditImageDialog extends DialogBase<ButtonType> {
   public void setPicture(@NotNull Picture picture, @NotNull FamilyTree familyTree) {
     this.picture = Objects.requireNonNull(picture);
     this.familyTree = Objects.requireNonNull(familyTree);
-    this.imageView.setImage(picture.image());
-    this.imageNameField.setText(StringUtils.splitExtension(picture.name()).left());
+    this.imageView.setImage(picture.image().orElse(null));
+    this.imageNameField.setText(picture.name());
+    // Disable renaming if image is not yet registered in the tree
+    this.imageNameField.setDisable(familyTree.getPicture(picture.fileName()).isEmpty());
     this.imageDescTextInput.setText(picture.description().orElse(""));
     var date = picture.date();
     if (date.isPresent()) {

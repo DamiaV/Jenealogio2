@@ -7,9 +7,9 @@ import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 import org.w3c.dom.*;
-import org.xml.sax.*;
 
 import java.io.*;
+import java.nio.file.*;
 import java.time.format.*;
 import java.util.*;
 import java.util.function.*;
@@ -32,7 +32,7 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull InputStream inputStream,
       @NotNull PictureBuilder pictureBuilder
   ) throws IOException {
-    Document document = this.readFile(inputStream);
+    Document document = XmlUtils.readFile(inputStream);
 
     NodeList childNodes = document.getChildNodes();
     if (childNodes.getLength() != 1) {
@@ -42,23 +42,23 @@ public class TreeXMLReader extends TreeXMLManager {
     if (!familyTreeElement.getTagName().equals(FAMILY_TREE_TAG)) {
       throw new IOException("Missing root element");
     }
-    int version = this.getAttr(familyTreeElement, FAMILY_TREE_VERSION_ATTR, Integer::parseInt, null, false);
+    int version = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_VERSION_ATTR, Integer::parseInt, null, false);
     if (version != 1) {
       throw new IOException("Unsupported XML file version: " + version);
     }
-    String name = this.getAttr(familyTreeElement, FAMILY_TREE_NAME_ATTR, s -> s, null, true);
-    int rootID = this.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, null, false);
+    String name = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_NAME_ATTR, s -> s, null, true);
+    int rootID = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, null, false);
 
     //noinspection OptionalGetWithoutIsPresent
-    Element peopleElement = this.getChildElement(familyTreeElement, PEOPLE_TAG, false).get();
+    Element peopleElement = XmlUtils.getChildElement(familyTreeElement, PEOPLE_TAG, false).get();
     FamilyTree familyTree = new FamilyTree(name);
 
-    Optional<Element> registriesElement = this.getChildElement(familyTreeElement, REGISTRIES_TAG, true);
+    Optional<Element> registriesElement = XmlUtils.getChildElement(familyTreeElement, REGISTRIES_TAG, true);
     if (registriesElement.isPresent()) {
       this.loadUserRegistries(registriesElement.get(), familyTree);
     }
 
-    Optional<Element> picturesElement = this.getChildElement(familyTreeElement, PICTURES_TAG, true);
+    Optional<Element> picturesElement = XmlUtils.getChildElement(familyTreeElement, PICTURES_TAG, true);
     if (picturesElement.isPresent()) {
       this.loadPictures(picturesElement.get(), familyTree, pictureBuilder);
     }
@@ -69,7 +69,7 @@ public class TreeXMLReader extends TreeXMLManager {
     } catch (IndexOutOfBoundsException e) {
       throw new IOException(e);
     }
-    Optional<Element> eventsElement = this.getChildElement(familyTreeElement, LIFE_EVENTS_TAG, true);
+    Optional<Element> eventsElement = XmlUtils.getChildElement(familyTreeElement, LIFE_EVENTS_TAG, true);
     if (eventsElement.isPresent()) {
       this.readLifeEvents(eventsElement.get(), persons, familyTree);
     }
@@ -84,9 +84,9 @@ public class TreeXMLReader extends TreeXMLManager {
    * @return The corresponding registries.
    * @throws IOException If any error occurs.
    */
-  public RegistriesWrapper loadRegistriesFile(final @NotNull File file) throws IOException {
+  public RegistriesWrapper loadRegistriesFile(final @NotNull Path file) throws IOException {
     FamilyTree dummyTree = new FamilyTree("dummy");
-    Document document = this.readFile(new FileInputStream(file));
+    Document document = XmlUtils.readFile(new FileInputStream(file.toFile()));
     NodeList childNodes = document.getChildNodes();
     if (childNodes.getLength() != 1) {
       throw new IOException("Parse error");
@@ -95,7 +95,7 @@ public class TreeXMLReader extends TreeXMLManager {
     if (!registriesElement.getTagName().equals(REGISTRIES_TAG)) {
       throw new IOException("Missing root element");
     }
-    int version = this.getAttr(registriesElement, REGISTRIES_VERSION_ATTR, Integer::parseInt, null, false);
+    int version = XmlUtils.getAttr(registriesElement, REGISTRIES_VERSION_ATTR, Integer::parseInt, null, false);
     if (version != 1) {
       throw new IOException("Unsupported XML file version: " + version);
     }
@@ -117,11 +117,11 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Element registriesElement,
       @NotNull FamilyTree familyTree
   ) throws IOException {
-    Optional<Element> gendersElement = this.getChildElement(registriesElement, GENDERS_TAG, true);
+    Optional<Element> gendersElement = XmlUtils.getChildElement(registriesElement, GENDERS_TAG, true);
     if (gendersElement.isPresent()) {
-      for (Element entryElement : this.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
-        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(entryElement, REGISTRY_ENTRY_KEY_ATTR, s -> s, null, false));
-        String color = this.getAttr(entryElement, GENDER_COLOR_ATTR, s -> s, null, false);
+      for (Element entryElement : XmlUtils.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
+        RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_KEY_ATTR, s -> s, null, false));
+        String color = XmlUtils.getAttr(entryElement, GENDER_COLOR_ATTR, s -> s, null, false);
         if (!color.matches("^#[\\da-fA-F]{6}$")) {
           throw new IOException("Invalid color code: " + color);
         }
@@ -131,31 +131,31 @@ public class TreeXMLReader extends TreeXMLManager {
           }
           familyTree.genderRegistry().getEntry(key).setColor(color);
         } else {
-          String label = this.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
+          String label = XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
           familyTree.genderRegistry().registerEntry(key, label, new GenderRegistry.RegistryArgs(color));
         }
       }
     }
 
-    Optional<Element> eventTypeElement = this.getChildElement(registriesElement, LIFE_EVENT_TYPES_TAG, true);
+    Optional<Element> eventTypeElement = XmlUtils.getChildElement(registriesElement, LIFE_EVENT_TYPES_TAG, true);
     if (eventTypeElement.isPresent()) {
-      for (Element entryElement : this.getChildElements(eventTypeElement.get(), REGISTRY_ENTRY_TAG)) {
-        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(entryElement, REGISTRY_ENTRY_KEY_ATTR, s -> s, null, true));
-        String label = this.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
-        int groupOrdinal = this.getAttr(entryElement, LIFE_EVENT_TYPE_GROUP_ATTR, Integer::parseInt, null, false);
+      for (Element entryElement : XmlUtils.getChildElements(eventTypeElement.get(), REGISTRY_ENTRY_TAG)) {
+        RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_KEY_ATTR, s -> s, null, true));
+        String label = XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
+        int groupOrdinal = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_GROUP_ATTR, Integer::parseInt, null, false);
         LifeEventType.Group group;
         try {
           group = LifeEventType.Group.values()[groupOrdinal];
         } catch (IndexOutOfBoundsException e) {
           throw new IOException(e);
         }
-        boolean indicatesDeath = this.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR, Boolean::parseBoolean, null, false);
-        boolean indicatesUnion = this.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_UNION_ATTR, Boolean::parseBoolean, null, false);
-        int actorsNb = this.getAttr(entryElement, LIFE_EVENT_TYPE_ACTORS_NB_ATTR, Integer::parseInt, null, false);
+        boolean indicatesDeath = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR, Boolean::parseBoolean, null, false);
+        boolean indicatesUnion = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_UNION_ATTR, Boolean::parseBoolean, null, false);
+        int actorsNb = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_ACTORS_NB_ATTR, Integer::parseInt, null, false);
         if (actorsNb > 2) {
           throw new IOException("invalid actors number: " + actorsNb);
         }
-        boolean unique = this.getAttr(entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, Boolean::parseBoolean, null, false);
+        boolean unique = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, Boolean::parseBoolean, null, false);
         var args = new LifeEventTypeRegistry.RegistryArgs(group, indicatesDeath, indicatesUnion, actorsNb, actorsNb, unique);
         try {
           familyTree.lifeEventTypeRegistry().registerEntry(key, label, args);
@@ -182,14 +182,13 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull FamilyTree familyTree,
       @NotNull PictureBuilder pictureBuilder
   ) throws IOException {
-    List<Element> pictureElements = this.getChildElements(picturesElement, PICTURE_TAG);
+    List<Element> pictureElements = XmlUtils.getChildElements(picturesElement, PICTURE_TAG);
     for (Element pictureElement : pictureElements) {
-      String name = this.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
-      Optional<Element> descElement = this.getChildElement(pictureElement, PICTURE_DESC_TAG, true);
+      String name = XmlUtils.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
+      Optional<Element> descElement = XmlUtils.getChildElement(pictureElement, PICTURE_DESC_TAG, true);
       String desc = descElement.map(Element::getTextContent).orElse(null);
       DateTime date = this.readDateTag(pictureElement, true);
-      Optional<Picture> picture = pictureBuilder.build(name, desc, date);
-      picture.ifPresent(familyTree::addPicture);
+      familyTree.addDocument(pictureBuilder.build(name, desc, date));
     }
   }
 
@@ -212,7 +211,7 @@ public class TreeXMLReader extends TreeXMLManager {
     Map<Person, Pair<Integer, Integer>> parentIDS = new HashMap<>();
     Map<Person, Map<Person.RelativeType, List<Integer>>> relativesIDs = new HashMap<>();
 
-    for (Element personElement : this.getChildElements(peopleElement, PERSON_TAG)) {
+    for (Element personElement : XmlUtils.getChildElements(peopleElement, PERSON_TAG)) {
       Person person = new Person();
 
       this.readPicturesTag(personElement, person, familyTree);
@@ -257,13 +256,13 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull GenealogyObject<?> o,
       @NotNull FamilyTree familyTree
   ) throws IOException {
-    Optional<Element> picturesElement = this.getChildElement(element, PICTURES_TAG, true);
+    Optional<Element> picturesElement = XmlUtils.getChildElement(element, PICTURES_TAG, true);
     if (picturesElement.isPresent()) {
-      List<Element> pictureElements = this.getChildElements(picturesElement.get(), PICTURE_TAG);
+      List<Element> pictureElements = XmlUtils.getChildElements(picturesElement.get(), PICTURE_TAG);
       for (Element pictureElement : pictureElements) {
-        String name = this.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
-        familyTree.addPictureToObject(name, o);
-        boolean isMain = this.getAttr(pictureElement, PICTURE_MAIN_ATTR, Boolean::parseBoolean, () -> false, false);
+        String name = XmlUtils.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
+        familyTree.addDocumentToObject(name, o);
+        boolean isMain = XmlUtils.getAttr(pictureElement, PICTURE_MAIN_ATTR, Boolean::parseBoolean, () -> false, false);
         if (isMain) {
           familyTree.setMainPictureOfObject(name, o);
         }
@@ -281,10 +280,10 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Element personElement,
       @NotNull Person person
   ) throws IOException {
-    Optional<Element> disambIDElement = this.getChildElement(personElement, DISAMBIGUATION_ID_TAG, true);
+    Optional<Element> disambIDElement = XmlUtils.getChildElement(personElement, DISAMBIGUATION_ID_TAG, true);
     if (disambIDElement.isPresent()) {
       try {
-        person.setDisambiguationID(this.getAttr(disambIDElement.get(), DISAMBIG_ID_VALUE_ATTR, Integer::parseInt, () -> null, false));
+        person.setDisambiguationID(XmlUtils.getAttr(disambIDElement.get(), DISAMBIG_ID_VALUE_ATTR, Integer::parseInt, () -> null, false));
       } catch (IllegalArgumentException e) {
         throw new IOException(e);
       }
@@ -302,9 +301,9 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull Person person
   ) throws IOException {
     //noinspection OptionalGetWithoutIsPresent
-    Element lifeStatusElement = this.getChildElement(personElement, LIFE_STATUS_TAG, false).get();
+    Element lifeStatusElement = XmlUtils.getChildElement(personElement, LIFE_STATUS_TAG, false).get();
     try {
-      int ordinal = this.getAttr(lifeStatusElement, LIFE_STATUS_ORDINAL_ATTR, Integer::parseInt, null, false);
+      int ordinal = XmlUtils.getAttr(lifeStatusElement, LIFE_STATUS_ORDINAL_ATTR, Integer::parseInt, null, false);
       person.setLifeStatus(LifeStatus.values()[ordinal]);
     } catch (IndexOutOfBoundsException e) {
       throw new IOException(e);
@@ -323,10 +322,10 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull Person person,
       final @NotNull FamilyTree familyTree
   ) throws IOException {
-    Optional<Element> genderElement = this.getChildElement(personElement, GENDER_TAG, true);
+    Optional<Element> genderElement = XmlUtils.getChildElement(personElement, GENDER_TAG, true);
     if (genderElement.isPresent()) {
       try {
-        RegistryEntryKey key = new RegistryEntryKey(this.getAttr(genderElement.get(), GENDER_KEY_ATTR, s -> s, null, false));
+        RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(genderElement.get(), GENDER_KEY_ATTR, s -> s, null, false));
         Gender gender = familyTree.genderRegistry().getEntry(key);
         if (gender == null) {
           throw new IOException("Undefined gender registry key: " + key.fullName());
@@ -348,9 +347,9 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Element personElement,
       @NotNull Person person
   ) throws IOException {
-    Optional<Element> occupationElement = this.getChildElement(personElement, MAIN_OCCUPATION_TAG, true);
+    Optional<Element> occupationElement = XmlUtils.getChildElement(personElement, MAIN_OCCUPATION_TAG, true);
     if (occupationElement.isPresent()) {
-      String occupation = this.getAttr(occupationElement.get(), MAIN_OCCUPATION_VALUE_ATTR, s -> s, null, true);
+      String occupation = XmlUtils.getAttr(occupationElement.get(), MAIN_OCCUPATION_VALUE_ATTR, s -> s, null, true);
       person.setMainOccupation(occupation);
     }
   }
@@ -367,10 +366,10 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Person person,
       @NotNull Map<Person, Pair<Integer, Integer>> parentIDS
   ) throws IOException {
-    Optional<Element> parentsElement = this.getChildElement(personElement, PARENTS_TAG, true);
+    Optional<Element> parentsElement = XmlUtils.getChildElement(personElement, PARENTS_TAG, true);
     if (parentsElement.isPresent()) {
-      Integer id1 = this.getAttr(parentsElement.get(), PARENT_ID_1_ATTR, Integer::parseInt, () -> null, false);
-      Integer id2 = this.getAttr(parentsElement.get(), PARENT_ID_2_ATTR, Integer::parseInt, () -> null, false);
+      Integer id1 = XmlUtils.getAttr(parentsElement.get(), PARENT_ID_1_ATTR, Integer::parseInt, () -> null, false);
+      Integer id2 = XmlUtils.getAttr(parentsElement.get(), PARENT_ID_2_ATTR, Integer::parseInt, () -> null, false);
       if (id1 != null && id2 != null && id1.intValue() == id2.intValue()) {
         throw new IOException("Parents cannot be identical");
       }
@@ -391,12 +390,12 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Person person,
       @NotNull Map<Person, Map<Person.RelativeType, List<Integer>>> relativesIDs
   ) throws IOException {
-    Optional<Element> relativesElement = this.getChildElement(personElement, RELATIVES_TAG, true);
+    Optional<Element> relativesElement = XmlUtils.getChildElement(personElement, RELATIVES_TAG, true);
     if (relativesElement.isPresent()) {
       HashMap<Person.RelativeType, List<Integer>> groupsMap = new HashMap<>();
       relativesIDs.put(person, groupsMap);
-      for (Element groupElement : this.getChildElements(relativesElement.get(), GROUP_TAG)) {
-        int ordinal = this.getAttr(groupElement, GROUP_ORDINAL_ATTR, Integer::parseInt, null, false);
+      for (Element groupElement : XmlUtils.getChildElements(relativesElement.get(), GROUP_TAG)) {
+        int ordinal = XmlUtils.getAttr(groupElement, GROUP_ORDINAL_ATTR, Integer::parseInt, null, false);
         Person.RelativeType relativeType;
         try {
           relativeType = Person.RelativeType.values()[ordinal];
@@ -405,9 +404,9 @@ public class TreeXMLReader extends TreeXMLManager {
         }
         LinkedList<Integer> relativesList = new LinkedList<>();
         groupsMap.put(relativeType, relativesList);
-        for (Element relativeElement : this.getChildElements(groupElement, RELATIVE_TAG)) {
+        for (Element relativeElement : XmlUtils.getChildElements(groupElement, RELATIVE_TAG)) {
           // Defer setting relatives to when all person objects have been deserialized
-          relativesList.add(this.getAttr(relativeElement, RELATIVE_ID_ATTR, Integer::parseInt, null, false));
+          relativesList.add(XmlUtils.getAttr(relativeElement, RELATIVE_ID_ATTR, Integer::parseInt, null, false));
         }
       }
     }
@@ -423,7 +422,7 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Element element,
       @NotNull GenealogyObject<?> o
   ) throws IOException {
-    Optional<Element> notesElement = this.getChildElement(element, NOTES_TAG, true);
+    Optional<Element> notesElement = XmlUtils.getChildElement(element, NOTES_TAG, true);
     notesElement.ifPresent(e -> o.setNotes(e.getTextContent().strip()));
   }
 
@@ -437,7 +436,7 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Element element,
       @NotNull GenealogyObject<?> o
   ) throws IOException {
-    Optional<Element> sourcesElement = this.getChildElement(element, SOURCES_TAG, true);
+    Optional<Element> sourcesElement = XmlUtils.getChildElement(element, SOURCES_TAG, true);
     sourcesElement.ifPresent(e -> o.setSources(e.getTextContent().strip()));
   }
 
@@ -498,10 +497,10 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull String elementName,
       @NotNull Consumer<String> consumer
   ) throws IOException {
-    Optional<Element> nameElement = this.getChildElement(personElement, elementName, true);
+    Optional<Element> nameElement = XmlUtils.getChildElement(personElement, elementName, true);
     if (nameElement.isPresent()) {
       try {
-        consumer.accept(this.getAttr(nameElement.get(), NAME_VALUE_ATTR, s -> s, null, true));
+        consumer.accept(XmlUtils.getAttr(nameElement.get(), NAME_VALUE_ATTR, s -> s, null, true));
       } catch (IllegalArgumentException e) {
         throw new IOException(e);
       }
@@ -521,12 +520,12 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull String elementName,
       @NotNull Consumer<List<String>> consumer
   ) throws IOException {
-    Optional<Element> namesElement = this.getChildElement(personElement, elementName, true);
+    Optional<Element> namesElement = XmlUtils.getChildElement(personElement, elementName, true);
     if (namesElement.isPresent()) {
       List<String> names = new LinkedList<>();
-      for (Element nameElement : this.getChildElements(namesElement.get(), NAME_TAG)) {
+      for (Element nameElement : XmlUtils.getChildElements(namesElement.get(), NAME_TAG)) {
         try {
-          names.add(this.getAttr(nameElement, NAME_VALUE_ATTR, s -> s, null, true));
+          names.add(XmlUtils.getAttr(nameElement, NAME_VALUE_ATTR, s -> s, null, true));
         } catch (IllegalArgumentException e) {
           throw new IOException(e);
         }
@@ -550,7 +549,7 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull List<Person> persons,
       @NotNull FamilyTree familyTree
   ) throws IOException {
-    for (Element eventElement : this.getChildElements(eventsElement, LIFE_EVENT_TAG)) {
+    for (Element eventElement : XmlUtils.getChildElements(eventsElement, LIFE_EVENT_TAG)) {
       LifeEvent lifeEvent;
       DateTime date = this.readDateTag(eventElement, false);
       LifeEventType type = this.readLifeEventTypeTag(eventElement, familyTree);
@@ -582,7 +581,7 @@ public class TreeXMLReader extends TreeXMLManager {
    * @throws IOException If the subtree is malformed or the date type is undefined.
    */
   private @Nullable DateTime readDateTag(final @NotNull Element eventElement, boolean allowMissing) throws IOException {
-    Optional<Element> childElement = this.getChildElement(eventElement, DATE_TAG, allowMissing);
+    Optional<Element> childElement = XmlUtils.getChildElement(eventElement, DATE_TAG, allowMissing);
     if (childElement.isEmpty()) {
       if (allowMissing) {
         return null;
@@ -590,31 +589,31 @@ public class TreeXMLReader extends TreeXMLManager {
       throw new IOException("Missing tag: " + DATE_TAG);
     }
     Element dateElement = childElement.get();
-    String dateType = this.getAttr(dateElement, DATE_TYPE_ATTR, s -> s, null, false);
+    String dateType = XmlUtils.getAttr(dateElement, DATE_TYPE_ATTR, s -> s, null, false);
     return switch (dateType) {
       case DATE_WITH_PRECISION -> {
-        int ordinal = this.getAttr(dateElement, DATE_PRECISION_ATTR, Integer::parseInt, null, false);
+        int ordinal = XmlUtils.getAttr(dateElement, DATE_PRECISION_ATTR, Integer::parseInt, null, false);
         DateTimePrecision precision;
         try {
           precision = DateTimePrecision.values()[ordinal];
         } catch (IndexOutOfBoundsException e) {
           throw new IOException(e);
         }
-        CalendarSpecificDateTime d = this.getAttr(
+        CalendarSpecificDateTime d = XmlUtils.getAttr(
             dateElement, DATE_DATE_ATTR, this::deserializeDate, null, false);
         yield new DateTimeWithPrecision(d, precision);
       }
       case DATE_RANGE -> {
-        CalendarSpecificDateTime startDate = this.getAttr(
+        CalendarSpecificDateTime startDate = XmlUtils.getAttr(
             dateElement, DATE_START_ATTR, this::deserializeDate, null, false);
-        CalendarSpecificDateTime endDate = this.getAttr(
+        CalendarSpecificDateTime endDate = XmlUtils.getAttr(
             dateElement, DATE_END_ATTR, this::deserializeDate, null, false);
         yield new DateTimeRange(startDate, endDate);
       }
       case DATE_ALTERNATIVE -> {
-        CalendarSpecificDateTime earliestDate = this.getAttr(
+        CalendarSpecificDateTime earliestDate = XmlUtils.getAttr(
             dateElement, DATE_EARLIEST_ATTR, this::deserializeDate, null, false);
-        CalendarSpecificDateTime latestDate = this.getAttr(
+        CalendarSpecificDateTime latestDate = XmlUtils.getAttr(
             dateElement, DATE_LATEST_ATTR, this::deserializeDate, null, false);
         yield new DateTimeAlternative(earliestDate, latestDate);
       }
@@ -644,9 +643,9 @@ public class TreeXMLReader extends TreeXMLManager {
   ) throws IOException {
     LifeEventType type;
     //noinspection OptionalGetWithoutIsPresent
-    Element typeElement = this.getChildElement(eventElement, TYPE_TAG, false).get();
+    Element typeElement = XmlUtils.getChildElement(eventElement, TYPE_TAG, false).get();
     try {
-      RegistryEntryKey key = new RegistryEntryKey(this.getAttr(typeElement, TYPE_KEY_ATTR, s -> s, null, false));
+      RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(typeElement, TYPE_KEY_ATTR, s -> s, null, false));
       type = familyTree.lifeEventTypeRegistry().getEntry(key);
       if (type == null) {
         throw new IOException("Undefined life event type registry key: " + key.fullName());
@@ -691,11 +690,11 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Element eventElement,
       @NotNull LifeEvent lifeEvent
   ) throws IOException {
-    Optional<Element> placeElement = this.getChildElement(eventElement, PLACE_TAG, true);
+    Optional<Element> placeElement = XmlUtils.getChildElement(eventElement, PLACE_TAG, true);
     if (placeElement.isPresent()) {
       Element element = placeElement.get();
-      String address = this.getAttr(element, PLACE_ADDRESS_ATTR, s -> s, null, true);
-      LatLon latLon = this.getAttr(element, PLACE_LATLON_ATTR, LatLon::fromString, () -> null, false);
+      String address = XmlUtils.getAttr(element, PLACE_ADDRESS_ATTR, s -> s, null, true);
+      LatLon latLon = XmlUtils.getAttr(element, PLACE_LATLON_ATTR, LatLon::fromString, () -> null, false);
       lifeEvent.setPlace(new Place(address, latLon));
     }
   }
@@ -718,120 +717,17 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull Consumer<Person> consumer,
       boolean allowMissing
   ) throws IOException {
-    Optional<Element> personsElement = this.getChildElement(eventElement, elementName, allowMissing);
+    Optional<Element> personsElement = XmlUtils.getChildElement(eventElement, elementName, allowMissing);
     if (personsElement.isEmpty()) {
       return;
     }
-    for (Element actorElement : this.getChildElements(personsElement.get(), PERSON_TAG)) {
-      int id = this.getAttr(actorElement, PERSON_ID_ATTR, Integer::parseInt, null, false);
+    for (Element actorElement : XmlUtils.getChildElements(personsElement.get(), PERSON_TAG)) {
+      int id = XmlUtils.getAttr(actorElement, PERSON_ID_ATTR, Integer::parseInt, null, false);
       try {
         consumer.accept(persons.get(id));
       } catch (IndexOutOfBoundsException | IllegalArgumentException e) {
         throw new IOException(e);
       }
-    }
-  }
-
-  // endregion
-  // region Utility methods
-
-  /**
-   * Read a child element of an XML element.
-   *
-   * @param element      XML element to read from.
-   * @param name         Name of the element to read.
-   * @param allowMissing True to allow the element designated by {@code name} to be missing;
-   *                     false to throw an error if missing.
-   * @return The read element.
-   * @throws IOException If any error occurs.
-   */
-  private Optional<Element> getChildElement(
-      final @NotNull Element element,
-      @NotNull String name,
-      boolean allowMissing
-  ) throws IOException {
-    NodeList childNodes = element.getChildNodes();
-    for (int i = 0; i < childNodes.getLength(); i++) {
-      Node item = childNodes.item(i);
-      if (item.getNodeName().equals(name)) {
-        return Optional.of((Element) item);
-      }
-    }
-    if (!allowMissing) {
-      throw new IOException("Missing tag %s in tag %s".formatted(name, element.getTagName()));
-    }
-    return Optional.empty();
-  }
-
-  /**
-   * Read all child elements with a given name.
-   *
-   * @param element Element to read from.
-   * @param name    Name of child elements.
-   * @return List of read elements.
-   */
-  private List<Element> getChildElements(final @NotNull Element element, @NotNull String name) {
-    List<Element> elements = new LinkedList<>();
-    NodeList childNodes = element.getChildNodes();
-    for (int i = 0; i < childNodes.getLength(); i++) {
-      Node item = childNodes.item(i);
-      if (item.getNodeName().equals(name)) {
-        elements.add((Element) item);
-      }
-    }
-    return elements;
-  }
-
-  /**
-   * Read the value of an element’s attribute.
-   *
-   * @param element              Element to read from.
-   * @param name                 Attribute’s name.
-   * @param valueConverter       Function to convert raw value.
-   * @param defaultValueSupplier Function that supplies a default value in case attribute is missing.
-   *                             If argument is null, an error is thrown if the attribute is missing.
-   * @param strip                Whether to strip leading and trailing whitespace before passing
-   *                             the raw value to the converter.
-   * @param <T>                  Type of the returned value.
-   * @return The converted value.
-   * @throws IOException If any error occurs.
-   */
-  private <T> T getAttr(
-      final @NotNull Element element,
-      @NotNull String name,
-      @NotNull Function<String, T> valueConverter,
-      Supplier<T> defaultValueSupplier,
-      boolean strip
-  ) throws IOException {
-    String rawValue = element.getAttribute(name);
-    if (strip) {
-      rawValue = rawValue.strip();
-    }
-    if (rawValue.isEmpty()) {
-      if (defaultValueSupplier == null) {
-        throw new IOException("Missing or empty attribute %s on element %s".formatted(name, element.getTagName()));
-      }
-      return defaultValueSupplier.get();
-    }
-    try {
-      return valueConverter.apply(rawValue);
-    } catch (RuntimeException e) {
-      throw new IOException(e);
-    }
-  }
-
-  /**
-   * Read a file from disk and return an XML document.
-   *
-   * @param file File to read.
-   * @return The corresponding XML document.
-   * @throws IOException If any error occurs.
-   */
-  private Document readFile(@NotNull InputStream file) throws IOException {
-    try {
-      return this.newDocumentBuilder().parse(file);
-    } catch (SAXException e) {
-      throw new IOException(e);
     }
   }
 

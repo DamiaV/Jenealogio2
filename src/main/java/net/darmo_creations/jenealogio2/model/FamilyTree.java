@@ -1,5 +1,8 @@
 package net.darmo_creations.jenealogio2.model;
 
+import net.darmo_creations.jenealogio2.io.*;
+import net.darmo_creations.jenealogio2.io.file_ops.*;
+import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -14,7 +17,8 @@ public class FamilyTree {
 
   private final Set<Person> persons = new HashSet<>();
   private final Set<LifeEvent> lifeEvents = new HashSet<>();
-  private final Map<String, Picture> pictures = new HashMap<>();
+  private final Map<String, AttachedDocument> documents = new HashMap<>();
+  private final List<FileOperation> fileOperations = new LinkedList<>();
   private String name;
   private Person root;
 
@@ -58,20 +62,55 @@ public class FamilyTree {
   }
 
   /**
-   * Get a view of this tree’s pictures.
+   * An unmodifiable view of this tree’s documents.
    */
-  public Collection<Picture> pictures() {
-    return this.pictures.values();
+  public @UnmodifiableView Collection<AttachedDocument> documents() {
+    return Collections.unmodifiableCollection(this.documents.values());
+  }
+
+  /**
+   * An unmodifiable view of this tree’s pictures.
+   */
+  public @UnmodifiableView Collection<Picture> pictures() {
+    return new FilteredView<>(this.documents.values(), d -> d instanceof Picture);
+  }
+
+  /**
+   * Get a document with the given name.
+   *
+   * @param fileName The document’s name.
+   * @return The document.
+   */
+  public Optional<AttachedDocument> getDocument(@NotNull String fileName) {
+    return Optional.ofNullable(this.documents.get(fileName));
   }
 
   /**
    * Get a picture with the given name.
    *
-   * @param name The picture’s name.
+   * @param fileName The picture’s name.
    * @return The picture.
+   * @throws ClassCastException If the file is not a picture.
    */
-  public Optional<Picture> getPicture(@NotNull String name) {
-    return Optional.ofNullable(this.pictures.get(name));
+  public Optional<Picture> getPicture(@NotNull String fileName) {
+    AttachedDocument doc = this.documents.get(fileName);
+    if (doc != null && !(doc instanceof Picture))
+      throw new ClassCastException("File \"%s\" is not a picture".formatted(fileName));
+    return Optional.ofNullable((Picture) doc);
+  }
+
+  /**
+   * An unmodifiable view of all pending file operations of this tree.
+   */
+  public @UnmodifiableView List<FileOperation> pendingFileOperations() {
+    return Collections.unmodifiableList(this.fileOperations);
+  }
+
+  /**
+   * Clear all pending file operations of this tree.
+   */
+  public void clearPendingFileOperations() {
+    this.fileOperations.clear();
   }
 
   /**
@@ -173,85 +212,95 @@ public class FamilyTree {
   }
 
   /**
-   * Add a picture to this tree.
+   * Add a document to this tree.
    *
-   * @param picture The picture to add.
-   * @return True if the picture was added, false otherwise.
+   * @param document The document to add.
+   * @return True if the document was added, false otherwise.
    */
-  public boolean addPicture(@NotNull Picture picture) {
-    if (this.pictures.containsKey(picture.name())) {
+  public boolean addDocument(@NotNull AttachedDocument document) {
+    if (this.documents.containsKey(document.fileName())) {
       return false;
     }
-    this.pictures.put(picture.name(), picture);
+    this.documents.put(document.fileName(), document);
+    this.fileOperations.add(new ImportFileOperation(document.fileName(), document.path(), document));
     return true;
   }
 
   /**
-   * Remove from this tree the picture with the given name.
-   * The picture is also removed from every {@link GenealogyObject}.
+   * Remove from this tree the document with the given name.
+   * The document is also removed from every {@link GenealogyObject}.
    *
-   * @param name Name of the picture to remove.
-   * @return The removed picture.
+   * @param fileName Name of the document to remove.
+   * @return The removed document or null if no document was removed.
    */
-  public Picture removePicture(@NotNull String name) {
-    Objects.requireNonNull(name);
-    this.persons.forEach(p -> this.removePictureFromObject(name, p));
-    this.lifeEvents.forEach(l -> this.removePictureFromObject(name, l));
-    return this.pictures.remove(name);
+  public @Nullable AttachedDocument removeDocument(@NotNull String fileName) {
+    if (!this.documents.containsKey(fileName))
+      return null;
+    Objects.requireNonNull(fileName);
+    this.persons.forEach(p -> this.removeDocumentFromObject(fileName, p));
+    this.lifeEvents.forEach(l -> this.removeDocumentFromObject(fileName, l));
+    AttachedDocument document = this.documents.remove(fileName);
+    this.fileOperations.add(new DeleteFileOperation(fileName, document));
+    return document;
   }
 
   /**
-   * Rename the given picture.
+   * Rename the given document.
    *
-   * @param oldName The name of the picture to rename.
-   * @param newName The new name.
+   * @param oldFileName The file name of the document to rename.
+   * @param newName     The new name (without the extension).
    * @throws IllegalArgumentException If both names are equal, the old name is not registered,
    *                                  or the new name is already registered.
    */
-  public void renamePicture(@NotNull String oldName, @NotNull String newName) {
+  public void renameDocument(@NotNull String oldFileName, @NotNull String newName) {
+    var split = FileUtils.splitExtension(oldFileName);
+    String oldName = split.left();
+    String newFileName = newName + split.right().orElse("");
     if (oldName.equals(newName))
-      throw new IllegalArgumentException("old and new name should not be the same");
-    if (!this.pictures.containsKey(oldName))
-      throw new IllegalArgumentException("no picture with name \"%s\"".formatted(oldName));
-    if (this.pictures.containsKey(newName))
-      throw new IllegalArgumentException("a picture with the name \"%s\" already exists".formatted(newName));
-    Picture picture = this.pictures.remove(oldName);
-    picture.setName(newName);
-    this.pictures.put(newName, picture);
+      throw new IllegalArgumentException("Old and new name should not be the same");
+    if (!this.documents.containsKey(oldFileName))
+      throw new IllegalArgumentException("No document with name \"%s\"".formatted(oldFileName));
+    if (this.documents.containsKey(newFileName))
+      throw new IllegalArgumentException("A document with the name \"%s\" already exists".formatted(newFileName));
+    AttachedDocument document = this.documents.remove(oldFileName);
+    document.setName(newName);
+    this.documents.put(newFileName, document);
+    this.fileOperations.add(new RenameFileOperation(oldFileName, newFileName, document));
   }
 
   /**
-   * Add a picture from this tree to the given {@link GenealogyObject}.
+   * Add a document from this tree to the given {@link GenealogyObject}.
    *
-   * @param name Name of the picture to add.
-   * @param o    The object to update.
-   * @throws NoSuchElementException If no picture of this tree matches the given name.
+   * @param fileName Name of the document to add.
+   * @param o        The object to update.
+   * @throws NoSuchElementException If no document of this tree matches the given name.
    */
-  public void addPictureToObject(@NotNull String name, @NotNull GenealogyObject<?> o) {
-    if (!this.pictures.containsKey(name))
-      throw new NoSuchElementException("No picture with name " + name);
-    o.addPicture(this.pictures.get(Objects.requireNonNull(name)));
+  public void addDocumentToObject(@NotNull String fileName, @NotNull GenealogyObject<?> o) {
+    if (!this.documents.containsKey(fileName))
+      throw new NoSuchElementException("No document with name " + fileName);
+    o.addDocument(this.documents.get(Objects.requireNonNull(fileName)));
   }
 
   /**
-   * Remove from the given {@link GenealogyObject} the picture with the given ID.
+   * Remove from the given {@link GenealogyObject} the document with the given ID.
    *
-   * @param name Name of the picture to remove.
-   * @param o    The object to update.
+   * @param fileName Name of the document to remove.
+   * @param o        The object to update.
    */
-  public void removePictureFromObject(@NotNull String name, @NotNull GenealogyObject<?> o) {
-    o.removePicture(name);
+  public void removeDocumentFromObject(@NotNull String fileName, @NotNull GenealogyObject<?> o) {
+    o.removeDocument(fileName);
   }
 
   /**
    * Set the main picture of a {@link GenealogyObject}.
    *
-   * @param name Name of the picture to set as main. May be null.
-   * @param o    The object to update.
+   * @param fileName Name of the picture to set as main. May be null.
+   * @param o        The object to update.
    * @throws IllegalArgumentException If no picture with the given name is associated with the object.
+   * @throws ClassCastException       If the file is not a picture.
    */
-  public void setMainPictureOfObject(String name, @NotNull GenealogyObject<?> o) {
-    o.setMainPicture(name);
+  public void setMainPictureOfObject(String fileName, @NotNull GenealogyObject<?> o) {
+    o.setMainPicture(fileName);
   }
 
   /**

@@ -24,6 +24,5 @@ module net.darmo_creations.jenealogio2 {
   // Open to JUnit tests
   opens net.darmo_creations.jenealogio2.model;
   opens net.darmo_creations.jenealogio2.model.datetime;
-  opens net.darmo_creations.jenealogio2.model.datetime.calendar;
   opens net.darmo_creations.jenealogio2.utils;
 }

@@ -1,7 +1,9 @@
 package net.darmo_creations.jenealogio2.utils;
 
+import javafx.scene.control.*;
 import javafx.scene.paint.*;
 import javafx.scene.text.*;
+import net.darmo_creations.jenealogio2.io.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -127,22 +129,15 @@ public final class StringUtils {
   }
 
   /**
-   * Split the name and extension of the given file name.
-   *
-   * @param fileName The file name to split.
-   * @return A pair containing the file’s name and its extension.
-   * If the file name has no extension, the returned value will be empty.
-   * The extension includes the dot.
+   * Return a {@link TextFormatter} that forbids characters contained in {@link TreeFileManager#INVALID_PATH_CHARS},
+   * i.e. characters that are forbidden in Windows file paths.
    */
-  public static Pair<String, Optional<String>> splitExtension(@NotNull String fileName) {
-    if (fileName.contains(".")) {
-      int lastDotIndex = fileName.lastIndexOf(".");
-      return new Pair<>(
-          fileName.substring(0, lastDotIndex),
-          Optional.of(fileName.substring(lastDotIndex))
-      );
-    }
-    return new Pair<>(fileName, Optional.empty());
+  public static TextFormatter<?> filePathTextFormatter() {
+    return new TextFormatter<>(change -> {
+      if (TreeFileManager.INVALID_PATH_CHARS.stream().anyMatch(s -> change.getControlNewText().contains(s.toString())))
+        return null;
+      return change;
+    });
   }
 
   private StringUtils() {

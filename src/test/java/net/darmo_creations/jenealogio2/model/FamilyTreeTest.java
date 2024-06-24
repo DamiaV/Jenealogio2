@@ -8,6 +8,7 @@ import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,40 +30,40 @@ class FamilyTreeTest {
   }
 
   @Test
-  void testGetName() {
+  void getName() {
     assertEquals("tree", this.tree.name());
   }
 
   @Test
-  void testSetName() {
+  void setName() {
     this.tree.setName("TREE");
     assertEquals("TREE", this.tree.name());
   }
 
   @Test
-  void testSetNameNullError() {
+  void setNameNullError() {
     assertThrows(NullPointerException.class, () -> this.tree.setName(null));
   }
 
   @Test
-  void testGetPersonsEmpty() {
+  void getPersonsEmpty() {
     assertTrue(this.tree.persons().isEmpty());
   }
 
   @Test
-  void testGetPersonsNotEmpty() {
+  void getPersonsNotEmpty() {
     this.tree.addPerson(new Person());
     this.tree.addPerson(new Person());
     assertEquals(2, this.tree.persons().size());
   }
 
   @Test
-  void testGetLifeEventsEmpty() {
+  void getLifeEventsEmpty() {
     assertTrue(this.tree.lifeEvents().isEmpty());
   }
 
   @Test
-  void testGetLifeEventsNotEmptyOnePerson() {
+  void getLifeEventsNotEmptyOnePerson() {
     Person person = new Person();
     LifeEvent event = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian").getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT), typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
     this.tree.setLifeEventActors(event, Set.of(person));
@@ -70,7 +71,7 @@ class FamilyTreeTest {
   }
 
   @Test
-  void testGetLifeEventsNotEmptyTwoPersons() {
+  void getLifeEventsNotEmptyTwoPersons() {
     Person person1 = new Person();
     LifeEvent event1 = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian")
         .getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT),
@@ -85,13 +86,47 @@ class FamilyTreeTest {
   }
 
   @Test
-  void testGetPicturesEmpty() {
+  void documentsEmptyByDefault() {
+    assertTrue(this.tree.documents().isEmpty());
+  }
+
+  @Test
+  void picturesEmptyByDefault() {
     assertTrue(this.tree.pictures().isEmpty());
   }
 
   @Test
-  void testGetPictureEmpty() {
+  void getDocument() {
+    AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
+    this.tree.addDocument(doc);
+    //noinspection OptionalGetWithoutIsPresent
+    assertSame(doc, this.tree.getDocument("doc.pdf").get());
+  }
+
+  @Test
+  void getDocumentEmptyIfPictureNotRegistered() {
+    assertTrue(this.tree.getDocument("a").isEmpty());
+  }
+
+  @Test
+  void getPicture() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(pic);
+    //noinspection OptionalGetWithoutIsPresent
+    assertSame(pic, this.tree.getPicture("app_icon.png").get());
+  }
+
+  @Test
+  void getPictureEmptyIfPictureNotRegistered() {
     assertTrue(this.tree.getPicture("a").isEmpty());
+  }
+
+  @Test
+  void getPictureThrowsIfNotPicture() {
+    AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
+    this.tree.addDocument(doc);
+    //noinspection OptionalGetWithoutIsPresent
+    assertThrows(ClassCastException.class, () -> this.tree.getPicture("doc.pdf").get());
   }
 
   @Test
@@ -343,139 +378,149 @@ class FamilyTreeTest {
   }
 
   @Test
-  void addPictureAddsPictureAndReturnsTrue() throws IOException {
-    Picture p = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    assertTrue(this.tree.addPicture(p));
-    assertSame(p, this.tree.pictures().iterator().next());
+  void addDocumentAddsDocumentAndReturnsTrue() throws IOException {
+    Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    assertTrue(this.tree.addDocument(p));
+    assertSame(p, this.tree.documents().iterator().next());
   }
 
   @Test
-  void addPictureReturnsFalseIfAlreadyAdded() throws IOException {
-    Picture p = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(p);
-    assertFalse(this.tree.addPicture(p));
+  void addDocumentReturnsFalseIfAlreadyAdded() throws IOException {
+    Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(p);
+    assertFalse(this.tree.addDocument(p));
   }
 
   @Test
-  void removePictureRemovesFromTree() throws IOException {
-    Picture p = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(p);
-    this.tree.removePicture(p.name());
-    assertTrue(this.tree.pictures().isEmpty());
+  void removeDocumentRemovesFromTree() throws IOException {
+    Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(p);
+    this.tree.removeDocument(p.fileName());
+    assertTrue(this.tree.documents().isEmpty());
   }
 
   @Test
-  void removePictureRemovesReturnsPicture() throws IOException {
-    Picture p = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(p);
-    assertSame(p, this.tree.removePicture(p.name()));
+  void removeDocumentReturnsDocument() throws IOException {
+    Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(p);
+    assertSame(p, this.tree.removeDocument(p.fileName()));
   }
 
   @Test
-  void removePictureRemovesFromGenealogyObjects() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(pic);
+  void removeDocumentRemovesFromGenealogyObjects() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(pic);
     Person p = new Person();
-    p.addPicture(pic);
+    p.addDocument(pic);
     DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    l.addPicture(pic);
+    l.addDocument(pic);
     this.tree.addPerson(p);
     this.tree.setLifeEventActors(l, Set.of(p));
-    this.tree.removePicture(pic.name());
-    assertTrue(p.pictures().isEmpty());
-    assertTrue(l.pictures().isEmpty());
+    this.tree.removeDocument(pic.fileName());
+    assertTrue(p.documents().isEmpty());
+    assertTrue(l.documents().isEmpty());
   }
 
   @Test
-  void renamePictureRenamesPicture() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
-    this.tree.addPicture(pic);
-    this.tree.renamePicture("test.png", "test1.png");
-    assertEquals("test1.png", pic.name());
+  void renameDocumentRenamesDocument() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
+    this.tree.addDocument(pic);
+    this.tree.renameDocument("test.png", "test1");
+    assertEquals("test1.png", pic.fileName());
   }
 
   @Test
-  void renamePictureRenamesPictureInTree() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
-    this.tree.addPicture(pic);
-    this.tree.renamePicture("test.png", "test1.png");
+  void renameDocumentRenamesDocumentInTree() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
+    this.tree.addDocument(pic);
+    this.tree.renameDocument("test.png", "test1");
     //noinspection OptionalGetWithoutIsPresent
-    assertSame(pic, this.tree.getPicture("test1.png").get());
-    assertTrue(this.tree.getPicture("test.png").isEmpty());
+    assertSame(pic, this.tree.getDocument("test1.png").get());
+    assertTrue(this.tree.getDocument("test.png").isEmpty());
   }
 
   @Test
-  void renamePictureRenamesThrowsIfBothArgsEqual() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
-    this.tree.addPicture(pic);
-    assertThrows(IllegalArgumentException.class, () -> this.tree.renamePicture("test.png", "test.png"));
+  void renameDocumentThrowsIfBothArgsEqual() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(pic);
+    assertThrows(IllegalArgumentException.class, () -> this.tree.renameDocument("app_icon.png", "app_icon"));
   }
 
   @Test
-  void renamePictureRenamesThrowsIfOldNameNotRegistered() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
-    this.tree.addPicture(pic);
-    assertThrows(IllegalArgumentException.class, () -> this.tree.renamePicture("test1.png", "test2.png"));
+  void renameDocumentThrowsIfOldNameNotRegistered() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
+    this.tree.addDocument(pic);
+    assertThrows(IllegalArgumentException.class, () -> this.tree.renameDocument("test1.png", "test2"));
   }
 
   @Test
-  void renamePictureRenamesThrowsIfNewNameAlreadyRegistered() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test.png", null, null);
-    this.tree.addPicture(pic);
-    Picture pic1 = new Picture(PictureTest.getImage(IMG_PATH), "test1.png", null, null);
-    this.tree.addPicture(pic1);
-    assertThrows(IllegalArgumentException.class, () -> this.tree.renamePicture("test.png", "test1.png"));
+  void renameDocumentThrowsIfNewNameAlreadyRegistered() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
+    this.tree.addDocument(pic);
+    Picture pic1 = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test1.png"), null, null);
+    this.tree.addDocument(pic1);
+    assertThrows(IllegalArgumentException.class, () -> this.tree.renameDocument("test.png", "test1"));
   }
 
   @Test
-  void addPictureToObjectAddsPicture() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(pic);
+  void addDocumentToObjectAddsDocument() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(pic);
     Person p = new Person();
     this.tree.addPerson(p);
-    this.tree.addPictureToObject("test", p);
-    assertSame(pic, p.pictures().iterator().next());
+    this.tree.addDocumentToObject("app_icon.png", p);
+    assertSame(pic, p.documents().iterator().next());
   }
 
   @Test
-  void addPictureToObjectThrowsIfInvalidName() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(pic);
+  void addDocumentToObjectThrowsIfInvalidName() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(pic);
     Person p = new Person();
     this.tree.addPerson(p);
-    assertThrows(NoSuchElementException.class, () -> this.tree.addPictureToObject("invalid", p));
+    assertThrows(NoSuchElementException.class, () -> this.tree.addDocumentToObject("invalid", p));
   }
 
   @Test
-  void removePictureFromObjectRemovesPicture() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(pic);
+  void removeDocumentFromObjectRemovesDocument() throws IOException {
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(pic);
     Person p = new Person();
     this.tree.addPerson(p);
-    this.tree.removePictureFromObject("test", p);
-    assertTrue(p.pictures().isEmpty());
+    this.tree.removeDocumentFromObject("app_icon.png", p);
+    assertTrue(p.documents().isEmpty());
   }
 
   @Test
   void setMainPictureOfObjectSetsMainPicture() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(pic);
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(pic);
     Person p = new Person();
     this.tree.addPerson(p);
-    this.tree.addPictureToObject("test", p);
-    this.tree.setMainPictureOfObject("test", p);
+    this.tree.addDocumentToObject("app_icon.png", p);
+    this.tree.setMainPictureOfObject("app_icon.png", p);
     //noinspection OptionalGetWithoutIsPresent
     assertSame(pic, p.mainPicture().get());
   }
 
   @Test
   void setMainPictureOfObjectThrowsIfNotAddedToObject() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), "test", null, null);
-    this.tree.addPicture(pic);
+    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    this.tree.addDocument(pic);
     Person p = new Person();
     this.tree.addPerson(p);
-    assertThrows(IllegalArgumentException.class, () -> this.tree.setMainPictureOfObject("test", p));
+    assertThrows(IllegalArgumentException.class, () -> this.tree.setMainPictureOfObject("invalid", p));
+  }
+
+  @Test
+  void setMainPictureOfObjectThrowsIfNotPicture() {
+    AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
+    this.tree.addDocument(doc);
+    Person p = new Person();
+    this.tree.addPerson(p);
+    this.tree.addDocumentToObject("doc.pdf", p);
+    assertThrows(ClassCastException.class, () -> this.tree.setMainPictureOfObject("doc.pdf", p));
   }
 
   @Test

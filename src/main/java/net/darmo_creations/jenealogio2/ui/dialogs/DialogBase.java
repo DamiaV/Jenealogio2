@@ -47,6 +47,7 @@ public abstract class DialogBase<T> extends Dialog<T> {
     this.setResizable(resizable);
     this.setTitle(config.language().translate("dialog.%s.title".formatted(name),
         this.getTitleFormatArgs().toArray(FormatArg[]::new)));
+    this.setIcon(config.theme().getAppIcon());
     this.getDialogPane().getButtonTypes().addAll(buttonTypes);
     this.stage().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
       if (event.getCode() == KeyCode.ESCAPE) // Avoid event being consumed by focused widget

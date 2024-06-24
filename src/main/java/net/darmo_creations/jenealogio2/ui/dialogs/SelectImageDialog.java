@@ -17,6 +17,7 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 /**
@@ -69,7 +70,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
           }
           String filter = newValue.toLowerCase();
           Picture picture = pictureView.picture();
-          return picture.name().toLowerCase().contains(filter)
+          return picture.fileName().toLowerCase().contains(filter)
                  || picture.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
         })
     ));
@@ -94,7 +95,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
     Stage stage = this.stage();
     stage.setMinWidth(400);
     stage.setMinHeight(400);
-    this.setIcon(theme.getAppIcon());
+
     // Files drag-and-drop
     Scene scene = stage.getScene();
     scene.setOnDragOver(event -> {
@@ -108,7 +109,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
       Dragboard db = event.getDragboard();
       boolean success = this.isDragAndDropValid(db);
       if (success) {
-        this.importFiles(db.getFiles());
+        this.importFiles(db.getFiles().stream().map(File::toPath).toList());
       }
       event.setDropCompleted(success);
       event.consume();
@@ -146,9 +147,9 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
   }
 
   private void onAddImage() {
-    Optional<File> file = FileChoosers.showImageFileChooser(this.config, this.stage(), null);
+    Optional<Path> file = FileChoosers.showImageFileChooser(this.config, this.stage(), null);
     if (file.isPresent()) {
-      String name = file.get().getName();
+      String name = file.get().getFileName().toString();
       if (this.isFileImported(name)) {
         Alerts.warning(
             this.config,
@@ -180,7 +181,7 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
    * @return True if a file with the given name is in the list, false otherwise.
    */
   private boolean isFileImported(String name) {
-    return this.tree.pictures().stream().anyMatch(p -> p.name().equals(name));
+    return this.tree.getPicture(name).isPresent();
   }
 
   /**
@@ -188,11 +189,11 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
    *
    * @param files List of files to import.
    */
-  private void importFiles(final @NotNull List<File> files) {
+  private void importFiles(final @NotNull List<Path> files) {
     boolean someAlreadyImported = false;
     int errorsNb = 0;
-    for (File file : files) {
-      if (this.isFileImported(file.getName())) {
+    for (Path file : files) {
+      if (this.isFileImported(file.getFileName().toString())) {
         someAlreadyImported = true;
         continue;
       }
@@ -221,10 +222,10 @@ public class SelectImageDialog extends DialogBase<Collection<Picture>> {
    *
    * @param file The file to import.
    */
-  private void importFile(final @NotNull File file) throws IOException {
+  private void importFile(final @NotNull Path file) throws IOException {
     Picture picture;
-    try (FileInputStream in = new FileInputStream(file)) {
-      picture = new Picture(new Image(in), file.getName(), null, null);
+    try (var in = new FileInputStream(file.toFile())) {
+      picture = new Picture(new Image(in), file, null, null);
     }
     PictureView pv = new PictureView(picture, true, this.config);
     this.picturesList.add(pv);

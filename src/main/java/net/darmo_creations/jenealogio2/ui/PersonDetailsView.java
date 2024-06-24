@@ -270,6 +270,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         sourcesBox,
         imagesBox
     );
+    // TODO show witnesses
     this.eventPane.setOrientation(Orientation.VERTICAL);
     this.eventPane.setDividerPositions(0.2, 0.4);
   }
@@ -406,7 +407,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void populateFields() {
-    this.imageView.setImage(this.person.mainPicture().map(Picture::image).orElse(null));
+    this.imageView.setImage(this.person.mainPicture().flatMap(Picture::image).orElse(null));
     this.fullNameLabel.setText(this.person.toString());
     this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
     Optional<Gender> gender = this.person.gender();
@@ -580,7 +581,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventDateLabel.setDateTime(lifeEvent.date());
     this.eventPlaceLabel.setText(lifeEvent.place().map(Place::address).orElse("-"));
 
-    this.eventImageView.setImage(lifeEvent.mainPicture().map(Picture::image).orElse(null));
+    this.eventImageView.setImage(lifeEvent.mainPicture().flatMap(Picture::image).orElse(null));
 
     this.eventNotesTextFlow.getChildren().clear();
     lifeEvent.notes().ifPresent(s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
@@ -735,7 +736,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         event.consume();
       });
 
-      this.imageView.setImage(person.mainPicture().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+      this.imageView.setImage(person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
       String genderColor = person.gender().map(Gender::color).orElse(Gender.MISSING_COLOR);
       this.imagePane.setStyle("-fx-background-color: " + genderColor);
 

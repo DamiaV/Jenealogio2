@@ -19,7 +19,9 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
+import java.util.function.*;
 
 /**
  * Application’s main controller.
@@ -32,9 +34,11 @@ public class AppController {
   private final Config config;
 
   private final MenuItem newFileMenuItem = new MenuItem();
-  private final MenuItem openFileMenuItem = new MenuItem();
+  private final Menu openTreeMenu = new Menu();
+  private final MenuItem manageTreesMenuItem = new MenuItem();
+  private final MenuItem importTreeMenuItem = new MenuItem();
+  private final MenuItem exportTreeMenuItem = new MenuItem();
   private final MenuItem saveMenuItem = new MenuItem();
-  private final MenuItem saveAsMenuItem = new MenuItem();
   private final MenuItem settingsMenuItem = new MenuItem();
   private final MenuItem quitMenuItem = new MenuItem();
   private final MenuItem undoMenuItem = new MenuItem();
@@ -57,9 +61,7 @@ public class AppController {
   private final MenuItem aboutMenuItem = new MenuItem();
 
   private final Button newToolbarButton = new Button();
-  private final Button openToolbarButton = new Button();
   private final Button saveToolbarButton = new Button();
-  private final Button saveAsToolbarButton = new Button();
   private final Button undoToolbarButton = new Button();
   private final Button redoToolbarButton = new Button();
   private final Button previousSelectionToolbarButton = new Button();
@@ -77,7 +79,7 @@ public class AppController {
   private final Button checkInconsistenciesToolbarButton = new Button();
 
   // File managers
-  private final TreeFileWriter treeFileWriter = new TreeFileWriter();
+  private final FamilyTreeWriter familyTreeWriter = new FamilyTreeWriter();
 
   // Tree components
   private FamilyTreeComponent focusedComponent;
@@ -90,6 +92,7 @@ public class AppController {
   private int selectionIndex = -1;
 
   // Dialogs
+  private final TreesManagerDialog treesManagerDialog;
   private final RegistriesDialog editRegistriesDialog;
   private final EditPersonDialog editPersonDialog;
   private final ManageObjectImagesDialog editPersonImagesDialog;
@@ -105,15 +108,11 @@ public class AppController {
   /**
    * File the current tree has been loaded from, will be null for new trees.
    */
-  private File loadedFile;
+  private Path loadedFile;
   /**
    * Indicate whether there are any unsaved changes.
    */
   private boolean unsavedChanges;
-  /**
-   * Indicate whether the current tree is the default one.
-   */
-  private boolean defaultEmptyTree;
 
   /**
    * Create the app’s controller.
@@ -137,6 +136,8 @@ public class AppController {
     this.personDetailsView = new PersonDetailsView(config);
     this.familyTreeView = new FamilyTreeView(config);
     this.familyTreePane = new FamilyTreePane(config);
+
+    this.treesManagerDialog = new TreesManagerDialog(config);
     this.editRegistriesDialog = new RegistriesDialog(config);
     this.editPersonDialog = new EditPersonDialog(config);
     this.editPersonImagesDialog = new ManageObjectImagesDialog(config);
@@ -164,7 +165,7 @@ public class AppController {
       Dragboard db = event.getDragboard();
       boolean success = this.isDragAndDropValid(db);
       if (success) {
-        if (!this.defaultEmptyTree && this.unsavedChanges) {
+        if (this.unsavedChanges) {
           boolean open = Alerts.confirmation(
               config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
           if (!open) {
@@ -173,7 +174,7 @@ public class AppController {
         }
       }
       if (success) {
-        this.loadFile(db.getFiles().get(0));
+        this.loadTree(db.getFiles().get(0).getName());
       }
       event.setDropCompleted(success);
       event.consume();
@@ -191,7 +192,7 @@ public class AppController {
     List<File> files = dragboard.getFiles();
     return dragboard.hasFiles()
            && files.size() == 1
-           && files.get(0).getName().endsWith(TreeFileReader.EXTENSION);
+           && files.get(0).getName().endsWith(".zip");
   }
 
   private MenuBar createMenuBar() {
@@ -205,14 +206,28 @@ public class AppController {
     this.newFileMenuItem.setText(language.translate("menu.file.new"));
     this.newFileMenuItem.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.SMALL));
     this.newFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
-    this.newFileMenuItem.setOnAction(event -> this.onNewFileAction());
+    this.newFileMenuItem.setOnAction(event -> this.onNewTreeAction());
     fileMenu.getItems().add(this.newFileMenuItem);
 
-    this.openFileMenuItem.setText(language.translate("menu.file.open"));
-    this.openFileMenuItem.setGraphic(theme.getIcon(Icon.OPEN_FILE, Icon.Size.SMALL));
-    this.openFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
-    this.openFileMenuItem.setOnAction(event -> this.onOpenFileAction());
-    fileMenu.getItems().add(this.openFileMenuItem);
+    this.openTreeMenu.setText(language.translate("menu.file.open"));
+    this.openTreeMenu.setGraphic(theme.getIcon(Icon.OPEN_TREE, Icon.Size.SMALL));
+    fileMenu.getItems().add(this.openTreeMenu);
+
+    this.manageTreesMenuItem.setText(language.translate("menu.file.open.manage_trees"));
+    this.manageTreesMenuItem.setGraphic(theme.getIcon(Icon.MANAGE_TREES, Icon.Size.SMALL));
+    this.manageTreesMenuItem.setOnAction(event -> this.onManageTreesAction());
+
+    this.importTreeMenuItem.setText(language.translate("menu.file.import"));
+    this.importTreeMenuItem.setGraphic(theme.getIcon(Icon.IMPORT_TREE_FILE, Icon.Size.SMALL));
+    this.importTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
+    this.importTreeMenuItem.setOnAction(event -> this.onImportTreeAction());
+    fileMenu.getItems().add(this.importTreeMenuItem);
+
+    this.exportTreeMenuItem.setText(language.translate("menu.file.export"));
+    this.exportTreeMenuItem.setGraphic(theme.getIcon(Icon.EXPORT_TREE_FILE, Icon.Size.SMALL));
+    this.exportTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    this.exportTreeMenuItem.setOnAction(event -> this.onExportTreeAction());
+    fileMenu.getItems().add(this.exportTreeMenuItem);
 
     fileMenu.getItems().add(new SeparatorMenuItem());
 
@@ -221,12 +236,6 @@ public class AppController {
     this.saveMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN));
     this.saveMenuItem.setOnAction(event -> this.onSaveAction());
     fileMenu.getItems().add(this.saveMenuItem);
-
-    this.saveAsMenuItem.setText(language.translate("menu.file.save_as"));
-    this.saveAsMenuItem.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.SMALL));
-    this.saveAsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
-    this.saveAsMenuItem.setOnAction(event -> this.onSaveAsAction());
-    fileMenu.getItems().add(this.saveAsMenuItem);
 
     fileMenu.getItems().add(new SeparatorMenuItem());
 
@@ -383,13 +392,8 @@ public class AppController {
 
     this.newToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.new")));
     this.newToolbarButton.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.BIG));
-    this.newToolbarButton.setOnAction(event -> this.onNewFileAction());
+    this.newToolbarButton.setOnAction(event -> this.onNewTreeAction());
     toolbar.getItems().add(this.newToolbarButton);
-
-    this.openToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.open")));
-    this.openToolbarButton.setGraphic(theme.getIcon(Icon.OPEN_FILE, Icon.Size.BIG));
-    this.openToolbarButton.setOnAction(event -> this.onOpenFileAction());
-    toolbar.getItems().add(this.openToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
@@ -397,11 +401,6 @@ public class AppController {
     this.saveToolbarButton.setGraphic(theme.getIcon(Icon.SAVE, Icon.Size.BIG));
     this.saveToolbarButton.setOnAction(event -> this.onSaveAction());
     toolbar.getItems().add(this.saveToolbarButton);
-
-    this.saveAsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.save_as")));
-    this.saveAsToolbarButton.setGraphic(theme.getIcon(Icon.SAVE_AS, Icon.Size.BIG));
-    this.saveAsToolbarButton.setOnAction(event -> this.onSaveAsAction());
-    toolbar.getItems().add(this.saveAsToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
@@ -517,7 +516,7 @@ public class AppController {
     this.personDetailsView.newParentClickListeners()
         .add(this::onNewParentClick);
     this.personDetailsView.imageEditedListeners()
-        .add(this::onImageEdited);
+        .add(picture -> this.onImageEdited());
     splitPane.getItems().add(this.personDetailsView);
 
     splitPane.setDividerPositions(0.1, 0.9);
@@ -529,20 +528,48 @@ public class AppController {
    * <p>
    * Hooks callbacks to the stage’s close event and load the specified tree or the default one.
    *
-   * @param file File to load. May be null.
+   * @param treeName The name of the tree to open. May be null.
    */
-  public void show(File file) {
+  public void show(String treeName) {
     this.stage.show();
     this.stage.setOnCloseRequest(event -> {
       event.consume();
       this.onQuitAction();
     });
-    if (file != null && this.loadFile(file)) {
+
+    // Open the passed tree directory
+    if (treeName != null && this.loadTree(treeName))
       return;
+
+    var treesMetadata = App.treesManager().treesMetadata();
+
+    // Only one choice, open it
+    if (treesMetadata.size() == 1 && this.loadTree(treesMetadata.keySet().iterator().next()))
+      return;
+
+    var lastOpened = treesMetadata
+        .values()
+        .stream()
+        .filter(m -> m.lastOpenDate() != null)
+        .sorted()
+        .findFirst();
+    // Re-open the most recently opened tree, if any
+    if (lastOpened.isPresent() && this.loadTree(lastOpened.get().directoryName()))
+      return;
+
+    // No trees have a last-opened date, choose from a dialog
+    if (!treesMetadata.isEmpty()) {
+      this.treesManagerDialog.refresh(null);
+      Optional<String> name = this.treesManagerDialog.showAndWait();
+      if (name.isPresent()) {
+        this.loadTree(name.get());
+        return;
+      }
     }
-    this.defaultEmptyTree = true;
-    String defaultName = this.config.language().translate("app_title.undefined_tree_name");
-    this.setFamilyTree(new FamilyTree(defaultName), null);
+
+    // No more options, create a new tree
+    if (!this.onNewTreeAction())
+      this.stage.hide();
   }
 
   public void onConfigUpdate() {
@@ -555,10 +582,10 @@ public class AppController {
   /**
    * Set the current family tree.
    *
-   * @param tree Family tree to use.
-   * @param file Optional file the tree has been loaded from.
+   * @param tree      Family tree to use.
+   * @param directory The directory the tree has been loaded from.
    */
-  private void setFamilyTree(@NotNull FamilyTree tree, File file) {
+  private void setFamilyTree(@NotNull FamilyTree tree, @NotNull Path directory) {
     this.familyTree = tree;
     this.familyTreeView.setFamilyTree(this.familyTree);
     this.familyTreePane.setFamilyTree(this.familyTree);
@@ -567,8 +594,9 @@ public class AppController {
     this.familyTreePane.refresh();
     this.selectionHistory.clear();
     this.selectionIndex = -1;
-    this.loadedFile = file;
-    this.unsavedChanges = file == null;
+    this.loadedFile = directory;
+    this.unsavedChanges = false;
+    App.treesManager().onTreeOpened(tree, directory.getFileName().toString(), this.config);
     this.updateUI();
   }
 
@@ -577,12 +605,16 @@ public class AppController {
    */
   private void onRenameTreeAction() {
     Optional<String> name = Alerts.textInput(
-        this.config, "alert.tree_name.header", "alert.tree_name.label", null, this.familyTree.name());
-    if (name.isEmpty()) {
+        this.config,
+        "alert.tree_name.header",
+        "alert.tree_name.label",
+        null,
+        this.familyTree.name(),
+        StringUtils.filePathTextFormatter()
+    );
+    if (name.isEmpty())
       return;
-    }
     this.familyTree.setName(name.get());
-    this.defaultEmptyTree = false;
     this.unsavedChanges = true;
     this.updateUI();
   }
@@ -591,55 +623,137 @@ public class AppController {
    * Open an alert dialog to create a new tree.
    * <p>
    * Checks for any unsaved changes.
+   *
+   * @return True if a new tree was created as a result of this call; false otherwise.
    */
-  private void onNewFileAction() {
-    if (!this.defaultEmptyTree && this.unsavedChanges) {
+  private boolean onNewTreeAction() {
+    if (this.unsavedChanges) {
       boolean open = Alerts.confirmation(
           this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-      if (!open) {
-        return;
+      if (!open)
+        return false;
+    }
+    String defaultName = this.config.language().translate("app_title.undefined_tree_name");
+    boolean proceed = true;
+    do {
+      Optional<String> name = Alerts.textInput(
+          this.config,
+          "alert.tree_name.header",
+          "alert.tree_name.label",
+          null,
+          defaultName,
+          StringUtils.filePathTextFormatter()
+      );
+      if (name.isEmpty())
+        return false;
+      if (App.treesManager().treesMetadata().keySet().stream().noneMatch(Predicate.isEqual(name.get()))) {
+        this.setFamilyTree(new FamilyTree(name.get()), App.USER_DATA_DIR.resolve(name.get()));
+        this.onSaveAction();
+      } else {
+        Alerts.warning(this.config, "alert.tree_already_exists.header", null, null);
+        proceed = false;
       }
-    }
-    Optional<String> name = Alerts.textInput(
-        this.config, "alert.tree_name.header", "alert.tree_name.label", null, null);
-    if (name.isEmpty()) {
-      return;
-    }
-    this.defaultEmptyTree = false;
-    this.setFamilyTree(new FamilyTree(name.get()), null);
+    } while (!proceed);
+    return true;
   }
 
   /**
-   * Open a file chooser dialog to open a tree file.
+   * Open a file chooser dialog to import a ZIPed family tree.
+   * <p>
+   * Checks for any unsaved changes.
+   *
+   * @param directoryName The name of the directory to open.
+   */
+  private void onOpenTreeAction(@NotNull String directoryName) {
+    if (this.unsavedChanges) {
+      boolean proceed = Alerts.confirmation(
+          this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+      if (!proceed)
+        return;
+    }
+    this.loadTree(directoryName);
+  }
+
+  /**
+   * Open the dialog to manage trees.
+   * If the user has selected a tree, it will be opened.
+   */
+  private void onManageTreesAction() {
+    this.treesManagerDialog.refresh(this.loadedFile.getFileName().toString());
+    this.treesManagerDialog.showAndWait().ifPresent(this::onOpenTreeAction);
+    this.updateUI();
+  }
+
+  /**
+   * Open a file chooser dialog to import a zipped family tree.
    * <p>
    * Checks for any unsaved changes.
    */
-  private void onOpenFileAction() {
-    if (!this.defaultEmptyTree && this.unsavedChanges) {
-      boolean open = Alerts.confirmation(
+  private void onImportTreeAction() {
+    if (this.unsavedChanges) {
+      boolean proceed = Alerts.confirmation(
           this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-      if (!open) {
+      if (!proceed)
         return;
-      }
     }
-    Optional<File> f = FileChoosers.showTreeFileChooser(this.config, this.stage, null);
-    if (f.isEmpty()) {
+    Optional<Path> f = FileChoosers.showZipFileChooser(
+        this.config, this.stage, "zipped_tree_file_chooser", "zipped_tree_file");
+    if (f.isEmpty())
+      return;
+    String targetDir;
+    try {
+      FileUtils.deleteRecursively(App.TEMP_DIR);
+      targetDir = FileUtils.unzip(f.get(), App.TEMP_DIR);
+      Files.move(App.TEMP_DIR.resolve(targetDir), App.USER_DATA_DIR.resolve(targetDir));
+      FileUtils.deleteRecursively(App.TEMP_DIR);
+    } catch (IOException e) {
+      App.LOGGER.exception(e);
+      Alerts.error(
+          this.config,
+          "alert.load_error.header",
+          "alert.load_error.content",
+          "alert.load_error.title",
+          new FormatArg("trace", e.getMessage())
+      );
       return;
     }
-    this.loadFile(f.get());
+    this.loadTree(targetDir);
   }
 
   /**
-   * Load a tree from a file.
+   * Open a file chooser dialog to export this tree as a ZIP file.
+   */
+  private void onExportTreeAction() {
+    Optional<Path> file = FileChoosers.showZipFileSaver(
+        this.config, this.stage, "zipped_tree_file_saver", "zipped_tree_file");
+    if (file.isEmpty())
+      return;
+    try {
+      FileUtils.zip(this.loadedFile, file.get());
+    } catch (IOException e) {
+      App.LOGGER.exception(e);
+      Alerts.error(
+          this.config,
+          "alert.save_error.header",
+          "alert.save_error.content",
+          "alert.save_error.title",
+          new FormatArg("trace", e.getMessage())
+      );
+    }
+  }
+
+  /**
+   * Load a tree from a directory.
    *
-   * @param file File to read.
+   * @param directoryName The name of the directory to read.
    * @return The tree read from the file.
    */
-  private boolean loadFile(@NotNull File file) {
-    App.LOGGER.info("Loading tree from %s…".formatted(file));
+  private boolean loadTree(@NotNull String directoryName) {
+    App.LOGGER.info("Loading tree %s…".formatted(directoryName));
     FamilyTree familyTree;
+    Path path = App.USER_DATA_DIR.resolve(directoryName);
     try {
-      familyTree = new TreeFileReader().loadFile(file);
+      familyTree = new FamilyTreeReader().loadFromDirectory(path);
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
@@ -653,65 +767,29 @@ public class AppController {
     }
     App.LOGGER.info("Done");
 
-    this.defaultEmptyTree = false;
-    this.setFamilyTree(familyTree, file);
+    this.setFamilyTree(familyTree, path);
     return true;
   }
 
   /**
    * Save the current tree.
-   * <p>
-   * If the tree has not yet been saved, a file saver dialog is shown.
    */
   private void onSaveAction() {
-    File file;
-    if (this.loadedFile == null) {
-      Optional<File> f = FileChoosers.showTreeFileSaver(this.config, this.stage, this.familyTree.name());
-      if (f.isEmpty()) {
-        return;
-      }
-      file = f.get();
-      // File existence is already checked by file chooser
-    } else {
-      file = this.loadedFile;
+    if (this.saveFile()) {
+      this.unsavedChanges = false;
+      this.updateUI();
     }
-    if (!this.saveFile(file)) {
-      return;
-    }
-    if (this.loadedFile == null) {
-      this.loadedFile = file;
-    }
-    this.unsavedChanges = false;
-    this.updateUI();
-  }
-
-  /**
-   * Open a file saver dialog to save the current tree to.
-   */
-  private void onSaveAsAction() {
-    Optional<File> f = FileChoosers.showTreeFileSaver(this.config, this.stage, this.familyTree.name());
-    if (f.isEmpty()) {
-      return;
-    }
-    File file = f.get();
-    if (!this.saveFile(file)) {
-      return;
-    }
-    this.loadedFile = file;
-    this.unsavedChanges = false;
-    this.updateUI();
   }
 
   /**
    * Save the current tree to a file.
    *
-   * @param file File to save to.
    * @return True if save succeeded, false otherwise.
    */
-  private boolean saveFile(@NotNull File file) {
-    App.LOGGER.info("Saving tree to %s…".formatted(file));
+  private boolean saveFile() {
+    App.LOGGER.info("Saving tree to %s…".formatted(this.loadedFile));
     try {
-      this.treeFileWriter.saveToFile(this.familyTree, file, this.config);
+      this.familyTreeWriter.saveToDirectory(this.familyTree, this.loadedFile, this.config);
     } catch (IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
@@ -762,8 +840,9 @@ public class AppController {
   private void onSetAsRootAction() {
     this.getSelectedPerson().ifPresent(root -> {
       this.familyTree.setRoot(root);
-      this.defaultEmptyTree = false;
       this.unsavedChanges = true;
+      this.familyTreePane.refresh();
+      this.familyTreeView.refresh();
       this.updateUI();
     });
   }
@@ -822,7 +901,6 @@ public class AppController {
         if (result.personUpdated() || result.anyImageUpdated()) {
           this.familyTreeView.refresh();
           this.familyTreePane.refresh();
-          this.defaultEmptyTree = false;
           this.unsavedChanges = true;
           this.updateUI();
         }
@@ -856,7 +934,6 @@ public class AppController {
         // Update UI
         this.familyTreePane.refresh();
         this.familyTreeView.refresh();
-        this.defaultEmptyTree = false;
         this.unsavedChanges = true;
         this.updateUI();
       }
@@ -894,11 +971,8 @@ public class AppController {
 
   /**
    * Called whenever a picture is edited in the {@link #personDetailsView}.
-   *
-   * @param picture The edited picture.
    */
-  private void onImageEdited(@NotNull Picture picture) {
-    this.defaultEmptyTree = false;
+  private void onImageEdited() {
     this.unsavedChanges = true;
     this.updateUI();
   }
@@ -959,7 +1033,6 @@ public class AppController {
     if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
-      this.defaultEmptyTree = false;
       this.unsavedChanges = true;
       this.updateUI();
     }
@@ -987,7 +1060,6 @@ public class AppController {
       if (person == null && childInfo.isEmpty()) {
         this.onPersonClick(new PersonClickedEvent(p.get(), PersonClickedEvent.Action.SET_AS_TARGET), null);
       }
-      this.defaultEmptyTree = false;
       this.unsavedChanges = true;
       this.updateUI();
     }
@@ -997,11 +1069,12 @@ public class AppController {
    * Update the UI, i.e. menu items, toolbar buttons and stage’s title.
    */
   private void updateUI() {
-    this.stage.setTitle("%s%s – %s%s".formatted(
+    this.stage.setTitle("%s%s – %s%s (%s)".formatted(
         App.NAME,
-        this.config.isDebug() ? " (Debug)" : "",
+        this.config.isDebug() ? " [Debug]" : "",
         this.familyTree.name(),
-        this.unsavedChanges ? "*" : ""
+        this.unsavedChanges ? "*" : "",
+        this.loadedFile.getFileName()
     ));
 
     if (this.birthdaysDialog.isShowing()) {
@@ -1015,6 +1088,22 @@ public class AppController {
     boolean selection = selectedPerson.isPresent();
     boolean hasBothParents = selection && selectedPerson.get().hasBothParents();
     boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
+
+    this.openTreeMenu.getItems().clear();
+    var treesMetadata = App.treesManager().treesMetadata();
+    if (!treesMetadata.isEmpty()) {
+      treesMetadata.values().stream()
+          .filter(m -> !m.directoryName().equals(this.loadedFile.getFileName().toString()))
+          .sorted()
+          .forEach(m -> {
+            MenuItem item = new MenuItem("%s (%s)".formatted(m.name(), App.USER_DATA_DIR.resolve(m.directoryName())));
+            item.setOnAction(event -> this.onOpenTreeAction(m.directoryName()));
+            this.openTreeMenu.getItems().add(item);
+          });
+      if (!this.openTreeMenu.getItems().isEmpty())
+        this.openTreeMenu.getItems().add(new SeparatorMenuItem());
+      this.openTreeMenu.getItems().add(this.manageTreesMenuItem);
+    }
 
     this.saveMenuItem.setDisable(!this.unsavedChanges);
     this.setAsRootMenuItem.setDisable(!selection || selectedIsRoot);
@@ -1078,7 +1167,7 @@ public class AppController {
    * Open alert dialog in there are any unsaved changes before closing the app.
    */
   private void onQuitAction() {
-    if (!this.defaultEmptyTree && this.unsavedChanges) {
+    if (this.unsavedChanges) {
       boolean close = Alerts.confirmation(
           this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
       if (!close) {

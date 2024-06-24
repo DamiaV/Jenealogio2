@@ -2,6 +2,7 @@ package net.darmo_creations.jenealogio2.utils;
 
 import javafx.scene.paint.*;
 import javafx.scene.text.*;
+import net.darmo_creations.jenealogio2.io.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -193,16 +194,16 @@ class StringUtilsTest {
 
   @Test
   void splitExtension() {
-    assertEquals(new Pair<>("a", Optional.of(".png")), StringUtils.splitExtension("a.png"));
+    assertEquals(new Pair<>("a", Optional.of(".png")), FileUtils.splitExtension("a.png"));
   }
 
   @Test
   void splitExtensionMultipleDots() {
-    assertEquals(new Pair<>("a.b", Optional.of(".png")), StringUtils.splitExtension("a.b.png"));
+    assertEquals(new Pair<>("a.b", Optional.of(".png")), FileUtils.splitExtension("a.b.png"));
   }
 
   @Test
   void splitExtensionNoExtension() {
-    assertEquals(new Pair<>("a", Optional.empty()), StringUtils.splitExtension("a"));
+    assertEquals(new Pair<>("a", Optional.empty()), FileUtils.splitExtension("a"));
   }
 }

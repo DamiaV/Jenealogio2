@@ -24,6 +24,7 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -74,13 +75,10 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     Button importButton = new Button(language.translate("dialog.edit_registries.import"),
         theme.getIcon(Icon.IMPORT_REGISTRIES, Icon.Size.SMALL));
     importButton.setOnAction(event -> this.onImport());
-    Button importFromTreeButton = new Button(language.translate("dialog.edit_registries.import_from_tree"),
-        theme.getIcon(Icon.IMPORT_REGISTRIES_FROM_TREE, Icon.Size.SMALL));
-    importFromTreeButton.setOnAction(event -> this.onImportFromTree());
     this.exportButton = new Button(language.translate("dialog.edit_registries.export"),
         theme.getIcon(Icon.EXPORT_REGISTRIES, Icon.Size.SMALL));
     this.exportButton.setOnAction(event -> this.onExport());
-    HBox buttonsBox = new HBox(4, importButton, importFromTreeButton, this.exportButton);
+    HBox buttonsBox = new HBox(4, importButton, this.exportButton);
 
     VBox content = new VBox(4, helpLabel, tabPane, new Separator(), buttonsBox);
     content.setPrefWidth(600);
@@ -96,7 +94,6 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     Stage stage = this.stage();
     stage.setMinWidth(600);
     stage.setMinHeight(500);
-    this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (buttonType == ButtonTypes.OK) {
@@ -112,11 +109,11 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     this.eventTypesView.applyChanges();
     this.gendersView.applyChanges();
     this.changes = false;
-    this.updateButtons();
+    this.refresh(this.familyTree);
   }
 
   private void onImport() {
-    Optional<File> file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
+    Optional<Path> file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
     if (file.isEmpty()) {
       return;
     }
@@ -134,75 +131,35 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       );
       return;
     }
-    List<LifeEventType> eventTypes = registries.lifeEventTypes();
-    List<Gender> genders = registries.genders();
-    if (!this.checkNotEmpty(eventTypes, genders, false)) {
-      return;
-    }
-    this.importDialog.setItems(eventTypes, genders);
-    Optional<ButtonType> buttonType = this.importDialog.showAndWait();
-    if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
-      return;
-    }
-    this.addItems(this.importDialog.getSelectedItems());
+    this.load(registries.lifeEventTypes(), registries.genders());
   }
 
-  private void onImportFromTree() {
-    Optional<File> file = FileChoosers.showTreeFileChooser(this.config, this.getOwner(), null);
-    if (file.isEmpty()) {
+  private void load(@NotNull List<LifeEventType> eventTypes, @NotNull List<Gender> genders) {
+    if (!this.checkNotEmpty(eventTypes, genders, false))
       return;
-    }
-    FamilyTree familyTree;
-    try {
-      familyTree = new TreeFileReader().loadFile(file.get());
-    } catch (IOException e) {
-      App.LOGGER.exception(e);
-      Alerts.error(
-          this.config,
-          "alert.load_error.header",
-          "alert.load_error.content",
-          "alert.load_error.title",
-          new FormatArg("trace", e.getMessage())
-      );
-      return;
-    }
-    List<LifeEventType> eventTypes = familyTree.lifeEventTypeRegistry().serializableEntries();
-    List<Gender> genders = familyTree.genderRegistry().serializableEntries();
-    if (!this.checkNotEmpty(eventTypes, genders, false)) {
-      return;
-    }
     this.importDialog.setItems(eventTypes, genders);
     Optional<ButtonType> buttonType = this.importDialog.showAndWait();
-    if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
+    if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE)
       return;
-    }
-    this.addItems(this.importDialog.getSelectedItems());
-  }
-
-  private void addItems(@NotNull Pair<List<LifeEventType>, List<Gender>> selectedItems) {
-    for (LifeEventType lifeEventType : selectedItems.left()) {
+    var selectedItems = this.importDialog.getSelectedItems();
+    for (LifeEventType lifeEventType : selectedItems.left())
       this.eventTypesView.importEntry(lifeEventType);
-    }
-    for (Gender gender : selectedItems.right()) {
+    for (Gender gender : selectedItems.right())
       this.gendersView.importEntry(gender);
-    }
   }
 
   private void onExport() {
     List<LifeEventType> eventTypes = this.eventTypesView.getExportableEntries();
     List<Gender> genders = this.gendersView.getExportableEntries();
-    if (!this.checkNotEmpty(eventTypes, genders, true)) {
+    if (!this.checkNotEmpty(eventTypes, genders, true))
       return;
-    }
     this.exportDialog.setItems(eventTypes, genders);
     Optional<ButtonType> buttonType = this.exportDialog.showAndWait();
-    if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE) {
+    if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE)
       return;
-    }
-    Optional<File> file = FileChoosers.showRegistriesFileSaver(this.config, this.getOwner(), "registries");
-    if (file.isEmpty()) {
+    Optional<Path> file = FileChoosers.showRegistriesFileSaver(this.config, this.getOwner(), "registries");
+    if (file.isEmpty())
       return;
-    }
     var selectedItems = this.exportDialog.getSelectedItems();
     var selectedKeys = new Pair<>(
         selectedItems.left().stream().map(RegistryEntry::key).toList(),
@@ -262,7 +219,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private void updateButtons() {
     boolean invalid = !this.eventTypesView.isValid() || !this.gendersView.isValid();
     this.exportButton.setDisable(invalid || this.changes);
-    this.applyButton.setDisable(!this.changes);
+    this.applyButton.setDisable(invalid || !this.changes);
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(invalid);
   }
 

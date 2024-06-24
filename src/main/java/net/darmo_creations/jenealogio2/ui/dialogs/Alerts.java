@@ -138,12 +138,13 @@ public final class Alerts {
   /**
    * Open an alert dialog to prompt the use to input some text.
    *
-   * @param config      The app’s config.
-   * @param headerKey   Header text key.
-   * @param labelKey    Text field label text key.
-   * @param titleKey    Title key.
-   * @param defaultText Text to put into the text field.
-   * @param contentArgs Format arguments to apply to the header, label and title.
+   * @param config        The app’s config.
+   * @param headerKey     Header text key.
+   * @param labelKey      Text field label text key.
+   * @param titleKey      Title key.
+   * @param defaultText   Text to put into the text field.
+   * @param textFormatter An optional text formatter to apply to the text field.
+   * @param contentArgs   Format arguments to apply to the header, label and title.
    * @return The selected item.
    */
   public static Optional<String> textInput(
@@ -152,6 +153,7 @@ public final class Alerts {
       @NotNull String labelKey,
       String titleKey,
       String defaultText,
+      TextFormatter<?> textFormatter,
       final FormatArg @NotNull ... contentArgs
   ) {
     Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
@@ -159,6 +161,8 @@ public final class Alerts {
     TextField textField = new TextField();
     textField.textProperty().addListener((observable, oldValue, newValue) ->
         alert.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(StringUtils.stripNullable(newValue).isEmpty()));
+    if (textFormatter != null)
+      textField.setTextFormatter(textFormatter);
     textField.setText(defaultText);
     Label label = new Label(config.language().translate(labelKey, contentArgs));
     hBox.getChildren().addAll(label, textField);

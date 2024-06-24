@@ -1,5 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
+import javafx.geometry.*;
+import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
@@ -39,16 +41,27 @@ public class PictureView extends HBox implements Comparable<PictureView> {
     super(5);
     this.picture = Objects.requireNonNull(picture);
     this.config = Objects.requireNonNull(config);
-    ImageView imageView = new ImageView(picture.image());
-    imageView.setPreserveRatio(true);
-    imageView.setFitHeight(IMAGE_SIZE);
-    imageView.setFitWidth(IMAGE_SIZE);
+    Optional<Image> image = picture.image();
+    Node imageNode;
+    if (image.isPresent()) {
+      ImageView imageView = new ImageView(image.orElse(null));
+      imageView.setPreserveRatio(true);
+      imageView.setFitHeight(IMAGE_SIZE);
+      imageView.setFitWidth(IMAGE_SIZE);
+      imageNode = imageView;
+    } else {
+      Label label = new Label(config.language().translate("picture_view.no_image"));
+      label.setAlignment(Pos.CENTER);
+      label.setPrefHeight(IMAGE_SIZE);
+      label.setPrefWidth(IMAGE_SIZE);
+      imageNode = label;
+    }
     VBox vBox = new VBox(5);
     if (showName) {
       vBox.getChildren().add(this.nameLabel);
     }
     vBox.getChildren().addAll(this.dateLabel, this.imageDescLabel);
-    this.getChildren().addAll(imageView, vBox);
+    this.getChildren().addAll(imageNode, vBox);
     this.refresh();
   }
 
@@ -65,7 +78,7 @@ public class PictureView extends HBox implements Comparable<PictureView> {
    * Refresh the displayed picture information.
    */
   public void refresh() {
-    this.nameLabel.setText(this.picture.name());
+    this.nameLabel.setText(this.picture.fileName());
     this.dateLabel.setText(this.picture.date().map(this::formatDate).orElse("-"));
     this.imageDescLabel.setText(this.picture.description().orElse(""));
   }

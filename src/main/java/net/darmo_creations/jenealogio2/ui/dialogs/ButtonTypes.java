@@ -1,9 +1,9 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
-import javafx.scene.control.ButtonType;
-import net.darmo_creations.jenealogio2.App;
+import javafx.scene.control.*;
+import net.darmo_creations.jenealogio2.*;
 
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Custom button types that use translation strings from the app’s resource bundles.
@@ -65,6 +65,12 @@ public final class ButtonTypes {
    */
   public static final ButtonType PREVIOUS = new ButtonType(
       RES.getString("dialog.previous.button"), ButtonType.PREVIOUS.getButtonData());
+
+  /**
+   * Custom button that shows "Open".
+   */
+  public static final ButtonType OPEN = new ButtonType(
+      RES.getString("dialog.open.button"), ButtonType.OK.getButtonData());
 
   private ButtonTypes() {
   }

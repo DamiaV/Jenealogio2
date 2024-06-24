@@ -82,7 +82,6 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(300);
-    this.setIcon(this.config.theme().getAppIcon());
   }
 
   /**

@@ -82,7 +82,6 @@ public class MapDialog extends DialogBase<ButtonType> {
     Stage stage = this.stage();
     stage.setMinWidth(800);
     stage.setMinHeight(600);
-    this.setIcon(theme.getAppIcon());
 
     this.updateButtons();
     this.mapView.setZoom(2);

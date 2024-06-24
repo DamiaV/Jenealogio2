@@ -9,9 +9,11 @@ import java.util.*;
  */
 public enum Icon {
   NEW_FILE("tree_add"),
-  OPEN_FILE("folder_vertical_open"),
+  OPEN_TREE("folder_vertical_open"),
+  MANAGE_TREES("tree_gear"),
+  IMPORT_TREE_FILE("tree_down"),
+  EXPORT_TREE_FILE("tree_up"),
   SAVE("diskette"),
-  SAVE_AS("save_as"),
   SETTINGS("cog"),
   QUIT("door_in"),
 
@@ -45,6 +47,9 @@ public enum Icon {
 
   BIRTH("emotion_baby"),
   DEATH("emotion_flower_dead"),
+
+  SHOW_TREE_IN_EXPLORER("folder_vertical_open"),
+  DELETE_TREE("cross"),
 
   ADD_EVENT("plus"),
   DELETE_EVENT("cross"),

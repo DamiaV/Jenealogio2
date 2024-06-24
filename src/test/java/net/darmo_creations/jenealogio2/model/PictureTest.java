@@ -6,6 +6,7 @@ import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import org.junit.jupiter.api.*;
 
 import java.io.*;
+import java.nio.file.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,16 +19,10 @@ class PictureTest {
     Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
     this.p = new Picture(
         image,
-        "app_icon.png",
+        Path.of("app_icon.png"),
         "description",
         new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
-  }
-
-  @Test
-  void testNullImageThrowsError() {
-    DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
-    assertThrows(NullPointerException.class, () -> new Picture(null, "a", "b", d));
   }
 
   @Test
@@ -39,12 +34,59 @@ class PictureTest {
 
   @Test
   void testImage() {
-    assertNotNull(this.p.image());
+    assertTrue(this.p.image().isPresent());
+  }
+
+  @Test
+  void testFileName() {
+    assertEquals("app_icon.png", this.p.fileName());
+  }
+
+  @Test
+  void testNormalizedFileExtension() {
+    assertEquals(".png", this.p.normalizedFileExtension().get());
+  }
+
+  @Test
+  void testNormalizedFileExtensionDifferentCase() throws IOException {
+    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
+    Picture p = new Picture(
+        image,
+        Path.of("app_icon.PNG"),
+        "description",
+        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
+    );
+    assertEquals(".png", p.normalizedFileExtension().get());
   }
 
   @Test
   void testName() {
-    assertEquals("app_icon.png", this.p.name());
+    assertEquals("app_icon", this.p.name());
+  }
+
+  @Test
+  void testSetName() {
+    this.p.setName("test");
+    assertEquals("test", this.p.name());
+  }
+
+  @Test
+  void testSetNameUpdatesFileName() {
+    this.p.setName("test");
+    assertEquals("test.png", this.p.fileName());
+  }
+
+  @Test
+  void testSetNameKeepsOriginalExtension() throws IOException {
+    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
+    Picture p = new Picture(
+        image,
+        Path.of("app_icon.PNG"),
+        "description",
+        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
+    );
+    p.setName("test");
+    assertEquals("test.PNG", p.fileName());
   }
 
   @Test
@@ -88,7 +130,7 @@ class PictureTest {
     Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
     Picture pp = new Picture(
         image,
-        "app_icon.png",
+        Path.of("app_icon.png"),
         "description",
         new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
@@ -100,7 +142,7 @@ class PictureTest {
     Image image = getImage("/net/darmo_creations/jenealogio2/images/add_person_image.png");
     Picture pp = new Picture(
         image,
-        "app_icon.png",
+        Path.of("app_icon.png"),
         "desc",
         new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(8765, 4, 3, 2, 1), DateTimePrecision.EXACT)
     );
@@ -112,7 +154,7 @@ class PictureTest {
     Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
     Picture pp = new Picture(
         image,
-        "appicon.png",
+        Path.of("appicon.png"),
         "description",
         new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );

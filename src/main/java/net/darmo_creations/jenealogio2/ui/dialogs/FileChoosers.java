@@ -8,6 +8,7 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 /**
@@ -15,63 +16,54 @@ import java.util.*;
  */
 public final class FileChoosers {
   /**
-   * Open a dialog to save a .jtree file.
+   * Open a dialog to choose a .zip file.
    *
-   * @param config      The app’s config.
-   * @param stage       The parent stage object.
-   * @param defaultName Default file name.
+   * @param config The app’s config.
+   * @param stage  The parent stage object.
    * @return The selected file.
    */
-  public static Optional<File> showTreeFileSaver(
-      final @NotNull Config config, final @NotNull Window stage, String defaultName) {
-    return getTreeFile(config, stage, "tree_file_saver", true, defaultName);
-  }
-
-  /**
-   * Open a dialog to choose a .jtree file.
-   *
-   * @param config      The app’s config.
-   * @param stage       The parent stage object.
-   * @param defaultName Default file name.
-   * @return The selected file.
-   */
-  public static Optional<File> showTreeFileChooser(
-      final @NotNull Config config, final @NotNull Window stage, String defaultName) {
-    return getTreeFile(config, stage, "tree_file_chooser", false, defaultName);
-  }
-
-  /**
-   * Open a .jtree file chooser/saver.
-   *
-   * @param config      The app’s config.
-   * @param stage       The parent stage object.
-   * @param titleKey    Title translation key.
-   * @param saver       True to open a file saver, false for file chooser.
-   * @param defaultName Default file name.
-   * @return The selected file.
-   */
-  private static Optional<File> getTreeFile(
-      final @NotNull Config config, @NotNull Window stage, @NotNull String titleKey, boolean saver, String defaultName) {
+  public static Optional<Path> showZipFileChooser(
+      final @NotNull Config config, final @NotNull Window stage, @NotNull String titleKey, @NotNull String descKey) {
     return getFile(
         config,
         stage,
         titleKey,
-        saver,
-        "tree_file_chooser",
-        defaultName,
-        TreeFileManager.EXTENSION
+        false,
+        descKey,
+        null,
+        FileUtils.EXTENSIONS.toArray(new String[0])
     );
   }
 
   /**
-   * Open a dialog to save a .reg file.
+   * Open a dialog to save a .zip file.
+   *
+   * @param config The app’s config.
+   * @param stage  The parent stage object.
+   * @return The selected file.
+   */
+  public static Optional<Path> showZipFileSaver(
+      final @NotNull Config config, final @NotNull Window stage, @NotNull String titleKey, @NotNull String descKey) {
+    return getFile(
+        config,
+        stage,
+        titleKey,
+        true,
+        descKey,
+        null,
+        FileUtils.EXTENSIONS.toArray(new String[0])
+    );
+  }
+
+  /**
+   * Open a dialog to save a .jtreereg file.
    *
    * @param config      The app’s config.
    * @param stage       The parent stage object.
    * @param defaultName Default file name.
    * @return The selected file.
    */
-  public static Optional<File> showRegistriesFileSaver(
+  public static Optional<Path> showRegistriesFileSaver(
       final @NotNull Config config, final @NotNull Window stage, String defaultName) {
     return getRegistriesFile(
         config,
@@ -83,14 +75,14 @@ public final class FileChoosers {
   }
 
   /**
-   * Open a dialog to choose a .reg file.
+   * Open a dialog to choose a .jtreereg file.
    *
    * @param config      The app’s config.
    * @param stage       The parent stage object.
    * @param defaultName Default file name.
    * @return The selected file.
    */
-  public static Optional<File> showRegistriesFileChooser(
+  public static Optional<Path> showRegistriesFileChooser(
       final @NotNull Config config, final @NotNull Window stage, String defaultName) {
     return getRegistriesFile(
         config,
@@ -102,7 +94,7 @@ public final class FileChoosers {
   }
 
   /**
-   * Open a .reg file chooser/saver.
+   * Open a .jtreereg file chooser/saver.
    *
    * @param config      The app’s config.
    * @param stage       The parent stage object.
@@ -111,7 +103,7 @@ public final class FileChoosers {
    * @param defaultName Default file name.
    * @return The selected file.
    */
-  private static Optional<File> getRegistriesFile(
+  private static Optional<Path> getRegistriesFile(
       final @NotNull Config config, @NotNull Window stage, @NotNull String titleKey, boolean saver, String defaultName) {
     return getFile(
         config,
@@ -132,7 +124,7 @@ public final class FileChoosers {
    * @param defaultName Default file name.
    * @return The selected file.
    */
-  public static Optional<File> showImageFileChooser(
+  public static Optional<Path> showImageFileChooser(
       final @NotNull Config config, final @NotNull Window stage, String defaultName) {
     return getFile(
         config,
@@ -157,7 +149,7 @@ public final class FileChoosers {
    * @param extensions  Allowed file extensions.
    * @return The selected file.
    */
-  private static Optional<File> getFile(
+  private static Optional<Path> getFile(
       final @NotNull Config config,
       @NotNull Window stage,
       @NotNull String titleKey,
@@ -186,6 +178,7 @@ public final class FileChoosers {
     } else {
       file = fileChooser.showOpenDialog(stage);
     }
+    Path path = null;
     if (file != null) {
       String fileName = file.getName();
       if (Arrays.stream(extensions).noneMatch(fileName::endsWith)) {
@@ -195,8 +188,9 @@ public final class FileChoosers {
           return Optional.empty();
         }
       }
+      path = file.toPath();
     }
-    return Optional.ofNullable(file);
+    return Optional.ofNullable(path);
   }
 
   private FileChoosers() {

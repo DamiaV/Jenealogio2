@@ -38,8 +38,6 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     content.setPrefWidth(500);
     this.getDialogPane().setContent(content);
 
-    this.setIcon(config.theme().getAppIcon());
-
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
         ChangeType changeType = this.configChanged();

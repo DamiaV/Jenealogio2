@@ -45,7 +45,6 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
     Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(200);
-    this.setIcon(config.theme().getAppIcon());
   }
 
   public Pair<List<LifeEventType>, List<Gender>> getSelectedItems() {

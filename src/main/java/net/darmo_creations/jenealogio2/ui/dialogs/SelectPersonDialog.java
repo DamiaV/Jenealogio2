@@ -62,7 +62,6 @@ public class SelectPersonDialog extends DialogBase<Person> {
     Stage stage = this.stage();
     stage.setMinWidth(400);
     stage.setMinHeight(400);
-    this.setIcon(config.theme().getAppIcon());
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
@@ -114,7 +113,7 @@ public class SelectPersonDialog extends DialogBase<Person> {
     public PersonView(final @NotNull Person person) {
       super(5);
       this.person = person;
-      ImageView imageView = new ImageView(person.mainPicture().map(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+      ImageView imageView = new ImageView(person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
       imageView.setPreserveRatio(true);
       imageView.setFitWidth(IMAGE_SIZE);
       imageView.setFitHeight(IMAGE_SIZE);
