@@ -60,7 +60,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final TextFlow eventNotesTextFlow = new TextFlow();
   private final TextFlow eventSourcesTextFlow = new TextFlow();
   private final ListView<PersonCard> eventWitnessesList = new ListView<>();
-  private final ListView<PictureView> eventImagesList = new ListView<>();
+  private final ListView<DocumentView<AttachedDocument>> eventDocumentsList = new ListView<>();
 
   private final PersonCard parent1Card;
   private final PersonCard parent2Card;
@@ -73,11 +73,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
   private final List<NewParentClickListener> newParentClickListeners = new LinkedList<>();
-  private final List<Consumer<Picture>> imageEditedListeners = new LinkedList<>();
+  private final List<Consumer<AttachedDocument>> documentEditedListeners = new LinkedList<>();
 
-  private final ListView<PictureView> imageList = new ListView<>();
+  private final ListView<DocumentView<AttachedDocument>> documentsList = new ListView<>();
 
-  private final EditImageDialog editImageDialog;
+  private final EditDocumentDialog editDocumentDialog;
 
   private LifeEvent displayedLifeEvent = null;
 
@@ -92,7 +92,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     Language language = config.language();
     Theme theme = config.theme();
 
-    this.editImageDialog = new EditImageDialog(config);
+    this.editDocumentDialog = new EditDocumentDialog(config);
     this.imageView = new ClickableImageView(PersonWidget.DEFAULT_IMAGE);
     this.eventImageView = new ClickableImageView(DEFAULT_EVENT_IMAGE);
     this.eventDateLabel = new DateLabel(null, config);
@@ -136,7 +136,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView.setPreserveRatio(true);
     this.imageView.setFitWidth(100);
     this.imageView.setFitHeight(100);
-    this.imageView.setOnMouseClicked(e -> this.onMainImageClicked(this.person, this.imageList));
+    this.imageView.setOnMouseClicked(e -> this.onMainImageClicked(this.person, this.documentsList));
     this.fullNameLabel.getStyleClass().add("person-details-title");
     this.fullNameLabel.setWrapText(true);
     this.genderLabel.setWrapText(true);
@@ -175,14 +175,14 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     VBox.setVgrow(sourcesScroll, Priority.ALWAYS);
     VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
     sourcesBox.getStyleClass().add("person-details");
-    this.imageList.setOnMouseClicked(this::onImageListClicked);
-    VBox.setVgrow(this.imageList, Priority.ALWAYS);
-    VBox imagesBox = new VBox(new SectionLabel("images"), this.imageList);
-    imagesBox.getStyleClass().add("person-details");
+    this.documentsList.setOnMouseClicked(this::onDocumentListClicked);
+    VBox.setVgrow(this.documentsList, Priority.ALWAYS);
+    VBox documentsBox = new VBox(new SectionLabel("documents"), this.documentsList);
+    documentsBox.getStyleClass().add("person-details");
     tabPane.getItems().addAll(
         topBox,
         sourcesBox,
-        imagesBox
+        documentsBox
     );
     tabPane.setDividerPositions(0.2, 0.4);
   }
@@ -227,7 +227,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventImageView.setPreserveRatio(true);
     this.eventImageView.setFitWidth(100);
     this.eventImageView.setFitHeight(100);
-    this.eventImageView.setOnMouseClicked(e -> this.onMainImageClicked(this.displayedLifeEvent, this.eventImagesList));
+    this.eventImageView.setOnMouseClicked(e -> this.onMainImageClicked(this.displayedLifeEvent, this.eventDocumentsList));
 
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
@@ -264,15 +264,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     sourcesBox.getStyleClass().add("person-details");
     VBox witnessesBox = new VBox(new SectionLabel("witnesses"), this.eventWitnessesList);
     witnessesBox.getStyleClass().add("person-details");
-    this.eventImagesList.setOnMouseClicked(this::onImageListClicked);
-    VBox.setVgrow(this.eventImagesList, Priority.ALWAYS);
-    VBox imagesBox = new VBox(new SectionLabel("images"), this.eventImagesList);
-    imagesBox.getStyleClass().add("person-details");
+    this.eventDocumentsList.setOnMouseClicked(this::onDocumentListClicked);
+    VBox.setVgrow(this.eventDocumentsList, Priority.ALWAYS);
+    VBox documentsBox = new VBox(new SectionLabel("documents"), this.eventDocumentsList);
+    documentsBox.getStyleClass().add("person-details");
     this.eventPane.getItems().addAll(
         topBox,
         witnessesBox,
         sourcesBox,
-        imagesBox
+        documentsBox
     );
     this.eventPane.setOrientation(Orientation.VERTICAL);
     this.eventPane.setDividerPositions(0.25, 0.5, 0.75);
@@ -327,40 +327,40 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   /**
-   * Select the main picture of the given {@link GenealogyObject} in the given image list.
+   * Select the main picture of the given {@link GenealogyObject} in the given document list.
    *
-   * @param object     The object whose main picture was clicked. May be null.
-   * @param imagesList The image list in which to select the picture.
+   * @param object        The object whose main picture was clicked. May be null.
+   * @param documentsList The document list in which to select the picture.
    */
-  private void onMainImageClicked(final GenealogyObject<?> object, @NotNull ListView<PictureView> imagesList) {
+  private void onMainImageClicked(final GenealogyObject<?> object, @NotNull ListView<DocumentView<AttachedDocument>> documentsList) {
     if (object != null) {
       object.mainPicture()
-          .flatMap(mainPicture -> imagesList.getItems().stream()
-              .filter(pv -> pv.picture() == mainPicture)
+          .flatMap(mainPicture -> documentsList.getItems().stream()
+              .filter(pv -> pv.document() instanceof Picture pic && pic == mainPicture)
               .findFirst()
           ).ifPresent(pv -> {
-            imagesList.scrollTo(pv);
-            imagesList.getSelectionModel().select(pv);
+            documentsList.scrollTo(pv);
+            documentsList.getSelectionModel().select(pv);
           });
     }
   }
 
-  private void onImageListClicked(final @NotNull MouseEvent event) {
+  private void onDocumentListClicked(final @NotNull MouseEvent event) {
     if (event.getClickCount() > 1) {
       //noinspection unchecked
-      this.onEditImage((ListView<PictureView>) event.getSource());
+      this.onEditDocument((ListView<DocumentView<AttachedDocument>>) event.getSource());
     }
   }
 
-  private void onEditImage(@NotNull ListView<PictureView> list) {
-    List<PictureView> selection = list.getSelectionModel().getSelectedItems();
+  private void onEditDocument(@NotNull ListView<DocumentView<AttachedDocument>> list) {
+    List<DocumentView<AttachedDocument>> selection = list.getSelectionModel().getSelectedItems();
     if (selection.size() == 1) {
-      PictureView pictureView = selection.get(0);
-      Picture picture = pictureView.picture();
-      this.editImageDialog.setPicture(picture, this.familyTree);
-      this.editImageDialog.showAndWait().ifPresent(b -> {
-        pictureView.refresh();
-        this.imageEditedListeners.forEach(l -> l.accept(picture));
+      DocumentView<AttachedDocument> documentView = selection.get(0);
+      AttachedDocument document = documentView.document();
+      this.editDocumentDialog.setDocument(document, this.familyTree);
+      this.editDocumentDialog.showAndWait().ifPresent(b -> {
+        documentView.refresh();
+        this.documentEditedListeners.forEach(l -> l.accept(document));
         list.getItems().sort(null);
       });
     }
@@ -403,9 +403,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.godparentsList.getItems().clear();
     this.fosterParentsList.getItems().clear();
 
-    this.imageList.getItems().clear();
+    this.documentsList.getItems().clear();
 
-    this.eventImagesList.getItems().clear();
+    this.eventDocumentsList.getItems().clear();
     this.eventsTab.setContent(this.eventsTabPane);
   }
 
@@ -507,8 +507,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted(Person.birthDateThenNameComparator(false))
         .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
 
-    this.person.pictures().forEach(p -> this.imageList.getItems().add(new PictureView(p, false, this.config)));
-    this.imageList.getItems().sort(null);
+    this.person.documents().forEach(p -> this.documentsList.getItems().add(new DocumentView<>(p, false, this.config)));
+    this.documentsList.getItems().sort(null);
   }
 
   private void populateParentCards() {
@@ -596,9 +596,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted(Person.birthDateThenNameComparator(false))
         .forEach(w -> this.eventWitnessesList.getItems().add(new PersonCard(w)));
 
-    this.eventImagesList.getItems().clear();
-    lifeEvent.pictures().forEach(p -> this.eventImagesList.getItems().add(new PictureView(p, false, this.config)));
-    this.eventImagesList.getItems().sort(null);
+    this.eventDocumentsList.getItems().clear();
+    lifeEvent.documents().forEach(p -> this.eventDocumentsList.getItems().add(new DocumentView<>(p, false, this.config)));
+    this.eventDocumentsList.getItems().sort(null);
 
     this.eventsTab.setContent(this.eventPane);
   }
@@ -611,8 +611,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     return this.newParentClickListeners;
   }
 
-  public List<Consumer<Picture>> imageEditedListeners() {
-    return this.imageEditedListeners;
+  public List<Consumer<AttachedDocument>> documentEditedListeners() {
+    return this.documentEditedListeners;
   }
 
   /**

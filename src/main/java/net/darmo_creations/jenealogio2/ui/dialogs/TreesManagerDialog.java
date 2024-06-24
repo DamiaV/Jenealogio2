@@ -61,7 +61,7 @@ public class TreesManagerDialog extends DialogBase<String> {
     this.currentTreeDirectory = currentTreeDirectory;
     this.showCurrentTreeButton.setDisable(currentTreeDirectory == null);
     this.treesList.getItems().clear();
-    App.treesManager().treesMetadata().values()
+    App.treesMetadataManager().treesMetadata().values()
         .stream()
         .filter(m -> !m.directoryName().equals(currentTreeDirectory))
         .sorted()
@@ -138,7 +138,7 @@ public class TreesManagerDialog extends DialogBase<String> {
             new FormatArg("trace", e.getMessage())
         );
       }
-      App.treesManager().removeEntry(this.treeMetadata.directoryName());
+      App.treesMetadataManager().removeEntry(this.treeMetadata.directoryName());
       TreesManagerDialog.this.refresh(TreesManagerDialog.this.currentTreeDirectory);
     }
   }

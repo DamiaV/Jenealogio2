@@ -23,29 +23,26 @@ public class TreeXMLReader extends TreeXMLManager {
   /**
    * Read a family tree object from an input stream.
    *
-   * @param inputStream    The stream to read from.
-   * @param pictureBuilder Function that provides a picture for the given name and data.
+   * @param inputStream     The stream to read from.
+   * @param documentBuilder Function that provides a document for the given name and data.
    * @return The corresponding family tree object.
    * @throws IOException If any error occurs.
    */
   public FamilyTree readFromStream(
       @NotNull InputStream inputStream,
-      @NotNull PictureBuilder pictureBuilder
+      @NotNull AttachedDocumentBuilder documentBuilder
   ) throws IOException {
     Document document = XmlUtils.readFile(inputStream);
 
     NodeList childNodes = document.getChildNodes();
-    if (childNodes.getLength() != 1) {
+    if (childNodes.getLength() != 1)
       throw new IOException("Parse error");
-    }
     Element familyTreeElement = (Element) childNodes.item(0);
-    if (!familyTreeElement.getTagName().equals(FAMILY_TREE_TAG)) {
+    if (!familyTreeElement.getTagName().equals(FAMILY_TREE_TAG))
       throw new IOException("Missing root element");
-    }
     int version = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_VERSION_ATTR, Integer::parseInt, null, false);
-    if (version != 1) {
+    if (version != 1)
       throw new IOException("Unsupported XML file version: " + version);
-    }
     String name = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_NAME_ATTR, s -> s, null, true);
     int rootID = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, null, false);
 
@@ -54,14 +51,12 @@ public class TreeXMLReader extends TreeXMLManager {
     FamilyTree familyTree = new FamilyTree(name);
 
     Optional<Element> registriesElement = XmlUtils.getChildElement(familyTreeElement, REGISTRIES_TAG, true);
-    if (registriesElement.isPresent()) {
+    if (registriesElement.isPresent())
       this.loadUserRegistries(registriesElement.get(), familyTree);
-    }
 
-    Optional<Element> picturesElement = XmlUtils.getChildElement(familyTreeElement, PICTURES_TAG, true);
-    if (picturesElement.isPresent()) {
-      this.loadPictures(picturesElement.get(), familyTree, pictureBuilder);
-    }
+    Optional<Element> documentsElement = XmlUtils.getChildElement(familyTreeElement, DOCUMENTS_TAG, true);
+    if (documentsElement.isPresent())
+      this.loadDocuments(documentsElement.get(), familyTree, documentBuilder);
 
     List<Person> persons = this.readPersons(peopleElement, familyTree);
     try {
@@ -70,9 +65,8 @@ public class TreeXMLReader extends TreeXMLManager {
       throw new IOException(e);
     }
     Optional<Element> eventsElement = XmlUtils.getChildElement(familyTreeElement, LIFE_EVENTS_TAG, true);
-    if (eventsElement.isPresent()) {
+    if (eventsElement.isPresent())
       this.readLifeEvents(eventsElement.get(), persons, familyTree);
-    }
 
     return familyTree;
   }
@@ -167,28 +161,28 @@ public class TreeXMLReader extends TreeXMLManager {
   }
 
   // endregion
-  // region Pictures
+  // region Documents
 
   /**
-   * Load the pictures from the {@code <Pictures>} tag.
+   * Load the documents from the {@code <Documents>} tag.
    *
-   * @param picturesElement XML element containing the pictures’ definitions.
-   * @param familyTree      The family tree to load pictures into.
-   * @param pictureBuilder  Function that provides a picture for the given name.
+   * @param documentsElement XML element containing the documents’ definitions.
+   * @param familyTree       The family tree to load documents into.
+   * @param documentBuilder  Function that provides an {@link AttachedDocument} for the given name.
    * @throws IOException In any error occurs.
    */
-  private void loadPictures(
-      @NotNull Element picturesElement,
+  private void loadDocuments(
+      @NotNull Element documentsElement,
       @NotNull FamilyTree familyTree,
-      @NotNull PictureBuilder pictureBuilder
+      @NotNull AttachedDocumentBuilder documentBuilder
   ) throws IOException {
-    List<Element> pictureElements = XmlUtils.getChildElements(picturesElement, PICTURE_TAG);
-    for (Element pictureElement : pictureElements) {
-      String name = XmlUtils.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
-      Optional<Element> descElement = XmlUtils.getChildElement(pictureElement, PICTURE_DESC_TAG, true);
+    List<Element> documentElements = XmlUtils.getChildElements(documentsElement, DOCUMENT_TAG);
+    for (Element documentElement : documentElements) {
+      String name = XmlUtils.getAttr(documentElement, DOCUMENT_NAME_ATTR, s -> s, () -> null, false);
+      Optional<Element> descElement = XmlUtils.getChildElement(documentElement, DOCUMENT_DESC_TAG, true);
       String desc = descElement.map(Element::getTextContent).orElse(null);
-      DateTime date = this.readDateTag(pictureElement, true);
-      familyTree.addDocument(pictureBuilder.build(name, desc, date));
+      DateTime date = this.readDateTag(documentElement, true);
+      familyTree.addDocument(documentBuilder.build(name, desc, date));
     }
   }
 
@@ -214,7 +208,7 @@ public class TreeXMLReader extends TreeXMLManager {
     for (Element personElement : XmlUtils.getChildElements(peopleElement, PERSON_TAG)) {
       Person person = new Person();
 
-      this.readPicturesTag(personElement, person, familyTree);
+      this.readDocumentsTag(personElement, person, familyTree);
       this.readDisambiguationIdTag(personElement, person);
       this.readLifeStatusTag(personElement, person);
       // Legal last name
@@ -245,27 +239,26 @@ public class TreeXMLReader extends TreeXMLManager {
   }
 
   /**
-   * Read the {@code <Pictures>} tag for the given object.
+   * Read the {@code <Documents>} tag for the given object.
    *
-   * @param element    XML element to extract the pictures from.
+   * @param element    XML element to extract the documents from.
    * @param o          The object corresponding to the tag.
    * @param familyTree The tree the object belongs to.
    */
-  private void readPicturesTag(
+  private void readDocumentsTag(
       final @NotNull Element element,
       @NotNull GenealogyObject<?> o,
       @NotNull FamilyTree familyTree
   ) throws IOException {
-    Optional<Element> picturesElement = XmlUtils.getChildElement(element, PICTURES_TAG, true);
-    if (picturesElement.isPresent()) {
-      List<Element> pictureElements = XmlUtils.getChildElements(picturesElement.get(), PICTURE_TAG);
-      for (Element pictureElement : pictureElements) {
-        String name = XmlUtils.getAttr(pictureElement, PICTURE_NAME_ATTR, s -> s, () -> null, false);
+    Optional<Element> documentsElement = XmlUtils.getChildElement(element, DOCUMENTS_TAG, true);
+    if (documentsElement.isPresent()) {
+      List<Element> documentElements = XmlUtils.getChildElements(documentsElement.get(), DOCUMENT_TAG);
+      for (Element documentElement : documentElements) {
+        String name = XmlUtils.getAttr(documentElement, DOCUMENT_NAME_ATTR, s -> s, () -> null, false);
         familyTree.addDocumentToObject(name, o);
-        boolean isMain = XmlUtils.getAttr(pictureElement, PICTURE_MAIN_ATTR, Boolean::parseBoolean, () -> false, false);
-        if (isMain) {
+        boolean isMain = XmlUtils.getAttr(documentElement, DOCUMENT_MAIN_PICTURE_ATTR, Boolean::parseBoolean, () -> false, false);
+        if (isMain && familyTree.getDocument(name).map(d -> d instanceof Picture).orElse(false))
           familyTree.setMainPictureOfObject(name, o);
-        }
       }
     }
   }
@@ -563,7 +556,7 @@ public class TreeXMLReader extends TreeXMLManager {
         throw new IOException(e);
       }
 
-      this.readPicturesTag(eventElement, lifeEvent, familyTree);
+      this.readDocumentsTag(eventElement, lifeEvent, familyTree);
       // Witnesses
       this.extractPersons(eventElement, WITNESSES_TAG, persons,
           p -> familyTree.addWitnessToLifeEvent(lifeEvent, p), true);

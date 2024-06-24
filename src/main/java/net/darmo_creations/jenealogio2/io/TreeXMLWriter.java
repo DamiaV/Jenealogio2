@@ -26,7 +26,11 @@ public class TreeXMLWriter extends TreeXMLManager {
    * @param outputStream Stream to write to.
    * @param config       The app’s config.
    */
-  public void writeToStream(final @NotNull FamilyTree familyTree, @NotNull OutputStream outputStream, final @NotNull Config config) {
+  public void writeToStream(
+      final @NotNull FamilyTree familyTree,
+      @NotNull OutputStream outputStream,
+      final @NotNull Config config
+  ) {
     Document document = this.newDocumentBuilder().newDocument();
 
     Element familyTreeElement = (Element) document.appendChild(document.createElement(FAMILY_TREE_TAG));
@@ -40,6 +44,7 @@ public class TreeXMLWriter extends TreeXMLManager {
     }
 
     this.writeUserRegistryEntries(document, familyTreeElement, familyTree, null);
+    this.writeDocuments(document, familyTreeElement, familyTree);
     Element peopleElement = (Element) familyTreeElement.appendChild(document.createElement(PEOPLE_TAG));
     this.writePersons(document, familyTreeElement, peopleElement, familyTree, persons, personIDs);
     Element lifeEventsElement = document.createElement(LIFE_EVENTS_TAG);
@@ -136,19 +141,28 @@ public class TreeXMLWriter extends TreeXMLManager {
     if (registriesElement.hasChildNodes()) {
       familyTreeElement.appendChild(registriesElement);
     }
+  }
 
-    Collection<Picture> pictures = familyTree.pictures();
-    if (!pictures.isEmpty()) {
-      Element picturesElement = document.createElement(PICTURES_TAG);
-      pictures.forEach(picture -> {
-        Element pictureElement = (Element) picturesElement.appendChild(document.createElement(PICTURE_TAG));
-        XmlUtils.setAttr(document, pictureElement, PICTURE_NAME_ATTR, picture.fileName());
-        Element descElement = document.createElement(PICTURE_DESC_TAG);
-        picture.description().ifPresent(descElement::setTextContent);
-        picture.date().ifPresent(date -> this.writeDateTag(document, pictureElement, date));
-        pictureElement.appendChild(descElement);
+  // endregion
+  // region Documents
+
+  private void writeDocuments(
+      @NotNull Document document,
+      @NotNull Element familyTreeElement,
+      @NotNull FamilyTree familyTree
+  ) {
+    Collection<AttachedDocument> documents = familyTree.documents();
+    if (!documents.isEmpty()) {
+      Element documentsElement = document.createElement(DOCUMENTS_TAG);
+      documents.forEach(doc -> {
+        Element documentElement = (Element) documentsElement.appendChild(document.createElement(DOCUMENT_TAG));
+        XmlUtils.setAttr(document, documentElement, DOCUMENT_NAME_ATTR, doc.fileName());
+        Element descElement = document.createElement(DOCUMENT_DESC_TAG);
+        doc.description().ifPresent(descElement::setTextContent);
+        doc.date().ifPresent(date -> this.writeDateTag(document, documentElement, date));
+        documentElement.appendChild(descElement);
       });
-      familyTreeElement.appendChild(picturesElement);
+      familyTreeElement.appendChild(documentsElement);
     }
   }
 
@@ -206,15 +220,14 @@ public class TreeXMLWriter extends TreeXMLManager {
       @NotNull Element element,
       final @NotNull GenealogyObject<?> o
   ) {
-    Collection<Picture> pictures = o.pictures();
-    if (!pictures.isEmpty()) {
-      Element picturesElement = document.createElement(PICTURES_TAG);
-      pictures.forEach(picture -> {
-        Element pictureElement = (Element) picturesElement.appendChild(document.createElement(PICTURE_TAG));
-        XmlUtils.setAttr(document, pictureElement, PICTURE_NAME_ATTR, picture.fileName());
-        if (o.mainPicture().map(p -> p == picture).orElse(false)) {
-          XmlUtils.setAttr(document, pictureElement, PICTURE_MAIN_ATTR, "true");
-        }
+    Collection<AttachedDocument> documents = o.documents();
+    if (!documents.isEmpty()) {
+      Element picturesElement = document.createElement(DOCUMENTS_TAG);
+      documents.forEach(doc -> {
+        Element documentElement = (Element) picturesElement.appendChild(document.createElement(DOCUMENT_TAG));
+        XmlUtils.setAttr(document, documentElement, DOCUMENT_NAME_ATTR, doc.fileName());
+        if (doc instanceof Picture pic && o.mainPicture().map(p -> p == pic).orElse(false))
+          XmlUtils.setAttr(document, documentElement, DOCUMENT_MAIN_PICTURE_ATTR, "true");
       });
       element.appendChild(picturesElement);
     }

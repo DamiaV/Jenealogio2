@@ -3,7 +3,6 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.io.*;
-import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -117,23 +116,21 @@ public final class FileChoosers {
   }
 
   /**
-   * Open a dialog to choose an image file.
+   * Open a dialog to choose a file.
    *
-   * @param config      The app’s config.
-   * @param stage       The parent stage object.
-   * @param defaultName Default file name.
+   * @param config The app’s config.
+   * @param stage  The parent stage object.
    * @return The selected file.
    */
-  public static Optional<Path> showImageFileChooser(
-      final @NotNull Config config, final @NotNull Window stage, String defaultName) {
+  public static Optional<Path> showFileChooser(
+      final @NotNull Config config, final @NotNull Window stage) {
     return getFile(
         config,
         stage,
-        "image_file_chooser",
+        "file_chooser",
         false,
-        "image_file_chooser",
-        defaultName,
-        Picture.FILE_EXTENSIONS
+        null,
+        null
     );
   }
 
@@ -144,9 +141,9 @@ public final class FileChoosers {
    * @param stage       The parent stage object.
    * @param titleKey    Title translation key.
    * @param saver       True to open a file saver, false for file chooser.
-   * @param descKey     Description’s i18n key.
+   * @param descKey     Description’s i18n key. Ignored if no extensions are specified.
    * @param defaultName Default file name.
-   * @param extensions  Allowed file extensions.
+   * @param extensions  Allowed file extensions. Leave empty to allow any file type.
    * @return The selected file.
    */
   private static Optional<Path> getFile(
@@ -154,18 +151,20 @@ public final class FileChoosers {
       @NotNull Window stage,
       @NotNull String titleKey,
       boolean saver,
-      @NotNull String descKey,
+      String descKey,
       String defaultName,
       @NotNull String... extensions
   ) {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle(config.language().translate("dialog.%s.title".formatted(titleKey)));
-    List<String> exts = Arrays.stream(extensions).map(e -> "*" + e).toList();
-    String desc = config.language().translate(
-        "dialog.%s.filter_description".formatted(descKey),
-        new FormatArg("exts", String.join(", ", exts))
-    );
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(desc, exts));
+    if (extensions.length != 0) {
+      List<String> exts = Arrays.stream(extensions).map(e -> "*" + e).toList();
+      String desc = config.language().translate(
+          "dialog.%s.filter_description".formatted(Objects.requireNonNull(descKey)),
+          new FormatArg("exts", String.join(", ", exts))
+      );
+      fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(desc, exts));
+    }
     if (defaultName != null) {
       if (!defaultName.endsWith(extensions[0])) {
         defaultName += extensions[0];
@@ -181,7 +180,7 @@ public final class FileChoosers {
     Path path = null;
     if (file != null) {
       String fileName = file.getName();
-      if (Arrays.stream(extensions).noneMatch(fileName::endsWith)) {
+      if (extensions.length != 0 && Arrays.stream(extensions).noneMatch(fileName::endsWith)) {
         if (saver) {
           file = new File(file.getPath() + extensions[0]);
         } else {

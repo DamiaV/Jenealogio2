@@ -53,7 +53,7 @@ public class AppController {
   private final MenuItem addSiblingMenuItem = new MenuItem();
   private final MenuItem editParentsMenuItem = new MenuItem();
   private final MenuItem editLifeEventsMenuItem = new MenuItem();
-  private final MenuItem setPictureMenuItem = new MenuItem();
+  private final MenuItem editDocumentsMenuItem = new MenuItem();
   private final MenuItem calculateRelationshipsMenuItem = new MenuItem();
   private final MenuItem birthdaysMenuItem = new MenuItem();
   private final MenuItem mapMenuItem = new MenuItem();
@@ -72,7 +72,7 @@ public class AppController {
   private final Button addSiblingToolbarButton = new Button();
   private final Button editParentsToolbarButton = new Button();
   private final Button editLifeEventsToolbarButton = new Button();
-  private final Button setPictureToolbarButton = new Button();
+  private final Button editDocumentsToolbarButton = new Button();
   private final Button calculateRelationshipsToolbarButton = new Button();
   private final Button birthdaysToolbarButton = new Button();
   private final Button mapToolbarButton = new Button();
@@ -95,7 +95,7 @@ public class AppController {
   private final TreesManagerDialog treesManagerDialog;
   private final RegistriesDialog editRegistriesDialog;
   private final EditPersonDialog editPersonDialog;
-  private final ManageObjectImagesDialog editPersonImagesDialog;
+  private final ManageObjectDocumentsDialog editPersonDocumentsDialog;
   private final BirthdaysDialog birthdaysDialog;
   private final MapDialog mapDialog;
   private final SettingsDialog settingsDialog;
@@ -140,7 +140,7 @@ public class AppController {
     this.treesManagerDialog = new TreesManagerDialog(config);
     this.editRegistriesDialog = new RegistriesDialog(config);
     this.editPersonDialog = new EditPersonDialog(config);
-    this.editPersonImagesDialog = new ManageObjectImagesDialog(config);
+    this.editPersonDocumentsDialog = new ManageObjectDocumentsDialog(config);
     this.mapDialog = new MapDialog(config);
     this.settingsDialog = new SettingsDialog(config);
     this.aboutDialog = new AboutDialog(config);
@@ -334,11 +334,11 @@ public class AppController {
 
     editMenu.getItems().add(new SeparatorMenuItem());
 
-    this.setPictureMenuItem.setText(language.translate("menu.edit.set_picture"));
-    this.setPictureMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
-    this.setPictureMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN));
-    this.setPictureMenuItem.setOnAction(event -> this.onEditPersonPicturesAction());
-    editMenu.getItems().add(this.setPictureMenuItem);
+    this.editDocumentsMenuItem.setText(language.translate("menu.edit.set_picture"));
+    this.editDocumentsMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
+    this.editDocumentsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN));
+    this.editDocumentsMenuItem.setOnAction(event -> this.onEditPersonDocumentsAction());
+    editMenu.getItems().add(this.editDocumentsMenuItem);
 
     //
 
@@ -464,10 +464,10 @@ public class AppController {
     this.editLifeEventsToolbarButton.setOnAction(event -> this.onEditLifeEventsAction());
     toolbar.getItems().add(this.editLifeEventsToolbarButton);
 
-    this.setPictureToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.set_picture")));
-    this.setPictureToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
-    this.setPictureToolbarButton.setOnAction(event -> this.onEditPersonPicturesAction());
-    toolbar.getItems().add(this.setPictureToolbarButton);
+    this.editDocumentsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.edit_documents")));
+    this.editDocumentsToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
+    this.editDocumentsToolbarButton.setOnAction(event -> this.onEditPersonDocumentsAction());
+    toolbar.getItems().add(this.editDocumentsToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
@@ -515,8 +515,8 @@ public class AppController {
         .add(event -> this.onPersonClick(event, null));
     this.personDetailsView.newParentClickListeners()
         .add(this::onNewParentClick);
-    this.personDetailsView.imageEditedListeners()
-        .add(picture -> this.onImageEdited());
+    this.personDetailsView.documentEditedListeners()
+        .add(document -> this.onDocumentEdited());
     splitPane.getItems().add(this.personDetailsView);
 
     splitPane.setDividerPositions(0.1, 0.9);
@@ -541,7 +541,7 @@ public class AppController {
     if (treeName != null && this.loadTree(treeName))
       return;
 
-    var treesMetadata = App.treesManager().treesMetadata();
+    var treesMetadata = App.treesMetadataManager().treesMetadata();
 
     // Only one choice, open it
     if (treesMetadata.size() == 1 && this.loadTree(treesMetadata.keySet().iterator().next()))
@@ -596,7 +596,7 @@ public class AppController {
     this.selectionIndex = -1;
     this.loadedFile = directory;
     this.unsavedChanges = false;
-    App.treesManager().onTreeOpened(tree, directory.getFileName().toString(), this.config);
+    App.treesMetadataManager().onTreeOpened(tree, directory.getFileName().toString(), this.config);
     this.updateUI();
   }
 
@@ -646,7 +646,7 @@ public class AppController {
       );
       if (name.isEmpty())
         return false;
-      if (App.treesManager().treesMetadata().keySet().stream().noneMatch(Predicate.isEqual(name.get()))) {
+      if (App.treesMetadataManager().treesMetadata().keySet().stream().noneMatch(Predicate.isEqual(name.get()))) {
         this.setFamilyTree(new FamilyTree(name.get()), App.USER_DATA_DIR.resolve(name.get()));
         this.onSaveAction();
       } else {
@@ -884,9 +884,9 @@ public class AppController {
   }
 
   /**
-   * Open dialog to edit the images of the selected person.
+   * Open dialog to edit the documents of the selected person.
    */
-  private void onEditPersonPicturesAction() {
+  private void onEditPersonDocumentsAction() {
     Optional<? extends GenealogyObject<?>> selectedObject = Optional.empty();
     Optional<LifeEvent> selectedLifeEvent = this.personDetailsView.getDisplayedLifeEvent();
     Optional<Person> selectedPerson = this.getSelectedPerson();
@@ -896,9 +896,9 @@ public class AppController {
       selectedObject = selectedPerson;
     }
     selectedObject.ifPresent(o -> {
-      this.editPersonImagesDialog.setObject(o, this.familyTree);
-      this.editPersonImagesDialog.showAndWait().ifPresent(result -> {
-        if (result.personUpdated() || result.anyImageUpdated()) {
+      this.editPersonDocumentsDialog.setObject(o, this.familyTree);
+      this.editPersonDocumentsDialog.showAndWait().ifPresent(result -> {
+        if (result.personUpdated() || result.anyDocumentUpdated()) {
           this.familyTreeView.refresh();
           this.familyTreePane.refresh();
           this.unsavedChanges = true;
@@ -970,9 +970,9 @@ public class AppController {
   }
 
   /**
-   * Called whenever a picture is edited in the {@link #personDetailsView}.
+   * Called whenever a document is edited in the {@link #personDetailsView}.
    */
-  private void onImageEdited() {
+  private void onDocumentEdited() {
     this.unsavedChanges = true;
     this.updateUI();
   }
@@ -1090,7 +1090,7 @@ public class AppController {
     boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
 
     this.openTreeMenu.getItems().clear();
-    var treesMetadata = App.treesManager().treesMetadata();
+    var treesMetadata = App.treesMetadataManager().treesMetadata();
     if (!treesMetadata.isEmpty()) {
       treesMetadata.values().stream()
           .filter(m -> !m.directoryName().equals(this.loadedFile.getFileName().toString()))
@@ -1113,7 +1113,7 @@ public class AppController {
     this.addSiblingMenuItem.setDisable(!hasBothParents);
     this.editParentsMenuItem.setDisable(!selection);
     this.editLifeEventsMenuItem.setDisable(!selection);
-    this.setPictureMenuItem.setDisable(!selection);
+    this.editDocumentsMenuItem.setDisable(!selection);
 
     this.saveToolbarButton.setDisable(!this.unsavedChanges);
     this.previousSelectionToolbarButton.setDisable(this.selectionIndex <= 0);
@@ -1123,7 +1123,7 @@ public class AppController {
     this.addSiblingToolbarButton.setDisable(!hasBothParents);
     this.editParentsToolbarButton.setDisable(!selection);
     this.editLifeEventsToolbarButton.setDisable(!selection);
-    this.setPictureToolbarButton.setDisable(!selection);
+    this.editDocumentsToolbarButton.setDisable(!selection);
   }
 
   /**

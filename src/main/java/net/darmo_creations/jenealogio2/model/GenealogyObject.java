@@ -68,13 +68,6 @@ public abstract class GenealogyObject<T extends GenealogyObject<T>> {
   }
 
   /**
-   * An unmodifiable view of this object’s pictures.
-   */
-  public @UnmodifiableView Collection<Picture> pictures() {
-    return new FilteredView<>(this.documents.values(), d -> d instanceof Picture);
-  }
-
-  /**
    * This object’s main picture.
    */
   public Optional<Picture> mainPicture() {

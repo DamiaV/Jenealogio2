@@ -60,10 +60,10 @@ public class App extends Application {
     return resourceBundle;
   }
 
-  private static TreesManager treesManager;
+  private static TreesMetadataManager treesMetadataManager;
 
-  public static TreesManager treesManager() {
-    return treesManager;
+  public static TreesMetadataManager treesMetadataManager() {
+    return treesMetadataManager;
   }
 
   private static String treeName;
@@ -103,7 +103,7 @@ public class App extends Application {
       LOGGER.info("Debug mode is ON");
     }
     hostServices = this.getHostServices();
-    treesManager = new TreesManager();
+    treesMetadataManager = new TreesMetadataManager();
     controller = new AppController(stage, config);
     controller.show(treeName);
   }

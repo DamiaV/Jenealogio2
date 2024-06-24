@@ -91,11 +91,6 @@ class FamilyTreeTest {
   }
 
   @Test
-  void picturesEmptyByDefault() {
-    assertTrue(this.tree.pictures().isEmpty());
-  }
-
-  @Test
   void getDocument() {
     AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
     this.tree.addDocument(doc);
@@ -106,27 +101,6 @@ class FamilyTreeTest {
   @Test
   void getDocumentEmptyIfPictureNotRegistered() {
     assertTrue(this.tree.getDocument("a").isEmpty());
-  }
-
-  @Test
-  void getPicture() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
-    this.tree.addDocument(pic);
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(pic, this.tree.getPicture("app_icon.png").get());
-  }
-
-  @Test
-  void getPictureEmptyIfPictureNotRegistered() {
-    assertTrue(this.tree.getPicture("a").isEmpty());
-  }
-
-  @Test
-  void getPictureThrowsIfNotPicture() {
-    AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
-    this.tree.addDocument(doc);
-    //noinspection OptionalGetWithoutIsPresent
-    assertThrows(ClassCastException.class, () -> this.tree.getPicture("doc.pdf").get());
   }
 
   @Test

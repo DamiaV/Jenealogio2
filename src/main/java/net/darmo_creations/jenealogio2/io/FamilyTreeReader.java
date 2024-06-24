@@ -16,8 +16,6 @@ import java.util.*;
 public class FamilyTreeReader extends TreeFileManager {
   private final TreeXMLReader treeXMLReader = new TreeXMLReader();
 
-  private final Map<String, Picture> imageCache = new HashMap<>();
-
   /**
    * Load a family tree from a directory.
    *
@@ -29,7 +27,17 @@ public class FamilyTreeReader extends TreeFileManager {
     Path filesDir = directory.resolve(FILES_DIR);
     FamilyTree familyTree;
     try (var in = new FileInputStream(directory.resolve(TREE_FILE_NAME).toFile())) {
-      familyTree = this.treeXMLReader.readFromStream(in, (name, desc, date) -> this.readImageFile(filesDir, name, desc, date));
+      final List<String> extensions = Arrays.asList(Picture.FILE_EXTENSIONS);
+      familyTree = this.treeXMLReader.readFromStream(
+          in,
+          (name, desc, date) -> {
+            Path path = filesDir.resolve(name);
+            Optional<String> ext = FileUtils.splitExtension(name).right();
+            if (ext.isPresent() && extensions.contains(ext.get().toLowerCase()))
+              return this.readImageFile(path, desc, date);
+            return new AttachedDocument(path, desc, date);
+          }
+      );
     } catch (RuntimeException e) {
       throw new IOException(e);
     }
@@ -37,23 +45,16 @@ public class FamilyTreeReader extends TreeFileManager {
   }
 
   private Picture readImageFile(
-      @NotNull Path root,
-      @NotNull String name,
+      @NotNull Path filePath,
       String description,
       DateTime date
   ) {
-    Objects.requireNonNull(name);
-    if (this.imageCache.containsKey(name))
-      return this.imageCache.get(name);
-    Path filePath = root.resolve(name);
     Image image = null;
     try (var inputStream = new FileInputStream(filePath.toFile())) {
       image = new Image(inputStream);
     } catch (IOException e) {
       App.LOGGER.exception(e);
     }
-    Picture picture = new Picture(image, filePath, description, date);
-    this.imageCache.put(name, picture);
-    return picture;
+    return new Picture(image, filePath, description, date);
   }
 }

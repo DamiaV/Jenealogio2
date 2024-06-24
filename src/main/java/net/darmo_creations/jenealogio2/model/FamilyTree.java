@@ -2,7 +2,6 @@ package net.darmo_creations.jenealogio2.model;
 
 import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.io.file_ops.*;
-import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -69,13 +68,6 @@ public class FamilyTree {
   }
 
   /**
-   * An unmodifiable view of this tree’s pictures.
-   */
-  public @UnmodifiableView Collection<Picture> pictures() {
-    return new FilteredView<>(this.documents.values(), d -> d instanceof Picture);
-  }
-
-  /**
    * Get a document with the given name.
    *
    * @param fileName The document’s name.
@@ -83,20 +75,6 @@ public class FamilyTree {
    */
   public Optional<AttachedDocument> getDocument(@NotNull String fileName) {
     return Optional.ofNullable(this.documents.get(fileName));
-  }
-
-  /**
-   * Get a picture with the given name.
-   *
-   * @param fileName The picture’s name.
-   * @return The picture.
-   * @throws ClassCastException If the file is not a picture.
-   */
-  public Optional<Picture> getPicture(@NotNull String fileName) {
-    AttachedDocument doc = this.documents.get(fileName);
-    if (doc != null && !(doc instanceof Picture))
-      throw new ClassCastException("File \"%s\" is not a picture".formatted(fileName));
-    return Optional.ofNullable((Picture) doc);
   }
 
   /**
