@@ -1,72 +1,72 @@
 .root {
-    -fx-control-inner-background-alt: derive(-fx-control-inner-background, -10%);
+  -fx-control-inner-background-alt: derive(-fx-control-inner-background, -10%);
 }
 
 Text {
-    -fx-fill: -fx-mid-text-color;
+  -fx-fill: -fx-mid-text-color;
 }
 
 Text.hyperlink {
-    -fx-fill: #265F7F;
+  -fx-fill: #265F7F;
 }
 
 /* Make background of title panes opaque for better integration in list views */
 .titled-pane {
-    -fx-background: -fx-base;
+  -fx-background: -fx-base;
 }
 
 /* Custom components */
 .person-widget {
-    -fx-padding: 0.5em;
-    -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
-    -fx-background-color: derive(-fx-base, -10%);
-    -fx-border-color: derive(-fx-base, -20%);
-    -fx-border-width: 2px;
-    -fx-cursor: hand;
+  -fx-padding: 0.5em;
+  -fx-border-radius: 3px;
+  -fx-background-radius: 3px;
+  -fx-background-color: derive(-fx-base, -10%);
+  -fx-border-color: derive(-fx-base, -20%);
+  -fx-border-width: 2px;
+  -fx-cursor: hand;
 }
 
 .person-widget.center {
-    -fx-background-color: lightgreen;
+  -fx-background-color: lightgreen;
 }
 
 .person-widget:hover {
-    -fx-background-color: derive(-fx-base, -15%);
-    -fx-border-color: derive(-fx-base, -25%);
+  -fx-background-color: derive(-fx-base, -15%);
+  -fx-border-color: derive(-fx-base, -25%);
 }
 
 .person-widget.center:hover {
-    -fx-background-color: derive(lightgreen, -15%);
+  -fx-background-color: derive(lightgreen, -15%);
 }
 
 .person-widget:selected {
-    -fx-border-color: derive(-fx-base, -50%);
+  -fx-border-color: derive(-fx-accent, 10%);
 }
 
 .person-widget.add-parent {
-    -fx-background-color: derive(-fx-base, -5%);
+  -fx-background-color: derive(-fx-base, -5%);
 }
 
 .person-widget.add-parent:hover {
-    -fx-background-color: derive(-fx-base, -10%);
+  -fx-background-color: derive(-fx-base, -10%);
 }
 
 .tree-cell:search-match {
-    -fx-background: #ffcc80;
+  -fx-background: #ffcc80;
 }
 
 .tree-line {
-    -fx-stroke: derive(-fx-base, -20%);
+  -fx-stroke: derive(-fx-base, -20%);
 }
 
 .person-details .person-details-header {
-    -fx-background-color: derive(-fx-base, -20%);
+  -fx-background-color: derive(-fx-base, -20%);
 }
 
 .help-text {
-    -fx-text-fill: rgb(100, 100, 100);
+  -fx-text-fill: rgb(100, 100, 100);
 }
 
 *:invalid {
-    -fx-border-color: red;
+  -fx-border-color: red;
 }
