@@ -119,6 +119,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   }
 
   private void updateButtons() {
+    this.searchButton.setDisable(StringUtils.stripNullable(this.searchField.getText()).isEmpty());
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(this.selectedPoint == null);
   }
 }
