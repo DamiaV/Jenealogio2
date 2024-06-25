@@ -320,7 +320,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     this.setAsMainImageButton.setDisable(
         not1Selected ||
         selectedItems.get(0) != null // Selection list sometimes contains null
-        && selectedItems.get(0).document().equals(this.mainPicture)
+        && (selectedItems.get(0).document().equals(this.mainPicture) || !(selectedItems.get(0).document() instanceof Picture))
     );
     this.editDocumentDescButton.setDisable(not1Selected);
     this.applyButton.setDisable(!this.pendingUpdates);
