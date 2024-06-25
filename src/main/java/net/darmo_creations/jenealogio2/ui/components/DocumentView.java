@@ -6,7 +6,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.config.*;
-import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -61,10 +60,7 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
         imageNode = label;
       }
     } else {
-      Icon icon = FileUtils.splitExtension(document.fileName()).right()
-          .map(ext -> Icon.fromName("FILE_EXT_" + ext.substring(1).toUpperCase(), Icon.UNKNOWN_FILE_EXT))
-          .orElse(Icon.UNKNOWN_FILE_EXT);
-      ImageView imageView = config.theme().getIcon(icon, Icon.Size.BIG);
+      ImageView imageView = config.theme().getIcon(Icon.forFile(document.fileName()), Icon.Size.BIG);
       if (imageView == null)
         imageView = new ImageView();
       imageView.setPreserveRatio(true);

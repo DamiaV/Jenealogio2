@@ -6,8 +6,10 @@ import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -22,6 +24,8 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
   private FamilyTree familyTree;
   private final ImageView imageView = new ImageView();
   private final TextField documentNameField = new TextField();
+  private final Label fileExtensionLabel = new Label();
+  private final Label fileExtensionGraphicsLabel = new Label();
   private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
   private final CalendarDateField dateField;
   private final TextArea documentDescTextInput = new TextArea();
@@ -39,15 +43,18 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     HBox imageViewBox = new HBox(this.imageView);
     imageViewBox.setAlignment(Pos.CENTER);
     this.imageView.setPreserveRatio(true);
+    this.imageView.managedProperty().bind(this.imageView.visibleProperty());
 
     HBox.setHgrow(this.documentNameField, Priority.ALWAYS);
     this.documentNameField.textProperty().addListener((observableValue, oldValue, newValue) -> this.updateUI());
     this.documentNameField.setTextFormatter(StringUtils.filePathTextFormatter());
     HBox documentNameBox = new HBox(
         4,
-        new Label(language.translate("dialog.edit_document.name")),
-        this.documentNameField
+        this.documentNameField,
+        this.fileExtensionLabel,
+        this.fileExtensionGraphicsLabel
     );
+    documentNameBox.setAlignment(Pos.CENTER_LEFT);
 
     this.populateDatePrecisionCombo();
     this.dateField = new CalendarDateField(config);
@@ -62,6 +69,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     VBox content = new VBox(
         5,
         imageViewBox,
+        new Label(language.translate("dialog.edit_document.name")),
         documentNameBox,
         new Label(language.translate("dialog.edit_document.date")),
         dateBox,
@@ -122,10 +130,13 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.setTitle(this.config.language().translate("dialog.edit_document.title",
         new FormatArg("name", document.fileName())));
     this.imageView.setImage(document instanceof Picture pic ? pic.image().orElse(null) : null);
-    this.imageView.setVisible(document instanceof Picture); // FIXME hide image view if document is not a picture
+    this.imageView.setVisible(document instanceof Picture);
     this.documentNameField.setText(document.name());
     // Disable renaming if document is not yet registered in the tree
     this.documentNameField.setDisable(familyTree.getDocument(document.fileName()).isEmpty());
+    Optional<String> ext = FileUtils.splitExtension(document.fileName()).right();
+    this.fileExtensionLabel.setText(ext.orElse(null));
+    this.fileExtensionGraphicsLabel.setGraphic(this.config.theme().getIcon(Icon.forFile(document.fileName()), Icon.Size.SMALL));
     this.documentDescTextInput.setText(document.description().orElse(""));
     var date = document.date();
     if (date.isPresent()) {

@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.themes;
 
+import net.darmo_creations.jenealogio2.io.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -218,17 +219,20 @@ public enum Icon {
   }
 
   /**
-   * Return the {@link Icon} with the given name.
+   * Return the file extension {@link Icon} that corresponds to the extension of the given file name.
    *
-   * @param name        The icon’s name.
-   * @param defaultIcon The icon to return if none matched the given name.
-   * @return The matching icon or the default one if none matched.
+   * @param name A file name.
+   * @return The matching file extension icon or {@link #UNKNOWN_FILE_EXT} if none matched.
    */
-  public static Icon fromName(@NotNull String name, @NotNull Icon defaultIcon) {
+  public static Icon forFile(@NotNull String name) {
+    Optional<String> ext = FileUtils.splitExtension(name).right();
+    if (ext.isEmpty())
+      return UNKNOWN_FILE_EXT;
+    String iconName = "FILE_EXT_" + ext.get().substring(1).toUpperCase();
     for (Icon icon : values())
-      if (icon.name().equals(name))
+      if (icon.name().equals(iconName))
         return icon;
-    return defaultIcon;
+    return UNKNOWN_FILE_EXT;
   }
 
   /**
