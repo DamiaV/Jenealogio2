@@ -33,20 +33,12 @@ public class AppController {
   private final Stage stage;
   private final Config config;
 
-  private final MenuItem newFileMenuItem = new MenuItem();
   private final Menu openTreeMenu = new Menu();
   private final MenuItem manageTreesMenuItem = new MenuItem();
-  private final MenuItem importTreeMenuItem = new MenuItem();
-  private final MenuItem exportTreeMenuItem = new MenuItem();
   private final MenuItem saveMenuItem = new MenuItem();
-  private final MenuItem settingsMenuItem = new MenuItem();
-  private final MenuItem quitMenuItem = new MenuItem();
   private final MenuItem undoMenuItem = new MenuItem();
   private final MenuItem redoMenuItem = new MenuItem();
-  private final MenuItem editRegistriesMenuItem = new MenuItem();
-  private final MenuItem renameTreeMenuItem = new MenuItem();
   private final MenuItem setAsRootMenuItem = new MenuItem();
-  private final MenuItem addPersonMenuItem = new MenuItem();
   private final MenuItem editPersonMenuItem = new MenuItem();
   private final MenuItem removePersonMenuItem = new MenuItem();
   private final MenuItem addChildMenuItem = new MenuItem();
@@ -54,29 +46,18 @@ public class AppController {
   private final MenuItem editParentsMenuItem = new MenuItem();
   private final MenuItem editLifeEventsMenuItem = new MenuItem();
   private final MenuItem editDocumentsMenuItem = new MenuItem();
-  private final MenuItem calculateRelationshipsMenuItem = new MenuItem();
-  private final MenuItem birthdaysMenuItem = new MenuItem();
-  private final MenuItem mapMenuItem = new MenuItem();
-  private final MenuItem checkInconsistenciesMenuItem = new MenuItem();
-  private final MenuItem aboutMenuItem = new MenuItem();
 
-  private final Button newToolbarButton = new Button();
   private final Button saveToolbarButton = new Button();
   private final Button undoToolbarButton = new Button();
   private final Button redoToolbarButton = new Button();
   private final Button previousSelectionToolbarButton = new Button();
   private final Button nextSelectionToolbarButton = new Button();
   private final Button setAsRootToolbarButton = new Button();
-  private final Button addPersonToolbarButton = new Button();
   private final Button addChildToolbarButton = new Button();
   private final Button addSiblingToolbarButton = new Button();
   private final Button editParentsToolbarButton = new Button();
   private final Button editLifeEventsToolbarButton = new Button();
   private final Button editDocumentsToolbarButton = new Button();
-  private final Button calculateRelationshipsToolbarButton = new Button();
-  private final Button birthdaysToolbarButton = new Button();
-  private final Button mapToolbarButton = new Button();
-  private final Button checkInconsistenciesToolbarButton = new Button();
 
   // File managers
   private final FamilyTreeWriter familyTreeWriter = new FamilyTreeWriter();
@@ -203,11 +184,12 @@ public class AppController {
 
     Menu fileMenu = new Menu(language.translate("menu.file"));
 
-    this.newFileMenuItem.setText(language.translate("menu.file.new"));
-    this.newFileMenuItem.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.SMALL));
-    this.newFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
-    this.newFileMenuItem.setOnAction(event -> this.onNewTreeAction());
-    fileMenu.getItems().add(this.newFileMenuItem);
+    MenuItem newFileMenuItem = new MenuItem();
+    newFileMenuItem.setText(language.translate("menu.file.new"));
+    newFileMenuItem.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.SMALL));
+    newFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
+    newFileMenuItem.setOnAction(event -> this.onNewTreeAction());
+    fileMenu.getItems().add(newFileMenuItem);
 
     this.openTreeMenu.setText(language.translate("menu.file.open"));
     this.openTreeMenu.setGraphic(theme.getIcon(Icon.OPEN_TREE, Icon.Size.SMALL));
@@ -217,17 +199,19 @@ public class AppController {
     this.manageTreesMenuItem.setGraphic(theme.getIcon(Icon.MANAGE_TREES, Icon.Size.SMALL));
     this.manageTreesMenuItem.setOnAction(event -> this.onManageTreesAction());
 
-    this.importTreeMenuItem.setText(language.translate("menu.file.import"));
-    this.importTreeMenuItem.setGraphic(theme.getIcon(Icon.IMPORT_TREE_FILE, Icon.Size.SMALL));
-    this.importTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
-    this.importTreeMenuItem.setOnAction(event -> this.onImportTreeAction());
-    fileMenu.getItems().add(this.importTreeMenuItem);
+    MenuItem importTreeMenuItem = new MenuItem();
+    importTreeMenuItem.setText(language.translate("menu.file.import"));
+    importTreeMenuItem.setGraphic(theme.getIcon(Icon.IMPORT_TREE_FILE, Icon.Size.SMALL));
+    importTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
+    importTreeMenuItem.setOnAction(event -> this.onImportTreeAction());
+    fileMenu.getItems().add(importTreeMenuItem);
 
-    this.exportTreeMenuItem.setText(language.translate("menu.file.export"));
-    this.exportTreeMenuItem.setGraphic(theme.getIcon(Icon.EXPORT_TREE_FILE, Icon.Size.SMALL));
-    this.exportTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
-    this.exportTreeMenuItem.setOnAction(event -> this.onExportTreeAction());
-    fileMenu.getItems().add(this.exportTreeMenuItem);
+    MenuItem exportTreeMenuItem = new MenuItem();
+    exportTreeMenuItem.setText(language.translate("menu.file.export"));
+    exportTreeMenuItem.setGraphic(theme.getIcon(Icon.EXPORT_TREE_FILE, Icon.Size.SMALL));
+    exportTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    exportTreeMenuItem.setOnAction(event -> this.onExportTreeAction());
+    fileMenu.getItems().add(exportTreeMenuItem);
 
     fileMenu.getItems().add(new SeparatorMenuItem());
 
@@ -239,17 +223,19 @@ public class AppController {
 
     fileMenu.getItems().add(new SeparatorMenuItem());
 
-    this.settingsMenuItem.setText(language.translate("menu.file.settings"));
-    this.settingsMenuItem.setGraphic(theme.getIcon(Icon.SETTINGS, Icon.Size.SMALL));
-    this.settingsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHIFT_DOWN, KeyCombination.ALT_DOWN));
-    this.settingsMenuItem.setOnAction(event -> this.onSettingsAction());
-    fileMenu.getItems().add(this.settingsMenuItem);
+    MenuItem settingsMenuItem = new MenuItem();
+    settingsMenuItem.setText(language.translate("menu.file.settings"));
+    settingsMenuItem.setGraphic(theme.getIcon(Icon.SETTINGS, Icon.Size.SMALL));
+    settingsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHIFT_DOWN, KeyCombination.ALT_DOWN));
+    settingsMenuItem.setOnAction(event -> this.onSettingsAction());
+    fileMenu.getItems().add(settingsMenuItem);
 
-    this.quitMenuItem.setText(language.translate("menu.file.quit"));
-    this.quitMenuItem.setGraphic(theme.getIcon(Icon.QUIT, Icon.Size.SMALL));
-    this.quitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN));
-    this.quitMenuItem.setOnAction(event -> this.onQuitAction());
-    fileMenu.getItems().add(this.quitMenuItem);
+    MenuItem quitMenuItem = new MenuItem();
+    quitMenuItem.setText(language.translate("menu.file.quit"));
+    quitMenuItem.setGraphic(theme.getIcon(Icon.QUIT, Icon.Size.SMALL));
+    quitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN));
+    quitMenuItem.setOnAction(event -> this.onQuitAction());
+    fileMenu.getItems().add(quitMenuItem);
 
     //
 
@@ -269,18 +255,20 @@ public class AppController {
 
     editMenu.getItems().add(new SeparatorMenuItem());
 
-    this.editRegistriesMenuItem.setText(language.translate("menu.edit.edit_registries"));
-    this.editRegistriesMenuItem.setGraphic(theme.getIcon(Icon.EDIT_REGISTRIES, Icon.Size.SMALL));
-    this.editRegistriesMenuItem.setOnAction(event -> this.onEditRegistriesAction());
-    editMenu.getItems().add(this.editRegistriesMenuItem);
+    MenuItem editRegistriesMenuItem = new MenuItem();
+    editRegistriesMenuItem.setText(language.translate("menu.edit.edit_registries"));
+    editRegistriesMenuItem.setGraphic(theme.getIcon(Icon.EDIT_REGISTRIES, Icon.Size.SMALL));
+    editRegistriesMenuItem.setOnAction(event -> this.onEditRegistriesAction());
+    editMenu.getItems().add(editRegistriesMenuItem);
 
     editMenu.getItems().add(new SeparatorMenuItem());
 
-    this.renameTreeMenuItem.setText(language.translate("menu.edit.rename_tree"));
-    this.renameTreeMenuItem.setGraphic(theme.getIcon(Icon.RENAME_TREE, Icon.Size.SMALL));
-    this.renameTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
-    this.renameTreeMenuItem.setOnAction(event -> this.onRenameTreeAction());
-    editMenu.getItems().add(this.renameTreeMenuItem);
+    MenuItem renameTreeMenuItem = new MenuItem();
+    renameTreeMenuItem.setText(language.translate("menu.edit.rename_tree"));
+    renameTreeMenuItem.setGraphic(theme.getIcon(Icon.RENAME_TREE, Icon.Size.SMALL));
+    renameTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    renameTreeMenuItem.setOnAction(event -> this.onRenameTreeAction());
+    editMenu.getItems().add(renameTreeMenuItem);
 
     this.setAsRootMenuItem.setText(language.translate("menu.edit.set_as_root"));
     this.setAsRootMenuItem.setGraphic(theme.getIcon(Icon.SET_AS_ROOT, Icon.Size.SMALL));
@@ -288,11 +276,12 @@ public class AppController {
     this.setAsRootMenuItem.setOnAction(event -> this.onSetAsRootAction());
     editMenu.getItems().add(this.setAsRootMenuItem);
 
-    this.addPersonMenuItem.setText(language.translate("menu.edit.add_person"));
-    this.addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
-    this.addPersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN));
-    this.addPersonMenuItem.setOnAction(event -> this.onAddPersonAction());
-    editMenu.getItems().add(this.addPersonMenuItem);
+    MenuItem addPersonMenuItem = new MenuItem();
+    addPersonMenuItem.setText(language.translate("menu.edit.add_person"));
+    addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
+    addPersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN));
+    addPersonMenuItem.setOnAction(event -> this.onAddPersonAction());
+    editMenu.getItems().add(addPersonMenuItem);
 
     this.editPersonMenuItem.setText(language.translate("menu.edit.edit_person"));
     this.editPersonMenuItem.setGraphic(theme.getIcon(Icon.EDIT_PERSON, Icon.Size.SMALL));
@@ -334,50 +323,55 @@ public class AppController {
 
     editMenu.getItems().add(new SeparatorMenuItem());
 
-    this.editDocumentsMenuItem.setText(language.translate("menu.edit.set_picture"));
-    this.editDocumentsMenuItem.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.SMALL));
+    this.editDocumentsMenuItem.setText(language.translate("menu.edit.edit_documents"));
+    this.editDocumentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_DOCUMENTS, Icon.Size.SMALL));
     this.editDocumentsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN));
-    this.editDocumentsMenuItem.setOnAction(event -> this.onEditPersonDocumentsAction());
+    this.editDocumentsMenuItem.setOnAction(event -> this.onEditObjectDocumentsAction());
     editMenu.getItems().add(this.editDocumentsMenuItem);
 
     //
 
     Menu toolsMenu = new Menu(language.translate("menu.tools"));
 
-    this.calculateRelationshipsMenuItem.setText(language.translate("menu.tools.calculate_relationships"));
-    this.calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
-    this.calculateRelationshipsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN));
-    this.calculateRelationshipsMenuItem.setDisable(true); // TEMP disabled until implemented
-    toolsMenu.getItems().add(this.calculateRelationshipsMenuItem);
+    MenuItem calculateRelationshipsMenuItem = new MenuItem();
+    calculateRelationshipsMenuItem.setText(language.translate("menu.tools.calculate_relationships"));
+    calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
+    calculateRelationshipsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN));
+    calculateRelationshipsMenuItem.setDisable(true); // TEMP disabled until implemented
+    toolsMenu.getItems().add(calculateRelationshipsMenuItem);
 
-    this.birthdaysMenuItem.setText(language.translate("menu.tools.birthdays"));
-    this.birthdaysMenuItem.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.SMALL));
-    this.birthdaysMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN));
-    this.birthdaysMenuItem.setOnAction(event -> this.onShowBirthdaysDialog());
-    toolsMenu.getItems().add(this.birthdaysMenuItem);
+    MenuItem birthdaysMenuItem = new MenuItem();
+    birthdaysMenuItem.setText(language.translate("menu.tools.birthdays"));
+    birthdaysMenuItem.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.SMALL));
+    birthdaysMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN));
+    birthdaysMenuItem.setOnAction(event -> this.onShowBirthdaysDialog());
+    toolsMenu.getItems().add(birthdaysMenuItem);
 
-    this.mapMenuItem.setText(language.translate("menu.tools.map"));
-    this.mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
-    this.mapMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN));
-    this.mapMenuItem.setOnAction(event -> this.onShowMapDialog());
-    toolsMenu.getItems().add(this.mapMenuItem);
+    MenuItem mapMenuItem = new MenuItem();
+    mapMenuItem.setText(language.translate("menu.tools.map"));
+    mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
+    mapMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN));
+    mapMenuItem.setOnAction(event -> this.onShowMapDialog());
+    toolsMenu.getItems().add(mapMenuItem);
 
     toolsMenu.getItems().add(new SeparatorMenuItem());
 
-    this.checkInconsistenciesMenuItem.setText(language.translate("menu.tools.check_inconsistencies"));
-    this.checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
-    this.checkInconsistenciesMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
-    this.checkInconsistenciesMenuItem.setDisable(true); // TEMP disabled until implemented
-    toolsMenu.getItems().add(this.checkInconsistenciesMenuItem);
+    MenuItem checkInconsistenciesMenuItem = new MenuItem();
+    checkInconsistenciesMenuItem.setText(language.translate("menu.tools.check_inconsistencies"));
+    checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
+    checkInconsistenciesMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    checkInconsistenciesMenuItem.setDisable(true); // TEMP disabled until implemented
+    toolsMenu.getItems().add(checkInconsistenciesMenuItem);
 
     //
 
     Menu helpMenu = new Menu(language.translate("menu.help"));
 
-    this.aboutMenuItem.setText(language.translate("menu.help.about"));
-    this.aboutMenuItem.setGraphic(theme.getIcon(Icon.ABOUT, Icon.Size.SMALL));
-    this.aboutMenuItem.setOnAction(event -> this.onAboutAction());
-    helpMenu.getItems().add(this.aboutMenuItem);
+    MenuItem aboutMenuItem = new MenuItem();
+    aboutMenuItem.setText(language.translate("menu.help.about"));
+    aboutMenuItem.setGraphic(theme.getIcon(Icon.ABOUT, Icon.Size.SMALL));
+    aboutMenuItem.setOnAction(event -> this.onAboutAction());
+    helpMenu.getItems().add(aboutMenuItem);
 
     return new MenuBar(fileMenu, editMenu, toolsMenu, helpMenu);
   }
@@ -390,10 +384,11 @@ public class AppController {
 
     //
 
-    this.newToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.new")));
-    this.newToolbarButton.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.BIG));
-    this.newToolbarButton.setOnAction(event -> this.onNewTreeAction());
-    toolbar.getItems().add(this.newToolbarButton);
+    Button newToolbarButton = new Button();
+    newToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.new")));
+    newToolbarButton.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.BIG));
+    newToolbarButton.setOnAction(event -> this.onNewTreeAction());
+    toolbar.getItems().add(newToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
@@ -439,10 +434,11 @@ public class AppController {
     this.setAsRootToolbarButton.setOnAction(event -> this.onSetAsRootAction());
     toolbar.getItems().add(this.setAsRootToolbarButton);
 
-    this.addPersonToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_person")));
-    this.addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
-    this.addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
-    toolbar.getItems().add(this.addPersonToolbarButton);
+    Button addPersonToolbarButton = new Button();
+    addPersonToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_person")));
+    addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
+    addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
+    toolbar.getItems().add(addPersonToolbarButton);
 
     this.addChildToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_child")));
     this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
@@ -465,35 +461,39 @@ public class AppController {
     toolbar.getItems().add(this.editLifeEventsToolbarButton);
 
     this.editDocumentsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.edit_documents")));
-    this.editDocumentsToolbarButton.setGraphic(theme.getIcon(Icon.SET_PICTURE, Icon.Size.BIG));
-    this.editDocumentsToolbarButton.setOnAction(event -> this.onEditPersonDocumentsAction());
+    this.editDocumentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_DOCUMENTS, Icon.Size.BIG));
+    this.editDocumentsToolbarButton.setOnAction(event -> this.onEditObjectDocumentsAction());
     toolbar.getItems().add(this.editDocumentsToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
     //
 
-    this.calculateRelationshipsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.calculate_relationships")));
-    this.calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
-    this.calculateRelationshipsToolbarButton.setDisable(true); // TEMP disabled until implemented
-    toolbar.getItems().add(this.calculateRelationshipsToolbarButton);
+    Button calculateRelationshipsToolbarButton = new Button();
+    calculateRelationshipsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.calculate_relationships")));
+    calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
+    calculateRelationshipsToolbarButton.setDisable(true); // TEMP disabled until implemented
+    toolbar.getItems().add(calculateRelationshipsToolbarButton);
 
-    this.birthdaysToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.birthdays")));
-    this.birthdaysToolbarButton.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.BIG));
-    this.birthdaysToolbarButton.setOnAction(event -> this.onShowBirthdaysDialog());
-    toolbar.getItems().add(this.birthdaysToolbarButton);
+    Button birthdaysToolbarButton = new Button();
+    birthdaysToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.birthdays")));
+    birthdaysToolbarButton.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.BIG));
+    birthdaysToolbarButton.setOnAction(event -> this.onShowBirthdaysDialog());
+    toolbar.getItems().add(birthdaysToolbarButton);
 
-    this.mapToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.map")));
-    this.mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
-    this.mapToolbarButton.setOnAction(event -> this.onShowMapDialog());
-    toolbar.getItems().add(this.mapToolbarButton);
+    Button mapToolbarButton = new Button();
+    mapToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.map")));
+    mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
+    mapToolbarButton.setOnAction(event -> this.onShowMapDialog());
+    toolbar.getItems().add(mapToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
-    this.checkInconsistenciesToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.check_inconsistencies")));
-    this.checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
-    this.checkInconsistenciesToolbarButton.setDisable(true); // TEMP disabled until implemented
-    toolbar.getItems().add(this.checkInconsistenciesToolbarButton);
+    Button checkInconsistenciesToolbarButton = new Button();
+    checkInconsistenciesToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.check_inconsistencies")));
+    checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
+    checkInconsistenciesToolbarButton.setDisable(true); // TEMP disabled until implemented
+    toolbar.getItems().add(checkInconsistenciesToolbarButton);
 
     return toolbar;
   }
@@ -886,7 +886,7 @@ public class AppController {
   /**
    * Open dialog to edit the documents of the selected person.
    */
-  private void onEditPersonDocumentsAction() {
+  private void onEditObjectDocumentsAction() {
     Optional<? extends GenealogyObject<?>> selectedObject = Optional.empty();
     Optional<LifeEvent> selectedLifeEvent = this.personDetailsView.getDisplayedLifeEvent();
     Optional<Person> selectedPerson = this.getSelectedPerson();
