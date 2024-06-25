@@ -178,6 +178,7 @@ public class EditPersonDialog extends DialogBase<Person>
       Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_last_name.tooltip")));
       HBox hBox = new HBox(5, label, helpLabel);
+      hBox.setAlignment(Pos.CENTER_LEFT);
       gridPane.addRow(1, hBox, this.legalLastNameField);
       RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -189,6 +190,7 @@ public class EditPersonDialog extends DialogBase<Person>
       Label helpLable = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLable.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_first_names.tooltip")));
       HBox hBox = new HBox(5, label, helpLable);
+      hBox.setAlignment(Pos.CENTER_LEFT);
       gridPane.addRow(2, hBox, this.legalFirstNamesField);
       RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -200,6 +202,7 @@ public class EditPersonDialog extends DialogBase<Person>
       Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_last_name.tooltip")));
       HBox hBox = new HBox(5, label, helpLabel);
+      hBox.setAlignment(Pos.CENTER_LEFT);
       gridPane.addRow(3, hBox, this.publicLastNameField);
       RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -211,6 +214,7 @@ public class EditPersonDialog extends DialogBase<Person>
       Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_first_names.tooltip")));
       HBox hBox = new HBox(5, label, helpLabel);
+      hBox.setAlignment(Pos.CENTER_LEFT);
       gridPane.addRow(4, hBox, this.publicFirstNamesField);
       RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -243,6 +247,7 @@ public class EditPersonDialog extends DialogBase<Person>
       Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.disambiguation_id.tooltip")));
       HBox hBox = new HBox(5, label, helpLabel);
+      hBox.setAlignment(Pos.CENTER_LEFT);
       // Only allow digits and empty text
       this.disambiguationIDField.setTextFormatter(new TextFormatter<>(
           new IntegerStringConverter(),
@@ -258,6 +263,7 @@ public class EditPersonDialog extends DialogBase<Person>
 
     {
       Label notesLabel = new Label(language.translate("dialog.edit_person.profile.notes"));
+      notesLabel.setPadding(new Insets(3, 0, 0, 0));
       GridPane.setValignment(notesLabel, VPos.TOP);
       gridPane.addRow(9, notesLabel, this.notesField);
       RowConstraints rc = new RowConstraints();
@@ -267,6 +273,7 @@ public class EditPersonDialog extends DialogBase<Person>
 
     {
       Label sourcesLabel = new Label(language.translate("dialog.edit_person.profile.sources"));
+      sourcesLabel.setPadding(new Insets(3, 0, 0, 0));
       GridPane.setValignment(sourcesLabel, VPos.TOP);
       gridPane.addRow(10, sourcesLabel, this.sourcesField);
       RowConstraints rc = new RowConstraints();
@@ -355,9 +362,9 @@ public class EditPersonDialog extends DialogBase<Person>
           parent2Button,
           this.removeParent2Button
       );
+      parentsBox.setAlignment(Pos.CENTER_LEFT);
       this.addRow(gridPane, 0, "dialog.edit_person.parents.parents", parentsBox);
       RowConstraints rc = new RowConstraints();
-      rc.setValignment(VPos.TOP);
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
@@ -369,6 +376,7 @@ public class EditPersonDialog extends DialogBase<Person>
       this.relativesLists.put(type, component);
       Label label = new Label(language.translate(
           "dialog.edit_person.parents.%s_parents".formatted(type.name().toLowerCase())));
+      label.setPadding(new Insets(3, 0, 0, 0));
       gridPane.addRow(i++, label, component);
       RowConstraints rc = new RowConstraints();
       rc.setValignment(VPos.TOP);

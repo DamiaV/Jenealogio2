@@ -86,7 +86,9 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     borderPane.setLeft(this.titleLabel);
     this.dateLabel = new DateLabel(null, this.config);
     this.dateLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
-    borderPane.setRight(new HBox(4, this.dateLabel, deleteButton));
+    HBox topBox = new HBox(4, this.dateLabel, deleteButton);
+    topBox.setAlignment(Pos.CENTER_LEFT);
+    borderPane.setRight(topBox);
     borderPane.prefWidthProperty().bind(parent.widthProperty().subtract(70));
     this.setGraphic(borderPane);
 
@@ -122,7 +124,9 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       this.notifyUpdateListeners();
     });
     dateHBox.getChildren().add(this.dateField);
-    gridPane.addRow(1, new Label(language.translate("life_event_view.date")), dateHBox);
+    Label dateLabel = new Label(language.translate("life_event_view.date"));
+    dateLabel.setPadding(new Insets(3, 0, 0, 0));
+    gridPane.addRow(1, dateLabel, dateHBox);
 
     HBox.setHgrow(this.placeAddressField, Priority.ALWAYS);
     this.placeAddressField.setPromptText(language.translate("life_event_view.place.address"));
@@ -201,18 +205,23 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     this.witnessesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
         removeWitnessButton.setDisable(this.witnessesList.getSelectionModel().getSelectedItems().isEmpty()));
     this.witnessesList.setOnKeyPressed(event -> {
-      if (event.getCode() == KeyCode.DELETE) {
+      if (event.getCode() == KeyCode.DELETE)
         this.onRemoveWitness();
-      }
     });
     this.witnessesList.setPrefHeight(100);
-    gridPane.addRow(4, new Label(language.translate("life_event_view.witnesses")), witnessesVBox);
+    Label witnessesLabel = new Label(language.translate("life_event_view.witnesses"));
+    witnessesLabel.setPadding(new Insets(3, 0, 0, 0));
+    gridPane.addRow(4, witnessesLabel, witnessesVBox);
 
     this.notesField.setPrefHeight(100);
-    gridPane.addRow(5, new Label(language.translate("life_event_view.notes")), this.notesField);
+    Label notesLabel = new Label(language.translate("life_event_view.notes"));
+    notesLabel.setPadding(new Insets(3, 0, 0, 0));
+    gridPane.addRow(5, notesLabel, this.notesField);
 
     this.sourcesField.setPrefHeight(100);
-    gridPane.addRow(6, new Label(language.translate("life_event_view.sources")), this.sourcesField);
+    Label sourcesLabel = new Label(language.translate("life_event_view.sources"));
+    sourcesLabel.setPadding(new Insets(3, 0, 0, 0));
+    gridPane.addRow(6, sourcesLabel, this.sourcesField);
 
     for (int i = 0; i < gridPane.getColumnCount(); i++) {
       gridPane.getColumnConstraints().add(new ColumnConstraints());
@@ -222,6 +231,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     }
     gridPane.getColumnConstraints().get(1).setHgrow(Priority.ALWAYS);
     ObservableList<RowConstraints> rowConstraints = gridPane.getRowConstraints();
+    rowConstraints.get(1).setValignment(VPos.TOP);
     rowConstraints.get(4).setValignment(VPos.TOP);
     rowConstraints.get(5).setValignment(VPos.TOP);
     rowConstraints.get(6).setValignment(VPos.TOP);

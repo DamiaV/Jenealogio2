@@ -63,10 +63,12 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.placesList.setOnMouseClicked(e -> this.onPlaceClick());
 
     this.mapView = new MapView(config);
+    HBox filterBox = new HBox(5, new Label(language.translate("dialog.map.event_type")), this.eventTypeCombo);
+    filterBox.setAlignment(Pos.CENTER_LEFT);
     SplitPane content = new SplitPane(
         new VBox(
             5,
-            new HBox(5, new Label(language.translate("dialog.map.event_type")), this.eventTypeCombo),
+            filterBox,
             new HBox(5, this.searchField, eraseSearchButton, this.searchButton),
             this.mapView
         ),
