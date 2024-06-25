@@ -292,6 +292,8 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
   private void openDocumentEditDialog(@NotNull DocumentView documentView) {
     this.editDocumentDialog.setDocument(documentView.document(), this.familyTree);
     this.editDocumentDialog.showAndWait().ifPresent(b -> {
+      if (b.getButtonData().isCancelButton())
+        return;
       documentView.refresh();
       this.anyDocumentUpdated = true;
       this.pendingUpdates = true;

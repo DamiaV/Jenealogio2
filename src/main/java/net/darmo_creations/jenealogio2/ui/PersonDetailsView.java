@@ -359,6 +359,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       AttachedDocument document = documentView.document();
       this.editDocumentDialog.setDocument(document, this.familyTree);
       this.editDocumentDialog.showAndWait().ifPresent(b -> {
+        if (b.getButtonData().isCancelButton())
+          return;
         documentView.refresh();
         this.documentEditedListeners.forEach(l -> l.accept(document));
         list.getItems().sort(null);

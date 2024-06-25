@@ -1030,7 +1030,7 @@ public class AppController {
   private void onEditRegistriesAction() {
     this.editRegistriesDialog.refresh(this.familyTree);
     Optional<ButtonType> result = this.editRegistriesDialog.showAndWait();
-    if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+    if (result.isPresent() && !result.get().getButtonData().isCancelButton()) {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
       this.unsavedChanges = true;
