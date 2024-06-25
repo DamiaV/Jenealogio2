@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.event.*;
+import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.input.*;
@@ -19,15 +20,18 @@ import java.util.*;
 /**
  * This dialog manages the documents of {@link GenealogyObject}s.
  */
-public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocumentsDialog.Result> {
+// TODO add a search bar to filter the list
+public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Result> {
   private final SelectDocumentDialog selectDocumentDialog;
   private final EditDocumentDialog editDocumentDialog;
 
   private final Label buttonDescriptionLabel = new Label();
 
+  private final VBox mainImagePanel;
   private final ImageView mainImageView = new ImageView();
   private final Button removeMainImageButton = new Button();
   private final Button setAsMainImageButton = new Button();
+  private final Button addDocumentButton = new Button();
   private final Button removeDocumentButton = new Button();
   private final Button editDocumentDescButton = new Button();
   private final Button deleteDocumentButton = new Button();
@@ -68,7 +72,7 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
    *
    * @param config The app’s config.
    */
-  public ManageObjectDocumentsDialog(final @NotNull Config config) {
+  public ManageDocumentsDialog(final @NotNull Config config) {
     super(config, "manage_object_documents", true, ButtonTypes.OK, ButtonTypes.APPLY, ButtonTypes.CANCEL);
 
     Language language = config.language();
@@ -78,14 +82,19 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     this.editDocumentDialog = new EditDocumentDialog(config);
 
     VBox content = new VBox(5);
-    content.getChildren().add(new HBox(5,
+
+    HBox hBox = new HBox(5,
         new Label(language.translate("dialog.manage_object_documents.main_image")),
         this.removeMainImageButton
-    ));
+    );
+    hBox.setAlignment(Pos.CENTER_LEFT);
     this.mainImageView.setPreserveRatio(true);
     this.mainImageView.setFitWidth(100);
     this.mainImageView.setFitHeight(100);
-    content.getChildren().add(this.mainImageView);
+
+    this.mainImagePanel = new VBox(5, hBox, this.mainImageView);
+    this.mainImagePanel.managedProperty().bind(this.mainImagePanel.visibleProperty());
+    content.getChildren().add(this.mainImagePanel);
 
     Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -95,49 +104,48 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     this.removeMainImageButton.setOnAction(e -> this.onRemoveMainImage());
     this.removeMainImageButton.hoverProperty().addListener((observable, oldValue, newValue)
         -> this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_main_image"));
+    this.removeMainImageButton.managedProperty().bind(this.removeMainImageButton.visibleProperty());
 
-    Button addDocumentButton = new Button(
-        language.translate("dialog.manage_object_documents.add_document"),
-        theme.getIcon(Icon.ADD_DOCUMENT, Icon.Size.SMALL)
-    );
-    addDocumentButton.setOnAction(e -> this.onAddDocument());
-    addDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_object_documents.add_document"));
+    this.addDocumentButton.setGraphic(theme.getIcon(Icon.ADD_DOCUMENT, Icon.Size.SMALL));
+    this.addDocumentButton.setOnAction(e -> this.onAddDocument());
+    this.addDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
+        -> this.showButtonDescription(newValue, "dialog.manage_%s_documents.add_document".formatted(this.genealogyObject != null ? "object" : "tree")));
 
     this.setAsMainImageButton.setText(language.translate("dialog.manage_object_documents.set_as_main_image"));
     this.setAsMainImageButton.setGraphic(theme.getIcon(Icon.SET_AS_MAIN_IMAGE, Icon.Size.SMALL));
     this.setAsMainImageButton.setOnAction(e -> this.onSetAsMainImage());
     this.setAsMainImageButton.hoverProperty().addListener((observable, oldValue, newValue)
         -> this.showButtonDescription(newValue, "dialog.manage_object_documents.set_as_main_image"));
+    this.setAsMainImageButton.managedProperty().bind(this.setAsMainImageButton.visibleProperty());
 
     this.removeDocumentButton.setText(language.translate("dialog.manage_object_documents.remove_document"));
     this.removeDocumentButton.setGraphic(theme.getIcon(Icon.REMOVE_DOCUMENT, Icon.Size.SMALL));
     this.removeDocumentButton.setOnAction(e -> this.onRemoveDocuments());
     this.removeDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
         -> this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_document"));
+    this.removeDocumentButton.managedProperty().bind(this.removeDocumentButton.visibleProperty());
 
-    this.editDocumentDescButton.setText(language.translate("dialog.manage_object_documents.edit_document_desc"));
     this.editDocumentDescButton.setGraphic(theme.getIcon(Icon.EDIT_DOCUMENT_DESC, Icon.Size.SMALL));
     this.editDocumentDescButton.setOnAction(e -> this.onEditDocumentDesc());
     this.editDocumentDescButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_object_documents.edit_document_desc"));
+        -> this.showButtonDescription(newValue, "dialog.manage_%s_documents.edit_document_desc".formatted(this.genealogyObject != null ? "object" : "tree")));
 
-    this.deleteDocumentButton.setText(language.translate("dialog.manage_object_documents.delete_document"));
     this.deleteDocumentButton.setGraphic(theme.getIcon(Icon.DELETE_DOCUMENT, Icon.Size.SMALL));
     this.deleteDocumentButton.setOnAction(e -> this.onDeleteDocuments());
     this.deleteDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_object_documents.delete_document"));
+        -> this.showButtonDescription(newValue, "dialog.manage_%s_documents.delete_document".formatted(this.genealogyObject != null ? "object" : "tree")));
 
     HBox title = new HBox(
         5,
         new Label(language.translate("dialog.manage_object_documents.list")),
         spacer,
         this.setAsMainImageButton,
-        addDocumentButton,
+        this.addDocumentButton,
         this.removeDocumentButton,
         this.editDocumentDescButton,
         this.deleteDocumentButton
     );
+    title.setAlignment(Pos.CENTER_LEFT);
     content.getChildren().add(title);
 
     this.documentsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -150,12 +158,12 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     this.buttonDescriptionLabel.getStyleClass().add("help-text");
     content.getChildren().add(this.buttonDescriptionLabel);
 
-    content.setPrefWidth(800);
+    content.setPrefWidth(900);
     content.setPrefHeight(600);
     this.getDialogPane().setContent(content);
 
     Stage stage = this.stage();
-    stage.setMinWidth(400);
+    stage.setMinWidth(900);
     stage.setMinHeight(400);
 
     this.applyButton = (Button) this.getDialogPane().lookupButton(ButtonTypes.APPLY);
@@ -172,25 +180,45 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     });
   }
 
-  public void setObject(@NotNull GenealogyObject<?> object, @NotNull FamilyTree familyTree) {
+  public void setObject(GenealogyObject<?> object, @NotNull FamilyTree familyTree) {
     this.genealogyObject = object;
     this.familyTree = familyTree;
     this.documentsToDelete.clear();
     this.documentsToRemove.clear();
     this.documentsToAdd.clear();
+
     Language language = this.config.language();
-    this.setTitle(language.translate("dialog.manage_object_documents.title",
-        new FormatArg("name", object.name(language))));
-    Optional<Picture> image = this.genealogyObject.mainPicture();
-    this.mainPicture = image.orElse(null);
-    Image defaultImage = object instanceof Person ? PersonWidget.DEFAULT_IMAGE : PersonDetailsView.DEFAULT_EVENT_IMAGE;
-    this.mainImageView.setImage(image.flatMap(Picture::image).orElse(defaultImage));
-    this.removeMainImageButton.setDisable(image.isEmpty());
-    this.documentsList.getItems().clear();
-    for (var document : this.genealogyObject.documents()) {
-      this.documentsList.getItems().add(new DocumentView(document, true, this.config));
+
+    boolean hasObject = object != null;
+    this.mainImagePanel.setVisible(hasObject);
+    this.setAsMainImageButton.setVisible(hasObject);
+    this.removeDocumentButton.setVisible(hasObject);
+    Collection<AttachedDocument> documents;
+    if (hasObject) {
+      this.setTitle(language.translate("dialog.manage_object_documents.title",
+          new FormatArg("name", object.name(language))));
+      Optional<Picture> image = this.genealogyObject.mainPicture();
+      this.mainPicture = image.orElse(null);
+      Image defaultImage = object instanceof Person ? PersonWidget.DEFAULT_IMAGE : PersonDetailsView.DEFAULT_EVENT_IMAGE;
+      this.mainImageView.setImage(image.flatMap(Picture::image).orElse(defaultImage));
+      this.removeMainImageButton.setDisable(image.isEmpty());
+      this.addDocumentButton.setText(language.translate("dialog.manage_object_documents.add_document"));
+      this.editDocumentDescButton.setText(language.translate("dialog.manage_object_documents.edit_document_desc"));
+      this.deleteDocumentButton.setText(language.translate("dialog.manage_object_documents.delete_document"));
+      documents = object.documents();
+    } else {
+      this.setTitle(language.translate("dialog.manage_tree_documents.title"));
+      documents = familyTree.documents();
+      this.addDocumentButton.setText(language.translate("dialog.manage_tree_documents.add_document"));
+      this.editDocumentDescButton.setText(language.translate("dialog.manage_tree_documents.edit_document_desc"));
+      this.deleteDocumentButton.setText(language.translate("dialog.manage_tree_documents.delete_document"));
     }
+
+    this.documentsList.getItems().clear();
+    for (var document : documents)
+      this.documentsList.getItems().add(new DocumentView(document, true, this.config));
     this.documentsList.getItems().sort(null);
+
     this.pendingUpdates = false;
     this.anyDocumentUpdated = false;
     this.updateButtons();
@@ -226,19 +254,21 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     var exclusionList = new LinkedList<>(this.documentsList.getItems().stream().map(DocumentView::document).toList());
     exclusionList.addAll(this.documentsToDelete);
     this.selectDocumentDialog.updateDocumentsList(this.familyTree, exclusionList);
-    this.selectDocumentDialog.showAndWait().ifPresent(documents -> {
-      documents.forEach(p -> {
-        DocumentView dv = new DocumentView(p, true, this.config);
-        this.documentsList.getItems().add(dv);
-        this.documentsList.scrollTo(dv);
-        this.documentsToAdd.add(p);
-        this.documentsToRemove.remove(p);
-        this.documentsToDelete.remove(p);
-      });
-      this.documentsList.getItems().sort(null);
-      this.pendingUpdates = true;
-      this.updateButtons();
+    this.selectDocumentDialog.showAndWait().ifPresent(this::addDocumentsToList);
+  }
+
+  private void addDocumentsToList(final @NotNull Collection<AttachedDocument> documents) {
+    documents.forEach(d -> {
+      DocumentView dv = new DocumentView(d, true, this.config);
+      this.documentsList.getItems().add(dv);
+      this.documentsList.scrollTo(dv);
+      this.documentsToAdd.add(d);
+      this.documentsToRemove.remove(d);
+      this.documentsToDelete.remove(d);
     });
+    this.documentsList.getItems().sort(null);
+    this.pendingUpdates = true;
+    this.updateButtons();
   }
 
   private void onRemoveDocuments() {
@@ -278,15 +308,13 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
 
   private void onEditDocumentDesc() {
     List<DocumentView> selection = this.getSelectedDocuments();
-    if (selection.size() == 1) {
+    if (selection.size() == 1)
       this.openDocumentEditDialog(selection.get(0));
-    }
   }
 
   private void onListClicked(final @NotNull MouseEvent event) {
-    if (event.getClickCount() > 1) {
+    if (event.getClickCount() > 1)
       this.onEditDocumentDesc();
-    }
   }
 
   private void openDocumentEditDialog(@NotNull DocumentView documentView) {
@@ -328,9 +356,11 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
   }
 
   private void updateObject() {
-    this.documentsToRemove
-        .forEach(document -> this.familyTree.removeDocumentFromObject(document.fileName(), this.genealogyObject));
-    this.documentsToRemove.clear();
+    if (this.genealogyObject != null) {
+      this.documentsToRemove
+          .forEach(document -> this.familyTree.removeDocumentFromObject(document.fileName(), this.genealogyObject));
+      this.documentsToRemove.clear();
+    }
 
     this.documentsToDelete
         .forEach(document -> this.familyTree.removeDocument(document.fileName()));
@@ -339,19 +369,21 @@ public class ManageObjectDocumentsDialog extends DialogBase<ManageObjectDocument
     this.documentsToAdd.forEach(p -> {
       if (this.familyTree.getDocument(p.fileName()).isEmpty())
         this.familyTree.addDocument(p);
-      this.familyTree.addDocumentToObject(p.fileName(), this.genealogyObject);
+      if (this.genealogyObject != null)
+        this.familyTree.addDocumentToObject(p.fileName(), this.genealogyObject);
     });
     this.documentsToAdd.clear();
 
-    if (this.mainPicture != null)
-      this.familyTree.setMainPictureOfObject(this.mainPicture.fileName(), this.genealogyObject);
-    else
-      this.familyTree.setMainPictureOfObject(null, this.genealogyObject);
+    if (this.genealogyObject != null)
+      if (this.mainPicture != null)
+        this.familyTree.setMainPictureOfObject(this.mainPicture.fileName(), this.genealogyObject);
+      else
+        this.familyTree.setMainPictureOfObject(null, this.genealogyObject);
 
     this.pendingUpdates = false;
     this.updateButtons();
   }
 
-  public record Result(boolean personUpdated, boolean anyDocumentUpdated) {
+  public record Result(boolean targetUpdated, boolean anyDocumentUpdated) {
   }
 }

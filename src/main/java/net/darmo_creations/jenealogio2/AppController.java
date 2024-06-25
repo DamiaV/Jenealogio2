@@ -76,7 +76,7 @@ public class AppController {
   private final TreesManagerDialog treesManagerDialog;
   private final RegistriesDialog editRegistriesDialog;
   private final EditPersonDialog editPersonDialog;
-  private final ManageObjectDocumentsDialog editPersonDocumentsDialog;
+  private final ManageDocumentsDialog editDocumentsDialog;
   private final BirthdaysDialog birthdaysDialog;
   private final MapDialog mapDialog;
   private final SettingsDialog settingsDialog;
@@ -121,7 +121,7 @@ public class AppController {
     this.treesManagerDialog = new TreesManagerDialog(config);
     this.editRegistriesDialog = new RegistriesDialog(config);
     this.editPersonDialog = new EditPersonDialog(config);
-    this.editPersonDocumentsDialog = new ManageObjectDocumentsDialog(config);
+    this.editDocumentsDialog = new ManageDocumentsDialog(config);
     this.mapDialog = new MapDialog(config);
     this.settingsDialog = new SettingsDialog(config);
     this.aboutDialog = new AboutDialog(config);
@@ -261,6 +261,13 @@ public class AppController {
     editRegistriesMenuItem.setOnAction(event -> this.onEditRegistriesAction());
     editMenu.getItems().add(editRegistriesMenuItem);
 
+    MenuItem editTreeDocuments = new MenuItem();
+    editTreeDocuments.setText(language.translate("menu.edit.edit_tree_documents"));
+    editTreeDocuments.setGraphic(theme.getIcon(Icon.EDIT_TREE_DOCUMENTS, Icon.Size.SMALL));
+    editTreeDocuments.setAccelerator(new KeyCodeCombination(KeyCode.D, KeyCombination.ALT_DOWN, KeyCombination.SHIFT_DOWN));
+    editTreeDocuments.setOnAction(event -> this.onEditTreeDocumentsAction());
+    editMenu.getItems().add(editTreeDocuments);
+
     editMenu.getItems().add(new SeparatorMenuItem());
 
     MenuItem renameTreeMenuItem = new MenuItem();
@@ -325,7 +332,7 @@ public class AppController {
 
     this.editDocumentsMenuItem.setText(language.translate("menu.edit.edit_documents"));
     this.editDocumentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_DOCUMENTS, Icon.Size.SMALL));
-    this.editDocumentsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN));
+    this.editDocumentsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN));
     this.editDocumentsMenuItem.setOnAction(event -> this.onEditObjectDocumentsAction());
     editMenu.getItems().add(this.editDocumentsMenuItem);
 
@@ -896,9 +903,9 @@ public class AppController {
       selectedObject = selectedPerson;
     }
     selectedObject.ifPresent(o -> {
-      this.editPersonDocumentsDialog.setObject(o, this.familyTree);
-      this.editPersonDocumentsDialog.showAndWait().ifPresent(result -> {
-        if (result.personUpdated() || result.anyDocumentUpdated()) {
+      this.editDocumentsDialog.setObject(o, this.familyTree);
+      this.editDocumentsDialog.showAndWait().ifPresent(result -> {
+        if (result.targetUpdated() || result.anyDocumentUpdated()) {
           this.familyTreeView.refresh();
           this.familyTreePane.refresh();
           this.unsavedChanges = true;
@@ -1036,6 +1043,21 @@ public class AppController {
       this.unsavedChanges = true;
       this.updateUI();
     }
+  }
+
+  /**
+   * Open the dialog to edit the current tree’s documents.
+   */
+  private void onEditTreeDocumentsAction() {
+    this.editDocumentsDialog.setObject(null, this.familyTree);
+    this.editDocumentsDialog.showAndWait().ifPresent(result -> {
+      if (result.targetUpdated() || result.anyDocumentUpdated()) {
+        this.familyTreeView.refresh();
+        this.familyTreePane.refresh();
+        this.unsavedChanges = true;
+        this.updateUI();
+      }
+    });
   }
 
   /**

@@ -81,11 +81,17 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     this.documentsList.setOnMouseClicked(this::onListClicked);
     VBox.setVgrow(this.documentsList, Priority.ALWAYS);
 
+    HBox filterBox = new HBox(
+        5,
+        new Label(language.translate("dialog.select_documents.documents_list")),
+        this.filterTextInput
+    );
+    filterBox.setAlignment(Pos.CENTER_LEFT);
     VBox content = new VBox(
         5,
         label,
         hBox,
-        new HBox(5, new Label(language.translate("dialog.select_documents.documents_list")), this.filterTextInput),
+        filterBox,
         this.documentsList
     );
     content.setPrefWidth(400);

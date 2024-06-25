@@ -23,6 +23,7 @@ public enum Icon {
   PERSON_BACK("user_back"),
   PERSON_NEXT("user_go"),
   EDIT_REGISTRIES("tag_blue_edit"),
+  EDIT_TREE_DOCUMENTS("page_white_stack_edit"),
   RENAME_TREE("tree_textfield"),
   SET_AS_ROOT("anchor"),
   ADD_PERSON("user_add"),
@@ -32,7 +33,7 @@ public enum Icon {
   ADD_SIBLING("users_3_add"),
   EDIT_PARENTS("group_edit"),
   EDIT_LIFE_EVENTS("time_edit"),
-  EDIT_DOCUMENTS("camera_edit"),
+  EDIT_DOCUMENTS("page_white_stack_edit"),
 
   CALCULATE_RELATIONSHIPS("link_go"),
   BIRTHDAYS("cake"),
