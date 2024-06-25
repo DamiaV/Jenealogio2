@@ -55,7 +55,10 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.searchField.setOnAction(e -> this.onSearchAddress());
     Button eraseSearchButton = new Button(null, theme.getIcon(Icon.CLEAR_TEXT, Icon.Size.SMALL));
     eraseSearchButton.setTooltip(new Tooltip(language.translate("dialog.map.search.erase")));
-    eraseSearchButton.setOnAction(e -> this.onEraseSearch());
+    eraseSearchButton.setOnAction(e -> {
+      this.searchField.setText(null);
+      this.removeResultMarker();
+    });
     this.searchButton.setGraphic(theme.getIcon(Icon.SEARCH, Icon.Size.SMALL));
     this.searchButton.setTooltip(new Tooltip(language.translate("dialog.map.search.button")));
     this.searchButton.setOnAction(e -> this.onSearchAddress());
@@ -115,12 +118,6 @@ public class MapDialog extends DialogBase<ButtonType> {
             });
           }));
     });
-  }
-
-  private void onEraseSearch() {
-    this.searchField.setText(null);
-    this.removeResultMarker();
-    this.updateButtons();
   }
 
   private void removeResultMarker() {
