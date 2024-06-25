@@ -131,7 +131,7 @@ public final class FileUtils {
    *
    * @param path The path to open.
    */
-  public static void openInFileExplorer(String path) {
+  public static void openInFileExplorer(@NotNull Path path) {
     // Cannot use Desktop.getDesktop().open(File) as it does not work properly outside of Windows
     // Possible values: https://runmodule.com/2020/10/12/possible-values-of-os-dependent-java-system-properties/
     final String osName = System.getProperty("os.name").toLowerCase();
@@ -143,7 +143,7 @@ public final class FileUtils {
     else if (osName.contains("win"))
       command = new String[] { "explorer /select,\"{path}\"" };
     else if (osName.contains("mac"))
-      command = new String[] { "open", "-R", path };
+      command = new String[] { "open", "-R", path.toString() };
     else {
       App.LOGGER.error("Unable to open file system explorer: unsupported operating system %s".formatted(osName));
       return;

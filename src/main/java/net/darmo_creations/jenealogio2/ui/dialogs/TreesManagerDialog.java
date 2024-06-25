@@ -29,7 +29,7 @@ public class TreesManagerDialog extends DialogBase<String> {
     this.showCurrentTreeButton.setText(config.language().translate("dialog.trees_manager.show_current_in_explorer"));
     this.showCurrentTreeButton.setGraphic(config.theme().getIcon(Icon.SHOW_TREE_IN_EXPLORER, Icon.Size.SMALL));
     this.showCurrentTreeButton.setOnAction(
-        event -> FileUtils.openInFileExplorer(App.USER_DATA_DIR.resolve(this.currentTreeDirectory).toString()));
+        event -> FileUtils.openInFileExplorer(App.USER_DATA_DIR.resolve(this.currentTreeDirectory)));
 
     this.treesList.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.updateUI());
@@ -90,7 +90,7 @@ public class TreesManagerDialog extends DialogBase<String> {
       showInExplorerButton.setTooltip(new Tooltip(config.language().translate("dialog.trees_manager.show_in_explorer.tooltip")));
       showInExplorerButton.setGraphic(config.theme().getIcon(Icon.SHOW_TREE_IN_EXPLORER, Icon.Size.SMALL));
       showInExplorerButton.setOnAction(
-          event -> FileUtils.openInFileExplorer(App.USER_DATA_DIR.resolve(this.treeMetadata.directoryName()).toString()));
+          event -> FileUtils.openInFileExplorer(App.USER_DATA_DIR.resolve(this.treeMetadata.directoryName())));
       Button deleteButton = new Button();
       deleteButton.setTooltip(new Tooltip(config.language().translate("dialog.trees_manager.delete_tree.tooltip")));
       deleteButton.setGraphic(config.theme().getIcon(Icon.DELETE_TREE, Icon.Size.SMALL));

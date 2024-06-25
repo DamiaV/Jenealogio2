@@ -103,6 +103,8 @@ public enum Icon {
   FAMILY_TAB("users_5"),
   FOSTER_PARENTS_TAB("users_3"),
 
+  SHOW_FILE_IN_EXPLORER("folder_vertical_open"),
+
   // File extensions
   UNKNOWN_FILE_EXT("page_white"),
   FILE_EXT_SWF("file_extension_swf"),
