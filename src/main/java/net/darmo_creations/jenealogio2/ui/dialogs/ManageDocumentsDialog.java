@@ -1,5 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
+import javafx.collections.*;
+import javafx.collections.transformation.*;
 import javafx.event.*;
 import javafx.geometry.*;
 import javafx.scene.control.*;
@@ -20,7 +22,6 @@ import java.util.*;
 /**
  * This dialog manages the documents of {@link GenealogyObject}s.
  */
-// TODO add a search bar to filter the list
 public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Result> {
   private final SelectDocumentDialog selectDocumentDialog;
   private final EditDocumentDialog editDocumentDialog;
@@ -35,7 +36,9 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   private final Button removeDocumentButton = new Button();
   private final Button editDocumentDescButton = new Button();
   private final Button deleteDocumentButton = new Button();
+  private final ErasableTextField filterTextInput;
   private final ListView<DocumentView> documentsList = new ListView<>();
+  private final ObservableList<DocumentView> documentsList_ = FXCollections.observableArrayList();
   private final Button applyButton;
 
   /**
@@ -148,6 +151,23 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     title.setAlignment(Pos.CENTER_LEFT);
     content.getChildren().add(title);
 
+    this.filterTextInput = new ErasableTextField(config);
+    HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
+    this.filterTextInput.textField().setPromptText(language.translate("dialog.select_documents.filter"));
+    FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
+    this.documentsList.setItems(filteredList);
+    this.filterTextInput.textField().textProperty().addListener(((observable, oldValue, newValue) ->
+        filteredList.setPredicate(documentView -> {
+          if (newValue == null || newValue.isEmpty())
+            return true;
+          String filter = newValue.toLowerCase();
+          AttachedDocument document = documentView.document();
+          return document.fileName().toLowerCase().contains(filter)
+                 || document.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
+        })
+    ));
+    content.getChildren().add(this.filterTextInput);
+
     this.documentsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     this.documentsList.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.updateButtons());
@@ -214,10 +234,11 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
       this.deleteDocumentButton.setText(language.translate("dialog.manage_tree_documents.delete_document"));
     }
 
-    this.documentsList.getItems().clear();
+    this.filterTextInput.textField().setText(null);
+    this.documentsList_.clear();
     for (var document : documents)
-      this.documentsList.getItems().add(new DocumentView(document, true, this.config));
-    this.documentsList.getItems().sort(null);
+      this.documentsList_.add(new DocumentView(document, true, this.config));
+    this.documentsList_.sort(null);
 
     this.pendingUpdates = false;
     this.anyDocumentUpdated = false;
@@ -251,7 +272,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   }
 
   private void onAddDocument() {
-    var exclusionList = new LinkedList<>(this.documentsList.getItems().stream().map(DocumentView::document).toList());
+    var exclusionList = new LinkedList<>(this.documentsList_.stream().map(DocumentView::document).toList());
     exclusionList.addAll(this.documentsToDelete);
     this.selectDocumentDialog.updateDocumentsList(this.familyTree, exclusionList);
     this.selectDocumentDialog.showAndWait().ifPresent(this::addDocumentsToList);
@@ -260,14 +281,14 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   private void addDocumentsToList(final @NotNull Collection<AttachedDocument> documents) {
     documents.forEach(d -> {
       DocumentView dv = new DocumentView(d, true, this.config);
-      this.documentsList.getItems().add(dv);
+      this.documentsList_.add(dv);
       this.documentsList.scrollTo(dv);
       this.documentsToAdd.add(d);
       this.documentsToRemove.remove(d);
       this.documentsToDelete.remove(d);
     });
     if (!documents.isEmpty()) {
-      this.documentsList.getItems().sort(null);
+      this.documentsList_.sort(null);
       this.pendingUpdates = true;
       this.updateButtons();
     }
@@ -283,7 +304,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
         this.removeMainImage();
       this.documentsToRemove.add(document);
       this.documentsToAdd.remove(document);
-      this.documentsList.getItems().remove(dv);
+      this.documentsList_.remove(dv);
     });
     this.pendingUpdates = true;
     this.updateButtons();
@@ -302,7 +323,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
         this.removeMainImage();
       this.documentsToDelete.add(document);
       this.documentsToAdd.remove(document);
-      this.documentsList.getItems().remove(dv);
+      this.documentsList_.remove(dv);
     });
     this.pendingUpdates = true;
     this.updateButtons();
