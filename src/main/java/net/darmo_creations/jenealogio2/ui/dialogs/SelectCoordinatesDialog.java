@@ -21,8 +21,8 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   private final Button searchButton = new Button();
   private final MapView mapView;
 
-  private LatLon selectedPoint;
-  private final IntegerProperty selectedMarkerId = new SimpleIntegerProperty(0);
+  private final ObjectProperty<LatLon> selectedPointProperty = new SimpleObjectProperty<>();
+  private final IntegerProperty selectedMarkerIdProperty = new SimpleIntegerProperty(0);
 
   /**
    * Create a new dialog to select coordinates.
@@ -67,7 +67,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
-        return this.selectedPoint;
+        return this.selectedPointProperty.get();
       }
       return null;
     });
@@ -78,10 +78,10 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   }
 
   private void onPointClicked(@NotNull LatLon latLon) {
-    this.selectedPoint = latLon;
+    this.selectedPointProperty.set(latLon);
     this.removeClickedMarker();
     int id = this.mapView.addMarker(latLon, MapMarkerColor.GREEN, null);
-    this.selectedMarkerId.set(id);
+    this.selectedMarkerIdProperty.set(id);
     this.updateButtons();
   }
 
@@ -95,25 +95,26 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
             this.searchButton.setDisable(false);
             this.searchField.setDisable(false);
             latLon.ifPresent(ll -> {
+              this.selectedPointProperty.set(ll);
               this.mapView.setCenter(ll);
               this.mapView.setZoom(15);
               int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE, null);
-              this.selectedMarkerId.set(id);
+              this.selectedMarkerIdProperty.set(id);
             });
           }));
     });
   }
 
   private void removeClickedMarker() {
-    int id = this.selectedMarkerId.get();
+    int id = this.selectedMarkerIdProperty.get();
     if (id > 0) {
       this.mapView.removeMarker(id);
-      this.selectedMarkerId.set(-1);
+      this.selectedMarkerIdProperty.set(0);
     }
   }
 
   private void updateButtons() {
     this.searchButton.setDisable(StringUtils.stripNullable(this.searchField.textField().getText()).isEmpty());
-    this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(this.selectedPoint == null);
+    this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(this.selectedPointProperty.get() == null);
   }
 }
