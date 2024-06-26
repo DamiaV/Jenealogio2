@@ -8,6 +8,7 @@ import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.ui.events.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -20,11 +21,10 @@ import java.util.*;
  */
 public class FamilyTreeView extends FamilyTreeComponent {
   private final Config config;
-  private final TextField searchField = new TextField();
+  private final ErasableTextField searchField;
   private final ObservableSet<TreeItem<Object>> searchMatches = FXCollections.observableSet(new HashSet<>());
   private final TreeView<Object> treeView = new TreeView<>();
   private final TreeItem<Object> personsItem;
-  private final Button clearButton;
   private final ToggleButton syncTreeButton;
 
   private boolean internalSelectionChange;
@@ -51,20 +51,12 @@ public class FamilyTreeView extends FamilyTreeComponent {
     HBox hBox = new HBox(4);
     vBox.getChildren().add(hBox);
 
-    this.searchField.setPromptText(language.translate("treeview.search"));
-    this.searchField.textProperty().addListener(
+    this.searchField = new ErasableTextField(config);
+    this.searchField.textField().setPromptText(language.translate("treeview.search"));
+    this.searchField.textField().textProperty().addListener(
         (observable, oldValue, newValue) -> this.onSearchFilterChange(newValue));
     HBox.setHgrow(this.searchField, Priority.ALWAYS);
     hBox.getChildren().add(this.searchField);
-
-    this.clearButton = new Button("", theme.getIcon(Icon.CLEAR_TEXT, Icon.Size.SMALL));
-    this.clearButton.setOnAction(event -> {
-      this.searchField.clear();
-      this.searchField.requestFocus();
-    });
-    this.clearButton.setTooltip(new Tooltip(language.translate("treeview.erase_search")));
-    this.clearButton.setDisable(true);
-    hBox.getChildren().add(this.clearButton);
 
     this.syncTreeButton = new ToggleButton("", theme.getIcon(Icon.SYNC_TREE, Icon.Size.SMALL));
     this.syncTreeButton.setTooltip(new Tooltip(language.translate("treeview.sync_tree")));
@@ -112,7 +104,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
   @Override
   public void refresh() {
     this.personsItem.getChildren().clear();
-    this.searchField.clear();
+    this.searchField.textField().clear();
     this.familyTree().ifPresent(familyTree -> {
       familyTree.persons().stream()
           .sorted(Person.lastThenFirstNamesComparator())
@@ -160,10 +152,8 @@ public class FamilyTreeView extends FamilyTreeComponent {
   private void onSearchFilterChange(String text) {
     this.searchMatches.clear();
     Optional<String> filter = StringUtils.stripNullable(text);
-    this.clearButton.setDisable(filter.isEmpty());
-    if (filter.isEmpty()) {
+    if (filter.isEmpty())
       return;
-    }
     Set<TreeItem<Object>> matches = new HashSet<>();
     this.searchMatchingItems(this.personsItem, matches, filter.get());
     this.searchMatches.addAll(matches);

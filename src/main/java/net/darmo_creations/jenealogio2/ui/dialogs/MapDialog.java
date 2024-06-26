@@ -23,7 +23,7 @@ import java.util.stream.*;
 public class MapDialog extends DialogBase<ButtonType> {
   private final MapView mapView;
   private final ComboBox<ComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
-  private final TextField searchField = new TextField();
+  private final ErasableTextField searchField;
   private final Button searchButton = new Button();
   private final ListView<PlaceView> placesList = new ListView<>();
 
@@ -49,16 +49,12 @@ public class MapDialog extends DialogBase<ButtonType> {
           }
         });
 
+    this.searchField = new ErasableTextField(config);
     HBox.setHgrow(this.searchField, Priority.ALWAYS);
-    this.searchField.setPromptText(language.translate("dialog.map.search.input"));
-    this.searchField.textProperty().addListener((observableValue, oldValue, newValue) -> this.updateButtons());
-    this.searchField.setOnAction(e -> this.onSearchAddress());
-    Button eraseSearchButton = new Button(null, theme.getIcon(Icon.CLEAR_TEXT, Icon.Size.SMALL));
-    eraseSearchButton.setTooltip(new Tooltip(language.translate("dialog.map.search.erase")));
-    eraseSearchButton.setOnAction(e -> {
-      this.searchField.setText(null);
-      this.removeResultMarker();
-    });
+    this.searchField.textField().setPromptText(language.translate("dialog.map.search.input"));
+    this.searchField.textField().textProperty().addListener((observableValue, oldValue, newValue) -> this.updateButtons());
+    this.searchField.textField().setOnAction(e -> this.onSearchAddress());
+    this.searchField.addEraseListener(this::removeResultMarker);
     this.searchButton.setGraphic(theme.getIcon(Icon.SEARCH, Icon.Size.SMALL));
     this.searchButton.setTooltip(new Tooltip(language.translate("dialog.map.search.button")));
     this.searchButton.setOnAction(e -> this.onSearchAddress());
@@ -72,7 +68,7 @@ public class MapDialog extends DialogBase<ButtonType> {
         new VBox(
             5,
             filterBox,
-            new HBox(5, this.searchField, eraseSearchButton, this.searchButton),
+            new HBox(5, this.searchField, this.searchButton),
             this.mapView
         ),
         this.placesList
@@ -102,7 +98,7 @@ public class MapDialog extends DialogBase<ButtonType> {
   }
 
   private void onSearchAddress() {
-    StringUtils.stripNullable(this.searchField.getText()).ifPresent(s -> {
+    StringUtils.stripNullable(this.searchField.textField().getText()).ifPresent(s -> {
       this.removeResultMarker();
       this.searchButton.setDisable(true);
       this.searchField.setDisable(true);
@@ -129,7 +125,7 @@ public class MapDialog extends DialogBase<ButtonType> {
   }
 
   private void updateButtons() {
-    this.searchButton.setDisable(StringUtils.stripNullable(this.searchField.getText()).isEmpty());
+    this.searchButton.setDisable(StringUtils.stripNullable(this.searchField.textField().getText()).isEmpty());
   }
 
   /**

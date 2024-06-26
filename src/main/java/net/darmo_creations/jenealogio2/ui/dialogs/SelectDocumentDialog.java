@@ -26,7 +26,7 @@ import java.util.*;
  * Offers a button to import documents directly from the filesystem.
  */
 public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument>> {
-  private final TextField filterTextInput = new TextField();
+  private final ErasableTextField filterTextInput;
   private final ListView<DocumentView> documentsList = new ListView<>();
   private final ObservableList<DocumentView> documentsList_ = FXCollections.observableArrayList();
 
@@ -60,11 +60,12 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     HBox hBox = new HBox(addDocumentButton);
     hBox.setAlignment(Pos.CENTER);
 
+    this.filterTextInput = new ErasableTextField(config);
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
-    this.filterTextInput.setPromptText(language.translate("dialog.select_documents.filter"));
+    this.filterTextInput.textField().setPromptText(language.translate("dialog.select_documents.filter"));
     FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
     this.documentsList.setItems(filteredList);
-    this.filterTextInput.textProperty().addListener(((observable, oldValue, newValue) ->
+    this.filterTextInput.textField().textProperty().addListener(((observable, oldValue, newValue) ->
         filteredList.setPredicate(documentView -> {
           if (newValue == null || newValue.isEmpty())
             return true;
@@ -142,7 +143,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
    */
   public void updateDocumentsList(@NotNull FamilyTree tree, final @NotNull Collection<AttachedDocument> exclusionList) {
     this.tree = Objects.requireNonNull(tree);
-    this.filterTextInput.setText(null);
+    this.filterTextInput.textField().setText(null);
     this.documentsList_.clear();
     tree.documents().stream()
         .filter(p -> !exclusionList.contains(p))

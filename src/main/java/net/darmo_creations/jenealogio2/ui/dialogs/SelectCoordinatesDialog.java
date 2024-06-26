@@ -8,6 +8,7 @@ import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.ui.components.map_view.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.*;
  * A dialog used select coordinates on a map.
  */
 public class SelectCoordinatesDialog extends DialogBase<LatLon> {
-  private final TextField searchField = new TextField();
+  private final ErasableTextField searchField;
   private final Button searchButton = new Button();
   private final MapView mapView;
 
@@ -34,13 +35,11 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
     Language language = config.language();
     Theme theme = config.theme();
 
+    this.searchField = new ErasableTextField(config);
     HBox.setHgrow(this.searchField, Priority.ALWAYS);
-    this.searchField.setPromptText(language.translate("dialog.select_coordinates.search.input"));
-    this.searchField.textProperty().addListener((observableValue, oldValue, newValue) -> this.updateButtons());
-    this.searchField.setOnAction(e -> this.onSearchAddress());
-    Button eraseSearchButton = new Button(null, theme.getIcon(Icon.CLEAR_TEXT, Icon.Size.SMALL));
-    eraseSearchButton.setTooltip(new Tooltip(language.translate("dialog.select_coordinates.search.erase")));
-    eraseSearchButton.setOnAction(e -> this.searchField.setText(null));
+    this.searchField.textField().setPromptText(language.translate("dialog.select_coordinates.search.input"));
+    this.searchField.textField().textProperty().addListener((observableValue, oldValue, newValue) -> this.updateButtons());
+    this.searchField.textField().setOnAction(e -> this.onSearchAddress());
     this.searchButton.setGraphic(theme.getIcon(Icon.SEARCH, Icon.Size.SMALL));
     this.searchButton.setTooltip(new Tooltip(language.translate("dialog.select_coordinates.search.button")));
     this.searchButton.setOnAction(e -> this.onSearchAddress());
@@ -55,7 +54,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
             language.translate("dialog.select_coordinates.description"),
             theme.getIcon(Icon.INFO, Icon.Size.SMALL)
         ),
-        new HBox(5, this.searchField, eraseSearchButton, this.searchButton),
+        new HBox(5, this.searchField, this.searchButton),
         this.mapView
     );
     content.setPrefWidth(400);
@@ -87,7 +86,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   }
 
   private void onSearchAddress() {
-    StringUtils.stripNullable(this.searchField.getText()).ifPresent(s -> {
+    StringUtils.stripNullable(this.searchField.textField().getText()).ifPresent(s -> {
       this.removeClickedMarker();
       this.searchButton.setDisable(true);
       this.searchField.setDisable(true);
@@ -114,7 +113,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   }
 
   private void updateButtons() {
-    this.searchButton.setDisable(StringUtils.stripNullable(this.searchField.getText()).isEmpty());
+    this.searchButton.setDisable(StringUtils.stripNullable(this.searchField.textField().getText()).isEmpty());
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(this.selectedPoint == null);
   }
 }
