@@ -34,10 +34,6 @@ public class ErasableTextField extends HBox {
     return this.textField;
   }
 
-  public Button eraseButton() {
-    return this.eraseButton;
-  }
-
   public void addEraseListener(@NotNull EraseListener listener) {
     this.eraseListeners.add(Objects.requireNonNull(listener));
   }
