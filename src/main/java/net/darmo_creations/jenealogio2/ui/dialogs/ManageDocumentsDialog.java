@@ -266,9 +266,11 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
       this.documentsToRemove.remove(d);
       this.documentsToDelete.remove(d);
     });
-    this.documentsList.getItems().sort(null);
-    this.pendingUpdates = true;
-    this.updateButtons();
+    if (!documents.isEmpty()) {
+      this.documentsList.getItems().sort(null);
+      this.pendingUpdates = true;
+      this.updateButtons();
+    }
   }
 
   private void onRemoveDocuments() {
