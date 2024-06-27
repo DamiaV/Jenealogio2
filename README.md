@@ -97,8 +97,9 @@ You keep full control of your data and files.
 
 # Requirements
 
-The app is written in [Java](https://www.java.com), so it should work without any issues on Linux, Windows and MacOS.
-It requires at least Java 17 and should also work with newer versions.
+The app is written in [Java](https://www.java.com). It works on Linux and should also work without any issues on
+Windows (untested) and MacOS (untested).
+It requires at least Java 17 and should also work with newer versions (untested).
 
 # License
 
