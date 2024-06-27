@@ -94,7 +94,7 @@ I tried to follow these suggestions in Jenealogio 2. Here’s how those points h
 
 ## Date and time representation
 
-The app offers many different calendar systems for event dates:
+The app offers six different calendar systems for event dates:
 
 * Gregorian
 * Julian
