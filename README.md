@@ -13,15 +13,7 @@ The first version of this software was developed quite a while back but I was no
 So in 2023 I archived its [repository](https://github.com/Darmo117/Jenealogio) and started again from scratch with this
 new version.
 
-# ⚠️ _Important notice. Please read before using the app!_ ⚠️
-
-**This application is currently under active developpement. As such, tree files’ structure may change drastically during
-this time and until the first release, with no guarantee of backward compatibility.**
-
-You can follow planned features and developpement progress over on the
-project’s [Trello board](https://trello.com/b/PsvxkYIB).
-
-# Why yet another genealogical software?
+## Why yet another genealogical software?
 
 They are two main reasons: privacy and inclusivity.
 
@@ -35,7 +27,17 @@ also inspired by blog posts on _[sixgen.org](https://sixgen.org/)_ that talked a
 posts on [LGBTQ Genealogy & Software](https://sixgen.org/lgbtq-genealogy-software-part-1/), I was further motivated to
 pursue this endeavor.
 
-## Design choices
+# ⚠️ _Important notice, please read!_ ⚠️
+
+**This application is currently under active developpement. As such, tree files’ structure may change drastically during
+this time and until the first release, with no guarantee of backward compatibility.**
+
+You can follow planned features and developpement progress over on the
+project’s [Trello board](https://trello.com/b/PsvxkYIB).
+
+# Design choices
+
+## Inclusivity
 
 In _[LGBTQ Genealogy & Software – Part 6](https://sixgen.org/lgbtq-genealogy-software-part-6/)_ at _sixgen.org_, they
 list the following points they wish to see in genealogical softwares:
@@ -90,7 +92,24 @@ I tried to follow these suggestions in Jenealogio 2. Here’s how those points h
    one day. The specification is quite long (166 pages) and complex, and the format may not support every type of
    information that this app handles.
 
-# Accessibility
+## Date and time representation
+
+The app offers many different calendar systems for event dates:
+
+* Gregorian
+* Julian
+* French Republican with decimal time (10h in a day, 100 minutes in 1h, etc.)
+* French Republican with classical time (24h in a day, 60 minutes in 1h, etc.)
+* Ethiopian
+* Coptic
+
+Hebrew and Arabic calendar systems are not supported as they are very complex and I don’t understand them enough to
+confidently integrate them in the app.
+
+You can choose how dates and times are displayed in the app among several formats: D/M/Y, M/D/Y, 12h clock, 24h clock,
+and many more.
+
+# Languages
 
 The app is available in three languages:
 
