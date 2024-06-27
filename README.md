@@ -95,6 +95,11 @@ I tried to follow these suggestions in Jenealogio 2. Here’s how those points h
 This app does not and will never send your data and files anywhere or to anyone.
 You keep full control of your data and files.
 
+# Requirements
+
+The app is written in [Java](https://www.java.com), so it should work without any issues on Linux, Windows and MacOS.
+It requires at least Java 17 and should also work with newer versions.
+
 # License
 
 This software is available under the GPL-3.0 licence. Please refer to the LICENCE file for the full licence.
