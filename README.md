@@ -111,4 +111,4 @@ It requires at least Java 17 and should also work with newer versions (untested)
 
 # License
 
-This software is available under the GPL-3.0 licence. Please refer to the LICENCE file for the full licence.
+This software is available under the GPL-3.0 license. Please refer to the LICENSE file for the full license text.
