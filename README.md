@@ -90,6 +90,14 @@ I tried to follow these suggestions in Jenealogio 2. Here’s how those points h
    one day. The specification is quite long (166 pages) and complex, and the format may not support every type of
    information that this app handles.
 
+# Accessibility
+
+The app is available in three languages:
+
+* English
+* Esperanto
+* French
+
 # Privacy
 
 This app does not and will never send your data and files anywhere or to anyone.
