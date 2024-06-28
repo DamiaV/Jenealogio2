@@ -140,6 +140,18 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     this.updateList(this.tomorrowList, perMonth, tomorrow);
     LocalDate afterTomorrow = tomorrow.plusDays(1);
     this.updateList(this.afterTomorrowList, perMonth, afterTomorrow);
+
+    String baseTitle = this.config.language().translate("dialog.birthdays.tab.upcoming");
+    int nb = this.todayList.getItems().size() + this.tomorrowList.getItems().size() + this.afterTomorrowList.getItems().size();
+    if (nb != 0) {
+      String title = this.config.language().translate(
+          "dialog.birthdays.tab.title_amount_format",
+          new FormatArg("title", baseTitle),
+          new FormatArg("number", nb)
+      );
+      this.tabPane.getTabs().get(0).setText(title);
+    } else
+      this.tabPane.getTabs().get(0).setText(baseTitle);
   }
 
   private void updateList(
@@ -150,7 +162,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     list.getItems().clear();
     birthdays.getOrDefault(date.getMonthValue(), Map.of()).getOrDefault(date.getDayOfMonth(), Set.of()).stream()
         .sorted((e1, e2) -> Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
-        .forEach(e -> list.getItems().add(new PersonItem(e.person(), date.getYear())));
+        .forEach(e -> list.getItems().add(new PersonItem(e.person())));
   }
 
   /**
@@ -194,11 +206,13 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   }
 
   private class PersonItem extends HBox {
-    public PersonItem(@NotNull Person person, int year) {
+    public PersonItem(@NotNull Person person) {
       super(5);
       this.setAlignment(Pos.CENTER_LEFT);
       Button button = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       button.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
+      //noinspection OptionalGetWithoutIsPresent
+      int year = person.getBirthDate().get().date().year();
       this.getChildren().addAll(button, new Label(String.valueOf(year)));
     }
   }
