@@ -15,6 +15,9 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
+/**
+ * A dialog that allows selecting a {@link DateTime} value.
+ */
 public class DateSelectionDialog extends DialogBase<DateTime> {
   private final ComboBox<NotNullComboBoxItem<DateType>> datePrecisionCombo = new ComboBox<>();
 
@@ -34,6 +37,11 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
   private final ListView<DateTimeField> dateTimeFieldList = new ListView<>();
   private final Label errorLabel = new Label();
 
+  /**
+   * Create a new date selection dialog.
+   *
+   * @param config The app’s config.
+   */
   public DateSelectionDialog(final @NotNull Config config) {
     super(config, "select_date", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
@@ -122,6 +130,11 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
     });
   }
 
+  /**
+   * Set the {@link DateTime} value to show.
+   *
+   * @param dateTime A {@link DateTime} value. May be null.
+   */
   public void setDateTime(DateTime dateTime) {
     if (dateTime != null) {
       this.datePrecisionCombo.getSelectionModel().select(new NotNullComboBoxItem<>(DateType.fromDate(dateTime)));
