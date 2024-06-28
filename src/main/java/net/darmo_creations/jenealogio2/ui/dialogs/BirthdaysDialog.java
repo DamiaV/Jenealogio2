@@ -124,7 +124,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
    */
   public void refresh(final @NotNull FamilyTree familyTree) {
     this.familyTree = Objects.requireNonNull(familyTree);
-    Map<Integer, Map<Integer, Set<BirthdayEntry>>> perMonth = new HashMap<>();
+    Map<Integer, Map<Integer, Set<PersonItem>>> perMonth = new HashMap<>();
 
     boolean hideDeceased = !this.config.shouldShowDeceasedPersonsBirthdays();
     for (Person person : familyTree.persons()) {
@@ -136,10 +136,10 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
         DateTime date = birthDate.get();
         if (date instanceof DateTimeWithPrecision d) {
           DateTimePrecision precision = d.precision();
-          if (precision == DateTimePrecision.BEFORE || precision == DateTimePrecision.AFTER) {
-            continue;
-          }
-          this.addDate(perMonth, d.date().toISO8601Date(), precision != DateTimePrecision.EXACT, person);
+          if (precision == DateTimePrecision.EXACT
+              || precision == DateTimePrecision.AFTER
+              || precision == DateTimePrecision.POSSIBLY)
+            this.addDate(perMonth, d.date().toISO8601Date(), person);
         }
       }
     }
@@ -171,7 +171,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
 
   private void updateList(
       @NotNull ListView<PersonItem> list,
-      final Map<Integer, @NotNull Map<Integer, Set<BirthdayEntry>>> birthdays,
+      final Map<Integer, @NotNull Map<Integer, Set<PersonItem>>> birthdays,
       @NotNull LocalDate date
   ) {
     list.getItems().clear();
@@ -181,29 +181,25 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   }
 
   /**
-   * Add a {@link BirthdayEntry} to the given map.
+   * Add a {@link PersonItem} to the given map.
    *
-   * @param perMonth  Map to add an entry to.
-   * @param date      Entry’s date.
-   * @param uncertain Whether the date is uncertain.
-   * @param person    The person born at that date.
+   * @param perMonth Map to add an entry to.
+   * @param date     Entry’s date.
+   * @param person   The person born at that date.
    */
   private void addDate(
-      @NotNull Map<Integer, Map<Integer, Set<BirthdayEntry>>> perMonth,
+      @NotNull Map<Integer, Map<Integer, Set<PersonItem>>> perMonth,
       @NotNull LocalDateTime date,
-      boolean uncertain,
       final @NotNull Person person
   ) {
     int month = date.getMonthValue();
-    if (!perMonth.containsKey(month)) {
+    if (!perMonth.containsKey(month))
       perMonth.put(month, new HashMap<>());
-    }
     int day = date.getDayOfMonth();
     var monthEntry = perMonth.get(month);
-    if (!monthEntry.containsKey(day)) {
+    if (!monthEntry.containsKey(day))
       monthEntry.put(day, new HashSet<>());
-    }
-    monthEntry.get(day).add(new BirthdayEntry(person, date, uncertain));
+    monthEntry.get(day).add(new PersonItem(person));
   }
 
   @Override
@@ -221,28 +217,31 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   }
 
   private class PersonItem extends HBox {
+    private final Person person;
+
     public PersonItem(@NotNull Person person) {
       super(5);
+      this.person = person;
       this.setAlignment(Pos.CENTER_LEFT);
       Button button = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       button.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
       //noinspection OptionalGetWithoutIsPresent
-      int year = person.getBirthDate().get().date().year();
-      this.getChildren().addAll(button, new Label(String.valueOf(year)));
+      Label birthYearLabel = new Label(
+          PersonWidget.formatDateYear(person.getBirthDate().get()),
+          BirthdaysDialog.this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL)
+      );
+      this.getChildren().addAll(button, birthYearLabel);
+      if (person.getDeathDate().isPresent()) {
+        Label deathYearLabel = new Label(
+            PersonWidget.formatDateYear(person.getDeathDate().get()),
+            BirthdaysDialog.this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL)
+        );
+        this.getChildren().add(deathYearLabel);
+      }
     }
-  }
 
-  /**
-   * Container class that holds data about a person’s birth date.
-   *
-   * @param person    Person whose birth date is represented by this object.
-   * @param date      Person’s birth date.
-   * @param uncertain Whether the date is uncertain.
-   */
-  private record BirthdayEntry(@NotNull Person person, @NotNull LocalDateTime date, boolean uncertain) {
-    private BirthdayEntry {
-      Objects.requireNonNull(person);
-      Objects.requireNonNull(date);
+    public Person person() {
+      return this.person;
     }
   }
 
@@ -275,7 +274,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
      *
      * @param entries Birthday entries.
      */
-    public void setEntries(final @NotNull Map<Integer, Set<BirthdayEntry>> entries) {
+    public void setEntries(final @NotNull Map<Integer, Set<PersonItem>> entries) {
       this.entriesList.getItems().clear();
 
       var sortedEntries = entries.entrySet().stream()
@@ -283,7 +282,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
           .toList();
       int nb = 0;
       for (var entry : sortedEntries) {
-        Set<BirthdayEntry> entrySet = entry.getValue();
+        Set<PersonItem> entrySet = entry.getValue();
         this.entriesList.getItems().add(new DayItem(entry.getKey(), entrySet));
         nb += entrySet.size();
       }
@@ -302,27 +301,14 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     }
 
     private class DayItem extends VBox {
-      public DayItem(int day, final @NotNull Set<BirthdayEntry> entries) {
+      public DayItem(int day, final @NotNull Set<PersonItem> entries) {
         super(5);
         Label dayLabel = new Label(day + BirthdaysDialog.this.config.language().getDaySuffix(day).orElse(""));
         dayLabel.getStyleClass().add("birth-day");
         this.getChildren().add(dayLabel);
         entries.stream()
             .sorted((e1, e2) -> Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
-            .forEach(e -> {
-              Person person = e.person();
-              Button personButton = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
-              personButton.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
-              Label yearLabel = new Label(String.valueOf(e.date().getYear()));
-              HBox row = new HBox(5, personButton, yearLabel);
-              row.setAlignment(Pos.CENTER_LEFT);
-              if (e.uncertain()) {
-                Label uncertainIcon = new Label(null, BirthdaysDialog.this.config.theme().getIcon(Icon.UNCERTAIN, Icon.Size.SMALL));
-                uncertainIcon.setTooltip(new Tooltip(BirthdaysDialog.this.config.language().translate("dialog.birthdays.uncertain")));
-                row.getChildren().add(uncertainIcon);
-              }
-              this.getChildren().add(row);
-            });
+            .forEach(e -> this.getChildren().add(e));
       }
     }
   }

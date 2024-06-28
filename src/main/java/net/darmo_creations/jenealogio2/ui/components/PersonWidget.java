@@ -236,20 +236,20 @@ public class PersonWidget extends AnchorPane {
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
-    String birthYear = this.person.getBirthDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
+    String birthYear = this.person.getBirthDate().map(PersonWidget::formatDateYear).orElse(EMPTY_LABEL_VALUE);
     this.birthDateLabel.setText(birthYear);
     this.birthDateLabel.setGraphic(this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
     this.birthDateLabel.setTooltip(new Tooltip(birthYear));
 
     if (this.person.lifeStatus().isConsideredDeceased()) {
-      String deathYear = this.person.getDeathDate().map(this::formatDateYear).orElse(EMPTY_LABEL_VALUE);
+      String deathYear = this.person.getDeathDate().map(PersonWidget::formatDateYear).orElse(EMPTY_LABEL_VALUE);
       this.deathDateLabel.setText(deathYear);
       this.deathDateLabel.setGraphic(this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.deathDateLabel.setTooltip(new Tooltip(deathYear));
     }
   }
 
-  private String formatDateYear(@NotNull DateTime date) {
+  public static String formatDateYear(@NotNull DateTime date) {
     if (date instanceof DateTimeWithPrecision d) {
       int year = d.date().toISO8601Date().getYear();
       return switch (d.precision()) {
