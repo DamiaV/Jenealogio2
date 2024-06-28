@@ -106,7 +106,7 @@ The app offers six different calendar systems for event dates:
 Hebrew and Arabic calendar systems are not supported as they are very complex and I don’t understand them enough to
 confidently integrate them in the app.
 
-You can choose how dates and times are displayed in the app among several formats: D/M/Y, M/D/Y, 12h clock, 24h clock,
+You can choose how dates and times are displayed in the app among several formats: D M Y, M D Y, 12h clock, 24h clock,
 and many more.
 
 # Languages
