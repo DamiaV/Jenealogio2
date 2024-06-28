@@ -75,7 +75,22 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       this.tabPane.getTabs().add(new BirthdayTab(i));
     }
 
-    VBox content = new VBox(hBox, this.tabPane);
+    Label label = new Label(language.translate(
+        "dialog.birthdays.notice",
+        new FormatArg("exact", language.translate("date_field.precision.exact")),
+        new FormatArg("about", language.translate("date_field.precision.about")),
+        new FormatArg("possibly", language.translate("date_field.precision.possibly"))
+    ), config.theme().getIcon(Icon.INFO, Icon.Size.SMALL));
+    label.setWrapText(true);
+    label.setPrefHeight(70);
+    label.setMinHeight(70);
+    label.setAlignment(Pos.TOP_LEFT);
+    VBox content = new VBox(
+        5,
+        label,
+        hBox,
+        this.tabPane
+    );
     content.setPrefWidth(1100);
     content.setPrefHeight(700);
     this.getDialogPane().setContent(content);
