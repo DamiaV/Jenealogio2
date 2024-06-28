@@ -177,7 +177,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     list.getItems().clear();
     birthdays.getOrDefault(date.getMonthValue(), Map.of()).getOrDefault(date.getDayOfMonth(), Set.of()).stream()
         .sorted((e1, e2) -> Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
-        .forEach(e -> list.getItems().add(new PersonItem(e.person())));
+        .forEach(list.getItems()::add);
   }
 
   /**
@@ -219,7 +219,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
   private class PersonItem extends HBox {
     private final Person person;
 
-    public PersonItem(@NotNull Person person) {
+    public PersonItem(final @NotNull Person person) {
       super(5);
       this.person = person;
       this.setAlignment(Pos.CENTER_LEFT);
@@ -308,7 +308,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
         this.getChildren().add(dayLabel);
         entries.stream()
             .sorted((e1, e2) -> Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
-            .forEach(e -> this.getChildren().add(e));
+            .forEach(this.getChildren()::add);
       }
     }
   }
