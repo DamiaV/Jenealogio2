@@ -82,8 +82,8 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
         new FormatArg("possibly", language.translate("date_field.precision.possibly"))
     ), config.theme().getIcon(Icon.INFO, Icon.Size.SMALL));
     label.setWrapText(true);
-    label.setPrefHeight(70);
-    label.setMinHeight(70);
+    label.setPrefHeight(35);
+    label.setMinHeight(35);
     label.setAlignment(Pos.TOP_LEFT);
     VBox content = new VBox(
         5,
@@ -96,7 +96,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     this.getDialogPane().setContent(content);
 
     Stage stage = this.stage();
-    stage.setMinWidth(300);
+    stage.setMinWidth(500);
     stage.setMinHeight(300);
   }
 
@@ -212,7 +212,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     throw new UnsupportedOperationException();
   }
 
-  private void firePersonClickEvent(@NotNull Person person) {
+  private void firePersonClickEvent(final @NotNull Person person) {
     this.firePersonClickEvent(new PersonClickedEvent(person, PersonClickedEvent.Action.SET_AS_TARGET));
   }
 
