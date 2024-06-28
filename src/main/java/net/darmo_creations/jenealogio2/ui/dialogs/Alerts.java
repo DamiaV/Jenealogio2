@@ -116,7 +116,7 @@ public final class Alerts {
       throw new IllegalArgumentException("empty choices");
     }
     Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
-    HBox hBox = new HBox(4);
+    HBox hBox = new HBox(5);
     ComboBox<T> choicesCombo = new ComboBox<>();
     choicesCombo.getItems().addAll(choices);
     choicesCombo.getSelectionModel().select(0);
@@ -157,7 +157,7 @@ public final class Alerts {
       final FormatArg @NotNull ... contentArgs
   ) {
     Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
-    HBox hBox = new HBox(4);
+    HBox hBox = new HBox(5);
     TextField textField = new TextField();
     textField.textProperty().addListener((observable, oldValue, newValue) ->
         alert.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(StringUtils.stripNullable(newValue).isEmpty()));

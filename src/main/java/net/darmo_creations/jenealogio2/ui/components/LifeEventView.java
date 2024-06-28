@@ -25,8 +25,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   private final Label titleLabel = new Label();
   private final DateLabel dateLabel;
   private final ComboBox<NotNullComboBoxItem<LifeEventType>> eventTypeCombo = new ComboBox<>();
-  private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
-  private final CalendarDateField dateField;
+  private final DateTimeSelector dateTimeSelector;
   private final TextField placeAddressField = new TextField();
   private final PlaceAutoCompletionBinding placeAutoCompletionBinding;
   private final TextField placeLatField = new TextField();
@@ -85,8 +84,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     BorderPane.setAlignment(this.titleLabel, Pos.CENTER_LEFT);
     borderPane.setLeft(this.titleLabel);
     this.dateLabel = new DateLabel(null, this.config);
-    this.dateLabel.setGraphic(theme.getIcon(Icon.HELP, Icon.Size.SMALL));
-    HBox topBox = new HBox(4, this.dateLabel, deleteButton);
+    HBox topBox = new HBox(5, this.dateLabel, deleteButton);
     topBox.setAlignment(Pos.CENTER_LEFT);
     borderPane.setRight(topBox);
     borderPane.prefWidthProperty().bind(parent.widthProperty().subtract(70));
@@ -96,8 +94,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     this.setContent(anchorPane);
 
     GridPane gridPane = new GridPane();
-    gridPane.setHgap(4);
-    gridPane.setVgap(4);
+    gridPane.setHgap(5);
+    gridPane.setVgap(5);
     AnchorPane.setTopAnchor(gridPane, 10.0);
     AnchorPane.setBottomAnchor(gridPane, 10.0);
     AnchorPane.setLeftAnchor(gridPane, 10.0);
@@ -109,24 +107,14 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
         .addListener((observable, oldValue, newValue) -> this.onEventTypeChange(newValue));
     gridPane.addRow(0, new Label(language.translate("life_event_view.type")), this.eventTypeCombo);
 
-    this.populateDatePrecisionCombo();
-    this.dateField = new CalendarDateField(config);
-    this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
-        (observable, oldValue, newValue) -> {
-          this.dateField.setDateType(newValue.data());
-          this.updateDateLabel();
-          this.notifyUpdateListeners();
-        });
-    HBox dateHBox = new HBox(4);
-    dateHBox.getChildren().add(this.datePrecisionCombo);
-    this.dateField.getUpdateListeners().add(() -> {
+    this.dateTimeSelector = new DateTimeSelector(config);
+    this.dateTimeSelector.dateTimeProperty().addListener((observable, oldValue, newValue) -> {
       this.updateDateLabel();
       this.notifyUpdateListeners();
     });
-    dateHBox.getChildren().add(this.dateField);
     Label dateLabel = new Label(language.translate("life_event_view.date"));
     dateLabel.setPadding(new Insets(3, 0, 0, 0));
-    gridPane.addRow(1, dateLabel, dateHBox);
+    gridPane.addRow(1, dateLabel, this.dateTimeSelector);
 
     HBox.setHgrow(this.placeAddressField, Priority.ALWAYS);
     this.placeAddressField.setPromptText(language.translate("life_event_view.place.address"));
@@ -170,7 +158,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     this.openMapDialogButton.setOnAction(e -> this.onSelectLatLonFromMap());
 
     HBox placeBox = new HBox(
-        4,
+        5,
         this.placeAddressField,
         this.placeLatField,
         this.placeLonField,
@@ -189,8 +177,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
         new HBox(5, this.partnerLabel, this.partnerButton)
     );
 
-    VBox witnessesVBox = new VBox(4);
-    HBox buttonsHBox = new HBox(4);
+    VBox witnessesVBox = new VBox(5);
+    HBox buttonsHBox = new HBox(5);
     witnessesVBox.getChildren().addAll(buttonsHBox, this.witnessesList);
     Button addWitnessButton = new Button(language.translate("life_event_view.witnesses.add"),
         theme.getIcon(Icon.ADD_WITNESS, Icon.Size.SMALL));
@@ -288,7 +276,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    * Update header’s date label text.
    */
   private void updateDateLabel() {
-    this.dateLabel.setDateTime(this.dateField.getDate().orElse(null));
+    this.dateLabel.setDateTime(this.dateTimeSelector.getDateTime());
   }
 
   /**
@@ -344,13 +332,9 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    */
   public boolean checkValidity() {
     boolean valid;
-    if (this.dateField.checkValidity()) {
-      boolean datePresent = this.dateField.getDate().isPresent();
-      this.dateField.pseudoClassStateChanged(PseudoClasses.INVALID, !datePresent);
-      valid = datePresent;
-    } else {
-      valid = false;
-    }
+    boolean datePresent = this.dateTimeSelector.getDateTime() != null;
+    this.dateTimeSelector.pseudoClassStateChanged(PseudoClasses.INVALID, !datePresent);
+    valid = datePresent;
     boolean invalidPartner = this.eventTypeCombo.getSelectionModel().getSelectedItem().data().maxActors() > 1
                              && this.partner == null;
     this.partnerLabel.pseudoClassStateChanged(PseudoClasses.INVALID, invalidPartner);
@@ -379,7 +363,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       this.familyTree.addWitnessToLifeEvent(this.lifeEvent, witness);
     }
 
-    this.lifeEvent.setDate(this.dateField.getDate().orElseThrow(() -> new IllegalArgumentException("missing date")));
+    this.lifeEvent.setDate(Optional.ofNullable(this.dateTimeSelector.getDateTime()).orElseThrow(() -> new IllegalArgumentException("missing date")));
     String address = StringUtils.stripNullable(this.placeAddressField.getText()).orElse(null);
     if (address != null) {
       LatLon latLon;
@@ -491,24 +475,12 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   }
 
   /**
-   * Populate the date precision combobox.
-   */
-  private void populateDatePrecisionCombo() {
-    for (CalendarDateField.DateType dateType : CalendarDateField.DateType.values()) {
-      this.datePrecisionCombo.getItems()
-          .add(new NotNullComboBoxItem<>(dateType, this.config.language().translate(dateType.key())));
-    }
-  }
-
-  /**
    * Populate this form’s fields with data from the wrapped life event object.
    */
   private void populateFields() {
     this.eventTypeCombo.getSelectionModel()
         .select(new NotNullComboBoxItem<>(this.lifeEvent.type()));
-    this.datePrecisionCombo.getSelectionModel()
-        .select(new NotNullComboBoxItem<>(CalendarDateField.DateType.fromDate(this.lifeEvent.date())));
-    this.dateField.setDate(this.lifeEvent.date());
+    this.dateTimeSelector.setDateTime(this.lifeEvent.date());
     Optional<Place> place = this.lifeEvent.place();
     if (place.isPresent()) {
       Place p = place.get();

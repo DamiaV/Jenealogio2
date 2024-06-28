@@ -17,7 +17,7 @@ import java.util.*;
  * It is composed of 5 text fields, one for each date component:
  * year, month, day, hours, and minutes.
  */
-public class DateTimeField extends HBox {
+public class DateTimeField extends VBox {
   private static final Calendar<?>[] CALENDARS = {
       Calendars.GREGORIAN,
       Calendars.JULIAN,
@@ -43,7 +43,7 @@ public class DateTimeField extends HBox {
    * @param config The app’s config.
    */
   public DateTimeField(final @NotNull Config config) {
-    super(4);
+    super(5);
     this.config = config;
 
     this.setupField(this.yearField, 50, "year", true);
@@ -63,11 +63,11 @@ public class DateTimeField extends HBox {
     this.calendarField.getSelectionModel().select(0);
 
     Label colonLabel = new Label(":");
-    HBox.setMargin(colonLabel, new Insets(4, 0, 0, 0));
+    HBox.setMargin(colonLabel, new Insets(5, 0, 0, 0));
     Pane spacer = new Pane();
-    spacer.setPrefWidth(4);
+    spacer.setPrefWidth(5);
 
-    HBox fieldsBox = new HBox(4,
+    HBox fieldsBox = new HBox(5,
         this.dayField,
         this.monthField,
         this.yearField,
@@ -77,7 +77,13 @@ public class DateTimeField extends HBox {
         this.minuteField
     );
 
-    this.getChildren().add(new VBox(4, fieldsBox, this.calendarField));
+    HBox calendarBox = new HBox(
+        5,
+        new Label(language.translate("date_time_field.calendar")),
+        this.calendarField
+    );
+    calendarBox.setAlignment(Pos.CENTER_LEFT);
+    this.getChildren().addAll(fieldsBox, calendarBox);
   }
 
   /**

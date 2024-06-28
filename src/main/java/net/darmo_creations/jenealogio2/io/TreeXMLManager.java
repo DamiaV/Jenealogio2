@@ -63,8 +63,6 @@ public abstract class TreeXMLManager {
   protected static final String DATE_DATE_ATTR = "date";
   protected static final String DATE_START_ATTR = "start";
   protected static final String DATE_END_ATTR = "end";
-  protected static final String DATE_EARLIEST_ATTR = "earliest";
-  protected static final String DATE_LATEST_ATTR = "latest";
   protected static final String TYPE_TAG = "Type";
   protected static final String TYPE_KEY_ATTR = "key";
   protected static final String PLACE_TAG = "Place";

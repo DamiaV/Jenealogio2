@@ -25,11 +25,11 @@ public class RelativesListView extends VBox implements PersonRequester {
    * @param config The app’s config.
    */
   public RelativesListView(final @NotNull Config config) {
-    super(4);
+    super(5);
     Language language = config.language();
     Theme theme = config.theme();
 
-    HBox buttonsHBox = new HBox(4);
+    HBox buttonsHBox = new HBox(5);
 
     Button addWitnessButton = new Button(language.translate("relatives_list.add"),
         theme.getIcon(Icon.ADD_PARENT, Icon.Size.SMALL));

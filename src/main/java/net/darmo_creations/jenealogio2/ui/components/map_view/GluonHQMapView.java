@@ -25,7 +25,7 @@ class GluonHQMapView extends com.gluonhq.maps.MapView {
         gluonLink
     );
     label.getStyleClass().add("map-attributions");
-    label.setPadding(new Insets(0, 0, 0, 4));
+    label.setPadding(new Insets(0, 0, 0, 5));
     label.setStyle("-fx-background-color: #fffb");
     // Pin text to bottom-right corner
     label.layoutXProperty().bind(this.widthProperty().subtract(label.widthProperty()));

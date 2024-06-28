@@ -39,16 +39,16 @@ public class FamilyTreeView extends FamilyTreeComponent {
     Language language = this.config.language();
     Theme theme = this.config.theme();
 
-    VBox vBox = new VBox(4);
-    AnchorPane.setTopAnchor(vBox, 4.0);
-    AnchorPane.setBottomAnchor(vBox, 4.0);
-    AnchorPane.setLeftAnchor(vBox, 4.0);
-    AnchorPane.setRightAnchor(vBox, 4.0);
+    VBox vBox = new VBox(5);
+    AnchorPane.setTopAnchor(vBox, 5.0);
+    AnchorPane.setBottomAnchor(vBox, 5.0);
+    AnchorPane.setLeftAnchor(vBox, 5.0);
+    AnchorPane.setRightAnchor(vBox, 5.0);
     this.getChildren().add(vBox);
 
     // Search bar
 
-    HBox hBox = new HBox(4);
+    HBox hBox = new HBox(5);
     vBox.getChildren().add(hBox);
 
     this.searchField = new ErasableTextField(config);

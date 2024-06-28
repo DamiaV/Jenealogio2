@@ -40,7 +40,7 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
     this.gendersTab = new EntriesTab<>("genders");
     TabPane tabPane = new TabPane(this.eventTypesTab, this.gendersTab);
     tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-    this.getDialogPane().setContent(new VBox(4, descLabel, tabPane));
+    this.getDialogPane().setContent(new VBox(5, descLabel, tabPane));
 
     Stage stage = this.stage();
     stage.setMinWidth(300);
@@ -77,7 +77,7 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
       deselectAllButton.setOnAction(event -> this.select(SelectionMode.NONE));
       Button invertSelectionButton = new Button(language.translate("dialog.registries_import_export.invert_selection"));
       invertSelectionButton.setOnAction(event -> this.select(SelectionMode.INVERT));
-      HBox buttonsBox = new HBox(4, selectAllButton, deselectAllButton, invertSelectionButton);
+      HBox buttonsBox = new HBox(5, selectAllButton, deselectAllButton, invertSelectionButton);
       this.treeView.setShowRoot(false);
       this.treeView.setRoot(new TreeItem<>());
       this.treeView.setCellFactory(e -> {
@@ -103,7 +103,7 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
         });
         return cell;
       });
-      this.setContent(new VBox(4, this.treeView, buttonsBox));
+      this.setContent(new VBox(5, this.treeView, buttonsBox));
     }
 
     private void select(@NotNull SelectionMode mode) {

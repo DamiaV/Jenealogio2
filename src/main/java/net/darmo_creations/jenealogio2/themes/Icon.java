@@ -106,6 +106,14 @@ public enum Icon {
 
   SHOW_FILE_IN_EXPLORER("folder_vertical_open"),
 
+  SELECT_DATE("date_edit"),
+  CLEAR_DATE("draw_eraser"),
+
+  ADD_DATE("date_add"),
+  REMOVE_DATE("date_delete"),
+
+  WARNING("error"),
+
   // File extensions
   UNKNOWN_FILE_EXT("page_white"),
   FILE_EXT_SWF("file_extension_swf"),

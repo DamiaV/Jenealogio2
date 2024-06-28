@@ -604,11 +604,17 @@ public class TreeXMLReader extends TreeXMLManager {
         yield new DateTimeRange(startDate, endDate);
       }
       case DATE_ALTERNATIVE -> {
-        CalendarSpecificDateTime earliestDate = XmlUtils.getAttr(
-            dateElement, DATE_EARLIEST_ATTR, this::deserializeDate, null, false);
-        CalendarSpecificDateTime latestDate = XmlUtils.getAttr(
-            dateElement, DATE_LATEST_ATTR, this::deserializeDate, null, false);
-        yield new DateTimeAlternative(earliestDate, latestDate);
+        List<CalendarSpecificDateTime> dates = new LinkedList<>();
+        for (int i = 0; i < DateTimeAlternative.MAX_DATES; i++) {
+          var date = XmlUtils.getAttr(dateElement, "date" + (i + 1), this::deserializeDate, () -> null, false);
+          if (date != null)
+            dates.add(date);
+        }
+        try {
+          yield new DateTimeAlternative(dates);
+        } catch (IllegalArgumentException | NullPointerException e) {
+          throw new IOException(e);
+        }
       }
       default -> throw new IOException("Undefined date type " + dateType);
     };

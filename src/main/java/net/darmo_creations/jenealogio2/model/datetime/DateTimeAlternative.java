@@ -7,27 +7,29 @@ import java.util.*;
 
 /**
  * This class represents an alternative between two dates.
- * The {@link #date()} attribute corresponds to {@link #earliestDate()}.
+ * The {@link #date()} attribute corresponds to the first element of {@link #dates()}, i.e. the earliest date.
  *
- * @param earliestDate The earliest date of the two.
- * @param latestDate   The latest date of the two.
+ * @param dates The list of dates. Must not be empty and not contain any null elements.
+ *              The passed list object is copied and this copy is then sorted.
  */
-public record DateTimeAlternative(@NotNull CalendarSpecificDateTime earliestDate,
-                                  @NotNull CalendarSpecificDateTime latestDate)
+public record DateTimeAlternative(@NotNull List<@NotNull CalendarSpecificDateTime> dates)
     implements DateTime {
-  public DateTimeAlternative {
-    if (earliestDate.toISO8601Date().isAfter(latestDate.toISO8601Date())) {
-      throw new IllegalArgumentException("earliest date is after latest date");
-    }
-    if (earliestDate.toISO8601Date().equals(latestDate.toISO8601Date())) {
-      throw new IllegalArgumentException("earliest date is equal to latest date");
-    }
-    Objects.requireNonNull(earliestDate);
-    Objects.requireNonNull(latestDate);
+  public static final int MAX_DATES = 5;
+
+  public DateTimeAlternative(@NotNull List<@NotNull CalendarSpecificDateTime> dates) {
+    if (dates.size() < 2)
+      throw new IllegalArgumentException("Too few dates: expected at least 2 dates, got %d".formatted(dates.size()));
+    if (dates.size() > MAX_DATES)
+      throw new IllegalArgumentException("List cannot contain more than %d dates".formatted(MAX_DATES));
+    //noinspection ConstantValue
+    if (dates.stream().anyMatch(Objects::isNull))
+      throw new IllegalArgumentException("List cannot contain null elements");
+    this.dates = dates.stream().sorted().toList();
   }
 
   @Override
+  @Unmodifiable
   public CalendarSpecificDateTime date() {
-    return this.earliestDate;
+    return this.dates.get(0);
   }
 }

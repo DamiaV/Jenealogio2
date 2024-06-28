@@ -46,7 +46,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     this.showDeceasedCheckBox.setSelected(this.config.shouldShowDeceasedPersonsBirthdays());
     this.showDeceasedCheckBox.selectedProperty()
         .addListener((observable, oldValue, newValue) -> this.onCheckBoxSelection(newValue));
-    HBox.setMargin(this.showDeceasedCheckBox, new Insets(4));
+    HBox.setMargin(this.showDeceasedCheckBox, new Insets(5));
 
     HBox hBox = new HBox(this.showDeceasedCheckBox);
 
@@ -54,7 +54,8 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     VBox.setVgrow(this.todayList, Priority.ALWAYS);
     VBox.setVgrow(this.tomorrowList, Priority.ALWAYS);
     VBox.setVgrow(this.afterTomorrowList, Priority.ALWAYS);
-    VBox vBox = new VBox(4,
+    VBox vBox = new VBox(
+        5,
         new Label(language.translate("dialog.birthdays.tab.upcoming.today")),
         this.todayList,
         new Label(language.translate("dialog.birthdays.tab.upcoming.tomorrow")),
@@ -194,7 +195,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
 
   private class PersonItem extends HBox {
     public PersonItem(@NotNull Person person, int year) {
-      super(4);
+      super(5);
       this.setAlignment(Pos.CENTER_LEFT);
       Button button = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       button.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
@@ -273,7 +274,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
 
     private class DayItem extends VBox {
       public DayItem(int day, final @NotNull Set<BirthdayEntry> entries) {
-        super(4);
+        super(5);
         Label dayLabel = new Label(day + BirthdaysDialog.this.config.language().getDaySuffix(day).orElse(""));
         dayLabel.getStyleClass().add("birth-day");
         this.getChildren().add(dayLabel);
@@ -284,7 +285,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
               Button personButton = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
               personButton.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
               Label yearLabel = new Label(String.valueOf(e.date().getYear()));
-              HBox row = new HBox(4, personButton, yearLabel);
+              HBox row = new HBox(5, personButton, yearLabel);
               row.setAlignment(Pos.CENTER_LEFT);
               if (e.uncertain()) {
                 Label uncertainIcon = new Label(null, BirthdaysDialog.this.config.theme().getIcon(Icon.UNCERTAIN, Icon.Size.SMALL));

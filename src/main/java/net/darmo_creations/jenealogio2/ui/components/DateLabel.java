@@ -3,6 +3,7 @@ package net.darmo_creations.jenealogio2.ui.components;
 import javafx.scene.control.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
+import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -46,6 +47,7 @@ public class DateLabel extends Label {
   public void setDateTime(DateTime dateTime) {
     this.dateTime = dateTime;
     this.updateText();
+    this.setGraphic(dateTime != null ? this.config.theme().getIcon(Icon.HELP, Icon.Size.SMALL) : null);
   }
 
   private void updateText() {

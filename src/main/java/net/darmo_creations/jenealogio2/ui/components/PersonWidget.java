@@ -14,6 +14,7 @@ import net.darmo_creations.jenealogio2.ui.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * A JavaFX component representing a single person in the {@link FamilyTreePane}.
@@ -94,7 +95,7 @@ public class PersonWidget extends AnchorPane {
     } else {
       iconsBox.setLeft(new Label()); // Empty label for proper alignment
     }
-    HBox iconsRightBox = new HBox(4);
+    HBox iconsRightBox = new HBox(5);
     iconsBox.setRight(iconsRightBox);
     if (isRoot) {
       Label rootIcon = new Label("", config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
@@ -254,7 +255,7 @@ public class PersonWidget extends AnchorPane {
       return switch (d.precision()) {
         case EXACT -> String.valueOf(year);
         case ABOUT -> "~ " + year;
-        case POSSIBLY -> year + " ?";
+        case POSSIBLY -> "? " + year;
         case BEFORE -> "< " + year;
         case AFTER -> "> " + year;
       };
@@ -262,10 +263,14 @@ public class PersonWidget extends AnchorPane {
       int startYear = d.startDate().toISO8601Date().getYear();
       int endYear = d.endDate().toISO8601Date().getYear();
       return startYear != endYear ? "%s-%s".formatted(startYear, endYear) : String.valueOf(startYear);
-    } else if (date instanceof DateTimeAlternative d) {
-      int earliestYear = d.earliestDate().toISO8601Date().getYear();
-      int latestYear = d.latestDate().toISO8601Date().getYear();
-      return earliestYear != latestYear ? "%s/%s".formatted(earliestYear, latestYear) : String.valueOf(earliestYear);
+    } else if (date instanceof DateTimeAlternative da) {
+      List<Integer> years = da.dates().stream()
+          .map(d -> d.toISO8601Date().getYear())
+          .distinct() // Not using Collectors.toSet() to keep the order
+          .toList();
+      if (years.size() == 1)
+        return "~ " + years.get(0);
+      return years.stream().map(String::valueOf).collect(Collectors.joining("/"));
     }
     throw new IllegalArgumentException("unexpected date type: " + date.getClass());
   }

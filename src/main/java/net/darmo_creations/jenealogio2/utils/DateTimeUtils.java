@@ -9,6 +9,7 @@ import java.time.*;
 import java.time.format.*;
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.*;
 
 /**
  * Class providing methods to handle objects from the {@link java.time} package.
@@ -79,11 +80,13 @@ public final class DateTimeUtils {
       );
     }
     if (date instanceof DateTimeAlternative d) {
-      return language.translate(
-          "date_format.alternative",
-          new FormatArg("date1", formatter.apply(d.earliestDate())),
-          new FormatArg("date2", formatter.apply(d.latestDate()))
-      );
+      String comma = language.translate("list_comma");
+      String or = language.translate("list_or");
+      String str = d.dates().stream().map(formatter).collect(Collectors.joining(comma));
+      StringBuilder sb = new StringBuilder(str);
+      // Replace last occurrence of "comma" by "or"
+      sb.replace(str.lastIndexOf(comma), str.lastIndexOf(comma) + comma.length(), or);
+      return sb.toString();
     }
 
     throw new IllegalArgumentException("Unsupported date type: " + date.getClass());

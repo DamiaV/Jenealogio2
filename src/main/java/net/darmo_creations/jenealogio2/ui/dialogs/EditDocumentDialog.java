@@ -8,7 +8,6 @@ import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.utils.*;
@@ -26,8 +25,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
   private final TextField documentNameField = new TextField();
   private final Label fileExtensionLabel = new Label();
   private final Label fileExtensionGraphicsLabel = new Label();
-  private final ComboBox<NotNullComboBoxItem<CalendarDateField.DateType>> datePrecisionCombo = new ComboBox<>();
-  private final CalendarDateField dateField;
+  private final DateTimeSelector dateTimeSelector;
   private final TextArea documentDescTextInput = new TextArea();
 
   /**
@@ -49,20 +47,15 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.documentNameField.textProperty().addListener((observableValue, oldValue, newValue) -> this.updateUI());
     this.documentNameField.setTextFormatter(StringUtils.filePathTextFormatter());
     HBox documentNameBox = new HBox(
-        4,
+        5,
         this.documentNameField,
         this.fileExtensionLabel,
         this.fileExtensionGraphicsLabel
     );
     documentNameBox.setAlignment(Pos.CENTER_LEFT);
 
-    this.populateDatePrecisionCombo();
-    this.dateField = new CalendarDateField(config);
-    this.dateField.getUpdateListeners().add(this::updateUI);
-    this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
-        (observable, oldValue, newValue) -> this.dateField.setDateType(newValue.data()));
-    HBox.setHgrow(this.dateField, Priority.ALWAYS);
-    HBox dateBox = new HBox(5, this.datePrecisionCombo, this.dateField);
+    this.dateTimeSelector = new DateTimeSelector(config);
+    this.dateTimeSelector.dateTimeProperty().addListener((observable, oldValue, newValue) -> this.updateUI());
 
     VBox.setVgrow(this.documentDescTextInput, Priority.ALWAYS);
 
@@ -72,7 +65,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
         new Label(language.translate("dialog.edit_document.name")),
         documentNameBox,
         new Label(language.translate("dialog.edit_document.date")),
-        dateBox,
+        this.dateTimeSelector,
         new Label(language.translate("dialog.edit_document.description")),
         this.documentDescTextInput
     );
@@ -94,7 +87,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
         if (!this.document.name().equals(newName))
           this.familyTree.renameDocument(this.document.fileName(), newName);
         this.document.setDescription(StringUtils.stripNullable(this.documentDescTextInput.getText()).orElse(null));
-        this.document.setDate(this.dateField.getDate().orElse(null));
+        this.document.setDate(this.dateTimeSelector.getDateTime());
       }
       return buttonType;
     });
@@ -106,16 +99,6 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     var name = StringUtils.stripNullable(this.documentNameField.getText());
     this.getDialogPane().lookupButton(ButtonTypes.OK)
         .setDisable(name.isEmpty() || this.familyTree.getDocument(name.get()).isPresent());
-  }
-
-  /**
-   * Populate the date precision combobox.
-   */
-  private void populateDatePrecisionCombo() {
-    for (var dateType : CalendarDateField.DateType.values()) {
-      this.datePrecisionCombo.getItems()
-          .add(new NotNullComboBoxItem<>(dateType, this.config.language().translate(dateType.key())));
-    }
   }
 
   /**
@@ -139,14 +122,6 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.fileExtensionGraphicsLabel.setGraphic(this.config.theme().getIcon(Icon.forFile(document.fileName()), Icon.Size.SMALL));
     this.documentDescTextInput.setText(document.description().orElse(""));
     var date = document.date();
-    if (date.isPresent()) {
-      DateTime d = date.get();
-      this.datePrecisionCombo.getSelectionModel()
-          .select(new NotNullComboBoxItem<>(CalendarDateField.DateType.fromDate(d)));
-      this.dateField.setDate(d);
-    } else {
-      this.datePrecisionCombo.getSelectionModel().select(0);
-      this.dateField.setDate(null);
-    }
+    this.dateTimeSelector.setDateTime(date.orElse(null));
   }
 }

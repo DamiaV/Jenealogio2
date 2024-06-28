@@ -78,9 +78,9 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     this.exportButton = new Button(language.translate("dialog.edit_registries.export"),
         theme.getIcon(Icon.EXPORT_REGISTRIES, Icon.Size.SMALL));
     this.exportButton.setOnAction(event -> this.onExport());
-    HBox buttonsBox = new HBox(4, importButton, this.exportButton);
+    HBox buttonsBox = new HBox(5, importButton, this.exportButton);
 
-    VBox content = new VBox(4, helpLabel, tabPane, new Separator(), buttonsBox);
+    VBox content = new VBox(5, helpLabel, tabPane, new Separator(), buttonsBox);
     content.setPrefWidth(600);
     content.setPrefHeight(400);
     this.getDialogPane().setContent(content);
@@ -198,8 +198,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
 
     VBox.setVgrow(registryView, Priority.ALWAYS);
 
-    VBox vBox = new VBox(4, registryView, description);
-    vBox.setPadding(new Insets(4));
+    VBox vBox = new VBox(5, registryView, description);
+    vBox.setPadding(new Insets(5));
     tab.setContent(vBox);
 
     return tab;
@@ -242,7 +242,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      * Show all entries of the given registry in a {@link TableView}.
      */
     protected RegistryView() {
-      super(4);
+      super(5);
       Language language = RegistriesDialog.this.config.language();
       Theme theme = RegistriesDialog.this.config.theme();
 
@@ -256,7 +256,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       this.removeButton.setDisable(true);
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
-      this.buttonsBox = new HBox(4, spacer, addButton, this.removeButton);
+      this.buttonsBox = new HBox(5, spacer, addButton, this.removeButton);
 
       // Table
       VBox.setVgrow(this.entriesTable, Priority.ALWAYS);

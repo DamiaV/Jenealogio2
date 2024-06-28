@@ -1,32 +1,50 @@
 package net.darmo_creations.jenealogio2.model.datetime;
 
+import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.GregorianCalendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import org.junit.jupiter.api.*;
+
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class DateTimeAlternativeTest {
   @Test
-  void dateIsEarliestDate() {
-    var date = new DateTimeAlternative(
+  void dateIsFirstDate() {
+    var date = new DateTimeAlternative(new ArrayList<>(List.of(
         Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0),
-        Calendar.forName(GregorianCalendar.NAME).getDate(2024, 2, 1, 0, 0));
-    assertEquals(date.earliestDate(), date.date());
+        Calendar.forName(GregorianCalendar.NAME).getDate(2024, 2, 1, 0, 0))));
+    assertEquals(date.dates().get(0), date.date());
   }
 
   @Test
-  void latestBeforeEarliestThrows() {
-    assertThrows(IllegalArgumentException.class, () -> new DateTimeAlternative(
-        Calendar.forName(GregorianCalendar.NAME).getDate(2024, 2, 1, 0, 0),
-        Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0))
-    );
+  void emptyListThrows() {
+    assertThrows(IllegalArgumentException.class, () -> new DateTimeAlternative(new ArrayList<>()));
   }
 
   @Test
-  void earliestEqualsLatestThrows() {
-    assertThrows(IllegalArgumentException.class, () -> new DateTimeAlternative(
+  void nullElementThrows() {
+    //noinspection DataFlowIssue
+    assertThrows(NullPointerException.class, () -> new DateTimeAlternative(new ArrayList<>(List.of(
         Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0),
-        Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0))
-    );
+        null
+    ))));
+  }
+
+  @Test
+  void tooFewDatesThrows() {
+    assertThrows(IllegalArgumentException.class, () -> new DateTimeAlternative(new ArrayList<>(List.of(
+        Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0)
+    ))));
+  }
+
+  @Test
+  void tooManyDatesThrows() {
+    List<CalendarSpecificDateTime> dates = new ArrayList<>();
+    for (int i = 0; i < DateTimeAlternative.MAX_DATES + 1; i++) {
+      dates.add(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, i));
+    }
+    assertThrows(IllegalArgumentException.class, () -> new DateTimeAlternative(dates));
   }
 }

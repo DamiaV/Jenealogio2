@@ -434,8 +434,9 @@ public class TreeXMLWriter extends TreeXMLManager {
       XmlUtils.setAttr(document, dateElement, DATE_END_ATTR, this.serializeDate(d.endDate()));
     } else if (date instanceof DateTimeAlternative d) {
       dateType = DATE_ALTERNATIVE;
-      XmlUtils.setAttr(document, dateElement, DATE_EARLIEST_ATTR, this.serializeDate(d.earliestDate()));
-      XmlUtils.setAttr(document, dateElement, DATE_LATEST_ATTR, this.serializeDate(d.latestDate()));
+      var dates = d.dates();
+      for (int i = 0; i < dates.size(); i++)
+        XmlUtils.setAttr(document, dateElement, "date" + (i + 1), this.serializeDate(dates.get(i)));
     } else {
       throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
     }

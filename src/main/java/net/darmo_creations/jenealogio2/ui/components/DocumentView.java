@@ -8,9 +8,7 @@ import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.themes.*;
-import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -22,12 +20,11 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
   private static final int IMAGE_SIZE = 100;
 
   private final Label nameLabel = new Label();
-  private final Label dateLabel = new Label();
+  private final DateLabel dateLabel;
   private final Label descLabel = new Label();
   private final Button openFileButton = new Button();
 
   private final AttachedDocument document;
-  private final Config config;
 
   /**
    * Create a new document view.
@@ -43,7 +40,6 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
   ) {
     super(5);
     this.document = Objects.requireNonNull(document);
-    this.config = Objects.requireNonNull(config);
     Node imageNode;
     if (document instanceof Picture p) {
       Optional<Image> image = p.image();
@@ -74,6 +70,7 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
     if (showName) {
       vBox.getChildren().add(this.nameLabel);
     }
+    this.dateLabel = new DateLabel("-", config);
     vBox.getChildren().addAll(this.dateLabel, this.descLabel);
     HBox.setHgrow(vBox, Priority.ALWAYS);
 
@@ -99,14 +96,8 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
    */
   public void refresh() {
     this.nameLabel.setText(this.document.fileName());
-    this.dateLabel.setText(this.document.date().map(this::formatDate).orElse("-"));
+    this.dateLabel.setDateTime(this.document.date().orElse(null));
     this.descLabel.setText(this.document.description().orElse(""));
     this.openFileButton.setDisable(this.document instanceof Picture p && p.image().isEmpty());
-  }
-
-  private String formatDate(@NotNull DateTime date) {
-    String calDate = DateTimeUtils.formatDateTime(date, false, this.config);
-    String isoDate = DateTimeUtils.formatDateTime(date, true, this.config);
-    return "%s (%s)".formatted(calDate, isoDate);
   }
 }

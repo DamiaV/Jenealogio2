@@ -152,8 +152,8 @@ public class EditPersonDialog extends DialogBase<Person>
     tab.setGraphic(theme.getIcon(Icon.PROFILE_TAB, Icon.Size.SMALL));
 
     GridPane gridPane = new GridPane();
-    gridPane.setHgap(4);
-    gridPane.setVgap(4);
+    gridPane.setHgap(5);
+    gridPane.setVgap(5);
 
     {
       this.lifeStatusCombo.getItems().addAll(Arrays.stream(LifeStatus.values())
@@ -331,8 +331,8 @@ public class EditPersonDialog extends DialogBase<Person>
     tab.setGraphic(theme.getIcon(Icon.FAMILY_TAB, Icon.Size.SMALL));
 
     GridPane gridPane = new GridPane();
-    gridPane.setHgap(4);
-    gridPane.setVgap(4);
+    gridPane.setHgap(5);
+    gridPane.setVgap(5);
 
     {
       Button parent1Button = new Button();
@@ -353,7 +353,7 @@ public class EditPersonDialog extends DialogBase<Person>
       this.swapParentsButton.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.swap")));
       this.swapParentsButton.setOnAction(e -> this.onSwapParents());
       HBox parentsBox = new HBox(
-          4,
+          5,
           this.parent1Label,
           parent1Button,
           this.removeParent1Button,

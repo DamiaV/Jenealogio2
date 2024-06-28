@@ -55,7 +55,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final ClickableImageView eventImageView;
   private final Label eventTypeLabel = new Label();
   private final DateLabel eventDateLabel;
-  private final VBox eventActorsPane = new VBox(4);
+  private final VBox eventActorsPane = new VBox(5);
   private final Label eventPlaceLabel = new Label();
   private final TextFlow eventNotesTextFlow = new TextFlow();
   private final TextFlow eventSourcesTextFlow = new TextFlow();
@@ -130,7 +130,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     tabPane.setOrientation(Orientation.VERTICAL);
     this.profileTab.setContent(tabPane);
 
-    VBox vHeader = new VBox(4);
+    VBox vHeader = new VBox(5);
     vHeader.getStyleClass().add("person-details-header");
     HBox header = new HBox(8);
     this.imageView.setPreserveRatio(true);
@@ -142,20 +142,20 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.genderLabel.setWrapText(true);
     this.occupationLabel.getStyleClass().add("person-details-occupation");
     this.occupationLabel.setWrapText(true);
-    VBox headerTexts = new VBox(4, this.fullNameLabel, this.genderLabel, this.occupationLabel);
+    VBox headerTexts = new VBox(5, this.fullNameLabel, this.genderLabel, this.occupationLabel);
     header.getChildren().addAll(this.imageView, headerTexts);
     vHeader.getChildren().add(header);
 
-    VBox publicNamesBox = new VBox(4);
-    HBox plnBox = new HBox(4);
+    VBox publicNamesBox = new VBox(5);
+    HBox plnBox = new HBox(5);
     plnBox.getChildren().add(new Label(language.translate("person_details_view.public_last_name")));
     this.publicLastNameLabel.setWrapText(true);
     plnBox.getChildren().add(this.publicLastNameLabel);
-    HBox pfnBox = new HBox(4);
+    HBox pfnBox = new HBox(5);
     pfnBox.getChildren().add(new Label(language.translate("person_details_view.public_first_names")));
     this.publicFirstNamesLabel.setWrapText(true);
     pfnBox.getChildren().add(this.publicFirstNamesLabel);
-    HBox nnBox = new HBox(4);
+    HBox nnBox = new HBox(5);
     nnBox.getChildren().add(new Label(language.translate("person_details_view.nicknames")));
     this.nicknamesLabel.setWrapText(true);
     nnBox.getChildren().add(this.nicknamesLabel);
@@ -231,14 +231,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
-    this.eventDateLabel.setGraphic(this.config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
     Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
     Button closeButton = new Button(null, this.config.theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
     closeButton.setTooltip(new Tooltip(this.config.language().translate("person_details_view.close_life_event")));
     closeButton.setOnAction(event -> this.eventsTab.setContent(this.eventsTabPane));
     HBox hBox = new HBox(
-        4,
+        5,
         this.eventImageView,
         this.eventTypeLabel,
         spacer,
@@ -283,7 +282,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     tabPane.setOrientation(Orientation.VERTICAL);
     this.familyTab.setContent(tabPane);
 
-    VBox parentsVBox = new VBox(4, this.parent1Card, this.parent2Card);
+    VBox parentsVBox = new VBox(5, this.parent1Card, this.parent2Card);
     parentsVBox.setMinHeight(0);
     VBox topBox = new VBox(new SectionLabel("parents"), parentsVBox);
     topBox.getStyleClass().add("person-details");
@@ -577,7 +576,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       Button b = new Button(actor.toString(), this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
       b.setUserData(actor);
-      HBox hBox = new HBox(4, label, b);
+      HBox hBox = new HBox(5, label, b);
       hBox.setAlignment(Pos.CENTER_LEFT);
       this.eventActorsPane.getChildren().add(hBox);
       first = false;
@@ -686,7 +685,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      * @param childInfo Information about the visible children of this person.
      */
     public PersonCard(final Person person, final @NotNull List<ChildInfo> childInfo) {
-      super(4);
+      super(5);
 
       this.getStyleClass().add("person-widget");
 
@@ -712,7 +711,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
       this.getChildren().addAll(
           imageBoxOuter,
-          new VBox(4, this.nameLabel, this.birthDateLabel, this.deathDateLabel)
+          new VBox(5, this.nameLabel, this.birthDateLabel, this.deathDateLabel)
       );
 
       this.setPerson(person, childInfo);
@@ -776,12 +775,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     private final LifeEvent lifeEvent;
 
     private LifeEventItem(final @NotNull LifeEvent lifeEvent, final @NotNull Person mainActor) {
-      super(4);
+      super(5);
       this.lifeEvent = lifeEvent;
       this.getStyleClass().add("life-events-list-item");
       Config config = PersonDetailsView.this.config;
       Language language = config.language();
-      HBox header = new HBox(4);
+      HBox header = new HBox(5);
       header.getStyleClass().add("life-events-list-item-header");
       RegistryEntryKey typeKey = lifeEvent.type().key();
       String type;
@@ -794,7 +793,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
       DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, config);
-      dateLabel.setGraphic(config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
       this.getChildren().add(header);
 
@@ -805,7 +803,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
           Button b = new Button(partner.get().toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
           b.setUserData(partner.get());
           b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
-          HBox hBox = new HBox(4, partnerLabel, b);
+          HBox hBox = new HBox(5, partnerLabel, b);
           hBox.setAlignment(Pos.CENTER_LEFT);
           this.getChildren().add(hBox);
         }
@@ -831,11 +829,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     private final LifeEvent lifeEvent;
 
     public WitnessedEventItem(final @NotNull LifeEvent lifeEvent) {
-      super(4);
+      super(5);
       this.lifeEvent = lifeEvent;
       this.getStyleClass().add("life-events-list-item");
       Language language = PersonDetailsView.this.config.language();
-      HBox header = new HBox(4);
+      HBox header = new HBox(5);
       header.getStyleClass().add("life-events-list-item-header");
       RegistryEntryKey typeKey = lifeEvent.type().key();
       String type;
@@ -848,11 +846,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
       DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, PersonDetailsView.this.config);
-      dateLabel.setGraphic(PersonDetailsView.this.config.theme().getIcon(Icon.HELP, Icon.Size.SMALL));
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
       this.getChildren().add(header);
 
-      VBox actorsBox = new VBox(4);
+      VBox actorsBox = new VBox(5);
       List<Person> actors = lifeEvent.actors().stream()
           .sorted(Person.birthDateThenNameComparator(false)).toList();
       boolean first = true;
@@ -861,7 +858,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         Button b = new Button(actor.toString(), PersonDetailsView.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
         b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
         b.setUserData(actor);
-        HBox hBox = new HBox(4, label, b);
+        HBox hBox = new HBox(5, label, b);
         hBox.setAlignment(Pos.CENTER_LEFT);
         actorsBox.getChildren().add(hBox);
         first = false;
@@ -882,7 +879,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    */
   private class ChildrenItem extends VBox {
     public ChildrenItem(final Person parent1, final Person parent2, final @NotNull List<Person> children) {
-      super(4);
+      super(5);
       List<ChildInfo> childInfo = new LinkedList<>();
       for (Person child : children) {
         //noinspection OptionalGetWithoutIsPresent
@@ -890,7 +887,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         childInfo.add(new ChildInfo(child, parentIndex));
       }
       Theme theme = PersonDetailsView.this.config.theme();
-      HBox parentsBox = new HBox(4);
+      HBox parentsBox = new HBox(5);
       PersonCard parent1Card = new PersonCard(parent1, childInfo);
       HBox.setHgrow(parent1Card, Priority.ALWAYS);
       parentsBox.getChildren().add(parent1Card);
