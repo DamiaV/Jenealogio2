@@ -22,7 +22,7 @@ public enum MapMarkerColor {
   private final Image image;
 
   MapMarkerColor(@NotNull String color) {
-    this.image = getMarkerIcon(Objects.requireNonNull(color));
+    this.image = getMarkerIcon(color);
   }
 
   /**
