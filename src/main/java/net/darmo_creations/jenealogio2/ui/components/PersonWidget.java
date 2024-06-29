@@ -110,7 +110,7 @@ public class PersonWidget extends AnchorPane {
     pane.getChildren().add(iconsBox);
 
     final int imageSize = 50;
-    final int inset = 2;
+    final int inset = 3;
     final int size = imageSize + 2 * inset;
     this.imagePane.setPadding(new Insets(inset));
     VBox imageBoxInner = new VBox(this.imagePane);

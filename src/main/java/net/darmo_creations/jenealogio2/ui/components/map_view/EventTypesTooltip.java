@@ -54,7 +54,7 @@ public class EventTypesTooltip extends VBox {
 
     Language language = config.language();
     eventTypesCounts.entrySet().stream()
-        .sorted(Comparator.comparing(e -> language.translate("life_event_type." + e.getKey().key().name())))
+        .sorted(Comparator.comparing(e -> language.translate("life_event_types." + e.getKey().key().name())))
         .forEach(e -> {
           int count = e.getValue();
           LifeEventType type = e.getKey();

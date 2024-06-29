@@ -40,7 +40,7 @@ public enum MapMarkerColor {
   private static @Nullable Image getMarkerIcon(@NotNull String color) {
     Objects.requireNonNull(color);
     String iconName = "map_pin_" + color;
-    String path = "%s%s.png".formatted(App.IMAGES_PATH, iconName);
+    String path = "%s%s.png".formatted(App.IMAGES_PATH + "map/", iconName);
     try (var stream = MapMarkerColor.class.getResourceAsStream(path)) {
       if (stream == null) {
         App.LOGGER.warn("Missing icon: " + iconName);
