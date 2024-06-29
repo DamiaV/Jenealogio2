@@ -26,7 +26,7 @@
    * text; selected items in menus, lists, trees, and tables; progress bars */
   -fx-accent: rgb(0, 80, 100);
 
-  /* color of non-focused yet selected elements */
+  /* icon of non-focused yet selected elements */
   -fx-selection-bar-non-focused: rgb(50, 50, 50);
 }
 
@@ -38,12 +38,12 @@ Text.hyperlink {
   -fx-fill: rgb(127, 184, 217);
 }
 
-/* Fix derived prompt color for text fields */
+/* Fix derived prompt icon for text fields */
 .text-input {
   -fx-prompt-text-fill: derive(-fx-control-inner-background, +50%);
 }
 
-/* Keep prompt invisible when focused (above color fix overrides it) */
+/* Keep prompt invisible when focused (above icon fix overrides it) */
 .text-input:focused {
   -fx-prompt-text-fill: transparent;
 }

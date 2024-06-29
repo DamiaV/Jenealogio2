@@ -6,8 +6,8 @@ import javafx.event.*;
 import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.*;
+import javafx.scene.image.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.*;
 import javafx.scene.text.*;
 import javafx.stage.*;
 import javafx.util.*;
@@ -541,11 +541,9 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       this.registry = familyTree.lifeEventTypeRegistry();
       Map<LifeEventType, List<LifeEvent>> eventTypesUsage = familyTree.lifeEvents().stream()
           .collect(Collectors.groupingBy(LifeEvent::type));
-      for (LifeEventType entry : this.registry.entries()) {
-        if (!entry.isBuiltin()) {
-          int usage = eventTypesUsage.getOrDefault(entry, List.of()).size();
-          this.entriesTable.getItems().add(new LifeEventTypeTableItem(entry, usage, false));
-        }
+      for (LifeEventType entry : this.registry.serializableEntries()) {
+        int usage = eventTypesUsage.getOrDefault(entry, List.of()).size();
+        this.entriesTable.getItems().add(new LifeEventTypeTableItem(entry, usage, false));
       }
     }
 
@@ -560,46 +558,28 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    */
   private class GenderRegistryView
       extends RegistryView<GenderTableItem, Gender, GenderRegistry.RegistryArgs> {
-
-    private final Button resetButton;
-
     public GenderRegistryView() {
-      Language language = RegistriesDialog.this.config.language();
+      Config config = RegistriesDialog.this.config;
+      Language language = config.language();
 
-      this.resetButton = new Button(language.translate("dialog.edit_registries.reset_entry"),
-          RegistriesDialog.this.config.theme().getIcon(Icon.RESET_ENTRY, Icon.Size.SMALL));
-      this.resetButton.setOnAction(event -> {
-        ObservableList<GenderTableItem> selectedCells = this.entriesTable.getSelectionModel().getSelectedItems();
-        for (GenderTableItem selectedCell : selectedCells) {
-          Gender entry = selectedCell.entry();
-          if (entry.isBuiltin()) {
-            //noinspection DataFlowIssue
-            selectedCell.colorProperty().set(Color.valueOf(entry.defaultColor()));
+      TableColumn<GenderTableItem, Image> iconCol = new NonSortableTableColumn<>(
+          language.translate("dialog.edit_registries.tab.genders.icon"));
+      iconCol.setEditable(true);
+      iconCol.setCellFactory(param -> new ImagePickerTableCell<>(() -> {
+        Optional<Path> path = FileChoosers.showFileChooser(config, RegistriesDialog.this.stage(), "image_file", ".png", ".jpg", ".jpeg");
+        if (path.isPresent()) {
+          Image image = new Image("file://" + path.get());
+          if (image.getWidth() > 16 || image.getHeight() > 16) {
+            Alerts.warning(config, "alert.invalid_icon_image.header", null, null);
+            return Optional.empty();
           }
+          return Optional.of(image);
         }
-      });
-      this.resetButton.setDisable(true);
-      this.buttonsBox.getChildren().add(1, this.resetButton);
+        return Optional.empty();
+      }));
+      iconCol.setCellValueFactory(param -> param.getValue().iconProperty());
 
-      TableColumn<GenderTableItem, Color> colorCol = new NonSortableTableColumn<>(
-          language.translate("dialog.edit_registries.tab.genders.color"));
-      colorCol.setEditable(true);
-      colorCol.setCellFactory(param -> new ColorPickerTableCell<>());
-      colorCol.setCellValueFactory(param -> param.getValue().colorProperty());
-
-      this.entriesTable.getColumns().add(colorCol);
-    }
-
-    @Override
-    protected void onSelectionChange() {
-      super.onSelectionChange();
-      ObservableList<GenderTableItem> selectedItems = this.entriesTable.getSelectionModel().getSelectedItems();
-      boolean disable = selectedItems.isEmpty() || selectedItems.stream()
-          .allMatch(i -> {
-            Gender entry = i.entry();
-            return entry == null || !entry.isBuiltin() || i.convertColor().equals(entry.defaultColor());
-          });
-      this.resetButton.setDisable(disable);
+      this.entriesTable.getColumns().add(iconCol);
     }
 
     @Override
@@ -610,7 +590,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       Map<Gender, List<Person>> gendersUsage = familyTree.persons().stream()
           .filter(person -> person.gender().isPresent())
           .collect(Collectors.groupingBy(person -> person.gender().get()));
-      for (Gender entry : this.registry.entries()) {
+      for (Gender entry : this.registry.serializableEntries()) {
         int usage = gendersUsage.getOrDefault(entry, List.of()).size();
         this.entriesTable.getItems().add(new GenderTableItem(entry, usage, false));
       }
@@ -627,7 +607,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         for (int i = 0; i < this.entriesTable.getItems().size(); i++) {
           GenderTableItem item = this.entriesTable.getItems().get(i);
           if (item.entry().key().equals(entry.key())) {
-            item.colorProperty().set(Color.valueOf(entry.color()));
+            item.iconProperty().set(entry.icon());
             break;
           }
         }
@@ -776,12 +756,12 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private class GenderTableItem extends TableItem<Gender, GenderRegistry.RegistryArgs> {
-    private final ObjectProperty<Color> colorProperty = new SimpleObjectProperty<>();
+    private final ObjectProperty<Image> iconProperty = new SimpleObjectProperty<>();
 
     public GenderTableItem(Gender entry, int usage, boolean isNew) {
       super(entry, "genders", usage, isNew);
-      this.colorProperty.set(entry != null ? Color.valueOf(entry.color()) : Color.BLACK);
-      this.colorProperty.addListener((observable, oldValue, newValue) -> {
+      this.iconProperty.set(entry != null ? entry.icon() : null);
+      this.iconProperty.addListener((observable, oldValue, newValue) -> {
         RegistriesDialog.this.changes = true;
         RegistriesDialog.this.updateButtons();
       });
@@ -790,20 +770,21 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     @Override
     public void updateEntry() {
       super.updateEntry();
-      this.entry().setColor(this.convertColor());
+      this.entry().setIcon(this.iconProperty().get());
+    }
+
+    @Override
+    public boolean isValid() {
+      return super.isValid() && this.iconProperty().get() != null;
     }
 
     @Override
     public GenderRegistry.RegistryArgs getBuildArgs() {
-      return new GenderRegistry.RegistryArgs(this.convertColor());
+      return new GenderRegistry.RegistryArgs(this.iconProperty().get());
     }
 
-    public ObjectProperty<Color> colorProperty() {
-      return this.colorProperty;
-    }
-
-    private String convertColor() {
-      return StringUtils.colorToCSSHex(this.colorProperty.get());
+    public ObjectProperty<Image> iconProperty() {
+      return this.iconProperty;
     }
   }
 

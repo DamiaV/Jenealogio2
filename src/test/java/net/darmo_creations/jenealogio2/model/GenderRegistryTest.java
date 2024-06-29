@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
+import javafx.scene.image.*;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,7 +30,7 @@ class GenderRegistryTest {
   @Test
   void serializableEntriesReturnsUserDefined() {
     var key = new RegistryEntryKey(Registry.USER_NS, "test");
-    this.genderRegistry.registerEntry(key, "test", new GenderRegistry.RegistryArgs("#123456"));
+    this.genderRegistry.registerEntry(key, "test", new GenderRegistry.RegistryArgs(new Image("/test.png")));
     var genders = this.genderRegistry.serializableEntries();
     assertEquals(1, genders.size());
     assertEquals(key, genders.get(0).key());

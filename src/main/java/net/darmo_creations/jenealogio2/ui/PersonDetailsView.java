@@ -661,13 +661,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    * Small component that displays a person’s image, name, birth and death dates.
    */
   private class PersonCard extends HBox {
-    private final VBox imagePane = new VBox();
     private final ImageView imageView = new ImageView();
+    private final Label rootLabel = new Label();
+    private final Label genderLabel = new Label();
     private final Label nameLabel = new Label();
     private final DateLabel birthDateLabel = new DateLabel("?", PersonDetailsView.this.config);
     private final DateLabel deathDateLabel = new DateLabel("?", PersonDetailsView.this.config);
-
-    private final List<ChildInfo> childInfo = new ArrayList<>();
+    private final HBox nameBox = new HBox(5);
+    private final HBox birthBox = new HBox(5);
+    private final HBox deathBox = new HBox(5);
 
     /**
      * Create a person card.
@@ -689,29 +691,30 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
       this.getStyleClass().add("person-widget");
 
+      Language language = PersonDetailsView.this.config.language();
+      Theme theme = PersonDetailsView.this.config.theme();
+
       final int imageSize = 50;
-      final int inset = 2;
-      final int size = imageSize + 2 * inset;
-      this.imagePane.setPadding(new Insets(inset));
-      HBox imageBoxInner = new HBox(this.imagePane);
-      imageBoxInner.setAlignment(Pos.CENTER);
-      VBox imageBoxOuter = new VBox(imageBoxInner);
-      imageBoxOuter.setAlignment(Pos.CENTER);
-      imageBoxOuter.setMinWidth(size);
-      imageBoxOuter.setMaxWidth(size);
-      imageBoxOuter.setPrefWidth(size);
       this.imageView.setPreserveRatio(true);
       this.imageView.setFitHeight(imageSize);
       this.imageView.setFitWidth(imageSize);
-      this.imagePane.getChildren().add(this.imageView);
+      VBox imageBox = new VBox(this.imageView);
+      imageBox.setAlignment(Pos.CENTER);
+      imageBox.setMinHeight(imageSize);
+      imageBox.setMinWidth(imageSize);
 
-      Theme theme = PersonDetailsView.this.config.theme();
-      this.birthDateLabel.setGraphic(theme.getIcon(Icon.BIRTH, Icon.Size.SMALL));
-      this.deathDateLabel.setGraphic(theme.getIcon(Icon.DEATH, Icon.Size.SMALL));
+      this.rootLabel.setGraphic(theme.getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+      this.rootLabel.setTooltip(new Tooltip(language.translate("person_widget.root.tooltip")));
+      this.rootLabel.managedProperty().bind(this.rootLabel.visibleProperty());
+      this.genderLabel.managedProperty().bind(this.genderLabel.visibleProperty());
+      this.nameBox.getChildren().addAll(this.rootLabel, this.genderLabel, this.nameLabel);
+
+      this.birthBox.getChildren().addAll(new Label(null, theme.getIcon(Icon.BIRTH, Icon.Size.SMALL)), this.birthDateLabel);
+      this.deathBox.getChildren().addAll(new Label(null, theme.getIcon(Icon.DEATH, Icon.Size.SMALL)), this.deathDateLabel);
 
       this.getChildren().addAll(
-          imageBoxOuter,
-          new VBox(5, this.nameLabel, this.birthDateLabel, this.deathDateLabel)
+          imageBox,
+          new VBox(5, this.nameBox, this.birthBox, this.deathBox)
       );
 
       this.setPerson(person, childInfo);
@@ -723,18 +726,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      * @param person Person to display.
      */
     public void setPerson(final Person person, final @NotNull List<ChildInfo> childInfo) {
-      this.childInfo.clear();
-      this.childInfo.addAll(childInfo);
       boolean isNull = person == null;
-      this.nameLabel.setVisible(!isNull);
-      this.birthDateLabel.setVisible(!isNull);
-      this.deathDateLabel.setVisible(!isNull);
+      this.nameBox.setVisible(!isNull);
+      this.birthBox.setVisible(!isNull);
+      this.deathBox.setVisible(!isNull);
 
       if (isNull) {
         this.imageView.setImage(PersonWidget.ADD_IMAGE);
-        this.imagePane.setStyle(null);
         this.setOnMouseClicked(event -> {
-          PersonDetailsView.this.fireNewParentClickEvent(this.childInfo);
+          PersonDetailsView.this.fireNewParentClickEvent(childInfo);
           event.consume();
         });
         return;
@@ -746,22 +746,31 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       });
 
       this.imageView.setImage(person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
-      String genderColor = person.gender().map(Gender::color).orElse(Gender.MISSING_COLOR);
-      this.imagePane.setStyle("-fx-background-color: " + genderColor);
 
       String name = person.toString();
       this.nameLabel.setText(name);
       this.nameLabel.setTooltip(new Tooltip(name));
-      if (PersonDetailsView.this.familyTree.isRoot(person)) {
-        this.nameLabel.setGraphic(PersonDetailsView.this.config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+      this.rootLabel.setVisible(PersonDetailsView.this.familyTree.isRoot(person));
+      Optional<Gender> gender = person.gender();
+      boolean present = gender.isPresent();
+      this.genderLabel.setVisible(present);
+      if (present) {
+        String label;
+        if (gender.get().isBuiltin())
+          label = PersonDetailsView.this.config.language().translate("genders." + gender.get().key().name());
+        else
+          label = Objects.requireNonNull(gender.get().userDefinedName());
+        this.genderLabel.setGraphic(new ImageView(gender.get().icon()));
+        this.genderLabel.setTooltip(new Tooltip(label));
       } else {
-        this.nameLabel.setGraphic(null);
+        this.genderLabel.setGraphic(null);
+        this.genderLabel.setTooltip(null);
       }
 
       this.birthDateLabel.setDateTime(person.getBirthDate().orElse(null));
 
       boolean consideredDeceased = person.lifeStatus().isConsideredDeceased();
-      this.deathDateLabel.setVisible(consideredDeceased);
+      this.deathBox.setVisible(consideredDeceased);
       if (consideredDeceased) {
         this.deathDateLabel.setDateTime(person.getDeathDate().orElse(null));
       }

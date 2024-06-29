@@ -27,7 +27,7 @@ class MarkerLayer extends MapLayer {
    * Create a new marker.
    *
    * @param latLon  The point where to show the marker.
-   * @param color   The marker’s color.
+   * @param color   The marker’s icon.
    * @param tooltip Optional tooltip.
    * @param config  The app’s config.
    */

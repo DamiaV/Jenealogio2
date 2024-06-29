@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
+import javafx.scene.image.*;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,8 +11,8 @@ class GenderTest {
 
   @BeforeEach
   void setUp() {
-    this.g1 = new Gender(new RegistryEntryKey("builtin", "test"), null, "#ff0000");
-    this.g2 = new Gender(new RegistryEntryKey("user", "test"), "Test", "#00ff00");
+    this.g1 = new Gender(new RegistryEntryKey("builtin", "test"), null, null);
+    this.g2 = new Gender(new RegistryEntryKey("user", "test"), "Test", new Image("/test.png"));
   }
 
   @Test

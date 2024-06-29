@@ -56,9 +56,10 @@ public final class LifeEventType extends RegistryEntry {
   }
 
   /**
-   * Set the group of this life event type. Only works for user-defined entries.
+   * Set the group of this life event type.
    *
    * @param group A group.
+   * @throws UnsupportedOperationException If this entry is built-in.
    */
   public void setGroup(@NotNull Group group) {
     this.ensureNotBuiltin("group");
@@ -74,9 +75,9 @@ public final class LifeEventType extends RegistryEntry {
 
   /**
    * Set whether this life event type indicates that the actors it is associated with are deceased.
-   * Only works for user-defined entries.
    *
    * @param indicatesDeath True to indicate death, false otherwise.
+   * @throws UnsupportedOperationException If this entry is built-in.
    */
   public void setIndicatesDeath(boolean indicatesDeath) {
     this.ensureNotBuiltin("indicatesDeath");
@@ -105,11 +106,12 @@ public final class LifeEventType extends RegistryEntry {
   }
 
   /**
-   * Set the minimum and maximum number of actors allowed for this event type. Only works for user-defined entries.
+   * Set the minimum and maximum number of actors allowed for this event type.
    *
    * @param min     The minimum number of actors.
    * @param max     The maximum number of actors.
    * @param isUnion Whether this type should indicate a union.
+   * @throws UnsupportedOperationException If this entry is built-in.
    */
   public void setActorsNumber(int min, int max, boolean isUnion) {
     this.ensureNotBuiltin("minActors/maxActors/indicatesUnion");
@@ -138,9 +140,10 @@ public final class LifeEventType extends RegistryEntry {
   }
 
   /**
-   * Set whether this event type may occur at most once in a person’s life. Only works for user-defined entries.
+   * Set whether this event type may occur at most once in a person’s life.
    *
    * @param unique True to set as unique, false otherwise.
+   * @throws UnsupportedOperationException If this entry is built-in.
    */
   public void setUnique(boolean unique) {
     this.ensureNotBuiltin("unique");
@@ -149,9 +152,8 @@ public final class LifeEventType extends RegistryEntry {
 
   @Override
   protected void ensureNotBuiltin(@NotNull String property) {
-    if (!this.init) {
+    if (!this.init)
       super.ensureNotBuiltin(property);
-    }
   }
 
   @Override

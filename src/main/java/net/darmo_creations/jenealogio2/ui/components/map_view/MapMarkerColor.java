@@ -26,7 +26,7 @@ public enum MapMarkerColor {
   }
 
   /**
-   * The image associated to this marker color.
+   * The image associated to this marker icon.
    * <p>
    * May be null if the image could not be found.
    */
@@ -35,7 +35,7 @@ public enum MapMarkerColor {
   }
 
   /**
-   * Get the marker icon for the given color as an {@link Image}.
+   * Get the marker icon for the given icon as an {@link Image}.
    */
   private static @Nullable Image getMarkerIcon(@NotNull String color) {
     Objects.requireNonNull(color);

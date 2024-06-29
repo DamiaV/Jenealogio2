@@ -82,7 +82,7 @@ public class MapView extends AnchorPane {
    * Add a marker at the given coordinates.
    *
    * @param latLon       Marker’s coordinates.
-   * @param color        Marker’s color.
+   * @param color        Marker’s icon.
    * @param layerTooltip Optional tooltip to show on mouse click.
    * @return ID of the created marker, will always be > 0.
    */

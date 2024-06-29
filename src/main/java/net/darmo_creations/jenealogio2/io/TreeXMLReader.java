@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.io;
 
+import javafx.scene.image.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
@@ -115,19 +116,9 @@ public class TreeXMLReader extends TreeXMLManager {
     if (gendersElement.isPresent()) {
       for (Element entryElement : XmlUtils.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
         RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_KEY_ATTR, s -> s, null, false));
-        String color = XmlUtils.getAttr(entryElement, GENDER_COLOR_ATTR, s -> s, null, false);
-        if (!color.matches("^#[\\da-fA-F]{6}$")) {
-          throw new IOException("Invalid color code: " + color);
-        }
-        if (key.isBuiltin()) {
-          if (!familyTree.genderRegistry().containsKey(key)) {
-            throw new IOException("Undefined GENDERS registry key: " + key.fullName());
-          }
-          familyTree.genderRegistry().getEntry(key).setColor(color);
-        } else {
-          String label = XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
-          familyTree.genderRegistry().registerEntry(key, label, new GenderRegistry.RegistryArgs(color));
-        }
+        String base64 = XmlUtils.getAttr(entryElement, GENDER_ICON_ATTR, s -> s, null, false);
+        String label = XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
+        familyTree.genderRegistry().registerEntry(key, label, new GenderRegistry.RegistryArgs(base64ToImage(base64)));
       }
     }
 
@@ -158,6 +149,27 @@ public class TreeXMLReader extends TreeXMLManager {
         }
       }
     }
+  }
+
+  /**
+   * Convert a Base64 string into an {@link Image}.
+   *
+   * @param base64 The Base64 string to convert.
+   * @return The computed image.
+   */
+  private static Image base64ToImage(@NotNull String base64) {
+    byte[] bytes = Base64.getDecoder().decode(base64);
+    int w = bytes[0], h = bytes[1];
+    int[] pixels = new int[w * h];
+    for (int i = 0; i < pixels.length; i++) {
+      pixels[i] = bytes[2 + 4 * i] << 24
+                  | bytes[2 + 4 * i + 1] << 16
+                  | bytes[2 + 4 * i + 2] << 8
+                  | bytes[2 + 4 * i + 3];
+    }
+    WritableImage image = new WritableImage(w, h);
+    image.getPixelWriter().setPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), pixels, 0, w);
+    return image;
   }
 
   // endregion

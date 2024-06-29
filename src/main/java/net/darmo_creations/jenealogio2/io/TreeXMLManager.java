@@ -24,7 +24,7 @@ public abstract class TreeXMLManager {
   protected static final String REGISTRY_ENTRY_TAG = "Entry";
   protected static final String REGISTRY_ENTRY_KEY_ATTR = "key";
   protected static final String REGISTRY_ENTRY_LABEL_ATTR = "label";
-  protected static final String GENDER_COLOR_ATTR = "color";
+  protected static final String GENDER_ICON_ATTR = "icon";
   protected static final String LIFE_EVENT_TYPES_TAG = "LifeEventTypes";
   protected static final String LIFE_EVENT_TYPE_GROUP_ATTR = "group";
   protected static final String LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR = "indicatesDeath";

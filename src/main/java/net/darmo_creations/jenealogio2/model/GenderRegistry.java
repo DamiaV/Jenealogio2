@@ -1,9 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Objects;
+import javafx.scene.image.*;
 
 /**
  * Registry to manager {@link Gender}s.
@@ -15,36 +12,24 @@ public final class GenderRegistry extends Registry<Gender, GenderRegistry.Regist
   GenderRegistry() {
     super(
         "genders",
-        (key, label, args) -> new Gender(key, label, args.color()),
+        (key, label, args) -> new Gender(key, label, args.icon()),
 
-        new BuiltinEntry<>("agender", new RegistryArgs("#000000")),
-        new BuiltinEntry<>("female", new RegistryArgs("#ee8434")),
-        new BuiltinEntry<>("gender_fluid", new RegistryArgs("#bf17d5")),
-        new BuiltinEntry<>("male", new RegistryArgs("#00b69e")),
-        new BuiltinEntry<>("non_binary", new RegistryArgs("#fff430"))
+        new BuiltinEntry<>("agender", new RegistryArgs()),
+        new BuiltinEntry<>("female", new RegistryArgs()),
+        new BuiltinEntry<>("gender_fluid", new RegistryArgs()),
+        new BuiltinEntry<>("male", new RegistryArgs()),
+        new BuiltinEntry<>("non_binary", new RegistryArgs())
     );
-  }
-
-  @Override
-  public List<Gender> serializableEntries() {
-    return this.entries().stream()
-        .filter(entry -> !entry.isBuiltin() || !entry.color().equals(entry.defaultColor()))
-        .toList();
-  }
-
-  @Override
-  public RegistryArgs getBuildArgs(@NotNull Gender entry) {
-    return new RegistryArgs(entry.color());
   }
 
   /**
    * Wrapper class used to declare new {@link Gender} entries.
    *
-   * @param color Color to use in the GUI. Must be hex CSS color code.
+   * @param icon Icon to use in the GUI.
    */
-  public record RegistryArgs(@NotNull String color) {
-    public RegistryArgs {
-      Objects.requireNonNull(color);
+  public record RegistryArgs(Image icon) {
+    public RegistryArgs() {
+      this(null);
     }
   }
 }

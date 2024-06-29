@@ -21,7 +21,7 @@ import java.util.stream.*;
  */
 public class PersonWidget extends AnchorPane {
   public static final int WIDTH = 120;
-  public static final int HEIGHT = 164;
+  public static final int HEIGHT = 180;
 
   private static final String EMPTY_LABEL_VALUE = "?";
 
@@ -40,7 +40,6 @@ public class PersonWidget extends AnchorPane {
   private PersonWidget parentWidget1;
   private PersonWidget parentWidget2;
 
-  private final VBox imagePane = new VBox();
   private final ImageView imageView = new ImageView();
   private final Label firstNameLabel = new Label();
   private final Label lastNameLabel = new Label();
@@ -80,7 +79,7 @@ public class PersonWidget extends AnchorPane {
     this.setMinWidth(this.getPrefWidth());
     this.setMaxWidth(this.getPrefWidth());
 
-    VBox pane = new VBox();
+    VBox pane = new VBox(5);
     AnchorPane.setTopAnchor(pane, 0.0);
     AnchorPane.setBottomAnchor(pane, 0.0);
     AnchorPane.setLeftAnchor(pane, 0.0);
@@ -98,35 +97,40 @@ public class PersonWidget extends AnchorPane {
     HBox iconsRightBox = new HBox(5);
     iconsBox.setRight(iconsRightBox);
     if (isRoot) {
-      Label rootIcon = new Label("", config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+      Label rootIcon = new Label(null, config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
       rootIcon.setTooltip(new Tooltip(config.language().translate("person_widget.root.tooltip")));
       iconsRightBox.getChildren().add(rootIcon);
     }
     if (showMoreIcon) {
-      Label moreIcon = new Label("", config.theme().getIcon(Icon.MORE, Icon.Size.SMALL));
+      Label moreIcon = new Label(null, config.theme().getIcon(Icon.MORE, Icon.Size.SMALL));
       moreIcon.setTooltip(new Tooltip(config.language().translate("person_widget.more_icon.tooltip")));
       iconsRightBox.getChildren().add(moreIcon);
+    }
+    if (person != null && person.gender().isPresent()) {
+      Gender gender = person.gender().get();
+      boolean builtin = gender.isBuiltin();
+      String label;
+      if (builtin)
+        label = config.language().translate("genders." + gender.key().name());
+      else
+        label = Objects.requireNonNull(gender.userDefinedName());
+      Label genderIcon = new Label(null, new ImageView(gender.icon()));
+      genderIcon.setTooltip(new Tooltip(label));
+      iconsRightBox.getChildren().add(genderIcon);
     }
     pane.getChildren().add(iconsBox);
 
     final int imageSize = 50;
-    final int inset = 3;
-    final int size = imageSize + 2 * inset;
-    this.imagePane.setPadding(new Insets(inset));
-    VBox imageBoxInner = new VBox(this.imagePane);
-    imageBoxInner.setAlignment(Pos.CENTER);
-    HBox imageBoxOuter = new HBox(imageBoxInner);
-    imageBoxOuter.setAlignment(Pos.CENTER);
-    imageBoxOuter.setMinHeight(size);
-    imageBoxOuter.setMaxHeight(size);
-    imageBoxOuter.setPrefHeight(size);
-    pane.getChildren().add(imageBoxOuter);
     this.imageView.setPreserveRatio(true);
     this.imageView.setFitHeight(imageSize);
     this.imageView.setFitWidth(imageSize);
-    this.imagePane.getChildren().add(this.imageView);
+    HBox imageBox = new HBox(this.imageView);
+    imageBox.setAlignment(Pos.CENTER);
+    imageBox.setMinHeight(imageSize);
+    imageBox.setMinWidth(imageSize);
+    pane.getChildren().add(imageBox);
 
-    VBox infoPane = new VBox(this.firstNameLabel, this.lastNameLabel, this.birthDateLabel, this.deathDateLabel);
+    VBox infoPane = new VBox(5, this.firstNameLabel, this.lastNameLabel, this.birthDateLabel, this.deathDateLabel);
     infoPane.getStyleClass().add("person-data");
     pane.getChildren().add(infoPane);
 
@@ -225,8 +229,6 @@ public class PersonWidget extends AnchorPane {
     }
 
     this.imageView.setImage(this.person.mainPicture().flatMap(Picture::image).orElse(DEFAULT_IMAGE));
-    String genderColor = this.person.gender().map(Gender::color).orElse(Gender.MISSING_COLOR);
-    this.imagePane.setStyle("-fx-background-color: " + genderColor);
 
     String firstNames = this.person.getFirstNames().orElse(EMPTY_LABEL_VALUE);
     this.firstNameLabel.setText(firstNames);

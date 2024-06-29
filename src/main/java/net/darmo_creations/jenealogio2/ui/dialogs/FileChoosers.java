@@ -118,19 +118,22 @@ public final class FileChoosers {
   /**
    * Open a dialog to choose a file.
    *
-   * @param config The app’s config.
-   * @param stage  The parent stage object.
+   * @param config     The app’s config.
+   * @param stage      The parent stage object.
+   * @param descKey    Description’s i18n key. Ignored if no extensions are specified.
+   * @param extensions Allowed file extensions. Leave empty to allow any file type.
    * @return The selected file.
    */
   public static Optional<Path> showFileChooser(
-      final @NotNull Config config, final @NotNull Window stage) {
+      final @NotNull Config config, final @NotNull Window stage, String descKey, @NotNull String... extensions) {
     return getFile(
         config,
         stage,
         "file_chooser",
         false,
+        descKey,
         null,
-        null
+        extensions
     );
   }
 

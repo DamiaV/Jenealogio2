@@ -35,9 +35,10 @@ public abstract class RegistryEntry {
   }
 
   /**
-   * Set the display name of this entry. Only works for user-defined entries.
+   * Set the display name of this entry.
    *
    * @param userDefinedName The new name.
+   * @throws UnsupportedOperationException If this entry is built-in.
    */
   public void setUserDefinedName(@NotNull String userDefinedName) {
     this.ensureNotBuiltin("userDefinedName");
@@ -54,9 +55,8 @@ public abstract class RegistryEntry {
   }
 
   protected void ensureNotBuiltin(@NotNull String property) {
-    if (this.isBuiltin()) {
+    if (this.isBuiltin())
       throw new UnsupportedOperationException("Cannot modify property %s of builtin regitry entry.".formatted(property));
-    }
   }
 
   @Override

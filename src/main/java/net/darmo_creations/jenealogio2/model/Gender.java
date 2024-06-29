@@ -1,56 +1,64 @@
 package net.darmo_creations.jenealogio2.model;
 
+import javafx.scene.image.*;
+import net.darmo_creations.jenealogio2.*;
 import org.jetbrains.annotations.*;
 
+import java.io.*;
 import java.util.*;
 
 /**
  * This class represents the gender of a {@link Person}.
  */
 public final class Gender extends RegistryEntry {
-  public static final String MISSING_COLOR = "#808080";
-
-  private final String defaultColor;
-  private String color;
+  private Image icon;
 
   /**
    * Create a new gender object.
    *
    * @param key             Gender’s registry key.
    * @param userDefinedName Entry’s display text if not builtin.
-   * @param color           Color to use in the GUI. Must be hex CSS color code.
+   * @param icon            Gender’s icon if not builtin.
    */
-  Gender(@NotNull RegistryEntryKey key, String userDefinedName, @NotNull String color) {
+  Gender(@NotNull RegistryEntryKey key, String userDefinedName, Image icon) {
     super(key, userDefinedName);
-    this.defaultColor = key.isBuiltin() ? color : null;
-    this.setColor(color);
+    this.icon = key.isBuiltin() ? this.loadIcon() : Objects.requireNonNull(icon);
+  }
+
+  private @Nullable Image loadIcon() {
+    String iconName = this.key().name();
+    String path = "%s%s.png".formatted(App.IMAGES_PATH + "gender_icons/", iconName);
+    try (var stream = Gender.class.getResourceAsStream(path)) {
+      if (stream == null) {
+        App.LOGGER.warn("Missing icon: " + iconName);
+        return null;
+      }
+      return new Image(stream);
+    } catch (IOException e) {
+      return null;
+    }
   }
 
   /**
-   * The default color, as set when registered. Null for non-builtin entries.
+   * This gender’s icon.
    */
-  public @Nullable String defaultColor() {
-    return this.defaultColor;
+  public Image icon() {
+    return this.icon;
   }
 
   /**
-   * The color to use in the GUI.
-   */
-  public String color() {
-    return this.color;
-  }
-
-  /**
-   * Set the color to use in the GUI.
+   * Set this gender’s icon.
    *
-   * @param color A color.
+   * @param icon The new icon.
+   * @throws UnsupportedOperationException If this entry is built-in.
    */
-  public void setColor(@NotNull String color) {
-    this.color = Objects.requireNonNull(color);
+  public void setIcon(@NotNull Image icon) {
+    this.ensureNotBuiltin("icon");
+    this.icon = Objects.requireNonNull(icon);
   }
 
   @Override
   public String toString() {
-    return "Gender{key=%s, color='%s'}".formatted(this.key(), this.color);
+    return "Gender{key=%s}".formatted(this.key());
   }
 }

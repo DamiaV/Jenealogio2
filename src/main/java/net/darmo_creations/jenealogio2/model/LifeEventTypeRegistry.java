@@ -1,8 +1,8 @@
 package net.darmo_creations.jenealogio2.model;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Registry to manage {@link LifeEventType}s.
@@ -79,12 +79,6 @@ public final class LifeEventTypeRegistry extends Registry<LifeEventType, LifeEve
         new BuiltinEntry<>("passenger_list", new RegistryArgs(LifeEventType.Group.OTHER, false, false)), // Liste de passagers
         new BuiltinEntry<>("residence", new RegistryArgs(LifeEventType.Group.OTHER, false, false)) // Résidence
     );
-  }
-
-  @Override
-  public RegistryArgs getBuildArgs(@NotNull LifeEventType entry) {
-    return new RegistryArgs(entry.group(), entry.indicatesDeath(), entry.indicatesUnion(),
-        entry.minActors(), entry.maxActors(), entry.isUnique());
   }
 
   /**

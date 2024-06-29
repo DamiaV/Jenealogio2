@@ -1,6 +1,6 @@
 package net.darmo_creations.jenealogio2.model;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -129,11 +129,6 @@ public abstract class Registry<E extends RegistryEntry, A> {
     }
     this.entries.remove(entry.key());
   }
-
-  /**
-   * Return the build arguments for the given entry.
-   */
-  public abstract A getBuildArgs(final @NotNull E entry);
 
   /**
    * Wrapper class to provide builtin entries when creating a registry.

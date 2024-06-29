@@ -89,10 +89,10 @@ public enum Icon {
   IMPORT_REGISTRIES("tag_blue_down"),
   IMPORT_REGISTRIES_FROM_TREE("tree_down"),
   EXPORT_REGISTRIES("tag_blue_up"),
+  EDIT_ICON("picture_edit"),
 
   ADD_ENTRY("plus"),
   DELETE_ENTRY("cross"),
-  RESET_ENTRY("undo"),
 
   INFO("information"),
 

@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.io;
 
+import javafx.scene.image.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
@@ -100,22 +101,21 @@ public class TreeXMLWriter extends TreeXMLManager {
       final @NotNull FamilyTree familyTree,
       final Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep
   ) {
+    Predicate<RegistryEntry> keepPredicate = entry -> keep == null || keep.right().contains(entry.key());
     Element registriesElement = document.createElement(REGISTRIES_TAG);
     List<LifeEventType> userLifeEventTypes = familyTree.lifeEventTypeRegistry().serializableEntries().stream()
-        .filter(entry -> keep == null || keep.left().contains(entry.key())).toList();
+        .filter(keepPredicate).toList();
     List<Gender> userGenders = familyTree.genderRegistry().serializableEntries().stream()
-        .filter(entry -> keep == null || keep.right().contains(entry.key())).toList();
+        .filter(keepPredicate).toList();
 
     if (!userGenders.isEmpty()) {
       Element gendersElement = document.createElement(GENDERS_TAG);
-      userGenders.forEach(gender -> {
+      for (Gender gender : userGenders) {
         Element entryElement = (Element) gendersElement.appendChild(document.createElement(REGISTRY_ENTRY_TAG));
         XmlUtils.setAttr(document, entryElement, REGISTRY_ENTRY_KEY_ATTR, gender.key().fullName());
-        if (!gender.isBuiltin()) {
-          XmlUtils.setAttr(document, entryElement, REGISTRY_ENTRY_LABEL_ATTR, Objects.requireNonNull(gender.userDefinedName()));
-        }
-        XmlUtils.setAttr(document, entryElement, GENDER_COLOR_ATTR, gender.color());
-      });
+        XmlUtils.setAttr(document, entryElement, REGISTRY_ENTRY_LABEL_ATTR, Objects.requireNonNull(gender.userDefinedName()));
+        XmlUtils.setAttr(document, entryElement, GENDER_ICON_ATTR, imageToBase64(gender.icon()));
+      }
       if (gendersElement.hasChildNodes()) {
         registriesElement.appendChild(gendersElement);
       }
@@ -141,6 +141,29 @@ public class TreeXMLWriter extends TreeXMLManager {
     if (registriesElement.hasChildNodes()) {
       familyTreeElement.appendChild(registriesElement);
     }
+  }
+
+  /**
+   * Convert an {@link Image}’s ARGB pixel data to a Base64 string.
+   *
+   * @param image The image to convert.
+   * @return The computed Base64.
+   */
+  private static String imageToBase64(@NotNull Image image) {
+    int w = (int) image.getWidth(), h = (int) image.getHeight();
+    byte[] bytes = new byte[2 + 4 * (w * h)];
+    bytes[0] = (byte) w;
+    bytes[1] = (byte) h;
+    PixelReader pixelReader = image.getPixelReader();
+    int[] buffer = new int[w * h];
+    pixelReader.getPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), buffer, 0, w);
+    for (int i = 0; i < buffer.length; i++) {
+      bytes[2 + 4 * i] = (byte) (buffer[i] >> 24 & 0xff);
+      bytes[2 + 4 * i + 1] = (byte) (buffer[i] >> 16 & 0xff);
+      bytes[2 + 4 * i + 2] = (byte) (buffer[i] >> 8 & 0xff);
+      bytes[2 + 4 * i + 3] = (byte) (buffer[i] & 0xff);
+    }
+    return Base64.getEncoder().encodeToString(bytes);
   }
 
   // endregion

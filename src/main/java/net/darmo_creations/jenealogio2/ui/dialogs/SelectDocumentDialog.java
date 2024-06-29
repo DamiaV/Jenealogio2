@@ -152,7 +152,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
   }
 
   private void onAddDocument() {
-    Optional<Path> file = FileChoosers.showFileChooser(this.config, this.stage());
+    Optional<Path> file = FileChoosers.showFileChooser(this.config, this.stage(), null);
     if (file.isPresent()) {
       String name = file.get().getFileName().toString();
       if (this.isFileImported(name)) {
