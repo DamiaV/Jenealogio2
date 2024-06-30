@@ -44,6 +44,7 @@ public class DateTimeSelector extends HBox {
       label.setDateTime(this.getDateTime());
       clearButton.setDisable(newValue == null);
     });
+    clearButton.setDisable(true);
 
     this.getChildren().addAll(editButton, clearButton, label);
   }

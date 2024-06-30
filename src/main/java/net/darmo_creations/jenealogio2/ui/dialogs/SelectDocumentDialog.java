@@ -48,9 +48,6 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
         theme.getIcon(Icon.INFO, Icon.Size.SMALL)
     );
     label.setWrapText(true);
-    label.setPrefHeight(70);
-    label.setMinHeight(70);
-    label.setAlignment(Pos.TOP_LEFT);
 
     Button addDocumentButton = new Button(
         language.translate("dialog.select_documents.open_file"),
@@ -96,12 +93,11 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
         this.documentsList
     );
     content.setPrefWidth(400);
-    content.setPrefHeight(400);
     this.getDialogPane().setContent(content);
 
     Stage stage = this.stage();
-    stage.setMinWidth(400);
-    stage.setMinHeight(400);
+    stage.setMinWidth(600);
+    stage.setMinHeight(700);
 
     // Files drag-and-drop
     Scene scene = stage.getScene();

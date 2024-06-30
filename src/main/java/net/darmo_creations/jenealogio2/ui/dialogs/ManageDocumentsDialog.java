@@ -179,12 +179,11 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     content.getChildren().add(this.buttonDescriptionLabel);
 
     content.setPrefWidth(900);
-    content.setPrefHeight(600);
     this.getDialogPane().setContent(content);
 
     Stage stage = this.stage();
     stage.setMinWidth(900);
-    stage.setMinHeight(400);
+    stage.setMinHeight(700);
 
     this.applyButton = (Button) this.getDialogPane().lookupButton(ButtonTypes.APPLY);
     this.applyButton.addEventFilter(ActionEvent.ACTION, event -> {
