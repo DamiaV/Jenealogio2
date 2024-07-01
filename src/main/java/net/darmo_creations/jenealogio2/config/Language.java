@@ -20,7 +20,7 @@ public final class Language {
   private final String name;
   private final Locale locale;
   private final ResourceBundle resources;
-  private final List<Pair<Pattern, String>> daySuffixes = new LinkedList<>();
+  private final List<Suffix> daySuffixes = new LinkedList<>();
   /**
    * Mapping of plurals structured as
    * {base key: {count: plural text template}}
@@ -90,7 +90,7 @@ public final class Language {
         .sorted((p1, p2) -> -p1.left().compareTo(p2.left()))
         .forEach(p -> {
           final Pattern pattern = Pattern.compile("^" + p.left().replace("*", ".*") + "$");
-          this.daySuffixes.add(new Pair<>(pattern, p.right()));
+          this.daySuffixes.add(new Suffix(pattern, p.right()));
         });
     this.plurals.putAll(plurals);
   }
@@ -173,9 +173,9 @@ public final class Language {
     if (day < 1)
       throw new IllegalArgumentException("Invalid day number: " + day);
     return this.daySuffixes.stream()
-        .filter(p -> p.left().matcher(String.valueOf(day)).matches())
+        .filter(suffix -> suffix.pattern().matcher(String.valueOf(day)).matches())
         .findFirst()
-        .map(Pair::right);
+        .map(Suffix::suffix);
   }
 
   @Override
@@ -199,5 +199,12 @@ public final class Language {
   @Override
   public int hashCode() {
     return Objects.hash(this.code, this.name, this.locale, this.resources);
+  }
+
+  private record Suffix(@NotNull Pattern pattern, @NotNull String suffix) {
+    private Suffix {
+      Objects.requireNonNull(pattern);
+      Objects.requireNonNull(suffix);
+    }
   }
 }
