@@ -281,14 +281,7 @@ public class EditPersonDialog extends DialogBase<Person>
       gridPane.getRowConstraints().add(rc);
     }
 
-    ColumnConstraints cc1 = new ColumnConstraints();
-    cc1.setHgrow(Priority.SOMETIMES);
-    ColumnConstraints cc2 = new ColumnConstraints();
-    cc2.setHgrow(Priority.ALWAYS);
-    gridPane.getColumnConstraints().addAll(cc1, cc2);
-
-    gridPane.setPadding(new Insets(5, 0, 0, 0));
-    tab.setContent(gridPane);
+    this.setupTabGridConstraints(tab, gridPane);
     return tab;
   }
 
@@ -384,6 +377,15 @@ public class EditPersonDialog extends DialogBase<Person>
       gridPane.getRowConstraints().add(rc);
     }
 
+    this.setupTabGridConstraints(tab, gridPane);
+    return tab;
+  }
+
+  private void addRow(@NotNull GridPane gridPane, int index, @NotNull String text, @NotNull Node node) {
+    gridPane.addRow(index, new Label(this.config.language().translate(text)), node);
+  }
+
+  private void setupTabGridConstraints(@NotNull Tab tab, @NotNull GridPane gridPane) {
     ColumnConstraints cc1 = new ColumnConstraints();
     cc1.setHgrow(Priority.SOMETIMES);
     ColumnConstraints cc2 = new ColumnConstraints();
@@ -392,11 +394,6 @@ public class EditPersonDialog extends DialogBase<Person>
 
     gridPane.setPadding(new Insets(5, 0, 0, 0));
     tab.setContent(gridPane);
-    return tab;
-  }
-
-  private void addRow(@NotNull GridPane gridPane, int index, @NotNull String text, @NotNull Node node) {
-    gridPane.addRow(index, new Label(this.config.language().translate(text)), node);
   }
 
   /**

@@ -94,48 +94,6 @@ public final class Alerts {
   }
 
   /**
-   * Open an alert dialog to ask the user to choose an option from a combobox.
-   *
-   * @param config      The app’s config.
-   * @param headerKey   Header text key.
-   * @param labelKey    Combobox label text key.
-   * @param titleKey    Title key.
-   * @param choices     The choices for the combobox.
-   * @param contentArgs Format arguments to apply to the header and title.
-   * @return The selected item.
-   */
-  public static <T> Optional<T> chooser(
-      final @NotNull Config config,
-      @NotNull String headerKey,
-      @NotNull String labelKey,
-      String titleKey,
-      final Collection<T> choices,
-      final FormatArg @NotNull ... contentArgs
-  ) {
-    if (choices.isEmpty()) {
-      throw new IllegalArgumentException("empty choices");
-    }
-    Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
-    HBox hBox = new HBox(5);
-    ComboBox<T> choicesCombo = new ComboBox<>();
-    choicesCombo.getItems().addAll(choices);
-    choicesCombo.getSelectionModel().select(0);
-    Label label = new Label(config.language().translate(labelKey, contentArgs));
-    hBox.getChildren().addAll(label, choicesCombo);
-    hBox.setAlignment(Pos.CENTER);
-    alert.getDialogPane().setContent(hBox);
-    alert.setOnShown(e -> {
-      Platform.runLater(choicesCombo::requestFocus);
-      e.consume();
-    });
-    Optional<ButtonType> buttonType = alert.showAndWait();
-    if (buttonType.isPresent() && !buttonType.get().getButtonData().isCancelButton()) {
-      return Optional.of(choicesCombo.getSelectionModel().getSelectedItem());
-    }
-    return Optional.empty();
-  }
-
-  /**
    * Open an alert dialog to prompt the use to input some text.
    *
    * @param config        The app’s config.

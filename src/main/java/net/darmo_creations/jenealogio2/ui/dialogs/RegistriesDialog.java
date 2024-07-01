@@ -284,18 +284,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         @Override
         public void updateItem(String item, boolean empty) {
           super.updateItem(item, empty);
-          var row = this.getTableRow();
-          if (row == null) {
-            return;
-          }
-          var rowItem = row.getItem();
-          if (rowItem == null) {
-            return;
-          }
-          var value = rowItem.entry();
-          boolean editable = value == null || !value.isBuiltin();
-          this.setEditable(editable);
-          this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
+          updateTableCell(this, false);
         }
       });
       nameCol.setCellValueFactory(param -> param.getValue().nameProperty());
@@ -429,18 +418,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
               public void updateItem(LifeEventType.Group item, boolean empty) {
                 super.updateItem(item, empty);
                 this.setText(empty ? "" : language.translate("life_event_type_group." + item.name().toLowerCase()));
-                var row = this.getTableRow();
-                if (row == null) {
-                  return;
-                }
-                var rowItem = row.getItem();
-                if (rowItem == null) {
-                  return;
-                }
-                var value = rowItem.entry();
-                boolean editable = value == null || !value.isBuiltin();
-                this.setEditable(editable);
-                this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
+                updateTableCell(this, false);
               }
             };
         comboBoxTableCell.setConverter(new StringConverter<>() {
@@ -503,18 +481,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         @Override
         public void updateItem(Integer item, boolean empty) {
           super.updateItem(item, empty);
-          var row = this.getTableRow();
-          if (row == null) {
-            return;
-          }
-          var rowItem = row.getItem();
-          if (rowItem == null) {
-            return;
-          }
-          var value = rowItem.entry();
-          boolean editable = rowItem.usage() == 0 && (value == null || !value.isBuiltin());
-          this.setEditable(editable);
-          this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
+          updateTableCell(this, true);
         }
 
         @Override
@@ -800,18 +767,20 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     @Override
     public void updateItem(T item, boolean empty) {
       super.updateItem(item, empty);
-      var row = this.getTableRow();
-      if (row == null) {
-        return;
-      }
-      var rowItem = row.getItem();
-      if (rowItem == null) {
-        return;
-      }
-      var value = rowItem.entry();
-      boolean editable = rowItem.usage() == 0 && (value == null || !value.isBuiltin());
-      this.setEditable(editable);
-      this.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
+      updateTableCell(this, true);
     }
+  }
+
+  private static <S extends TableItem<?, ?>> void updateTableCell(@NotNull TableCell<S, ?> cell, boolean disableIfInUse) {
+    TableRow<S> row = cell.getTableRow();
+    if (row == null)
+      return;
+    S rowItem = row.getItem();
+    if (rowItem == null)
+      return;
+    RegistryEntry value = rowItem.entry();
+    boolean editable = (!disableIfInUse || rowItem.usage() == 0) && (value == null || !value.isBuiltin());
+    cell.setEditable(editable);
+    cell.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
   }
 }

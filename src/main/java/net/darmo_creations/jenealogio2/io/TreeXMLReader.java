@@ -36,14 +36,7 @@ public class TreeXMLReader extends TreeXMLManager {
     Document document = XmlUtils.readFile(inputStream);
 
     NodeList childNodes = document.getChildNodes();
-    if (childNodes.getLength() != 1)
-      throw new IOException("Parse error");
-    Element familyTreeElement = (Element) childNodes.item(0);
-    if (!familyTreeElement.getTagName().equals(FAMILY_TREE_TAG))
-      throw new IOException("Missing root element");
-    int version = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_VERSION_ATTR, Integer::parseInt, null, false);
-    if (version != 1)
-      throw new IOException("Unsupported XML file version: " + version);
+    Element familyTreeElement = this.getRootElement(childNodes, FAMILY_TREE_TAG, FAMILY_TREE_VERSION_ATTR);
     String name = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_NAME_ATTR, s -> s, null, true);
     int rootID = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, null, false);
 
@@ -83,22 +76,28 @@ public class TreeXMLReader extends TreeXMLManager {
     FamilyTree dummyTree = new FamilyTree("dummy");
     Document document = XmlUtils.readFile(new FileInputStream(file.toFile()));
     NodeList childNodes = document.getChildNodes();
-    if (childNodes.getLength() != 1) {
-      throw new IOException("Parse error");
-    }
-    Element registriesElement = (Element) childNodes.item(0);
-    if (!registriesElement.getTagName().equals(REGISTRIES_TAG)) {
-      throw new IOException("Missing root element");
-    }
-    int version = XmlUtils.getAttr(registriesElement, REGISTRIES_VERSION_ATTR, Integer::parseInt, null, false);
-    if (version != 1) {
-      throw new IOException("Unsupported XML file version: " + version);
-    }
+    Element registriesElement = this.getRootElement(childNodes, REGISTRIES_TAG, REGISTRIES_VERSION_ATTR);
     this.loadUserRegistries(registriesElement, dummyTree);
     return new RegistriesWrapper(
         dummyTree.lifeEventTypeRegistry().serializableEntries(),
         dummyTree.genderRegistry().serializableEntries()
     );
+  }
+
+  private Element getRootElement(
+      final @NotNull NodeList childNodes,
+      @NotNull String rootTagName,
+      @NotNull String documentVersionAttr
+  ) throws IOException {
+    if (childNodes.getLength() != 1)
+      throw new IOException("Parse error");
+    Element familyTreeElement = (Element) childNodes.item(0);
+    if (!familyTreeElement.getTagName().equals(rootTagName))
+      throw new IOException("Missing root element");
+    int version = XmlUtils.getAttr(familyTreeElement, documentVersionAttr, Integer::parseInt, null, false);
+    if (version != 1)
+      throw new IOException("Unsupported XML file version: " + version);
+    return familyTreeElement;
   }
 
   /**

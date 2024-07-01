@@ -49,37 +49,20 @@ public final class DateTimeUtils {
   public static String formatDateTime(@NotNull DateTime date, boolean useIsoDate, final @NotNull Config config) {
     Objects.requireNonNull(date);
     Language language = config.language();
-    String dateFormat = config.dateFormat().getFormat();
-    TimeFormat tf = config.timeFormat();
-    String timeFormat = tf.getFormat();
-    String fullTimeFormat = tf.getFullVersion().getFormat();
-    var dateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, timeFormat));
-    var fullDateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, fullTimeFormat));
-    var dateFormatterNoHour = new CalendarDateTimeFormatter(language, dateFormat);
-    Function<CalendarSpecificDateTime, String> formatter = d -> {
-      CalendarDateTimeFormatter f;
-      if (d.isTimeSet()) {
-        f = useIsoDate || d.calendar().hoursInDay() == 24 ? dateFormatter : fullDateFormatter;
-      } else {
-        f = dateFormatterNoHour;
-      }
-      return useIsoDate ? f.format(d.toISO8601Date()) : f.format(d);
-    };
+    var formatter = getCalendarDateTimeFormatter(config, language, useIsoDate);
 
-    if (date instanceof DateTimeWithPrecision d) {
+    if (date instanceof DateTimeWithPrecision d)
       return language.translate(
           "date_format." + d.precision().name().toLowerCase(),
           new FormatArg("date", formatter.apply(d.date()))
       );
-    }
-    if (date instanceof DateTimeRange d) {
+    else if (date instanceof DateTimeRange d)
       return language.translate(
           "date_format.range",
           new FormatArg("date1", formatter.apply(d.startDate())),
           new FormatArg("date2", formatter.apply(d.endDate()))
       );
-    }
-    if (date instanceof DateTimeAlternative d) {
+    else if (date instanceof DateTimeAlternative d) {
       String comma = language.translate("list_comma");
       String or = language.translate("list_or");
       String str = d.dates().stream().map(formatter).collect(Collectors.joining(comma));
@@ -90,6 +73,24 @@ public final class DateTimeUtils {
     }
 
     throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
+  }
+
+  private static Function<CalendarSpecificDateTime, String> getCalendarDateTimeFormatter(final @NotNull Config config, @NotNull Language language, boolean useIsoDate) {
+    String dateFormat = config.dateFormat().getFormat();
+    TimeFormat tf = config.timeFormat();
+    String timeFormat = tf.getFormat();
+    String fullTimeFormat = tf.getFullVersion().getFormat();
+    var dateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, timeFormat));
+    var fullDateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, fullTimeFormat));
+    var dateFormatterNoHour = new CalendarDateTimeFormatter(language, dateFormat);
+    return d -> {
+      CalendarDateTimeFormatter f;
+      if (d.isTimeSet())
+        f = useIsoDate || d.calendar().hoursInDay() == 24 ? dateFormatter : fullDateFormatter;
+      else
+        f = dateFormatterNoHour;
+      return useIsoDate ? f.format(d.toISO8601Date()) : f.format(d);
+    };
   }
 
   private DateTimeUtils() {

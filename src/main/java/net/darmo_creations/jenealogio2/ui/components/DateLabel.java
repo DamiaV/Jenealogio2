@@ -40,10 +40,6 @@ public class DateLabel extends Label {
     this.setDateTime(dateTime);
   }
 
-  public DateTime getDateTime() {
-    return this.dateTime;
-  }
-
   public void setDateTime(DateTime dateTime) {
     this.dateTime = dateTime;
     this.updateText();
