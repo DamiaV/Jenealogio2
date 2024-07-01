@@ -32,8 +32,8 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   public SelectCoordinatesDialog(final @NotNull Config config) {
     super(config, "select_coordinates", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
     this.searchField = new ErasableTextField(config);
     HBox.setHgrow(this.searchField, Priority.ALWAYS);
@@ -48,7 +48,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
     VBox.setVgrow(this.mapView, Priority.ALWAYS);
     this.mapView.setOnPointClicked(this::onPointClicked);
 
-    VBox content = new VBox(
+    final VBox content = new VBox(
         5,
         new Label(
             language.translate("dialog.select_coordinates.description"),
@@ -61,7 +61,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
     content.setPrefHeight(400);
     this.getDialogPane().setContent(content);
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(400);
     stage.setMinHeight(400);
 
@@ -79,7 +79,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   private void onPointClicked(@NotNull LatLon latLon) {
     this.selectedPointProperty.set(latLon);
     this.removeClickedMarker();
-    int id = this.mapView.addMarker(latLon, MapMarkerColor.GREEN, null);
+    final int id = this.mapView.addMarker(latLon, MapMarkerColor.GREEN, null);
     this.selectedMarkerIdProperty.set(id);
     this.updateButtons();
   }
@@ -97,7 +97,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
               this.selectedPointProperty.set(ll);
               this.mapView.setCenter(ll);
               this.mapView.setZoom(15);
-              int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE, null);
+              final int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE, null);
               this.selectedMarkerIdProperty.set(id);
             });
           }));
@@ -105,7 +105,7 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   }
 
   private void removeClickedMarker() {
-    int id = this.selectedMarkerIdProperty.get();
+    final int id = this.selectedMarkerIdProperty.get();
     if (id > 0) {
       this.mapView.removeMarker(id);
       this.selectedMarkerIdProperty.set(0);

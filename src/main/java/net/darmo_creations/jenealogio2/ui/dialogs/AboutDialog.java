@@ -22,28 +22,28 @@ public class AboutDialog extends DialogBase<ButtonType> {
    */
   public AboutDialog(final @NotNull Config config) {
     super(config, "about", false, ButtonTypes.CLOSE);
-    Label titleLabel = new Label();
+    final Label titleLabel = new Label();
     titleLabel.setText(App.NAME);
     titleLabel.setStyle("-fx-font-size: 1.2em; -fx-font-weight: bold");
     VBox.setMargin(titleLabel, new Insets(10));
 
-    TextArea contentView = getTextArea();
+    final TextArea contentView = getTextArea();
     VBox.setVgrow(contentView, Priority.ALWAYS);
 
-    VBox vBox = new VBox(10, titleLabel, contentView);
+    final VBox vBox = new VBox(10, titleLabel, contentView);
 
-    ImageView logo = new ImageView(config.theme().getAppIcon());
+    final ImageView logo = new ImageView(config.theme().getAppIcon());
     logo.setFitHeight(100);
     logo.setFitWidth(100);
 
-    HBox content = new HBox(10, logo, vBox);
+    final HBox content = new HBox(10, logo, vBox);
     content.setPrefWidth(600);
     content.setPrefHeight(300);
     this.getDialogPane().setContent(content);
   }
 
   private static TextArea getTextArea() {
-    TextArea contentView = new TextArea();
+    final TextArea contentView = new TextArea();
     contentView.setText("""
         App version: %s
                 

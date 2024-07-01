@@ -11,7 +11,6 @@ import java.util.function.*;
  * @param <T> Type of the elements of the original collection.
  * @param <U> Type of the elements that match the predicate.
  */
-@UnmodifiableView
 public class FilteredView<T, U extends T> implements Collection<U> {
   private final Collection<T> collection;
   private final Predicate<T> predicate;

@@ -63,22 +63,22 @@ public final class Language {
    * to {@link #translate(String, Integer, FormatArg...)}.
    */
   private void extractSuffixes() {
-    Iterator<String> iterator = this.resources.getKeys().asIterator();
-    List<Pair<String, String>> calendarSuffixes = new LinkedList<>();
-    Map<String, Map<Integer, String>> plurals = new HashMap<>();
+    final Iterator<String> iterator = this.resources.getKeys().asIterator();
+    final List<Pair<String, String>> calendarSuffixes = new LinkedList<>();
+    final Map<String, Map<Integer, String>> plurals = new HashMap<>();
     while (iterator.hasNext()) {
-      String key = iterator.next();
+      final String key = iterator.next();
       Matcher matcher = CALENDAR_SUFFIX_PATTERN.matcher(key);
       if (matcher.matches())
         calendarSuffixes.add(new Pair<>(matcher.group(1), this.translate(key)));
       else {
         matcher = PLURAL_SUFFIX_PATTERN.matcher(key);
         if (matcher.matches()) {
-          String baseKey = matcher.group(1);
+          final String baseKey = matcher.group(1);
           if (!plurals.containsKey(baseKey))
             plurals.put(baseKey, new HashMap<>());
-          String number = matcher.group(2);
-          String value = this.resources.getString(key);
+          final String number = matcher.group(2);
+          final String value = this.resources.getString(key);
           if (number == null || number.isEmpty())
             plurals.get(baseKey).put(DEFAULT_PLURAL_KEY, value);
           else
@@ -89,7 +89,7 @@ public final class Language {
     calendarSuffixes.stream()
         .sorted((p1, p2) -> -p1.left().compareTo(p2.left()))
         .forEach(p -> {
-          Pattern pattern = Pattern.compile("^" + p.left().replace("*", ".*") + "$");
+          final Pattern pattern = Pattern.compile("^" + p.left().replace("*", ".*") + "$");
           this.daySuffixes.add(new Pair<>(pattern, p.right()));
         });
     this.plurals.putAll(plurals);
@@ -133,7 +133,7 @@ public final class Language {
   public String translate(@NotNull String key, Integer count, final @NotNull FormatArg @NotNull ... formatArgs) {
     String text = null;
     if (count != null && count > 1) {
-      Map<Integer, String> p = this.plurals.get(key);
+      final Map<Integer, String> p = this.plurals.get(key);
       if (p != null) {
         text = p.get(count);
         if (text == null)
@@ -143,7 +143,7 @@ public final class Language {
     if (text == null) {
       try {
         text = this.resources.getString(key);
-      } catch (MissingResourceException e) {
+      } catch (final MissingResourceException e) {
         App.LOGGER.warn("Can’t find key " + key);
         return key;
       }
@@ -189,7 +189,7 @@ public final class Language {
       return true;
     if (obj == null || obj.getClass() != this.getClass())
       return false;
-    Language that = (Language) obj;
+    final Language that = (Language) obj;
     return Objects.equals(this.code, that.code) &&
            Objects.equals(this.name, that.name) &&
            Objects.equals(this.locale, that.locale) &&

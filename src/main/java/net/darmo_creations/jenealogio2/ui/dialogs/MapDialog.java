@@ -39,8 +39,8 @@ public class MapDialog extends DialogBase<ButtonType> {
    */
   public MapDialog(final @NotNull Config config) {
     super(config, "map", true, false, ButtonTypes.CLOSE);
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
     this.eventTypeCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> {
@@ -61,9 +61,9 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.placesList.setOnMouseClicked(e -> this.onPlaceClick());
 
     this.mapView = new MapView(config);
-    HBox filterBox = new HBox(5, new Label(language.translate("dialog.map.event_type")), this.eventTypeCombo);
+    final HBox filterBox = new HBox(5, new Label(language.translate("dialog.map.event_type")), this.eventTypeCombo);
     filterBox.setAlignment(Pos.CENTER_LEFT);
-    SplitPane content = new SplitPane(
+    final SplitPane content = new SplitPane(
         new VBox(
             5,
             filterBox,
@@ -79,7 +79,7 @@ public class MapDialog extends DialogBase<ButtonType> {
     content.setPrefHeight(500);
     this.getDialogPane().setContent(content);
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(800);
     stage.setMinHeight(600);
 
@@ -89,7 +89,7 @@ public class MapDialog extends DialogBase<ButtonType> {
   }
 
   private void onPlaceClick() {
-    PlaceView selectedItem = this.placesList.getSelectionModel().getSelectedItem();
+    final PlaceView selectedItem = this.placesList.getSelectionModel().getSelectedItem();
     if (selectedItem != null) {
       this.mapView.setCenter(selectedItem.latLon());
       this.mapView.setZoom(15);
@@ -108,7 +108,7 @@ public class MapDialog extends DialogBase<ButtonType> {
             latLon.ifPresent(ll -> {
               this.mapView.setCenter(ll);
               this.mapView.setZoom(15);
-              int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE, null);
+              final int id = this.mapView.addMarker(ll, MapMarkerColor.BLUE, null);
               this.resultMarkerId.set(id);
             });
           }));
@@ -116,7 +116,7 @@ public class MapDialog extends DialogBase<ButtonType> {
   }
 
   private void removeResultMarker() {
-    int id = this.resultMarkerId.get();
+    final int id = this.resultMarkerId.get();
     if (id > 0) {
       this.mapView.removeMarker(id);
       this.resultMarkerId.set(-1);
@@ -147,17 +147,17 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.mapView.removeMarkers();
     this.placesList.getItems().clear();
 
-    LifeEventType type = this.eventTypeCombo.getSelectionModel().getSelectedItem().data();
-    Map<LatLon, List<LifeEvent>> groupedEvents = new HashMap<>();
+    final LifeEventType type = this.eventTypeCombo.getSelectionModel().getSelectedItem().data();
+    final Map<LatLon, List<LifeEvent>> groupedEvents = new HashMap<>();
 
-    for (LifeEvent lifeEvent : this.familyTree.lifeEvents()) {
+    for (final LifeEvent lifeEvent : this.familyTree.lifeEvents()) {
       if (type != null && !lifeEvent.type().equals(type))
         continue;
-      Optional<Place> place = lifeEvent.place();
+      final Optional<Place> place = lifeEvent.place();
       if (place.isPresent()) {
-        Optional<LatLon> latLon = place.get().latLon();
+        final Optional<LatLon> latLon = place.get().latLon();
         if (latLon.isPresent()) {
-          LatLon ll = latLon.get();
+          final LatLon ll = latLon.get();
           if (!groupedEvents.containsKey(ll))
             groupedEvents.put(ll, new LinkedList<>());
           groupedEvents.get(ll).add(lifeEvent);
@@ -167,9 +167,9 @@ public class MapDialog extends DialogBase<ButtonType> {
 
     groupedEvents.entrySet().stream()
         .sorted((e1, e2) -> { // Sort by list size then place address
-          List<LifeEvent> events1 = e1.getValue();
-          List<LifeEvent> events2 = e2.getValue();
-          int compare = -Integer.compare(events1.size(), events2.size());
+          final List<LifeEvent> events1 = e1.getValue();
+          final List<LifeEvent> events2 = e2.getValue();
+          final int compare = -Integer.compare(events1.size(), events2.size());
           if (compare != 0)
             return compare;
           // place() will always return a non-empty value because we filtered events above
@@ -178,10 +178,10 @@ public class MapDialog extends DialogBase<ButtonType> {
               .compareToIgnoreCase(events2.get(0).place().get().address());
         })
         .forEach(e -> {
-          LatLon latLon = e.getKey();
-          List<LifeEvent> events = e.getValue();
-          int nb = events.size();
-          MapMarkerColor color;
+          final LatLon latLon = e.getKey();
+          final List<LifeEvent> events = e.getValue();
+          final int nb = events.size();
+          final MapMarkerColor color;
           if (nb <= 5)
             color = MapMarkerColor.GREEN;
           else if (nb <= 10)
@@ -193,8 +193,8 @@ public class MapDialog extends DialogBase<ButtonType> {
           else
             color = MapMarkerColor.RED;
           //noinspection OptionalGetWithoutIsPresent
-          Place place = events.get(0).place().get();
-          Map<LifeEventType, Integer> typeCounts = events.stream()
+          final Place place = events.get(0).place().get();
+          final Map<LifeEventType, Integer> typeCounts = events.stream()
               .collect(Collectors.groupingBy(LifeEvent::type, Collectors.reducing(0, i -> 1, Integer::sum)));
           this.mapView.addMarker(latLon, color, new EventTypesTooltip(place.address(), typeCounts, this.config));
           this.placesList.getItems().add(new PlaceView(place, nb));
@@ -209,9 +209,9 @@ public class MapDialog extends DialogBase<ButtonType> {
    */
   private void populateEventTypeCombo() {
     this.internalUpdate = true;
-    var selectedItem = this.eventTypeCombo.getSelectionModel().getSelectedItem();
+    final var selectedItem = this.eventTypeCombo.getSelectionModel().getSelectedItem();
 
-    Language language = this.config.language();
+    final Language language = this.config.language();
 
     this.eventTypeCombo.getItems().clear();
     this.eventTypeCombo.getItems().add(new ComboBoxItem<>(null, language.translate("dialog.map.event_type.all")));
@@ -230,7 +230,7 @@ public class MapDialog extends DialogBase<ButtonType> {
     private final String text;
 
     public PlaceView(@NotNull Place place, int nb) {
-      String address = place.address();
+      final String address = place.address();
       //noinspection OptionalGetWithoutIsPresent
       this.latLon = place.latLon().get();
       this.text = MapDialog.this.config.language().translate(

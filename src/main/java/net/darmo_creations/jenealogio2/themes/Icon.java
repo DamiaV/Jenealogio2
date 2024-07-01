@@ -236,11 +236,11 @@ public enum Icon {
    * @return The matching file extension icon or {@link #UNKNOWN_FILE_EXT} if none matched.
    */
   public static Icon forFile(@NotNull String name) {
-    Optional<String> ext = FileUtils.splitExtension(name).right();
+    final Optional<String> ext = FileUtils.splitExtension(name).right();
     if (ext.isEmpty())
       return UNKNOWN_FILE_EXT;
-    String iconName = "FILE_EXT_" + ext.get().substring(1).toUpperCase();
-    for (Icon icon : values())
+    final String iconName = "FILE_EXT_" + ext.get().substring(1).toUpperCase();
+    for (final Icon icon : values())
       if (icon.name().equals(iconName))
         return icon;
     return UNKNOWN_FILE_EXT;

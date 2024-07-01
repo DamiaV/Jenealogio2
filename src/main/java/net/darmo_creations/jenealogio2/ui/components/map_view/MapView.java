@@ -51,8 +51,8 @@ public class MapView extends AnchorPane {
       this.dragging = false;
       return;
     }
-    MapPoint mapPosition = this.mapView.getMapPosition(mouseEvent.getX(), mouseEvent.getY());
-    LatLon latLon = new LatLon(mapPosition.getLatitude(), mapPosition.getLongitude());
+    final MapPoint mapPosition = this.mapView.getMapPosition(mouseEvent.getX(), mouseEvent.getY());
+    final LatLon latLon = new LatLon(mapPosition.getLatitude(), mapPosition.getLongitude());
     this.pointClickListeners.forEach(l -> l.accept(latLon));
   }
 
@@ -87,9 +87,9 @@ public class MapView extends AnchorPane {
    * @return ID of the created marker, will always be > 0.
    */
   public int addMarker(@NotNull LatLon latLon, @NotNull MapMarkerColor color, Node layerTooltip) {
-    MarkerLayer layer = new MarkerLayer(latLon, color, layerTooltip, this.config);
+    final MarkerLayer layer = new MarkerLayer(latLon, color, layerTooltip, this.config);
     this.mapView.addLayer(layer);
-    int id = ++this.lastLayerID;
+    final int id = ++this.lastLayerID;
     this.layers.put(id, layer);
     return id;
   }
@@ -101,7 +101,7 @@ public class MapView extends AnchorPane {
    * @param id ID of the marker to remove.
    */
   public void removeMarker(int id) {
-    MapLayer removedLayer = this.layers.remove(id);
+    final MapLayer removedLayer = this.layers.remove(id);
     if (removedLayer != null)
       this.mapView.removeLayer(removedLayer);
   }

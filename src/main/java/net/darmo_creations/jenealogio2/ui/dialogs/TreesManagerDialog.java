@@ -34,16 +34,16 @@ public class TreesManagerDialog extends DialogBase<String> {
     this.treesList.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.updateUI());
 
-    HBox hBox = new HBox(this.showCurrentTreeButton);
+    final HBox hBox = new HBox(this.showCurrentTreeButton);
     hBox.setAlignment(Pos.CENTER);
-    VBox content = new VBox(5, hBox, this.treesList);
+    final VBox content = new VBox(5, hBox, this.treesList);
     content.setPrefWidth(400);
     content.setPrefHeight(300);
     this.getDialogPane().setContent(content);
 
     this.setResultConverter(b -> {
       if (!b.getButtonData().isCancelButton()) {
-        TreeListItem selectedItem = this.treesList.getSelectionModel().getSelectedItem();
+        final TreeListItem selectedItem = this.treesList.getSelectionModel().getSelectedItem();
         return selectedItem != null ? selectedItem.treeMetadata().directoryName() : null;
       }
       return null;
@@ -83,19 +83,19 @@ public class TreesManagerDialog extends DialogBase<String> {
     private TreeListItem(@NotNull TreeMetadata treeMetadata) {
       super(5);
       this.treeMetadata = Objects.requireNonNull(treeMetadata);
-      Node spacer = new Pane();
+      final Node spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
-      Button showInExplorerButton = new Button();
-      Config config = TreesManagerDialog.this.config;
+      final Button showInExplorerButton = new Button();
+      final Config config = TreesManagerDialog.this.config;
       showInExplorerButton.setTooltip(new Tooltip(config.language().translate("dialog.trees_manager.show_in_explorer.tooltip")));
       showInExplorerButton.setGraphic(config.theme().getIcon(Icon.SHOW_TREE_IN_EXPLORER, Icon.Size.SMALL));
       showInExplorerButton.setOnAction(
           event -> FileUtils.openInFileExplorer(App.USER_DATA_DIR.resolve(this.treeMetadata.directoryName())));
-      Button deleteButton = new Button();
+      final Button deleteButton = new Button();
       deleteButton.setTooltip(new Tooltip(config.language().translate("dialog.trees_manager.delete_tree.tooltip")));
       deleteButton.setGraphic(config.theme().getIcon(Icon.DELETE_TREE, Icon.Size.SMALL));
       deleteButton.setOnAction(e -> this.onDeleteAction());
-      String label;
+      final String label;
       if (treeMetadata.name().equals(treeMetadata.directoryName()))
         label = treeMetadata.name();
       else
@@ -116,7 +116,7 @@ public class TreesManagerDialog extends DialogBase<String> {
     }
 
     private void onDeleteAction() {
-      boolean ok = Alerts.confirmation(
+      final boolean ok = Alerts.confirmation(
           TreesManagerDialog.this.config,
           "alert.confirm_tree_deletion.header",
           "alert.confirm_tree_deletion.content",
@@ -128,7 +128,7 @@ public class TreesManagerDialog extends DialogBase<String> {
         return;
       try {
         FileUtils.deleteRecursively(App.USER_DATA_DIR.resolve(this.treeMetadata.directoryName()));
-      } catch (IOException e) {
+      } catch (final IOException e) {
         App.LOGGER.exception(e);
         Alerts.error(
             TreesManagerDialog.this.config,

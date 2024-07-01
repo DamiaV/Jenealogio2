@@ -104,8 +104,8 @@ public class AppController {
   public AppController(@NotNull Stage stage, @NotNull Config config) {
     this.stage = Objects.requireNonNull(stage);
     this.config = Objects.requireNonNull(config);
-    Theme theme = config.theme();
-    Image icon = theme.getAppIcon();
+    final Theme theme = config.theme();
+    final Image icon = theme.getAppIcon();
     if (icon != null)
       stage.getIcons().add(icon);
     stage.setMinWidth(300);
@@ -125,7 +125,7 @@ public class AppController {
     this.settingsDialog = new SettingsDialog(config);
     this.aboutDialog = new AboutDialog(config);
 
-    Scene scene = new Scene(new VBox(this.createMenuBar(), this.createToolBar(), this.createContent()));
+    final Scene scene = new Scene(new VBox(this.createMenuBar(), this.createToolBar(), this.createContent()));
     stage.setScene(scene);
     theme.getStyleSheets().forEach(path -> scene.getStylesheets().add(path.toExternalForm()));
 
@@ -141,10 +141,10 @@ public class AppController {
       event.consume();
     });
     scene.setOnDragDropped(event -> {
-      Dragboard db = event.getDragboard();
+      final Dragboard db = event.getDragboard();
       boolean success = this.isDragAndDropValid(db);
       if (success && this.unsavedChanges) {
-        boolean open = Alerts.confirmation(
+        final boolean open = Alerts.confirmation(
             config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
         if (!open)
           success = false;
@@ -164,21 +164,21 @@ public class AppController {
   }
 
   private boolean isDragAndDropValid(final @NotNull Dragboard dragboard) {
-    List<File> files = dragboard.getFiles();
+    final List<File> files = dragboard.getFiles();
     return dragboard.hasFiles()
            && files.size() == 1
            && files.get(0).getName().endsWith(".zip");
   }
 
   private MenuBar createMenuBar() {
-    Language language = this.config.language();
-    Theme theme = this.config.theme();
+    final Language language = this.config.language();
+    final Theme theme = this.config.theme();
 
     //
 
-    Menu fileMenu = new Menu(language.translate("menu.file"));
+    final Menu fileMenu = new Menu(language.translate("menu.file"));
 
-    MenuItem newFileMenuItem = new MenuItem();
+    final MenuItem newFileMenuItem = new MenuItem();
     newFileMenuItem.setText(language.translate("menu.file.new"));
     newFileMenuItem.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.SMALL));
     newFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
@@ -193,14 +193,14 @@ public class AppController {
     this.manageTreesMenuItem.setGraphic(theme.getIcon(Icon.MANAGE_TREES, Icon.Size.SMALL));
     this.manageTreesMenuItem.setOnAction(event -> this.onManageTreesAction());
 
-    MenuItem importTreeMenuItem = new MenuItem();
+    final MenuItem importTreeMenuItem = new MenuItem();
     importTreeMenuItem.setText(language.translate("menu.file.import"));
     importTreeMenuItem.setGraphic(theme.getIcon(Icon.IMPORT_TREE_FILE, Icon.Size.SMALL));
     importTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
     importTreeMenuItem.setOnAction(event -> this.onImportTreeAction());
     fileMenu.getItems().add(importTreeMenuItem);
 
-    MenuItem exportTreeMenuItem = new MenuItem();
+    final MenuItem exportTreeMenuItem = new MenuItem();
     exportTreeMenuItem.setText(language.translate("menu.file.export"));
     exportTreeMenuItem.setGraphic(theme.getIcon(Icon.EXPORT_TREE_FILE, Icon.Size.SMALL));
     exportTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
@@ -217,14 +217,14 @@ public class AppController {
 
     fileMenu.getItems().add(new SeparatorMenuItem());
 
-    MenuItem settingsMenuItem = new MenuItem();
+    final MenuItem settingsMenuItem = new MenuItem();
     settingsMenuItem.setText(language.translate("menu.file.settings"));
     settingsMenuItem.setGraphic(theme.getIcon(Icon.SETTINGS, Icon.Size.SMALL));
     settingsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHIFT_DOWN, KeyCombination.ALT_DOWN));
     settingsMenuItem.setOnAction(event -> this.onSettingsAction());
     fileMenu.getItems().add(settingsMenuItem);
 
-    MenuItem quitMenuItem = new MenuItem();
+    final MenuItem quitMenuItem = new MenuItem();
     quitMenuItem.setText(language.translate("menu.file.quit"));
     quitMenuItem.setGraphic(theme.getIcon(Icon.QUIT, Icon.Size.SMALL));
     quitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN));
@@ -233,7 +233,7 @@ public class AppController {
 
     //
 
-    Menu editMenu = new Menu(language.translate("menu.edit"));
+    final Menu editMenu = new Menu(language.translate("menu.edit"));
 
     this.undoMenuItem.setText(language.translate("menu.edit.undo"));
     this.undoMenuItem.setGraphic(theme.getIcon(Icon.UNDO, Icon.Size.SMALL));
@@ -249,13 +249,13 @@ public class AppController {
 
     editMenu.getItems().add(new SeparatorMenuItem());
 
-    MenuItem editRegistriesMenuItem = new MenuItem();
+    final MenuItem editRegistriesMenuItem = new MenuItem();
     editRegistriesMenuItem.setText(language.translate("menu.edit.edit_registries"));
     editRegistriesMenuItem.setGraphic(theme.getIcon(Icon.EDIT_REGISTRIES, Icon.Size.SMALL));
     editRegistriesMenuItem.setOnAction(event -> this.onEditRegistriesAction());
     editMenu.getItems().add(editRegistriesMenuItem);
 
-    MenuItem editTreeDocuments = new MenuItem();
+    final MenuItem editTreeDocuments = new MenuItem();
     editTreeDocuments.setText(language.translate("menu.edit.edit_tree_documents"));
     editTreeDocuments.setGraphic(theme.getIcon(Icon.EDIT_TREE_DOCUMENTS, Icon.Size.SMALL));
     editTreeDocuments.setAccelerator(new KeyCodeCombination(KeyCode.D, KeyCombination.ALT_DOWN, KeyCombination.SHIFT_DOWN));
@@ -264,7 +264,7 @@ public class AppController {
 
     editMenu.getItems().add(new SeparatorMenuItem());
 
-    MenuItem renameTreeMenuItem = new MenuItem();
+    final MenuItem renameTreeMenuItem = new MenuItem();
     renameTreeMenuItem.setText(language.translate("menu.edit.rename_tree"));
     renameTreeMenuItem.setGraphic(theme.getIcon(Icon.RENAME_TREE, Icon.Size.SMALL));
     renameTreeMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
@@ -277,7 +277,7 @@ public class AppController {
     this.setAsRootMenuItem.setOnAction(event -> this.onSetAsRootAction());
     editMenu.getItems().add(this.setAsRootMenuItem);
 
-    MenuItem addPersonMenuItem = new MenuItem();
+    final MenuItem addPersonMenuItem = new MenuItem();
     addPersonMenuItem.setText(language.translate("menu.edit.add_person"));
     addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
     addPersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN));
@@ -332,23 +332,23 @@ public class AppController {
 
     //
 
-    Menu toolsMenu = new Menu(language.translate("menu.tools"));
+    final Menu toolsMenu = new Menu(language.translate("menu.tools"));
 
-    MenuItem calculateRelationshipsMenuItem = new MenuItem();
+    final MenuItem calculateRelationshipsMenuItem = new MenuItem();
     calculateRelationshipsMenuItem.setText(language.translate("menu.tools.calculate_relationships"));
     calculateRelationshipsMenuItem.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.SMALL));
     calculateRelationshipsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN));
     calculateRelationshipsMenuItem.setDisable(true); // TEMP disabled until implemented
     toolsMenu.getItems().add(calculateRelationshipsMenuItem);
 
-    MenuItem birthdaysMenuItem = new MenuItem();
+    final MenuItem birthdaysMenuItem = new MenuItem();
     birthdaysMenuItem.setText(language.translate("menu.tools.birthdays"));
     birthdaysMenuItem.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.SMALL));
     birthdaysMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN));
     birthdaysMenuItem.setOnAction(event -> this.onShowBirthdaysDialog());
     toolsMenu.getItems().add(birthdaysMenuItem);
 
-    MenuItem mapMenuItem = new MenuItem();
+    final MenuItem mapMenuItem = new MenuItem();
     mapMenuItem.setText(language.translate("menu.tools.map"));
     mapMenuItem.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.SMALL));
     mapMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN));
@@ -357,7 +357,7 @@ public class AppController {
 
     toolsMenu.getItems().add(new SeparatorMenuItem());
 
-    MenuItem checkInconsistenciesMenuItem = new MenuItem();
+    final MenuItem checkInconsistenciesMenuItem = new MenuItem();
     checkInconsistenciesMenuItem.setText(language.translate("menu.tools.check_inconsistencies"));
     checkInconsistenciesMenuItem.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.SMALL));
     checkInconsistenciesMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
@@ -366,9 +366,9 @@ public class AppController {
 
     //
 
-    Menu helpMenu = new Menu(language.translate("menu.help"));
+    final Menu helpMenu = new Menu(language.translate("menu.help"));
 
-    MenuItem aboutMenuItem = new MenuItem();
+    final MenuItem aboutMenuItem = new MenuItem();
     aboutMenuItem.setText(language.translate("menu.help.about"));
     aboutMenuItem.setGraphic(theme.getIcon(Icon.ABOUT, Icon.Size.SMALL));
     aboutMenuItem.setOnAction(event -> this.onAboutAction());
@@ -378,14 +378,14 @@ public class AppController {
   }
 
   private ToolBar createToolBar() {
-    Language language = this.config.language();
-    Theme theme = this.config.theme();
+    final Language language = this.config.language();
+    final Theme theme = this.config.theme();
 
-    ToolBar toolbar = new ToolBar();
+    final ToolBar toolbar = new ToolBar();
 
     //
 
-    Button newToolbarButton = new Button();
+    final Button newToolbarButton = new Button();
     newToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.new")));
     newToolbarButton.setGraphic(theme.getIcon(Icon.NEW_FILE, Icon.Size.BIG));
     newToolbarButton.setOnAction(event -> this.onNewTreeAction());
@@ -435,7 +435,7 @@ public class AppController {
     this.setAsRootToolbarButton.setOnAction(event -> this.onSetAsRootAction());
     toolbar.getItems().add(this.setAsRootToolbarButton);
 
-    Button addPersonToolbarButton = new Button();
+    final Button addPersonToolbarButton = new Button();
     addPersonToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_person")));
     addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
     addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
@@ -470,19 +470,19 @@ public class AppController {
 
     //
 
-    Button calculateRelationshipsToolbarButton = new Button();
+    final Button calculateRelationshipsToolbarButton = new Button();
     calculateRelationshipsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.calculate_relationships")));
     calculateRelationshipsToolbarButton.setGraphic(theme.getIcon(Icon.CALCULATE_RELATIONSHIPS, Icon.Size.BIG));
     calculateRelationshipsToolbarButton.setDisable(true); // TEMP disabled until implemented
     toolbar.getItems().add(calculateRelationshipsToolbarButton);
 
-    Button birthdaysToolbarButton = new Button();
+    final Button birthdaysToolbarButton = new Button();
     birthdaysToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.birthdays")));
     birthdaysToolbarButton.setGraphic(theme.getIcon(Icon.BIRTHDAYS, Icon.Size.BIG));
     birthdaysToolbarButton.setOnAction(event -> this.onShowBirthdaysDialog());
     toolbar.getItems().add(birthdaysToolbarButton);
 
-    Button mapToolbarButton = new Button();
+    final Button mapToolbarButton = new Button();
     mapToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.map")));
     mapToolbarButton.setGraphic(theme.getIcon(Icon.MAP, Icon.Size.BIG));
     mapToolbarButton.setOnAction(event -> this.onShowMapDialog());
@@ -490,7 +490,7 @@ public class AppController {
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
-    Button checkInconsistenciesToolbarButton = new Button();
+    final Button checkInconsistenciesToolbarButton = new Button();
     checkInconsistenciesToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.check_inconsistencies")));
     checkInconsistenciesToolbarButton.setGraphic(theme.getIcon(Icon.CHECK_INCONSISTENCIES, Icon.Size.BIG));
     checkInconsistenciesToolbarButton.setDisable(true); // TEMP disabled until implemented
@@ -500,7 +500,7 @@ public class AppController {
   }
 
   private SplitPane createContent() {
-    SplitPane splitPane = new SplitPane();
+    final SplitPane splitPane = new SplitPane();
 
     this.familyTreeView.personClickListeners()
         .add(event -> this.onPersonClick(event, this.familyTreeView));
@@ -542,13 +542,13 @@ public class AppController {
     if (treeName != null && this.loadTree(treeName))
       return;
 
-    Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
+    final Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
 
     // Only one choice, open it
     if (treesMetadata.size() == 1 && this.loadTree(treesMetadata.keySet().iterator().next()))
       return;
 
-    Optional<TreeMetadata> lastOpened = treesMetadata
+    final Optional<TreeMetadata> lastOpened = treesMetadata
         .values()
         .stream()
         .filter(m -> m.lastOpenDate() != null)
@@ -561,7 +561,7 @@ public class AppController {
     // No trees have a last-opened date, choose from a dialog
     if (!treesMetadata.isEmpty()) {
       this.treesManagerDialog.refresh(null);
-      Optional<String> name = this.treesManagerDialog.showAndWait();
+      final Optional<String> name = this.treesManagerDialog.showAndWait();
       if (name.isPresent()) {
         this.loadTree(name.get());
         return;
@@ -604,7 +604,7 @@ public class AppController {
    * Open an alert dialog to rename the current tree.
    */
   private void onRenameTreeAction() {
-    Optional<String> name = Alerts.textInput(
+    final Optional<String> name = Alerts.textInput(
         this.config,
         "alert.tree_name.header",
         "alert.tree_name.label",
@@ -628,15 +628,15 @@ public class AppController {
    */
   private boolean onNewTreeAction() {
     if (this.unsavedChanges) {
-      boolean open = Alerts.confirmation(
+      final boolean open = Alerts.confirmation(
           this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
       if (!open)
         return false;
     }
-    String defaultName = this.config.language().translate("app_title.undefined_tree_name");
+    final String defaultName = this.config.language().translate("app_title.undefined_tree_name");
     boolean proceed = true;
     do {
-      Optional<String> name = Alerts.textInput(
+      final Optional<String> name = Alerts.textInput(
           this.config,
           "alert.tree_name.header",
           "alert.tree_name.label",
@@ -666,7 +666,7 @@ public class AppController {
    */
   private void onOpenTreeAction(@NotNull String directoryName) {
     if (this.unsavedChanges) {
-      boolean proceed = Alerts.confirmation(
+      final boolean proceed = Alerts.confirmation(
           this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
       if (!proceed)
         return;
@@ -691,22 +691,22 @@ public class AppController {
    */
   private void onImportTreeAction() {
     if (this.unsavedChanges) {
-      boolean proceed = Alerts.confirmation(
+      final boolean proceed = Alerts.confirmation(
           this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
       if (!proceed)
         return;
     }
-    Optional<Path> f = FileChoosers.showZipFileChooser(
+    final Optional<Path> f = FileChoosers.showZipFileChooser(
         this.config, this.stage, "zipped_tree_file_chooser", "zipped_tree_file");
     if (f.isEmpty())
       return;
-    String targetDir;
+    final String targetDir;
     try {
       FileUtils.deleteRecursively(App.TEMP_DIR);
       targetDir = FileUtils.unzip(f.get(), App.TEMP_DIR);
       Files.move(App.TEMP_DIR.resolve(targetDir), App.USER_DATA_DIR.resolve(targetDir));
       FileUtils.deleteRecursively(App.TEMP_DIR);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
           this.config,
@@ -724,13 +724,13 @@ public class AppController {
    * Open a file chooser dialog to export this tree as a ZIP file.
    */
   private void onExportTreeAction() {
-    Optional<Path> file = FileChoosers.showZipFileSaver(
+    final Optional<Path> file = FileChoosers.showZipFileSaver(
         this.config, this.stage, "zipped_tree_file_saver", "zipped_tree_file");
     if (file.isEmpty())
       return;
     try {
       FileUtils.zip(this.loadedFile, file.get());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
           this.config,
@@ -750,11 +750,11 @@ public class AppController {
    */
   private boolean loadTree(@NotNull String directoryName) {
     App.LOGGER.info("Loading tree %s…".formatted(directoryName));
-    FamilyTree familyTree;
-    Path path = App.USER_DATA_DIR.resolve(directoryName);
+    final FamilyTree familyTree;
+    final Path path = App.USER_DATA_DIR.resolve(directoryName);
     try {
       familyTree = new FamilyTreeReader().loadFromDirectory(path);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
           this.config,
@@ -790,7 +790,7 @@ public class AppController {
     App.LOGGER.info("Saving tree to %s…".formatted(this.loadedFile));
     try {
       this.familyTreeWriter.saveToDirectory(this.familyTree, this.loadedFile, this.config);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
           this.config,
@@ -825,8 +825,8 @@ public class AppController {
         || direction > 0 && this.selectionIndex == this.selectionHistory.size() - 1)
       return;
     this.selectionIndex += direction;
-    Person selection = this.selectionHistory.get(this.selectionIndex);
-    var event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
+    final Person selection = this.selectionHistory.get(this.selectionIndex);
+    final var event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
     this.updateWidgetsSelection(event, this.familyTreePane);
     this.updateWidgetsSelection(event, this.familyTreeView);
     this.personDetailsView.setPerson(selection, this.familyTree);
@@ -886,8 +886,8 @@ public class AppController {
    * Open dialog to edit the documents of the selected person.
    */
   private void onEditObjectDocumentsAction() {
-    Optional<? extends GenealogyObject<?>> selectedObject;
-    Optional<LifeEvent> selectedLifeEvent = this.personDetailsView.getDisplayedLifeEvent();
+    final Optional<? extends GenealogyObject<?>> selectedObject;
+    final Optional<LifeEvent> selectedLifeEvent = this.personDetailsView.getDisplayedLifeEvent();
     if (selectedLifeEvent.isPresent())
       selectedObject = selectedLifeEvent;
     else
@@ -923,7 +923,7 @@ public class AppController {
         return;
       }
 
-      boolean delete = Alerts.confirmation(
+      final boolean delete = Alerts.confirmation(
           this.config, "alert.delete_person.header", null, "alert.delete_person.title");
       if (delete) {
         this.familyTree.removePerson(person);
@@ -942,9 +942,9 @@ public class AppController {
    */
   private void onAddSiblingAction() {
     this.getSelectedPerson().ifPresent(person -> {
-      var parents = person.parents();
-      Person parent1 = parents.left().orElse(null);
-      Person parent2 = parents.right().orElse(null);
+      final var parents = person.parents();
+      final Person parent1 = parents.left().orElse(null);
+      final Person parent2 = parents.right().orElse(null);
       this.openEditPersonDialog(null, List.of(), parent1, parent2, EditPersonDialog.TAB_PROFILE);
     });
   }
@@ -1029,7 +1029,7 @@ public class AppController {
    */
   private void onEditRegistriesAction() {
     this.editRegistriesDialog.refresh(this.familyTree);
-    Optional<ButtonType> result = this.editRegistriesDialog.showAndWait();
+    final Optional<ButtonType> result = this.editRegistriesDialog.showAndWait();
     if (result.isPresent() && !result.get().getButtonData().isCancelButton()) {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
@@ -1098,19 +1098,19 @@ public class AppController {
     if (this.mapDialog.isShowing())
       this.mapDialog.refresh(this.familyTree);
 
-    Optional<Person> selectedPerson = this.getSelectedPerson();
-    boolean selection = selectedPerson.isPresent();
-    boolean hasBothParents = selection && selectedPerson.get().hasBothParents();
-    boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
+    final Optional<Person> selectedPerson = this.getSelectedPerson();
+    final boolean selection = selectedPerson.isPresent();
+    final boolean hasBothParents = selection && selectedPerson.get().hasBothParents();
+    final boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
 
     this.openTreeMenu.getItems().clear();
-    Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
+    final Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
     if (!treesMetadata.isEmpty()) {
       treesMetadata.values().stream()
           .filter(m -> !m.directoryName().equals(this.loadedFile.getFileName().toString()))
           .sorted()
           .forEach(m -> {
-            MenuItem item = new MenuItem("%s (%s)".formatted(m.name(), App.USER_DATA_DIR.resolve(m.directoryName())));
+            final MenuItem item = new MenuItem("%s (%s)".formatted(m.name(), App.USER_DATA_DIR.resolve(m.directoryName())));
             item.setOnAction(event -> this.onOpenTreeAction(m.directoryName()));
             this.openTreeMenu.getItems().add(item);
           });
@@ -1180,7 +1180,7 @@ public class AppController {
    */
   private void onQuitAction() {
     if (this.unsavedChanges) {
-      boolean close = Alerts.confirmation(
+      final boolean close = Alerts.confirmation(
           this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
       if (!close)
         return;

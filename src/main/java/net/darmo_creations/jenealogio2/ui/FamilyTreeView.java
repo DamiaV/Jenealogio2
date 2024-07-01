@@ -36,10 +36,10 @@ public class FamilyTreeView extends FamilyTreeComponent {
    */
   public FamilyTreeView(final @NotNull Config config) {
     this.config = config;
-    Language language = this.config.language();
-    Theme theme = this.config.theme();
+    final Language language = this.config.language();
+    final Theme theme = this.config.theme();
 
-    VBox vBox = new VBox(5);
+    final VBox vBox = new VBox(5);
     AnchorPane.setTopAnchor(vBox, 5.0);
     AnchorPane.setBottomAnchor(vBox, 5.0);
     AnchorPane.setLeftAnchor(vBox, 5.0);
@@ -48,7 +48,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
     // Search bar
 
-    HBox hBox = new HBox(5);
+    final HBox hBox = new HBox(5);
     vBox.getChildren().add(hBox);
 
     this.searchField = new ErasableTextField(config);
@@ -66,7 +66,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
           this.config.setShouldSyncTreeWithMainPane(newValue);
           try {
             this.config.save();
-          } catch (IOException e) {
+          } catch (final IOException e) {
             App.LOGGER.exception(e);
           }
         });
@@ -79,7 +79,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
     this.treeView.setCellFactory(tree -> new SearchHighlightingTreeCell());
     this.treeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     this.treeView.setShowRoot(false);
-    TreeItem<Object> root = new TreeItem<>();
+    final TreeItem<Object> root = new TreeItem<>();
     this.personsItem = new TreeItem<>(language.translate("treeview.persons"));
     root.getChildren().add(this.personsItem);
     this.treeView.setRoot(root);
@@ -92,7 +92,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
       }
     });
     this.treeView.setOnMouseClicked(event -> {
-      TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
+      final TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
       if (selectedItem != null && selectedItem.getValue() instanceof Person person)
         this.firePersonClickEvent(new PersonClickedEvent(
             person,
@@ -117,7 +117,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
   @Override
   public Optional<Person> getSelectedPerson() {
-    TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
+    final TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
     if (selectedItem != null && selectedItem.getValue() instanceof Person person)
       return Optional.of(person);
     return Optional.empty();
@@ -134,7 +134,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
   public void select(@NotNull Person person, boolean updateTarget) {
     Objects.requireNonNull(person);
     for (int i = 0; i < this.personsItem.getChildren().size(); i++) {
-      TreeItem<Object> item = this.personsItem.getChildren().get(i);
+      final TreeItem<Object> item = this.personsItem.getChildren().get(i);
       if (item.getValue() == person) {
         this.internalSelectionChange = true;
         this.treeView.getSelectionModel().select(item);
@@ -151,10 +151,10 @@ public class FamilyTreeView extends FamilyTreeComponent {
    */
   private void onSearchFilterChange(String text) {
     this.searchMatches.clear();
-    Optional<String> filter = StringUtils.stripNullable(text);
+    final Optional<String> filter = StringUtils.stripNullable(text);
     if (filter.isEmpty())
       return;
-    Set<TreeItem<Object>> matches = new HashSet<>();
+    final Set<TreeItem<Object>> matches = new HashSet<>();
     this.searchMatchingItems(this.personsItem, matches, filter.get());
     this.searchMatches.addAll(matches);
   }
@@ -171,7 +171,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
       @NotNull Set<TreeItem<Object>> matches,
       @NotNull String searchFilter
   ) {
-    for (TreeItem<Object> item : searchNode.getChildren())
+    for (final TreeItem<Object> item : searchNode.getChildren())
       if (item.getValue().toString().toLowerCase().contains(searchFilter.toLowerCase()))
         matches.add(item);
   }
@@ -201,7 +201,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
       // Update the text when the displayed item changes
       super.updateItem(item, empty);
       this.setText(empty ? null : item.toString());
-      Optional<FamilyTree> familyTree = FamilyTreeView.this.familyTree();
+      final Optional<FamilyTree> familyTree = FamilyTreeView.this.familyTree();
       if (familyTree.isPresent() && item instanceof Person p && familyTree.get().isRoot(p))
         this.setGraphic(FamilyTreeView.this.config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
       else

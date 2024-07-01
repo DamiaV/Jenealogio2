@@ -89,7 +89,7 @@ public final class Alerts {
       String titleKey,
       final FormatArg @NotNull ... contentArgs
   ) {
-    Optional<ButtonType> result = alert(config, Alert.AlertType.CONFIRMATION, headerKey, contentKey, titleKey, contentArgs);
+    final Optional<ButtonType> result = alert(config, Alert.AlertType.CONFIRMATION, headerKey, contentKey, titleKey, contentArgs);
     return result.isPresent() && !result.get().getButtonData().isCancelButton();
   }
 
@@ -114,15 +114,15 @@ public final class Alerts {
       TextFormatter<?> textFormatter,
       final FormatArg @NotNull ... contentArgs
   ) {
-    Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
-    HBox hBox = new HBox(5);
-    TextField textField = new TextField();
+    final Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
+    final HBox hBox = new HBox(5);
+    final TextField textField = new TextField();
     textField.textProperty().addListener((observable, oldValue, newValue) ->
         alert.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(StringUtils.stripNullable(newValue).isEmpty()));
     if (textFormatter != null)
       textField.setTextFormatter(textFormatter);
     textField.setText(defaultText);
-    Label label = new Label(config.language().translate(labelKey, contentArgs));
+    final Label label = new Label(config.language().translate(labelKey, contentArgs));
     hBox.getChildren().addAll(label, textField);
     hBox.setAlignment(Pos.CENTER);
     alert.getDialogPane().setContent(hBox);
@@ -130,7 +130,7 @@ public final class Alerts {
       Platform.runLater(textField::requestFocus);
       e.consume();
     });
-    Optional<ButtonType> buttonType = alert.showAndWait();
+    final Optional<ButtonType> buttonType = alert.showAndWait();
     if (buttonType.isPresent() && !buttonType.get().getButtonData().isCancelButton())
       return StringUtils.stripNullable(textField.getText());
     return Optional.empty();
@@ -144,7 +144,7 @@ public final class Alerts {
       String titleKey,
       final @NotNull FormatArg... contentArgs
   ) {
-    Alert alert = getAlert(config, type, headerKey, titleKey, contentArgs);
+    final Alert alert = getAlert(config, type, headerKey, titleKey, contentArgs);
     if (contentKey != null)
       alert.setContentText(config.language().translate(contentKey, contentArgs));
     return alert.showAndWait();
@@ -170,8 +170,8 @@ public final class Alerts {
     if (type == Alert.AlertType.NONE) {
       throw new IllegalArgumentException(type.name());
     }
-    Alert alert = new Alert(type);
-    DialogPane dialogPane = alert.getDialogPane();
+    final Alert alert = new Alert(type);
+    final DialogPane dialogPane = alert.getDialogPane();
     // Replace default buttons to have proper translations
     dialogPane.getButtonTypes().setAll(switch (type) {
       case INFORMATION, WARNING, ERROR -> List.of(ButtonTypes.OK);
@@ -182,7 +182,7 @@ public final class Alerts {
         .forEach(url -> dialogPane.getStylesheets().add(url.toExternalForm()));
     if (titleKey == null)
       titleKey = "alert.%s.title".formatted(type.name().toLowerCase());
-    Language language = config.language();
+    final Language language = config.language();
     alert.setTitle(language.translate(titleKey));
     alert.setHeaderText(language.translate(headerKey, contentArgs));
     ((Stage) dialogPane.getScene().getWindow()).getIcons().add(config.theme().getAppIcon());

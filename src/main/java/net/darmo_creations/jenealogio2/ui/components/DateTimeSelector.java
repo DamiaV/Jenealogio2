@@ -25,20 +25,20 @@ public class DateTimeSelector extends HBox {
     super(5);
     this.setAlignment(Pos.CENTER_LEFT);
 
-    DateSelectionDialog dateSelectionDialog = new DateSelectionDialog(config);
+    final var dateSelectionDialog = new DateSelectionDialog(config);
 
-    Button editButton = new Button(null, config.theme().getIcon(Icon.SELECT_DATE, Icon.Size.SMALL));
+    final Button editButton = new Button(null, config.theme().getIcon(Icon.SELECT_DATE, Icon.Size.SMALL));
     editButton.setTooltip(new Tooltip(config.language().translate("date_selector.edit_button.tooltip")));
     editButton.setOnAction(event -> {
       dateSelectionDialog.setDateTime(this.getDateTime());
       dateSelectionDialog.showAndWait().ifPresent(this::setDateTime);
     });
 
-    Button clearButton = new Button(null, config.theme().getIcon(Icon.CLEAR_DATE, Icon.Size.SMALL));
+    final Button clearButton = new Button(null, config.theme().getIcon(Icon.CLEAR_DATE, Icon.Size.SMALL));
     clearButton.setTooltip(new Tooltip(config.language().translate("date_selector.clear_button.tooltip")));
     clearButton.setOnAction(event -> this.setDateTime(null));
 
-    DateLabel label = new DateLabel("-", config);
+    final DateLabel label = new DateLabel("-", config);
 
     this.dateTimeProperty.addListener((observable, oldValue, newValue) -> {
       label.setDateTime(this.getDateTime());

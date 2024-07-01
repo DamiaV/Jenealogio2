@@ -66,7 +66,7 @@ public record RegistryEntryKey(@NotNull String namespace, @NotNull String name) 
       return true;
     if (o == null || this.getClass() != o.getClass())
       return false;
-    RegistryEntryKey that = (RegistryEntryKey) o;
+    final RegistryEntryKey that = (RegistryEntryKey) o;
     return Objects.equals(this.namespace, that.namespace)
            && Objects.equals(this.name, that.name);
   }

@@ -37,34 +37,29 @@ public class CalendarDateTimeFormatter {
   }
 
   private void parsePattern(@NotNull String pattern) {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     boolean percent = false;
-    for (char c : pattern.toCharArray()) {
+    for (final char c : pattern.toCharArray()) {
       if (percent) {
         if (!sb.isEmpty()) {
           try {
             this.tokens.add(new LiteraToken(sb.toString()));
-          } catch (IllegalArgumentException e) {
+          } catch (final IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid format tag %%%c in pattern \"%s\"".formatted(c, pattern), e);
           }
           sb.setLength(0);
         }
         this.tokens.add(new FormatTagToken(FormatTag.fromChar(c)));
         percent = false;
-      } else {
-        if (c == '%') {
-          percent = true;
-        } else {
-          sb.append(c);
-        }
-      }
+      } else if (c == '%')
+        percent = true;
+      else
+        sb.append(c);
     }
-    if (percent) {
+    if (percent)
       throw new IllegalArgumentException("Incomplete format tag in pattern \"%s\"".formatted(pattern));
-    }
-    if (!sb.isEmpty()) {
+    if (!sb.isEmpty())
       this.tokens.add(new LiteraToken(sb.toString()));
-    }
   }
 
   /**
@@ -102,10 +97,9 @@ public class CalendarDateTimeFormatter {
   }
 
   private String format(int y, int m, int d, int h, int min, Calendar<?> calendar) {
-    StringBuilder sb = new StringBuilder();
-    for (Token token : this.tokens) {
+    final StringBuilder sb = new StringBuilder();
+    for (final Token token : this.tokens)
       token.apply(sb, y, m, d, h, min, calendar);
-    }
     return sb.toString();
   }
 
@@ -133,7 +127,7 @@ public class CalendarDateTimeFormatter {
 
     @Override
     public void apply(@NotNull StringBuilder sb, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar) {
-      Language lang = CalendarDateTimeFormatter.this.language;
+      final Language lang = CalendarDateTimeFormatter.this.language;
       switch (this.type) {
         case DAY -> sb.append(d);
         case DAY_PADDED -> sb.append("%02d".formatted(d));
@@ -144,31 +138,28 @@ public class CalendarDateTimeFormatter {
         case YEAR -> sb.append(y);
         case HOUR_24 -> sb.append(h);
         case HOUR_12 -> {
-          if (calendar.hoursInDay() == 24) {
+          if (calendar.hoursInDay() == 24)
             sb.append(h % 12 == 0 ? 12 : h % 12);
-          } else {
+          else
             throw new IllegalArgumentException(
                 "Cannot use %s tag with non-24h calendar: %s".formatted(FormatTag.HOUR_12, calendar.name()));
-          }
         }
         case HOUR_24_PADDED -> sb.append("%02d".formatted(h));
         case HOUR_12_PADDED -> {
-          if (calendar.hoursInDay() == 24) {
+          if (calendar.hoursInDay() == 24)
             sb.append("%02d".formatted(h % 12 == 0 ? 12 : h % 12));
-          } else {
+          else
             throw new IllegalArgumentException(
                 "Cannot use %s tag with non-24h calendar: %s".formatted(FormatTag.HOUR_12_PADDED, calendar.name()));
-          }
         }
         case MINUTE -> sb.append("%02d".formatted(min));
         case AMPM -> {
           if (calendar.hoursInDay() == 24) {
-            int noon = calendar.hoursInDay() / 2;
+            final int noon = calendar.hoursInDay() / 2;
             sb.append(lang.translate(h < noon ? "calendar.am" : "calendar.pm"));
-          } else {
+          } else
             throw new IllegalArgumentException(
                 "Cannot use %s tag with non-24h calendar: %s".formatted(FormatTag.AMPM, calendar.name()));
-          }
         }
         case SUFFIX -> lang.getDaySuffix(d).ifPresent(sb::append);
         case PERCENT -> sb.append('%');

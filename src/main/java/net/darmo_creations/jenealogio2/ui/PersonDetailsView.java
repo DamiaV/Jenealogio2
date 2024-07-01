@@ -89,8 +89,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   public PersonDetailsView(final @NotNull Config config) {
     super();
     this.config = config;
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
     this.editDocumentDialog = new EditDocumentDialog(config);
     this.imageView = new ClickableImageView(PersonWidget.DEFAULT_IMAGE);
@@ -124,15 +124,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void setupProfileTab() {
-    Language language = this.config.language();
+    final Language language = this.config.language();
 
-    SplitPane tabPane = new SplitPane();
+    final SplitPane tabPane = new SplitPane();
     tabPane.setOrientation(Orientation.VERTICAL);
     this.profileTab.setContent(tabPane);
 
-    VBox vHeader = new VBox(5);
+    final VBox vHeader = new VBox(5);
     vHeader.getStyleClass().add("person-details-header");
-    HBox header = new HBox(8);
+    final HBox header = new HBox(8);
     this.imageView.setPreserveRatio(true);
     this.imageView.setFitWidth(100);
     this.imageView.setFitHeight(100);
@@ -142,42 +142,42 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.genderLabel.setWrapText(true);
     this.occupationLabel.getStyleClass().add("person-details-occupation");
     this.occupationLabel.setWrapText(true);
-    VBox headerTexts = new VBox(5, this.fullNameLabel, this.genderLabel, this.occupationLabel);
+    final VBox headerTexts = new VBox(5, this.fullNameLabel, this.genderLabel, this.occupationLabel);
     header.getChildren().addAll(this.imageView, headerTexts);
     vHeader.getChildren().add(header);
 
-    VBox publicNamesBox = new VBox(5);
-    HBox plnBox = new HBox(5);
+    final VBox publicNamesBox = new VBox(5);
+    final HBox plnBox = new HBox(5);
     plnBox.getChildren().add(new Label(language.translate("person_details_view.public_last_name")));
     this.publicLastNameLabel.setWrapText(true);
     plnBox.getChildren().add(this.publicLastNameLabel);
-    HBox pfnBox = new HBox(5);
+    final HBox pfnBox = new HBox(5);
     pfnBox.getChildren().add(new Label(language.translate("person_details_view.public_first_names")));
     this.publicFirstNamesLabel.setWrapText(true);
     pfnBox.getChildren().add(this.publicFirstNamesLabel);
-    HBox nnBox = new HBox(5);
+    final HBox nnBox = new HBox(5);
     nnBox.getChildren().add(new Label(language.translate("person_details_view.nicknames")));
     this.nicknamesLabel.setWrapText(true);
     nnBox.getChildren().add(this.nicknamesLabel);
     publicNamesBox.getChildren().addAll(plnBox, pfnBox, nnBox);
 
-    ScrollPane notesScroll = new ScrollPane(this.notesTextFlow);
+    final ScrollPane notesScroll = new ScrollPane(this.notesTextFlow);
     VBox.setVgrow(notesScroll, Priority.ALWAYS);
 
-    VBox topBox = new VBox(
+    final VBox topBox = new VBox(
         vHeader,
         publicNamesBox,
         new SectionLabel("notes"),
         notesScroll
     );
     topBox.getStyleClass().add("person-details");
-    ScrollPane sourcesScroll = new ScrollPane(this.sourcesTextFlow);
+    final ScrollPane sourcesScroll = new ScrollPane(this.sourcesTextFlow);
     VBox.setVgrow(sourcesScroll, Priority.ALWAYS);
-    VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
+    final VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
     sourcesBox.getStyleClass().add("person-details");
     this.documentsList.setOnMouseClicked(this::onDocumentListClicked);
     VBox.setVgrow(this.documentsList, Priority.ALWAYS);
-    VBox documentsBox = new VBox(new SectionLabel("documents"), this.documentsList);
+    final VBox documentsBox = new VBox(new SectionLabel("documents"), this.documentsList);
     documentsBox.getStyleClass().add("person-details");
     tabPane.getItems().addAll(
         topBox,
@@ -196,24 +196,24 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventsTab.setContent(this.eventsTabPane);
 
     this.lifeEventsList.setOnMouseClicked(event -> {
-      var selectedItem = this.lifeEventsList.getSelectionModel().getSelectedItem();
+      final var selectedItem = this.lifeEventsList.getSelectionModel().getSelectedItem();
       if (selectedItem != null)
         this.showEvent(selectedItem.lifeEvent());
     });
     this.lifeEventsList.getStyleClass().add("life-event-list");
 
     this.witnessedEventsList.setOnMouseClicked(event -> {
-      var selectedItem = this.witnessedEventsList.getSelectionModel().getSelectedItem();
+      final var selectedItem = this.witnessedEventsList.getSelectionModel().getSelectedItem();
       if (selectedItem != null)
         this.showEvent(selectedItem.lifeEvent());
     });
     this.witnessedEventsList.getStyleClass().add("life-event-list");
 
     VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
-    VBox vBox = new VBox(new SectionLabel("lived_events"), this.lifeEventsList);
+    final VBox vBox = new VBox(new SectionLabel("lived_events"), this.lifeEventsList);
     vBox.getStyleClass().add("person-details");
     VBox.setVgrow(this.witnessedEventsList, Priority.ALWAYS);
-    VBox vBox2 = new VBox(new SectionLabel("witnessed_events"), this.witnessedEventsList);
+    final VBox vBox2 = new VBox(new SectionLabel("witnessed_events"), this.witnessedEventsList);
     vBox2.getStyleClass().add("person-details");
 
     this.eventsTabPane.getItems().addAll(vBox, vBox2);
@@ -228,12 +228,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
-    Pane spacer = new Pane();
+    final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
-    Button closeButton = new Button(null, this.config.theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
+    final Button closeButton = new Button(null, this.config.theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
     closeButton.setTooltip(new Tooltip(this.config.language().translate("person_details_view.close_life_event")));
     closeButton.setOnAction(event -> this.eventsTab.setContent(this.eventsTabPane));
-    HBox hBox = new HBox(
+    final HBox hBox = new HBox(
         5,
         this.eventImageView,
         this.eventTypeLabel,
@@ -243,10 +243,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     );
     hBox.getStyleClass().add("person-details-header");
 
-    ScrollPane notesScroll = new ScrollPane(this.eventNotesTextFlow);
+    final ScrollPane notesScroll = new ScrollPane(this.eventNotesTextFlow);
     VBox.setVgrow(notesScroll, Priority.ALWAYS);
 
-    VBox topBox = new VBox(
+    final VBox topBox = new VBox(
         hBox,
         this.eventActorsPane,
         this.eventPlaceLabel,
@@ -254,15 +254,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         notesScroll
     );
     topBox.getStyleClass().add("person-details");
-    ScrollPane sourcesScroll = new ScrollPane(this.eventSourcesTextFlow);
+    final ScrollPane sourcesScroll = new ScrollPane(this.eventSourcesTextFlow);
     VBox.setVgrow(sourcesScroll, Priority.ALWAYS);
-    VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
+    final VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
     sourcesBox.getStyleClass().add("person-details");
-    VBox witnessesBox = new VBox(new SectionLabel("witnesses"), this.eventWitnessesList);
+    final VBox witnessesBox = new VBox(new SectionLabel("witnesses"), this.eventWitnessesList);
     witnessesBox.getStyleClass().add("person-details");
     this.eventDocumentsList.setOnMouseClicked(this::onDocumentListClicked);
     VBox.setVgrow(this.eventDocumentsList, Priority.ALWAYS);
-    VBox documentsBox = new VBox(new SectionLabel("documents"), this.eventDocumentsList);
+    final VBox documentsBox = new VBox(new SectionLabel("documents"), this.eventDocumentsList);
     documentsBox.getStyleClass().add("person-details");
     this.eventPane.getItems().addAll(
         topBox,
@@ -275,23 +275,23 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void setupFamilyTab() {
-    SplitPane tabPane = new SplitPane();
+    final SplitPane tabPane = new SplitPane();
     tabPane.setOrientation(Orientation.VERTICAL);
     this.familyTab.setContent(tabPane);
 
-    VBox parentsVBox = new VBox(5, this.parent1Card, this.parent2Card);
+    final VBox parentsVBox = new VBox(5, this.parent1Card, this.parent2Card);
     parentsVBox.setMinHeight(0);
-    VBox topBox = new VBox(new SectionLabel("parents"), parentsVBox);
+    final VBox topBox = new VBox(new SectionLabel("parents"), parentsVBox);
     topBox.getStyleClass().add("person-details");
 
     this.siblingsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.siblingsList, Priority.ALWAYS);
-    VBox middleBox = new VBox(new SectionLabel("siblings"), this.siblingsList);
+    final VBox middleBox = new VBox(new SectionLabel("siblings"), this.siblingsList);
     middleBox.getStyleClass().add("person-details");
 
     this.childrenList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.childrenList, Priority.ALWAYS);
-    VBox bottomBox = new VBox(new SectionLabel("children"), this.childrenList);
+    final VBox bottomBox = new VBox(new SectionLabel("children"), this.childrenList);
     bottomBox.getStyleClass().add("person-details");
 
     tabPane.getItems().addAll(topBox, middleBox, bottomBox);
@@ -299,23 +299,23 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void setupFosterParentsTab() {
-    SplitPane tabPane = new SplitPane();
+    final SplitPane tabPane = new SplitPane();
     tabPane.setOrientation(Orientation.VERTICAL);
     this.fosterParentsTab.setContent(tabPane);
 
     this.adoptiveParentsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.adoptiveParentsList, Priority.ALWAYS);
-    VBox topBox = new VBox(new SectionLabel("adoptive_parents"), this.adoptiveParentsList);
+    final VBox topBox = new VBox(new SectionLabel("adoptive_parents"), this.adoptiveParentsList);
     topBox.getStyleClass().add("person-details");
 
     this.godparentsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.godparentsList, Priority.ALWAYS);
-    VBox middleBox = new VBox(new SectionLabel("godparents"), this.godparentsList);
+    final VBox middleBox = new VBox(new SectionLabel("godparents"), this.godparentsList);
     middleBox.getStyleClass().add("person-details");
 
     this.fosterParentsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.fosterParentsList, Priority.ALWAYS);
-    VBox bottomBox = new VBox(new SectionLabel("foster_parents"), this.fosterParentsList);
+    final VBox bottomBox = new VBox(new SectionLabel("foster_parents"), this.fosterParentsList);
     bottomBox.getStyleClass().add("person-details");
 
     tabPane.getItems().addAll(topBox, middleBox, bottomBox);
@@ -351,10 +351,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void onEditDocument(@NotNull ListView<DocumentView> list) {
-    List<DocumentView> selection = list.getSelectionModel().getSelectedItems();
+    final List<DocumentView> selection = list.getSelectionModel().getSelectedItems();
     if (selection.size() == 1) {
-      DocumentView documentView = selection.get(0);
-      AttachedDocument document = documentView.document();
+      final DocumentView documentView = selection.get(0);
+      final AttachedDocument document = documentView.document();
       this.editDocumentDialog.setDocument(document, this.familyTree);
       this.editDocumentDialog.showAndWait().ifPresent(b -> {
         if (b.getButtonData().isCancelButton())
@@ -411,10 +411,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView.setImage(this.person.mainPicture().flatMap(Picture::image).orElse(null));
     this.fullNameLabel.setText(this.person.toString());
     this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
-    Optional<Gender> gender = this.person.gender();
+    final Optional<Gender> gender = this.person.gender();
     String g = null;
     if (gender.isPresent()) {
-      RegistryEntryKey key = gender.get().key();
+      final RegistryEntryKey key = gender.get().key();
       if (key.isBuiltin())
         g = this.config.language().translate("genders." + key.name());
       else
@@ -446,11 +446,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.person.getAllSiblings().entrySet().stream()
         // Sort according to first parent then second
         .sorted((e1, e2) -> {
-          var key1 = e1.getKey();
-          var key2 = e2.getKey();
-          Person left1 = key1.left(), right1 = key1.right();
-          Person left2 = key2.left(), right2 = key2.right();
-          Supplier<Integer> testRight = () -> {
+          final var key1 = e1.getKey();
+          final var key2 = e2.getKey();
+          final Person left1 = key1.left();
+          final Person right1 = key1.right();
+          final Person left2 = key2.left();
+          final Person right2 = key2.right();
+          final Supplier<Integer> testRight = () -> {
             if (right1 == null)
               return right2 != null ? 1 : 0;
             if (right2 == null)
@@ -464,17 +466,17 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
           }
           if (left2 == null)
             return -1;
-          int c = Person.birthDateThenNameComparator(false).compare(left1, left2);
+          final int c = Person.birthDateThenNameComparator(false).compare(left1, left2);
           if (c != 0)
             return c;
           return testRight.get();
         })
         .forEach(e -> {
           // Sort children
-          List<Person> sortedChildren = e.getValue().stream()
+          final List<Person> sortedChildren = e.getValue().stream()
               .sorted(Person.birthDateThenNameComparator(false))
               .toList();
-          var parents = e.getKey();
+          final var parents = e.getKey();
           this.siblingsList.getItems().add(new ChildrenItem(parents.left(), parents.right(), sortedChildren));
         });
 
@@ -497,18 +499,18 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void populateParentCards() {
-    var parents = this.person.parents();
-    Person parent1 = parents.left().orElse(null);
-    Person parent2 = parents.right().orElse(null);
-    Set<Person> sameParentsSiblings = this.person.getSameParentsSiblings();
+    final var parents = this.person.parents();
+    final Person parent1 = parents.left().orElse(null);
+    final Person parent2 = parents.right().orElse(null);
+    final Set<Person> sameParentsSiblings = this.person.getSameParentsSiblings();
     sameParentsSiblings.add(this.person);
-    List<ChildInfo> childInfo = new LinkedList<>();
-    for (Person child : sameParentsSiblings)
+    final List<ChildInfo> childInfo = new LinkedList<>();
+    for (final Person child : sameParentsSiblings)
       childInfo.add(new ChildInfo(child, 0));
     this.parent1Card.setPerson(parent1, childInfo);
     this.parent1Card.setVisible(true);
     childInfo.clear();
-    for (Person child : sameParentsSiblings)
+    for (final Person child : sameParentsSiblings)
       childInfo.add(new ChildInfo(child, 1));
     this.parent2Card.setPerson(parent2, childInfo);
     this.parent2Card.setVisible(true);
@@ -538,9 +540,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
     this.displayedLifeEvent = lifeEvent;
 
-    Language language = this.config.language();
+    final Language language = this.config.language();
 
-    String text;
+    final String text;
     if (lifeEvent.type().isBuiltin())
       text = language.translate("life_event_types." + lifeEvent.type().key().name());
     else
@@ -549,15 +551,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.eventActorsPane.getChildren().clear();
 
-    List<Person> actors = lifeEvent.actors().stream()
+    final List<Person> actors = lifeEvent.actors().stream()
         .sorted(Person.birthDateThenNameComparator(false)).toList();
     boolean first = true;
-    for (Person actor : actors) {
-      Label label = new Label(language.translate("person_details_view.life_events." + (first ? "of" : "and")));
-      Button b = new Button(actor.toString(), this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+    for (final Person actor : actors) {
+      final Label label = new Label(language.translate("person_details_view.life_events." + (first ? "of" : "and")));
+      final Button b = new Button(actor.toString(), this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
       b.setUserData(actor);
-      HBox hBox = new HBox(5, label, b);
+      final HBox hBox = new HBox(5, label, b);
       hBox.setAlignment(Pos.CENTER_LEFT);
       this.eventActorsPane.getChildren().add(hBox);
       first = false;
@@ -630,7 +632,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      */
     public SectionLabel(@NotNull String key) {
       this.getStyleClass().add("person-details-header");
-      Label label = new Label(PersonDetailsView.this.config.language().translate("person_details_view." + key));
+      final Label label = new Label(PersonDetailsView.this.config.language().translate("person_details_view." + key));
       label.getStyleClass().add("person-details-title");
       AnchorPane.setTopAnchor(label, 0.0);
       AnchorPane.setBottomAnchor(label, 0.0);
@@ -674,14 +676,14 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
       this.getStyleClass().add("person-widget");
 
-      Language language = PersonDetailsView.this.config.language();
-      Theme theme = PersonDetailsView.this.config.theme();
+      final Language language = PersonDetailsView.this.config.language();
+      final Theme theme = PersonDetailsView.this.config.theme();
 
-      int imageSize = 50;
+      final int imageSize = 50;
       this.imageView.setPreserveRatio(true);
       this.imageView.setFitHeight(imageSize);
       this.imageView.setFitWidth(imageSize);
-      VBox imageBox = new VBox(this.imageView);
+      final VBox imageBox = new VBox(this.imageView);
       imageBox.setAlignment(Pos.CENTER);
       imageBox.setMinHeight(imageSize);
       imageBox.setMinWidth(imageSize);
@@ -709,7 +711,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      * @param person Person to display.
      */
     public void setPerson(final Person person, final @NotNull List<ChildInfo> childInfo) {
-      boolean isNull = person == null;
+      final boolean isNull = person == null;
       this.nameBox.setVisible(!isNull);
       this.birthBox.setVisible(!isNull);
       this.deathBox.setVisible(!isNull);
@@ -730,15 +732,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
       this.imageView.setImage(person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
 
-      String name = person.toString();
+      final String name = person.toString();
       this.nameLabel.setText(name);
       this.nameLabel.setTooltip(new Tooltip(name));
       this.rootLabel.setVisible(PersonDetailsView.this.familyTree.isRoot(person));
-      Optional<Gender> gender = person.gender();
-      boolean present = gender.isPresent();
+      final Optional<Gender> gender = person.gender();
+      final boolean present = gender.isPresent();
       this.genderLabel.setVisible(present);
       if (present) {
-        String label;
+        final String label;
         if (gender.get().isBuiltin())
           label = PersonDetailsView.this.config.language().translate("genders." + gender.get().key().name());
         else
@@ -752,7 +754,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
       this.birthDateLabel.setDateTime(person.getBirthDate().orElse(null));
 
-      boolean consideredDeceased = person.lifeStatus().isConsideredDeceased();
+      final boolean consideredDeceased = person.lifeStatus().isConsideredDeceased();
       this.deathBox.setVisible(consideredDeceased);
       if (consideredDeceased)
         this.deathDateLabel.setDateTime(person.getDeathDate().orElse(null));
@@ -766,20 +768,20 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       super(5);
       this.lifeEvent = Objects.requireNonNull(lifeEvent);
       this.getStyleClass().add("life-events-list-item");
-      Config config = PersonDetailsView.this.config;
-      Language language = config.language();
-      HBox header = new HBox(5);
+      final Config config = PersonDetailsView.this.config;
+      final Language language = config.language();
+      final HBox header = new HBox(5);
       header.getStyleClass().add("life-events-list-item-header");
-      RegistryEntryKey typeKey = lifeEvent.type().key();
-      String type;
+      final RegistryEntryKey typeKey = lifeEvent.type().key();
+      final String type;
       if (typeKey.isBuiltin())
         type = language.translate("life_event_types." + typeKey.name());
       else
         type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
-      Label typeLabel = new Label(type);
-      Pane spacer = new Pane();
+      final Label typeLabel = new Label(type);
+      final Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
-      DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, config);
+      final DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, config);
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
       this.getChildren().add(header);
     }
@@ -798,21 +800,21 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private class LifeEventItem extends EventItem {
     private LifeEventItem(final @NotNull LifeEvent lifeEvent, final @NotNull Person mainActor) {
       super(lifeEvent);
-      Config config = PersonDetailsView.this.config;
+      final Config config = PersonDetailsView.this.config;
       if (lifeEvent.type().maxActors() > 1) {
-        Optional<Person> partner = lifeEvent.actors().stream().filter(p -> p != mainActor).findFirst();
+        final Optional<Person> partner = lifeEvent.actors().stream().filter(p -> p != mainActor).findFirst();
         if (partner.isPresent()) {
-          Label partnerLabel = new Label(config.language().translate("person_details_view.life_events.with"));
-          Button b = new Button(partner.get().toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+          final Label partnerLabel = new Label(config.language().translate("person_details_view.life_events.with"));
+          final Button b = new Button(partner.get().toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
           b.setUserData(partner.get());
           b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
-          HBox hBox = new HBox(5, partnerLabel, b);
+          final HBox hBox = new HBox(5, partnerLabel, b);
           hBox.setAlignment(Pos.CENTER_LEFT);
           this.getChildren().add(hBox);
         }
       }
 
-      Label placeLabel = new Label(lifeEvent.place().map(Place::address).orElse(""));
+      final Label placeLabel = new Label(lifeEvent.place().map(Place::address).orElse(""));
       placeLabel.setWrapText(true);
       this.getChildren().add(placeLabel);
     }
@@ -824,17 +826,17 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private class WitnessedEventItem extends EventItem {
     public WitnessedEventItem(final @NotNull LifeEvent lifeEvent) {
       super(lifeEvent);
-      Config config = PersonDetailsView.this.config;
-      VBox actorsBox = new VBox(5);
-      List<Person> actors = lifeEvent.actors().stream()
+      final Config config = PersonDetailsView.this.config;
+      final VBox actorsBox = new VBox(5);
+      final List<Person> actors = lifeEvent.actors().stream()
           .sorted(Person.birthDateThenNameComparator(false)).toList();
       boolean first = true;
-      for (Person actor : actors) {
-        Label label = new Label(config.language().translate("person_details_view.life_events." + (first ? "of" : "and")));
-        Button b = new Button(actor.toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+      for (final Person actor : actors) {
+        final Label label = new Label(config.language().translate("person_details_view.life_events." + (first ? "of" : "and")));
+        final Button b = new Button(actor.toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
         b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
         b.setUserData(actor);
-        HBox hBox = new HBox(5, label, b);
+        final HBox hBox = new HBox(5, label, b);
         hBox.setAlignment(Pos.CENTER_LEFT);
         actorsBox.getChildren().add(hBox);
         first = false;
@@ -849,19 +851,19 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private class ChildrenItem extends VBox {
     public ChildrenItem(final Person parent1, final Person parent2, final @NotNull List<Person> children) {
       super(5);
-      List<ChildInfo> childInfo = new LinkedList<>();
-      for (Person child : children)
+      final List<ChildInfo> childInfo = new LinkedList<>();
+      for (final Person child : children)
         //noinspection OptionalGetWithoutIsPresent
         childInfo.add(new ChildInfo(child, child.getParentIndex(parent1).get())); // Will always exist in this context
-      Theme theme = PersonDetailsView.this.config.theme();
-      HBox parentsBox = new HBox(5);
-      PersonCard parent1Card = new PersonCard(parent1, childInfo);
+      final Theme theme = PersonDetailsView.this.config.theme();
+      final HBox parentsBox = new HBox(5);
+      final PersonCard parent1Card = new PersonCard(parent1, childInfo);
       HBox.setHgrow(parent1Card, Priority.ALWAYS);
       parentsBox.getChildren().add(parent1Card);
       if (parent2 != null) {
-        PersonCard parent2Card = new PersonCard(parent2);
+        final PersonCard parent2Card = new PersonCard(parent2);
         HBox.setHgrow(parent2Card, Priority.ALWAYS);
-        Label plus = new Label("", theme.getIcon(Icon.PLUS, Icon.Size.BIG));
+        final Label plus = new Label("", theme.getIcon(Icon.PLUS, Icon.Size.BIG));
         parentsBox.setAlignment(Pos.CENTER);
         parentsBox.getChildren().addAll(
             plus,
@@ -872,10 +874,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       children.stream()
           .sorted(Person.birthDateThenNameComparator(false))
           .forEach(child -> {
-            Label arrow = new Label("", theme.getIcon(Icon.GO_TO, Icon.Size.BIG));
-            PersonCard childCard = new PersonCard(child);
+            final Label arrow = new Label("", theme.getIcon(Icon.GO_TO, Icon.Size.BIG));
+            final PersonCard childCard = new PersonCard(child);
             HBox.setHgrow(childCard, Priority.ALWAYS);
-            HBox hBox = new HBox(8, arrow, childCard);
+            final HBox hBox = new HBox(8, arrow, childCard);
             hBox.setAlignment(Pos.CENTER_LEFT);
             this.getChildren().add(hBox);
           });
@@ -886,7 +888,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     private boolean internalUpdate = false;
 
     public ClickableImageView(final @NotNull Image defaultImage) {
-      Tooltip tooltip = new Tooltip(PersonDetailsView.this.config.language().translate("person_details_view.main_image.tooltip"));
+      final Tooltip tooltip = new Tooltip(PersonDetailsView.this.config.language().translate("person_details_view.main_image.tooltip"));
       this.setImage(defaultImage);
       this.imageProperty().addListener((observable, oldValue, newValue) -> {
         if (this.internalUpdate)

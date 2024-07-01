@@ -39,15 +39,15 @@ public enum MapMarkerColor {
    */
   private static @Nullable Image getMarkerIcon(@NotNull String color) {
     Objects.requireNonNull(color);
-    String iconName = "map_pin_" + color;
-    String path = "%s%s.png".formatted(App.IMAGES_PATH + "map/", iconName);
-    try (var stream = MapMarkerColor.class.getResourceAsStream(path)) {
+    final String iconName = "map_pin_" + color;
+    final String path = "%s%s.png".formatted(App.IMAGES_PATH + "map/", iconName);
+    try (final var stream = MapMarkerColor.class.getResourceAsStream(path)) {
       if (stream == null) {
         App.LOGGER.warn("Missing icon: " + iconName);
         return null;
       }
       return new Image(stream);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return null;
     }
   }

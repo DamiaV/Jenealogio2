@@ -37,9 +37,9 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
   public EditDocumentDialog(final @NotNull Config config) {
     super(config, "edit_document", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Language language = config.language();
+    final Language language = config.language();
 
-    HBox imageViewBox = new HBox(this.imageView);
+    final HBox imageViewBox = new HBox(this.imageView);
     imageViewBox.setAlignment(Pos.CENTER);
     this.imageView.setPreserveRatio(true);
     this.imageView.managedProperty().bind(this.imageView.visibleProperty());
@@ -47,7 +47,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     HBox.setHgrow(this.documentNameField, Priority.ALWAYS);
     this.documentNameField.textProperty().addListener((observableValue, oldValue, newValue) -> this.updateUI());
     this.documentNameField.setTextFormatter(StringUtils.filePathTextFormatter());
-    HBox documentNameBox = new HBox(
+    final HBox documentNameBox = new HBox(
         5,
         this.documentNameField,
         this.fileExtensionLabel,
@@ -60,7 +60,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
 
     VBox.setVgrow(this.documentDescTextInput, Priority.ALWAYS);
 
-    VBox content = new VBox(
+    final VBox content = new VBox(
         5,
         imageViewBox,
         new Label(language.translate("dialog.edit_document.name")),
@@ -77,13 +77,13 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.imageView.fitWidthProperty().bind(this.stage().widthProperty().subtract(20));
     this.imageView.fitHeightProperty().bind(this.stage().heightProperty().subtract(300));
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(850);
     stage.setMinHeight(650);
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
-        String newName = StringUtils.stripNullable(this.documentNameField.getText())
+        final String newName = StringUtils.stripNullable(this.documentNameField.getText())
             .orElseThrow(() -> new RuntimeException("Document name cannot be empty"));
         if (!this.document.name().equals(newName))
           this.familyTree.renameDocument(this.document.fileName(), newName);
@@ -97,7 +97,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
   }
 
   private void updateUI() {
-    var name = StringUtils.stripNullable(this.documentNameField.getText());
+    final var name = StringUtils.stripNullable(this.documentNameField.getText());
     this.getDialogPane().lookupButton(ButtonTypes.OK)
         .setDisable(name.isEmpty() || this.familyTree.getDocument(name.get()).isPresent());
   }
@@ -118,11 +118,11 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.documentNameField.setText(document.name());
     // Disable renaming if document is not yet registered in the tree
     this.documentNameField.setDisable(familyTree.getDocument(document.fileName()).isEmpty());
-    Optional<String> ext = FileUtils.splitExtension(document.fileName()).right();
+    final Optional<String> ext = FileUtils.splitExtension(document.fileName()).right();
     this.fileExtensionLabel.setText(ext.orElse(null));
     this.fileExtensionGraphicsLabel.setGraphic(this.config.theme().getIcon(Icon.forFile(document.fileName()), Icon.Size.SMALL));
     this.documentDescTextInput.setText(document.description().orElse(""));
-    Optional<DateTime> date = document.date();
+    final Optional<DateTime> date = document.date();
     this.dateTimeSelector.setDateTime(date.orElse(null));
   }
 }

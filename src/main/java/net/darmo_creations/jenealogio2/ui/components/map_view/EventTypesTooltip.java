@@ -31,19 +31,19 @@ public class EventTypesTooltip extends VBox {
     this.getStyleClass().add("events-map-tooltip");
     this.setPadding(new Insets(5));
 
-    Label titleLabel = new Label();
+    final Label titleLabel = new Label();
     titleLabel.getStyleClass().add("title");
     this.getChildren().add(titleLabel);
-    String[] split = placeAdress.split(",", 2);
-    String titleText;
+    final String[] split = placeAdress.split(",", 2);
+    final String titleText;
     if (split.length == 2) {
       titleText = split[0].strip();
-      Label subTitleLabel = new Label(split[1].strip());
+      final Label subTitleLabel = new Label(split[1].strip());
       subTitleLabel.getStyleClass().add("subtitle");
       this.getChildren().add(subTitleLabel);
     } else
       titleText = placeAdress;
-    int totalCount = eventTypesCounts.values().stream().mapToInt(i -> i).sum();
+    final int totalCount = eventTypesCounts.values().stream().mapToInt(i -> i).sum();
     titleLabel.setText(config.language().translate(
         "dialog.map.place_count",
         totalCount,
@@ -51,19 +51,19 @@ public class EventTypesTooltip extends VBox {
         new FormatArg("count", totalCount)
     ));
 
-    Language language = config.language();
+    final Language language = config.language();
     eventTypesCounts.entrySet().stream()
         .sorted(Comparator.comparing(e -> language.translate("life_event_types." + e.getKey().key().name())))
         .forEach(e -> {
-          int count = e.getValue();
-          LifeEventType type = e.getKey();
-          RegistryEntryKey key = type.key();
-          String name;
+          final int count = e.getValue();
+          final LifeEventType type = e.getKey();
+          final RegistryEntryKey key = type.key();
+          final String name;
           if (key.namespace().equals(Registry.BUILTIN_NS))
             name = language.translate("life_event_types." + key.name(), count);
           else
             name = type.userDefinedName();
-          Label label = new Label(
+          final Label label = new Label(
               language.translate(
                   "dialog.map.tooltip.life_event_type_count",
                   new FormatArg("type_name", name),

@@ -26,19 +26,19 @@ public class RelativesListView extends VBox implements PersonRequester {
    */
   public RelativesListView(final @NotNull Config config) {
     super(5);
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
-    HBox buttonsHBox = new HBox(5);
+    final HBox buttonsHBox = new HBox(5);
 
-    Button addWitnessButton = new Button(language.translate("relatives_list.add"),
+    final Button addWitnessButton = new Button(language.translate("relatives_list.add"),
         theme.getIcon(Icon.ADD_PARENT, Icon.Size.SMALL));
     addWitnessButton.setOnAction(event -> this.onAdd());
     this.removeRelativeButton = new Button(language.translate("relatives_list.remove"),
         theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
     this.removeRelativeButton.setOnAction(event -> this.onRemove());
     this.removeRelativeButton.setDisable(true);
-    Pane spacer = new Pane();
+    final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
     buttonsHBox.getChildren().addAll(spacer, addWitnessButton, this.removeRelativeButton);
 

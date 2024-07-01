@@ -34,20 +34,20 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   public SettingsDialog(final @NotNull Config config) {
     super(config, "settings", false, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    VBox content = new VBox(this.createInterfaceForm(), new Separator(), this.createTreeForm());
+    final VBox content = new VBox(this.createInterfaceForm(), new Separator(), this.createTreeForm());
     content.setPrefWidth(500);
     this.getDialogPane().setContent(content);
 
     this.setResultConverter(buttonType -> {
       if (!buttonType.getButtonData().isCancelButton()) {
-        ChangeType changeType = this.configChanged();
+        final ChangeType changeType = this.configChanged();
         if (changeType.changed()) {
           try {
             App.updateConfig(this.localConfig);
             this.localConfig.save();
             if (changeType.needsRestart())
               Alerts.info(config, "dialog.settings.alert.needs_restart.header", null, null);
-          } catch (IOException e) {
+          } catch (final IOException e) {
             App.LOGGER.exception(e);
             Alerts.error(config, "dialog.settings.alert.save_error.header", null, null);
           }
@@ -58,7 +58,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   }
 
   private BorderPane createInterfaceForm() {
-    Language language = this.config.language();
+    final Language language = this.config.language();
     this.languageCombo.getItems().addAll(Config.languages());
     this.languageCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
@@ -66,14 +66,14 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.themeCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onThemeSelect(newValue));
 
-    LocalDateTime sampleDate = LocalDateTime.of(1970, 9, 1, 1, 2);
-    for (DateFormat dateFormat : DateFormat.values())
+    final LocalDateTime sampleDate = LocalDateTime.of(1970, 9, 1, 1, 2);
+    for (final DateFormat dateFormat : DateFormat.values())
       this.dateFormatCombo.getItems().add(new NotNullComboBoxItem<>(dateFormat,
           new CalendarDateTimeFormatter(language, dateFormat.getFormat()).format(sampleDate)));
     this.dateFormatCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onDateFormatSelect(newValue));
 
-    for (TimeFormat timeFormat : TimeFormat.values())
+    for (final TimeFormat timeFormat : TimeFormat.values())
       this.timeFormatCombo.getItems().add(new NotNullComboBoxItem<>(timeFormat,
           new CalendarDateTimeFormatter(language, timeFormat.getFormat()).format(sampleDate)));
     this.timeFormatCombo.getSelectionModel().selectedItemProperty()
@@ -102,30 +102,30 @@ public class SettingsDialog extends DialogBase<ButtonType> {
 
   @SuppressWarnings("unchecked")
   private BorderPane getBorderPane(@NotNull String title, final Pair<String, ? extends Control>... rows) {
-    Label titleLabel = new Label(this.config.language().translate(title));
+    final Label titleLabel = new Label(this.config.language().translate(title));
     BorderPane.setAlignment(titleLabel, Pos.CENTER);
 
-    GridPane gridPane = new GridPane();
+    final GridPane gridPane = new GridPane();
     gridPane.setHgap(10);
     gridPane.setVgap(5);
     gridPane.setPadding(new Insets(10, 0, 10, 0));
     BorderPane.setAlignment(gridPane, Pos.CENTER);
 
     for (int i = 0; i < rows.length; i++) {
-      Label nodeLabel = new Label(this.config.language().translate(rows[i].left()));
+      final Label nodeLabel = new Label(this.config.language().translate(rows[i].left()));
       GridPane.setHalignment(nodeLabel, HPos.RIGHT);
-      Node node = rows[i].right();
+      final Node node = rows[i].right();
       GridPane.setHalignment(node, HPos.LEFT);
       gridPane.addRow(i, nodeLabel, node);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
-    ColumnConstraints cc1 = new ColumnConstraints();
+    final ColumnConstraints cc1 = new ColumnConstraints();
     cc1.setMaxWidth(300);
     cc1.setHgrow(Priority.SOMETIMES);
-    ColumnConstraints cc2 = new ColumnConstraints();
+    final ColumnConstraints cc2 = new ColumnConstraints();
     cc2.setHgrow(Priority.SOMETIMES);
     gridPane.getColumnConstraints().addAll(cc1, cc2);
 
@@ -154,7 +154,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
    * Update the state of this dialog’s buttons.
    */
   private void updateState() {
-    boolean configChanged = this.configChanged().changed();
+    final boolean configChanged = this.configChanged().changed();
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(!configChanged);
   }
 

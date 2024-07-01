@@ -41,9 +41,9 @@ public final class StringUtils {
    * @return The formatted string.
    */
   public static String format(@NotNull String pattern, final @NotNull FormatArg @NotNull ... args) {
-    Set<String> argNames = new HashSet<>();
-    for (FormatArg arg : args) {
-      String name = arg.name();
+    final Set<String> argNames = new HashSet<>();
+    for (final FormatArg arg : args) {
+      final String name = arg.name();
       if (argNames.contains(name)) {
         throw new IllegalArgumentException("Duplicate format argument: " + name);
       }
@@ -61,28 +61,28 @@ public final class StringUtils {
    * @return The parsed text.
    */
   public static List<Text> parseText(@NotNull String s, @NotNull Consumer<String> urlClickListener) {
-    List<Text> texts = new LinkedList<>();
-    StringBuilder builder = new StringBuilder();
-    StringBuilder urlBuffer = new StringBuilder();
+    final List<Text> texts = new LinkedList<>();
+    final StringBuilder builder = new StringBuilder();
+    final StringBuilder urlBuffer = new StringBuilder();
 
-    int[] codepoints = s.strip().replaceAll("\r\n|\n|\r", "\n").chars().toArray();
+    final int[] codepoints = s.strip().replaceAll("\r\n|\n|\r", "\n").chars().toArray();
     for (int i = 0; i < codepoints.length; i++) {
-      int codepoint = codepoints[i];
+      final int codepoint = codepoints[i];
       if (codepoint == 'h' || !urlBuffer.isEmpty()) { // Handle HTTP(S) urls
-        boolean lastChar = i == codepoints.length - 1;
+        final boolean lastChar = i == codepoints.length - 1;
         if (Character.isWhitespace(codepoint) || lastChar) {
           if (lastChar) {
             urlBuffer.append(Character.toString(codepoint));
           } else {
             i--; // Step back to parse the whitespace char at next iteration
           }
-          String urlCandidate = urlBuffer.toString();
+          final String urlCandidate = urlBuffer.toString();
           if (URL_REGEX.matcher(urlCandidate).matches()) { // Text matched, treat as hyperlink and make clickable
             if (!builder.isEmpty()) {
               texts.add(new Text(builder.toString()));
               builder.setLength(0); // Clear
             }
-            Text url = new Text(urlCandidate);
+            final Text url = new Text(urlCandidate);
             url.getStyleClass().add("hyperlink"); // JavaFX adds some default styling with this class
             url.setOnMouseClicked(event -> urlClickListener.accept(urlCandidate));
             texts.add(url);
@@ -118,13 +118,13 @@ public final class StringUtils {
    * @return A string in the format {@code #rrggbb}.
    */
   public static String colorToCSSHex(@NotNull Color color) {
-    int r = (int) Math.round(color.getRed() * 255);
-    int g = (int) Math.round(color.getGreen() * 255);
-    int b = (int) Math.round(color.getBlue() * 255);
+    final int r = (int) Math.round(color.getRed() * 255);
+    final int g = (int) Math.round(color.getGreen() * 255);
+    final int b = (int) Math.round(color.getBlue() * 255);
     if (color.isOpaque()) {
       return String.format("#%02x%02x%02x", r, g, b);
     }
-    int a = (int) Math.round(color.getOpacity() * 255);
+    final int a = (int) Math.round(color.getOpacity() * 255);
     return String.format("#%02x%02x%02x%02x", r, g, b, a);
   }
 

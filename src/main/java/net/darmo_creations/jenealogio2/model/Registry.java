@@ -36,7 +36,7 @@ public abstract class Registry<E extends RegistryEntry, A> {
   ) {
     this.name = Objects.requireNonNull(name);
     this.entryFactory = Objects.requireNonNull(entryFactory);
-    for (var e : defaults)
+    for (final var e : defaults)
       this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), null, e.args(), true);
   }
 
@@ -112,7 +112,7 @@ public abstract class Registry<E extends RegistryEntry, A> {
       throw new IllegalArgumentException("key '%s' already exists".formatted(key));
     if (!key.isBuiltin() && label.isEmpty())
       throw new IllegalArgumentException("label is empty for non-builtin key '%s'".formatted(key));
-    E entry = this.entryFactory.apply(key, label, args);
+    final E entry = this.entryFactory.apply(key, label, args);
     this.entries.put(key, entry);
     return entry;
   }

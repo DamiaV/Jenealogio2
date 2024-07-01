@@ -55,32 +55,32 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    */
   public RegistriesDialog(final @NotNull Config config) {
     super(config, "edit_registries", true, ButtonTypes.CANCEL, ButtonTypes.OK, ButtonTypes.APPLY);
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
     this.importDialog = new RegistriesImportExportDialog(config, true);
     this.exportDialog = new RegistriesImportExportDialog(config, false);
 
-    Label helpLabel = new Label(language.translate("dialog.edit_registries.help"),
+    final Label helpLabel = new Label(language.translate("dialog.edit_registries.help"),
         theme.getIcon(Icon.INFO, Icon.Size.SMALL));
     helpLabel.setWrapText(true);
 
-    TabPane tabPane = new TabPane(
+    final TabPane tabPane = new TabPane(
         this.createTab("life_event_types", this.eventTypesView),
         this.createTab("genders", this.gendersView)
     );
     tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
     VBox.setVgrow(tabPane, Priority.ALWAYS);
 
-    Button importButton = new Button(language.translate("dialog.edit_registries.import"),
+    final Button importButton = new Button(language.translate("dialog.edit_registries.import"),
         theme.getIcon(Icon.IMPORT_REGISTRIES, Icon.Size.SMALL));
     importButton.setOnAction(event -> this.onImport());
     this.exportButton = new Button(language.translate("dialog.edit_registries.export"),
         theme.getIcon(Icon.EXPORT_REGISTRIES, Icon.Size.SMALL));
     this.exportButton.setOnAction(event -> this.onExport());
-    HBox buttonsBox = new HBox(5, importButton, this.exportButton);
+    final HBox buttonsBox = new HBox(5, importButton, this.exportButton);
 
-    VBox content = new VBox(5, helpLabel, tabPane, new Separator(), buttonsBox);
+    final VBox content = new VBox(5, helpLabel, tabPane, new Separator(), buttonsBox);
     content.setPrefWidth(600);
     content.setPrefHeight(400);
     this.getDialogPane().setContent(content);
@@ -91,7 +91,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       event.consume();
     });
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(600);
     stage.setMinHeight(500);
 
@@ -112,13 +112,13 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private void onImport() {
-    Optional<Path> file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
+    final Optional<Path> file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
     if (file.isEmpty())
       return;
-    TreeXMLManager.RegistriesWrapper registries;
+    final TreeXMLManager.RegistriesWrapper registries;
     try {
       registries = this.treeXMLReader.loadRegistriesFile(file.get());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
           this.config,
@@ -136,36 +136,36 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     if (!this.checkNotEmpty(eventTypes, genders, false))
       return;
     this.importDialog.setItems(eventTypes, genders);
-    Optional<ButtonType> buttonType = this.importDialog.showAndWait();
+    final Optional<ButtonType> buttonType = this.importDialog.showAndWait();
     if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE)
       return;
-    var selectedItems = this.importDialog.getSelectedItems();
-    for (LifeEventType lifeEventType : selectedItems.left())
+    final var selectedItems = this.importDialog.getSelectedItems();
+    for (final LifeEventType lifeEventType : selectedItems.left())
       this.eventTypesView.importEntry(lifeEventType);
-    for (Gender gender : selectedItems.right())
+    for (final Gender gender : selectedItems.right())
       this.gendersView.importEntry(gender);
   }
 
   private void onExport() {
-    List<LifeEventType> eventTypes = this.eventTypesView.getExportableEntries();
-    List<Gender> genders = this.gendersView.getExportableEntries();
+    final List<LifeEventType> eventTypes = this.eventTypesView.getExportableEntries();
+    final List<Gender> genders = this.gendersView.getExportableEntries();
     if (!this.checkNotEmpty(eventTypes, genders, true))
       return;
     this.exportDialog.setItems(eventTypes, genders);
-    Optional<ButtonType> buttonType = this.exportDialog.showAndWait();
+    final Optional<ButtonType> buttonType = this.exportDialog.showAndWait();
     if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE)
       return;
-    Optional<Path> file = FileChoosers.showRegistriesFileSaver(this.config, this.getOwner(), "registries");
+    final Optional<Path> file = FileChoosers.showRegistriesFileSaver(this.config, this.getOwner(), "registries");
     if (file.isEmpty())
       return;
-    var selectedItems = this.exportDialog.getSelectedItems();
-    var selectedKeys = new Pair<>(
+    final var selectedItems = this.exportDialog.getSelectedItems();
+    final var selectedKeys = new Pair<>(
         selectedItems.left().stream().map(RegistryEntry::key).toList(),
         selectedItems.right().stream().map(RegistryEntry::key).toList()
     );
     try {
       this.treeXMLWriter.saveRegistriesToFile(file.get(), this.familyTree, selectedKeys, this.config);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(
           this.config,
@@ -179,7 +179,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
 
   private boolean checkNotEmpty(@NotNull List<LifeEventType> eventTypes, @NotNull List<Gender> genders, boolean exporting) {
     if (eventTypes.isEmpty() && genders.isEmpty()) {
-      String key = exporting ? "export" : "import";
+      final String key = exporting ? "export" : "import";
       Alerts.warning(
           this.config,
           "alert.nothing_to_%s.header".formatted(key),
@@ -192,15 +192,15 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private Tab createTab(@NotNull String name, final @NotNull RegistryView<?, ?, ?> registryView) {
-    Language language = this.config.language();
-    Tab tab = new Tab(language.translate("dialog.edit_registries.tab.%s.title".formatted(name)));
+    final Language language = this.config.language();
+    final Tab tab = new Tab(language.translate("dialog.edit_registries.tab.%s.title".formatted(name)));
 
-    Label description = new Label(language.translate("dialog.edit_registries.tab.%s.description".formatted(name)));
+    final Label description = new Label(language.translate("dialog.edit_registries.tab.%s.description".formatted(name)));
     description.setWrapText(true);
 
     VBox.setVgrow(registryView, Priority.ALWAYS);
 
-    VBox vBox = new VBox(5, registryView, description);
+    final VBox vBox = new VBox(5, registryView, description);
     vBox.setPadding(new Insets(5));
     tab.setContent(vBox);
 
@@ -219,7 +219,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private void updateButtons() {
-    boolean invalid = !this.eventTypesView.isValid() || !this.gendersView.isValid();
+    final boolean invalid = !this.eventTypesView.isValid() || !this.gendersView.isValid();
     this.exportButton.setDisable(invalid || this.changes);
     this.applyButton.setDisable(invalid || !this.changes);
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(invalid);
@@ -245,18 +245,18 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      */
     protected RegistryView() {
       super(5);
-      Language language = RegistriesDialog.this.config.language();
-      Theme theme = RegistriesDialog.this.config.theme();
+      final Language language = RegistriesDialog.this.config.language();
+      final Theme theme = RegistriesDialog.this.config.theme();
 
       // Buttons
-      Button addButton = new Button(language.translate("dialog.edit_registries.add_entry"),
+      final Button addButton = new Button(language.translate("dialog.edit_registries.add_entry"),
           theme.getIcon(Icon.ADD_ENTRY, Icon.Size.SMALL));
       addButton.setOnAction(event -> this.onCreateEntry());
       this.removeButton = new Button(language.translate("dialog.edit_registries.delete_entry"),
           theme.getIcon(Icon.DELETE_ENTRY, Icon.Size.SMALL));
       this.removeButton.setOnAction(event -> this.onRemoveSelectedItems());
       this.removeButton.setDisable(true);
-      Pane spacer = new Pane();
+      final Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
       this.buttonsBox = new HBox(5, spacer, addButton, this.removeButton);
 
@@ -266,7 +266,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       this.entriesTable.setPrefHeight(0);
       this.entriesTable.setEditable(true);
 
-      TableColumn<TI, Integer> usageCol = new NonSortableTableColumn<>(
+      final TableColumn<TI, Integer> usageCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.entry_usage"));
       usageCol.setCellFactory(param -> new TableCell<>() {
         @Override
@@ -279,7 +279,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       });
       usageCol.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().usage()));
 
-      TableColumn<TI, String> nameCol = new NonSortableTableColumn<>(
+      final TableColumn<TI, String> nameCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.entry_name"));
       nameCol.setEditable(true);
       nameCol.setCellFactory(param -> new TextFieldTableCell<>(new DefaultStringConverter()) {
@@ -337,10 +337,10 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      */
     public void applyChanges() {
       this.entriesToDelete.forEach(this.registry::removeEntry);
-      for (var item : this.entriesTable.getItems()) {
-        RE entry = item.entry();
+      for (final var item : this.entriesTable.getItems()) {
+        final RE entry = item.entry();
         if (entry == null) {
-          String label = item.getName();
+          final String label = item.getName();
           this.registry.registerEntry(this.generateKey(), label, item.getBuildArgs());
         } else
           item.updateEntry();
@@ -348,10 +348,10 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
 
     public RegistryEntryKey generateKey() {
-      Random rng = new Random();
+      final Random rng = new Random();
       while (true) {
-        String keyName = String.valueOf(rng.nextInt(1_000_000));
-        RegistryEntryKey key = new RegistryEntryKey(Registry.USER_NS, keyName);
+        final String keyName = String.valueOf(rng.nextInt(1_000_000));
+        final RegistryEntryKey key = new RegistryEntryKey(Registry.USER_NS, keyName);
         if (!this.registry.containsKey(key))
           return key;
       }
@@ -374,9 +374,9 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      * Remove all selected items and stage them for deletion from the registry.
      */
     private void onRemoveSelectedItems() {
-      Set<TI> toDelete = new HashSet<>();
-      for (var selectedItem : this.entriesTable.getSelectionModel().getSelectedItems()) {
-        RE entry = selectedItem.entry();
+      final Set<TI> toDelete = new HashSet<>();
+      for (final var selectedItem : this.entriesTable.getSelectionModel().getSelectedItems()) {
+        final RE entry = selectedItem.entry();
         if (entry != null)
           this.entriesToDelete.add(entry);
         toDelete.add(selectedItem);
@@ -391,8 +391,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      */
     protected void onSelectionChange() {
       // Prevent deleting builtin and used entries
-      ObservableList<TI> selectedItems = this.entriesTable.getSelectionModel().getSelectedItems();
-      boolean disable = selectedItems.isEmpty() || selectedItems.stream()
+      final ObservableList<TI> selectedItems = this.entriesTable.getSelectionModel().getSelectedItems();
+      final boolean disable = selectedItems.isEmpty() || selectedItems.stream()
           .anyMatch(i -> i.entry() != null && i.entry().isBuiltin() || i.usage() != 0);
       this.removeButton.setDisable(disable);
     }
@@ -404,13 +404,13 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private class LifeEventTypeRegistryView
       extends RegistryView<LifeEventTypeTableItem, LifeEventType, LifeEventTypeRegistry.RegistryArgs> {
     public LifeEventTypeRegistryView() {
-      Language language = RegistriesDialog.this.config.language();
+      final Language language = RegistriesDialog.this.config.language();
 
-      TableColumn<LifeEventTypeTableItem, LifeEventType.Group> groupCol = new NonSortableTableColumn<>(
+      final TableColumn<LifeEventTypeTableItem, LifeEventType.Group> groupCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.life_event_types.group"));
       groupCol.setEditable(true);
       groupCol.setCellFactory(param -> {
-        ComboBoxTableCell<LifeEventTypeTableItem, LifeEventType.Group> comboBoxTableCell =
+        final ComboBoxTableCell<LifeEventTypeTableItem, LifeEventType.Group> comboBoxTableCell =
             new ComboBoxTableCell<>(LifeEventType.Group.values()) {
               @Override
               public void updateItem(LifeEventType.Group item, boolean empty) {
@@ -434,7 +434,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       });
       groupCol.setCellValueFactory(param -> param.getValue().groupProperty());
 
-      TableColumn<LifeEventTypeTableItem, Boolean> deathCol = new NonSortableTableColumn<>(
+      final TableColumn<LifeEventTypeTableItem, Boolean> deathCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.life_event_types.indication_type.death"));
       deathCol.setEditable(true);
       deathCol.setCellFactory(param -> new CheckBoxTableCell<>() {
@@ -446,7 +446,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       });
       deathCol.setCellValueFactory(param -> param.getValue().indicatesDeathProperty());
 
-      TableColumn<LifeEventTypeTableItem, Boolean> unionCol = new NonSortableTableColumn<>(
+      final TableColumn<LifeEventTypeTableItem, Boolean> unionCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.life_event_types.indication_type.union"));
       unionCol.setEditable(true);
       unionCol.setCellFactory(param -> new CheckBoxCell<>() {
@@ -454,13 +454,13 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         public void updateItem(Boolean item, boolean empty) {
           super.updateItem(item, empty);
           if (this.isEditable()) {
-            var row = this.getTableRow();
+            final var row = this.getTableRow();
             if (row == null)
               return;
-            var rowItem = row.getItem();
+            final var rowItem = row.getItem();
             if (rowItem == null)
               return;
-            boolean editable = rowItem.actorsNbProperty().get() >= 2;
+            final boolean editable = rowItem.actorsNbProperty().get() >= 2;
             this.setEditable(editable);
             if (!editable)
               rowItem.indicatesUnionProperty().set(false);
@@ -469,7 +469,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       });
       unionCol.setCellValueFactory(param -> param.getValue().indicatesUnionProperty());
 
-      TableColumn<LifeEventTypeTableItem, Integer> actorsNbCol = new NonSortableTableColumn<>(
+      final TableColumn<LifeEventTypeTableItem, Integer> actorsNbCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.life_event_types.actors_nb"));
       actorsNbCol.setEditable(true);
       actorsNbCol.setCellFactory(param -> new ComboBoxTableCell<>(1, 2) {
@@ -487,7 +487,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       });
       actorsNbCol.setCellValueFactory(param -> param.getValue().actorsNbProperty());
 
-      TableColumn<LifeEventTypeTableItem, Boolean> uniqueCol = new NonSortableTableColumn<>(
+      final TableColumn<LifeEventTypeTableItem, Boolean> uniqueCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.life_event_types.unique"));
       uniqueCol.setEditable(true);
       uniqueCol.setCellFactory(param -> new CheckBoxCell<>());
@@ -501,10 +501,10 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     public void refresh(final @NotNull FamilyTree familyTree) {
       super.refresh(familyTree);
       this.registry = familyTree.lifeEventTypeRegistry();
-      Map<LifeEventType, List<LifeEvent>> eventTypesUsage = familyTree.lifeEvents().stream()
+      final Map<LifeEventType, List<LifeEvent>> eventTypesUsage = familyTree.lifeEvents().stream()
           .collect(Collectors.groupingBy(LifeEvent::type));
-      for (LifeEventType entry : this.registry.serializableEntries()) {
-        int usage = eventTypesUsage.getOrDefault(entry, List.of()).size();
+      for (final LifeEventType entry : this.registry.serializableEntries()) {
+        final int usage = eventTypesUsage.getOrDefault(entry, List.of()).size();
         this.entriesTable.getItems().add(new LifeEventTypeTableItem(entry, usage, false));
       }
     }
@@ -521,16 +521,16 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   private class GenderRegistryView
       extends RegistryView<GenderTableItem, Gender, GenderRegistry.RegistryArgs> {
     public GenderRegistryView() {
-      Config config = RegistriesDialog.this.config;
-      Language language = config.language();
+      final Config config = RegistriesDialog.this.config;
+      final Language language = config.language();
 
-      TableColumn<GenderTableItem, Image> iconCol = new NonSortableTableColumn<>(
+      final TableColumn<GenderTableItem, Image> iconCol = new NonSortableTableColumn<>(
           language.translate("dialog.edit_registries.tab.genders.icon"));
       iconCol.setEditable(true);
       iconCol.setCellFactory(param -> new ImagePickerTableCell<>(() -> {
-        Optional<Path> path = FileChoosers.showFileChooser(config, RegistriesDialog.this.stage(), "image_file", ".png", ".jpg", ".jpeg");
+        final Optional<Path> path = FileChoosers.showFileChooser(config, RegistriesDialog.this.stage(), "image_file", ".png", ".jpg", ".jpeg");
         if (path.isPresent()) {
-          Image image = new Image("file://" + path.get());
+          final Image image = new Image("file://" + path.get());
           if (image.getWidth() > 16 || image.getHeight() > 16) {
             Alerts.warning(config, "alert.invalid_icon_image.header", null, null);
             return Optional.empty();
@@ -549,11 +549,11 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       super.refresh(familyTree);
       this.registry = familyTree.genderRegistry();
       //noinspection OptionalGetWithoutIsPresent
-      Map<Gender, List<Person>> gendersUsage = familyTree.persons().stream()
+      final Map<Gender, List<Person>> gendersUsage = familyTree.persons().stream()
           .filter(person -> person.gender().isPresent())
           .collect(Collectors.groupingBy(person -> person.gender().get()));
-      for (Gender entry : this.registry.serializableEntries()) {
-        int usage = gendersUsage.getOrDefault(entry, List.of()).size();
+      for (final Gender entry : this.registry.serializableEntries()) {
+        final int usage = gendersUsage.getOrDefault(entry, List.of()).size();
         this.entriesTable.getItems().add(new GenderTableItem(entry, usage, false));
       }
     }
@@ -567,7 +567,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     public void importEntry(@NotNull Gender entry) {
       if (entry.isBuiltin()) {
         for (int i = 0; i < this.entriesTable.getItems().size(); i++) {
-          GenderTableItem item = this.entriesTable.getItems().get(i);
+          final GenderTableItem item = this.entriesTable.getItems().get(i);
           if (item.entry().key().equals(entry.key())) {
             item.iconProperty().set(entry.icon());
             break;
@@ -586,7 +586,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     private TableItem(E entry, String registryName, int usage, boolean isNew) {
       this.usage = usage;
       this.entry = isNew ? null : entry;
-      String label;
+      final String label;
       if (entry != null && entry.isBuiltin())
         label = RegistriesDialog.this.config.language().translate(registryName + "." + entry.key().name());
       else if (entry != null)
@@ -667,13 +667,13 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     @Override
     public void updateEntry() {
       super.updateEntry();
-      LifeEventType entry = this.entry();
+      final LifeEventType entry = this.entry();
       if (entry.isBuiltin())
         return;
       entry.setGroup(this.groupProperty.get());
       entry.setIndicatesDeath(this.indicatesDeathProperty.get());
       if (this.usage() == 0) {
-        int actorsNb = this.actorsNbProperty.get();
+        final int actorsNb = this.actorsNbProperty.get();
         entry.setActorsNumber(actorsNb, actorsNb, this.indicatesUnionProperty.get());
         entry.setUnique(this.uniqueProperty.get());
       }
@@ -762,14 +762,14 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private static <S extends TableItem<?, ?>> void updateTableCell(@NotNull TableCell<S, ?> cell, boolean disableIfInUse) {
-    TableRow<S> row = cell.getTableRow();
+    final TableRow<S> row = cell.getTableRow();
     if (row == null)
       return;
-    S rowItem = row.getItem();
+    final S rowItem = row.getItem();
     if (rowItem == null)
       return;
-    RegistryEntry value = rowItem.entry();
-    boolean editable = (!disableIfInUse || rowItem.usage() == 0) && (value == null || !value.isBuiltin());
+    final RegistryEntry value = rowItem.entry();
+    final boolean editable = (!disableIfInUse || rowItem.usage() == 0) && (value == null || !value.isBuiltin());
     cell.setEditable(editable);
     cell.pseudoClassStateChanged(PseudoClasses.DISABLED, !editable);
   }

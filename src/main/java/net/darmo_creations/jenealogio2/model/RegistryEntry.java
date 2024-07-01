@@ -64,7 +64,7 @@ public abstract class RegistryEntry {
       return true;
     if (o == null || this.getClass() != o.getClass())
       return false;
-    RegistryEntry that = (RegistryEntry) o;
+    final RegistryEntry that = (RegistryEntry) o;
     return Objects.equals(this.key, that.key);
   }
 

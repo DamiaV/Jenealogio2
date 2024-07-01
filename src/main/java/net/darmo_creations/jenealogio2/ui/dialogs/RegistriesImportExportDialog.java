@@ -29,20 +29,20 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
    */
   public RegistriesImportExportDialog(final @NotNull Config config, boolean importing) {
     super(config, importing ? "registries_import" : "registries_export", true, ButtonTypes.OK, ButtonTypes.CANCEL);
-    Language language = config.language();
+    final Language language = config.language();
 
-    Label descLabel = new Label(
+    final Label descLabel = new Label(
         language.translate("dialog.registries_%s.description".formatted(importing ? "import" : "export")),
         config.theme().getIcon(Icon.INFO, Icon.Size.SMALL)
     );
     descLabel.setWrapText(true);
     this.eventTypesTab = new EntriesTab<>("life_event_types");
     this.gendersTab = new EntriesTab<>("genders");
-    TabPane tabPane = new TabPane(this.eventTypesTab, this.gendersTab);
+    final TabPane tabPane = new TabPane(this.eventTypesTab, this.gendersTab);
     tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
     this.getDialogPane().setContent(new VBox(5, descLabel, tabPane));
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(300);
     stage.setMinHeight(200);
   }
@@ -60,8 +60,8 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
   }
 
   private void updateButtons() {
-    boolean noSelection = !this.eventTypesTab.getSelectedItems().isEmpty()
-                          && !this.gendersTab.getSelectedItems().isEmpty();
+    final boolean noSelection = !this.eventTypesTab.getSelectedItems().isEmpty()
+                                && !this.gendersTab.getSelectedItems().isEmpty();
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(noSelection);
   }
 
@@ -70,24 +70,24 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
 
     public EntriesTab(String registryName) {
       super(RegistriesImportExportDialog.this.config.language().translate("dialog.registries_import_export.tab." + registryName));
-      Language language = RegistriesImportExportDialog.this.config.language();
-      Button selectAllButton = new Button(language.translate("dialog.registries_import_export.select_all"));
+      final Language language = RegistriesImportExportDialog.this.config.language();
+      final Button selectAllButton = new Button(language.translate("dialog.registries_import_export.select_all"));
       selectAllButton.setOnAction(event -> this.select(SelectionMode.ALL));
-      Button deselectAllButton = new Button(language.translate("dialog.registries_import_export.deselect_all"));
+      final Button deselectAllButton = new Button(language.translate("dialog.registries_import_export.deselect_all"));
       deselectAllButton.setOnAction(event -> this.select(SelectionMode.NONE));
-      Button invertSelectionButton = new Button(language.translate("dialog.registries_import_export.invert_selection"));
+      final Button invertSelectionButton = new Button(language.translate("dialog.registries_import_export.invert_selection"));
       invertSelectionButton.setOnAction(event -> this.select(SelectionMode.INVERT));
-      HBox buttonsBox = new HBox(5, selectAllButton, deselectAllButton, invertSelectionButton);
+      final HBox buttonsBox = new HBox(5, selectAllButton, deselectAllButton, invertSelectionButton);
       this.treeView.setShowRoot(false);
       this.treeView.setRoot(new TreeItem<>());
       this.treeView.setCellFactory(e -> {
-        CheckBoxTreeCell<T> cell = new CheckBoxTreeCell<>();
+        final CheckBoxTreeCell<T> cell = new CheckBoxTreeCell<>();
         cell.setConverter(new StringConverter<>() {
           @Override
           public String toString(TreeItem<T> item) {
             if (item == null)
               return "";
-            T entry = item.getValue();
+            final T entry = item.getValue();
             if (entry.isBuiltin())
               return language.translate(registryName + "." + entry.key().name());
             else
@@ -105,8 +105,8 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
     }
 
     private void select(@NotNull SelectionMode mode) {
-      for (TreeItem<T> child : this.treeView.getRoot().getChildren())
-        if (child instanceof CheckBoxTreeItem<T> i)
+      for (final TreeItem<T> child : this.treeView.getRoot().getChildren())
+        if (child instanceof final CheckBoxTreeItem<T> i)
           i.setSelected(mode.apply(i.isSelected()));
       RegistriesImportExportDialog.this.updateButtons();
     }
@@ -120,7 +120,7 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
 
     public void setItems(final @NotNull List<T> items) {
       this.treeView.getRoot().getChildren().clear();
-      for (T eventType : items)
+      for (final T eventType : items)
         this.treeView.getRoot().getChildren().add(new CheckBoxTreeItem<>(eventType, null, true));
     }
 

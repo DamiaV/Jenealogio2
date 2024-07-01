@@ -74,26 +74,26 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     this.config = config;
     this.setAnimated(false);
     this.setExpanded(expanded);
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
-    BorderPane borderPane = new BorderPane();
-    Button deleteButton = new Button("", theme.getIcon(Icon.DELETE_EVENT, Icon.Size.SMALL));
+    final BorderPane borderPane = new BorderPane();
+    final Button deleteButton = new Button("", theme.getIcon(Icon.DELETE_EVENT, Icon.Size.SMALL));
     deleteButton.setTooltip(new Tooltip(language.translate("life_event_view.delete")));
     deleteButton.setOnAction(event -> this.onDelete());
     BorderPane.setAlignment(this.titleLabel, Pos.CENTER_LEFT);
     borderPane.setLeft(this.titleLabel);
     this.dateLabel = new DateLabel(null, this.config);
-    HBox topBox = new HBox(5, this.dateLabel, deleteButton);
+    final HBox topBox = new HBox(5, this.dateLabel, deleteButton);
     topBox.setAlignment(Pos.CENTER_LEFT);
     borderPane.setRight(topBox);
     borderPane.prefWidthProperty().bind(parent.widthProperty().subtract(70));
     this.setGraphic(borderPane);
 
-    AnchorPane anchorPane = new AnchorPane();
+    final AnchorPane anchorPane = new AnchorPane();
     this.setContent(anchorPane);
 
-    GridPane gridPane = new GridPane();
+    final GridPane gridPane = new GridPane();
     gridPane.setHgap(5);
     gridPane.setVgap(5);
     AnchorPane.setTopAnchor(gridPane, 10.0);
@@ -112,14 +112,14 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       this.updateDateLabel();
       this.notifyUpdateListeners();
     });
-    Label dateLabel = new Label(language.translate("life_event_view.date"));
+    final Label dateLabel = new Label(language.translate("life_event_view.date"));
     dateLabel.setPadding(new Insets(3, 0, 0, 0));
     gridPane.addRow(1, dateLabel, this.dateTimeSelector);
 
     HBox.setHgrow(this.placeAddressField, Priority.ALWAYS);
     this.placeAddressField.setPromptText(language.translate("life_event_view.place.address"));
     this.placeAddressField.textProperty().addListener((observableValue, oldValue, newValue) -> {
-      boolean noAddress = StringUtils.stripNullable(newValue).isEmpty();
+      final boolean noAddress = StringUtils.stripNullable(newValue).isEmpty();
       this.placeLatField.setDisable(noAddress);
       this.placeLonField.setDisable(noAddress);
       this.fetchLatLonButton.setDisable(noAddress);
@@ -157,7 +157,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     this.openMapDialogButton.setGraphic(theme.getIcon(Icon.OPEN_LATLON_SELECTOR, Icon.Size.SMALL));
     this.openMapDialogButton.setOnAction(e -> this.onSelectLatLonFromMap());
 
-    HBox placeBox = new HBox(
+    final HBox placeBox = new HBox(
         5,
         this.placeAddressField,
         this.placeLatField,
@@ -177,17 +177,17 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
         new HBox(5, this.partnerLabel, this.partnerButton)
     );
 
-    VBox witnessesVBox = new VBox(5);
-    HBox buttonsHBox = new HBox(5);
+    final VBox witnessesVBox = new VBox(5);
+    final HBox buttonsHBox = new HBox(5);
     witnessesVBox.getChildren().addAll(buttonsHBox, this.witnessesList);
-    Button addWitnessButton = new Button(language.translate("life_event_view.witnesses.add"),
+    final Button addWitnessButton = new Button(language.translate("life_event_view.witnesses.add"),
         theme.getIcon(Icon.ADD_WITNESS, Icon.Size.SMALL));
     addWitnessButton.setOnAction(event -> this.onAddWitness());
-    Button removeWitnessButton = new Button(language.translate("life_event_view.witnesses.remove"),
+    final Button removeWitnessButton = new Button(language.translate("life_event_view.witnesses.remove"),
         theme.getIcon(Icon.REMOVE_WITNESS, Icon.Size.SMALL));
     removeWitnessButton.setOnAction(event -> this.onRemoveWitness());
     removeWitnessButton.setDisable(true);
-    Pane spacer = new Pane();
+    final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
     buttonsHBox.getChildren().addAll(spacer, addWitnessButton, removeWitnessButton);
     this.witnessesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
@@ -197,17 +197,17 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
         this.onRemoveWitness();
     });
     this.witnessesList.setPrefHeight(100);
-    Label witnessesLabel = new Label(language.translate("life_event_view.witnesses"));
+    final Label witnessesLabel = new Label(language.translate("life_event_view.witnesses"));
     witnessesLabel.setPadding(new Insets(3, 0, 0, 0));
     gridPane.addRow(4, witnessesLabel, witnessesVBox);
 
     this.notesField.setPrefHeight(100);
-    Label notesLabel = new Label(language.translate("life_event_view.notes"));
+    final Label notesLabel = new Label(language.translate("life_event_view.notes"));
     notesLabel.setPadding(new Insets(3, 0, 0, 0));
     gridPane.addRow(5, notesLabel, this.notesField);
 
     this.sourcesField.setPrefHeight(100);
-    Label sourcesLabel = new Label(language.translate("life_event_view.sources"));
+    final Label sourcesLabel = new Label(language.translate("life_event_view.sources"));
     sourcesLabel.setPadding(new Insets(3, 0, 0, 0));
     gridPane.addRow(6, sourcesLabel, this.sourcesField);
 
@@ -216,7 +216,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     for (int i = 0; i < gridPane.getRowCount(); i++)
       gridPane.getRowConstraints().add(new RowConstraints());
     gridPane.getColumnConstraints().get(1).setHgrow(Priority.ALWAYS);
-    ObservableList<RowConstraints> rowConstraints = gridPane.getRowConstraints();
+    final ObservableList<RowConstraints> rowConstraints = gridPane.getRowConstraints();
     rowConstraints.get(1).setValignment(VPos.TOP);
     rowConstraints.get(4).setValignment(VPos.TOP);
     rowConstraints.get(5).setValignment(VPos.TOP);
@@ -257,7 +257,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   }
 
   private Collection<Place> onPlaceSuggestionRequest(@NotNull AutoCompletionBinding.ISuggestionRequest request) {
-    String userText = request.getUserText().toLowerCase();
+    final String userText = request.getUserText().toLowerCase();
     //noinspection OptionalGetWithoutIsPresent
     return this.familyTree.lifeEvents().stream()
         .filter(e -> e.place().isPresent() && e.place().get().address().toLowerCase().contains(userText))
@@ -294,7 +294,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   }
 
   private List<Person> getExclusionList() {
-    List<Person> exclusionList = new LinkedList<>(this.witnessesList.getItems());
+    final List<Person> exclusionList = new LinkedList<>(this.witnessesList.getItems());
     if (this.partner != null)
       exclusionList.add(this.partner);
     return exclusionList;
@@ -304,7 +304,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    * Called when the remove witness action (button or keyboard key) is fired.
    */
   private void onRemoveWitness() {
-    ObservableList<Person> selectedItem = this.witnessesList.getSelectionModel().getSelectedItems();
+    final ObservableList<Person> selectedItem = this.witnessesList.getSelectionModel().getSelectedItems();
     this.witnessesList.getItems().removeAll(new LinkedList<>(selectedItem));
   }
 
@@ -329,11 +329,11 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    */
   public boolean checkValidity() {
     boolean valid;
-    boolean datePresent = this.dateTimeSelector.getDateTime() != null;
+    final boolean datePresent = this.dateTimeSelector.getDateTime() != null;
     this.dateTimeSelector.pseudoClassStateChanged(PseudoClasses.INVALID, !datePresent);
     valid = datePresent;
-    boolean invalidPartner = this.eventTypeCombo.getSelectionModel().getSelectedItem().data().maxActors() > 1
-                             && this.partner == null;
+    final boolean invalidPartner = this.eventTypeCombo.getSelectionModel().getSelectedItem().data().maxActors() > 1
+                                   && this.partner == null;
     this.partnerLabel.pseudoClassStateChanged(PseudoClasses.INVALID, invalidPartner);
     valid &= !invalidPartner;
     this.pseudoClassStateChanged(PseudoClasses.INVALID, !valid);
@@ -345,28 +345,28 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    */
   public void applyChanges() {
     this.lifeEvent.setType(this.eventTypeCombo.getSelectionModel().getSelectedItem().data());
-    Set<Person> actors = new HashSet<>();
+    final Set<Person> actors = new HashSet<>();
     actors.add(this.person);
     if (!this.partnerButton.isDisabled())
       actors.add(this.partner);
     this.familyTree.setLifeEventActors(this.lifeEvent, actors);
 
     // Remove all witnesses and add back the selected ones
-    for (Person witness : this.lifeEvent.witnesses())
+    for (final Person witness : this.lifeEvent.witnesses())
       this.familyTree.removeWitnessFromLifeEvent(this.lifeEvent, witness);
-    for (Person witness : this.witnessesList.getItems())
+    for (final Person witness : this.witnessesList.getItems())
       this.familyTree.addWitnessToLifeEvent(this.lifeEvent, witness);
 
     this.lifeEvent.setDate(Optional.ofNullable(this.dateTimeSelector.getDateTime())
         .orElseThrow(() -> new IllegalArgumentException("Missing date")));
-    String address = StringUtils.stripNullable(this.placeAddressField.getText()).orElse(null);
+    final String address = StringUtils.stripNullable(this.placeAddressField.getText()).orElse(null);
     if (address != null) {
       LatLon latLon;
       try {
-        double lat = Double.parseDouble(this.placeLatField.getText());
-        double lon = Double.parseDouble(this.placeLonField.getText());
+        final double lat = Double.parseDouble(this.placeLatField.getText());
+        final double lon = Double.parseDouble(this.placeLonField.getText());
         latLon = new LatLon(lat, lon);
-      } catch (RuntimeException e) {
+      } catch (final RuntimeException e) {
         latLon = null;
       }
       this.lifeEvent.setPlace(new Place(address, latLon));
@@ -424,7 +424,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    */
   private void onEventTypeChange(@NotNull NotNullComboBoxItem<LifeEventType> item) {
     this.titleLabel.setText(item.text());
-    boolean oneActor = item.data().maxActors() == 1;
+    final boolean oneActor = item.data().maxActors() == 1;
     this.partnerButton.setDisable(oneActor);
     this.setPartner(this.partner); // Refresh display
     this.notifyUpdateListeners();
@@ -443,22 +443,22 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       @NotNull ComboBox<? super NotNullComboBoxItem<LifeEventType>> eventTypeCombo,
       final @NotNull Config config
   ) {
-    Map<LifeEventType.Group, List<LifeEventType>> groups = new HashMap<>();
-    for (LifeEventType eventType : familyTree.lifeEventTypeRegistry().entries()) {
-      var group = eventType.group();
+    final Map<LifeEventType.Group, List<LifeEventType>> groups = new HashMap<>();
+    for (final LifeEventType eventType : familyTree.lifeEventTypeRegistry().entries()) {
+      final var group = eventType.group();
       if (!groups.containsKey(group))
         groups.put(group, new LinkedList<>());
       groups.get(group).add(eventType);
     }
 
-    Language language = config.language();
-    Collator collator = Collator.getInstance(language.locale());
-    for (LifeEventType.Group group : LifeEventType.Group.values()) {
-      List<LifeEventType> types = groups.get(group);
-      String prefix = "[%s] ".formatted(language.translate("life_event_type_group." + group.name().toLowerCase()));
+    final Language language = config.language();
+    final Collator collator = Collator.getInstance(language.locale());
+    for (final LifeEventType.Group group : LifeEventType.Group.values()) {
+      final List<LifeEventType> types = groups.get(group);
+      final String prefix = "[%s] ".formatted(language.translate("life_event_type_group." + group.name().toLowerCase()));
       types.stream()
           .map(type -> {
-            String name = type.isBuiltin()
+            final String name = type.isBuiltin()
                 ? language.translate("life_event_types." + type.key().name())
                 : Objects.requireNonNull(type.userDefinedName());
             return new NotNullComboBoxItem<>(type, prefix + name);
@@ -475,9 +475,9 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     this.eventTypeCombo.getSelectionModel()
         .select(new NotNullComboBoxItem<>(this.lifeEvent.type()));
     this.dateTimeSelector.setDateTime(this.lifeEvent.date());
-    Optional<Place> place = this.lifeEvent.place();
+    final Optional<Place> place = this.lifeEvent.place();
     if (place.isPresent()) {
-      Place p = place.get();
+      final Place p = place.get();
       this.placeAddressField.setText(p.address());
       p.latLon().ifPresent(this::setLatLonFields);
     } else {
@@ -485,7 +485,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       this.placeLatField.setText(null);
       this.placeLonField.setText(null);
     }
-    Optional<Person> otherActor = this.lifeEvent.actors().stream().filter(p -> p != this.person).findFirst();
+    final Optional<Person> otherActor = this.lifeEvent.actors().stream().filter(p -> p != this.person).findFirst();
     this.setPartner(otherActor.orElse(null));
     this.lifeEvent.witnesses().forEach(p -> this.witnessesList.getItems().add(p));
     this.notesField.setText(this.lifeEvent.notes().orElse(""));
@@ -493,12 +493,12 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   }
 
   private void setPartner(final Person partner) {
-    NotNullComboBoxItem<LifeEventType> selectedItem = this.eventTypeCombo.getSelectionModel().getSelectedItem();
-    boolean oneActor = selectedItem.data().maxActors() == 1;
+    final NotNullComboBoxItem<LifeEventType> selectedItem = this.eventTypeCombo.getSelectionModel().getSelectedItem();
+    final boolean oneActor = selectedItem.data().maxActors() == 1;
     this.partnerButton.setDisable(oneActor);
     this.partner = partner;
-    String cssClass = "unknown";
-    ObservableList<String> styleClass = this.partnerLabel.getStyleClass();
+    final String cssClass = "unknown";
+    final ObservableList<String> styleClass = this.partnerLabel.getStyleClass();
     if (oneActor) {
       this.partnerLabel.setText(null);
       styleClass.remove(cssClass);

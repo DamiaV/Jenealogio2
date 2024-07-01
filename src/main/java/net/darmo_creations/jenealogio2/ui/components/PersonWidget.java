@@ -79,39 +79,39 @@ public class PersonWidget extends AnchorPane {
     this.setMinWidth(this.getPrefWidth());
     this.setMaxWidth(this.getPrefWidth());
 
-    VBox pane = new VBox(5);
+    final VBox pane = new VBox(5);
     AnchorPane.setTopAnchor(pane, 0.0);
     AnchorPane.setBottomAnchor(pane, 0.0);
     AnchorPane.setLeftAnchor(pane, 0.0);
     AnchorPane.setRightAnchor(pane, 0.0);
     this.getChildren().add(pane);
 
-    BorderPane iconsBox = new BorderPane();
+    final BorderPane iconsBox = new BorderPane();
     if (person != null && person.disambiguationID().isPresent())
       iconsBox.setLeft(new Label("#" + person.disambiguationID().get()));
     else
       iconsBox.setLeft(new Label()); // Empty label for proper alignment
-    HBox iconsRightBox = new HBox(5);
+    final HBox iconsRightBox = new HBox(5);
     iconsBox.setRight(iconsRightBox);
     if (isRoot) {
-      Label rootIcon = new Label(null, config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+      final Label rootIcon = new Label(null, config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
       rootIcon.setTooltip(new Tooltip(config.language().translate("person_widget.root.tooltip")));
       iconsRightBox.getChildren().add(rootIcon);
     }
     if (showMoreIcon) {
-      Label moreIcon = new Label(null, config.theme().getIcon(Icon.MORE, Icon.Size.SMALL));
+      final Label moreIcon = new Label(null, config.theme().getIcon(Icon.MORE, Icon.Size.SMALL));
       moreIcon.setTooltip(new Tooltip(config.language().translate("person_widget.more_icon.tooltip")));
       iconsRightBox.getChildren().add(moreIcon);
     }
     if (person != null && person.gender().isPresent()) {
-      Gender gender = person.gender().get();
-      boolean builtin = gender.isBuiltin();
-      String label;
+      final Gender gender = person.gender().get();
+      final boolean builtin = gender.isBuiltin();
+      final String label;
       if (builtin)
         label = config.language().translate("genders." + gender.key().name());
       else
         label = Objects.requireNonNull(gender.userDefinedName());
-      Label genderIcon = new Label(null, new ImageView(gender.icon()));
+      final Label genderIcon = new Label(null, new ImageView(gender.icon()));
       genderIcon.setTooltip(new Tooltip(label));
       iconsRightBox.getChildren().add(genderIcon);
     }
@@ -121,13 +121,13 @@ public class PersonWidget extends AnchorPane {
     this.imageView.setPreserveRatio(true);
     this.imageView.setFitHeight(imageSize);
     this.imageView.setFitWidth(imageSize);
-    HBox imageBox = new HBox(this.imageView);
+    final HBox imageBox = new HBox(this.imageView);
     imageBox.setAlignment(Pos.CENTER);
     imageBox.setMinHeight(imageSize);
     imageBox.setMinWidth(imageSize);
     pane.getChildren().add(imageBox);
 
-    VBox infoPane = new VBox(5, this.firstNameLabel, this.lastNameLabel, this.birthDateLabel, this.deathDateLabel);
+    final VBox infoPane = new VBox(5, this.firstNameLabel, this.lastNameLabel, this.birthDateLabel, this.deathDateLabel);
     infoPane.getStyleClass().add("person-data");
     pane.getChildren().add(infoPane);
 
@@ -227,21 +227,21 @@ public class PersonWidget extends AnchorPane {
 
     this.imageView.setImage(this.person.mainPicture().flatMap(Picture::image).orElse(DEFAULT_IMAGE));
 
-    String firstNames = this.person.getFirstNames().orElse(EMPTY_LABEL_VALUE);
+    final String firstNames = this.person.getFirstNames().orElse(EMPTY_LABEL_VALUE);
     this.firstNameLabel.setText(firstNames);
     this.firstNameLabel.setTooltip(new Tooltip(firstNames));
 
-    String lastName = this.person.getLastName().orElse(EMPTY_LABEL_VALUE);
+    final String lastName = this.person.getLastName().orElse(EMPTY_LABEL_VALUE);
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
-    String birthYear = this.person.getBirthDate().map(PersonWidget::formatDateYear).orElse(EMPTY_LABEL_VALUE);
+    final String birthYear = this.person.getBirthDate().map(PersonWidget::formatDateYear).orElse(EMPTY_LABEL_VALUE);
     this.birthDateLabel.setText(birthYear);
     this.birthDateLabel.setGraphic(this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
     this.birthDateLabel.setTooltip(new Tooltip(birthYear));
 
     if (this.person.lifeStatus().isConsideredDeceased()) {
-      String deathYear = this.person.getDeathDate().map(PersonWidget::formatDateYear).orElse(EMPTY_LABEL_VALUE);
+      final String deathYear = this.person.getDeathDate().map(PersonWidget::formatDateYear).orElse(EMPTY_LABEL_VALUE);
       this.deathDateLabel.setText(deathYear);
       this.deathDateLabel.setGraphic(this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.deathDateLabel.setTooltip(new Tooltip(deathYear));
@@ -250,7 +250,7 @@ public class PersonWidget extends AnchorPane {
 
   public static String formatDateYear(@NotNull DateTime date) {
     if (date instanceof DateTimeWithPrecision d) {
-      int year = d.date().toISO8601Date().getYear();
+      final int year = d.date().toISO8601Date().getYear();
       return switch (d.precision()) {
         case EXACT -> String.valueOf(year);
         case ABOUT -> "~ " + year;
@@ -259,11 +259,11 @@ public class PersonWidget extends AnchorPane {
         case AFTER -> "> " + year;
       };
     } else if (date instanceof DateTimeRange d) {
-      int startYear = d.startDate().toISO8601Date().getYear();
-      int endYear = d.endDate().toISO8601Date().getYear();
+      final int startYear = d.startDate().toISO8601Date().getYear();
+      final int endYear = d.endDate().toISO8601Date().getYear();
       return startYear != endYear ? "%s-%s".formatted(startYear, endYear) : String.valueOf(startYear);
     } else if (date instanceof DateTimeAlternative da) {
-      List<Integer> years = da.dates().stream()
+      final List<Integer> years = da.dates().stream()
           .map(d -> d.toISO8601Date().getYear())
           .distinct() // Not using Collectors.toSet() to keep the order
           .toList();

@@ -39,17 +39,16 @@ public final class Theme {
    */
   public static void loadThemes() throws IOException {
     THEMES.clear();
-    for (String themeID : THEME_IDS) {
-      try (var stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
+    for (final String themeID : THEME_IDS)
+      try (final var stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
         if (stream != null)
-          try (var reader = new InputStreamReader(stream)) {
-            var data = new Gson().fromJson(reader, Map.class);
+          try (final var reader = new InputStreamReader(stream)) {
+            final var data = new Gson().fromJson(reader, Map.class);
             THEMES.put(themeID, new Theme(themeID, (String) data.get("name")));
           }
-      } catch (RuntimeException e) {
+      } catch (final RuntimeException e) {
         App.LOGGER.exception(e);
       }
-    }
     if (THEMES.isEmpty())
       throw new IOException("no themes found");
   }
@@ -107,7 +106,7 @@ public final class Theme {
    * @return An {@link ImageView} object or null if the icon could not be loaded.
    */
   public @Nullable ImageView getIcon(@NotNull Icon icon, @NotNull Icon.Size size) {
-    Image image = this.getIconImage(icon, size);
+    final Image image = this.getIconImage(icon, size);
     return image != null ? new ImageView(image) : null;
   }
 
@@ -119,14 +118,14 @@ public final class Theme {
    * @return An {@link Image} object or null if the icon could not be loaded.
    */
   public @Nullable Image getIconImage(@NotNull Icon icon, @NotNull Icon.Size size) {
-    String path = "%s%s_%d.png".formatted(ICONS_PATH, icon.baseName(), size.pixels());
-    try (var stream = this.getClass().getResourceAsStream(path)) {
+    final String path = "%s%s_%d.png".formatted(ICONS_PATH, icon.baseName(), size.pixels());
+    try (final var stream = this.getClass().getResourceAsStream(path)) {
       if (stream == null) {
         App.LOGGER.warn("Missing icon: " + icon.baseName());
         return null;
       }
       return new Image(stream);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return null;
     }
   }
@@ -135,14 +134,14 @@ public final class Theme {
    * Get the app’s icon as an {@link Image}.
    */
   public @Nullable Image getAppIcon() {
-    String path = "%s%s.png".formatted(App.IMAGES_PATH, "app_icon");
-    try (var stream = this.getClass().getResourceAsStream(path)) {
+    final String path = "%s%s.png".formatted(App.IMAGES_PATH, "app_icon");
+    try (final var stream = this.getClass().getResourceAsStream(path)) {
       if (stream == null) {
         App.LOGGER.warn("Missing icon: app_icon");
         return null;
       }
       return new Image(stream);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return null;
     }
   }
@@ -151,7 +150,7 @@ public final class Theme {
    * Return the URLs of this theme’s stylesheets.
    */
   public List<URL> getStyleSheets() {
-    List<URL> urls = new LinkedList<>();
+    final List<URL> urls = new LinkedList<>();
     this.getStyleSheet("common").ifPresent(urls::add);
     this.getStyleSheet(this.id).ifPresent(urls::add);
     return urls;
@@ -164,7 +163,7 @@ public final class Theme {
    * @return The URL.
    */
   private Optional<URL> getStyleSheet(@NotNull String name) {
-    String path = "%s%s.css".formatted(THEMES_PATH, name);
+    final String path = "%s%s.css".formatted(THEMES_PATH, name);
     return Optional.ofNullable(this.getClass().getResource(path));
   }
 

@@ -119,7 +119,7 @@ public class EditPersonDialog extends DialogBase<Person>
 
     this.getDialogPane().setContent(this.tabPane);
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(1000);
     stage.setMinHeight(650);
 
@@ -128,7 +128,7 @@ public class EditPersonDialog extends DialogBase<Person>
         this.updatePerson(this.person);
         if (this.creating) {
           this.familyTree.addPerson(this.person);
-          for (ChildInfo info : this.childInfo)
+          for (final ChildInfo info : this.childInfo)
             info.child().setParent(info.parentIndex(), this.person);
         }
         this.dispose();
@@ -144,13 +144,13 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private Tab createProfileTab() {
-    Language language = this.config.language();
-    Theme theme = this.config.theme();
+    final Language language = this.config.language();
+    final Theme theme = this.config.theme();
 
-    Tab tab = new Tab(language.translate("dialog.edit_person.profile.title"));
+    final Tab tab = new Tab(language.translate("dialog.edit_person.profile.title"));
     tab.setGraphic(theme.getIcon(Icon.PROFILE_TAB, Icon.Size.SMALL));
 
-    GridPane gridPane = new GridPane();
+    final GridPane gridPane = new GridPane();
     gridPane.setHgap(5);
     gridPane.setVgap(5);
 
@@ -166,85 +166,85 @@ public class EditPersonDialog extends DialogBase<Person>
           this.lifeStatusCache = newValue.data();
       });
       this.addRow(gridPane, 0, "dialog.edit_person.profile.life_status", this.lifeStatusCombo);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      Label label = new Label(language.translate("dialog.edit_person.profile.legal_last_name"));
-      Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      final Label label = new Label(language.translate("dialog.edit_person.profile.legal_last_name"));
+      final Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_last_name.tooltip")));
-      HBox hBox = new HBox(5, label, helpLabel);
+      final HBox hBox = new HBox(5, label, helpLabel);
       hBox.setAlignment(Pos.CENTER_LEFT);
       gridPane.addRow(1, hBox, this.legalLastNameField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      Label label = new Label(language.translate("dialog.edit_person.profile.legal_first_names"));
-      Label helpLable = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      final Label label = new Label(language.translate("dialog.edit_person.profile.legal_first_names"));
+      final Label helpLable = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLable.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_first_names.tooltip")));
-      HBox hBox = new HBox(5, label, helpLable);
+      final HBox hBox = new HBox(5, label, helpLable);
       hBox.setAlignment(Pos.CENTER_LEFT);
       gridPane.addRow(2, hBox, this.legalFirstNamesField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      Label label = new Label(language.translate("dialog.edit_person.profile.public_last_name"));
-      Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      final Label label = new Label(language.translate("dialog.edit_person.profile.public_last_name"));
+      final Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_last_name.tooltip")));
-      HBox hBox = new HBox(5, label, helpLabel);
+      final HBox hBox = new HBox(5, label, helpLabel);
       hBox.setAlignment(Pos.CENTER_LEFT);
       gridPane.addRow(3, hBox, this.publicLastNameField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      Label label = new Label(language.translate("dialog.edit_person.profile.public_first_names"));
-      Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      final Label label = new Label(language.translate("dialog.edit_person.profile.public_first_names"));
+      final Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_first_names.tooltip")));
-      HBox hBox = new HBox(5, label, helpLabel);
+      final HBox hBox = new HBox(5, label, helpLabel);
       hBox.setAlignment(Pos.CENTER_LEFT);
       gridPane.addRow(4, hBox, this.publicFirstNamesField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
       this.addRow(gridPane, 5, "dialog.edit_person.profile.nicknames", this.nicknamesField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
       this.addRow(gridPane, 6, "dialog.edit_person.profile.gender", this.genderCombo);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
       this.addRow(gridPane, 7, "dialog.edit_person.profile.main_occupation", this.mainOccupationField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      Label label = new Label(language.translate("dialog.edit_person.profile.disambiguation_id"));
-      Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
+      final Label label = new Label(language.translate("dialog.edit_person.profile.disambiguation_id"));
+      final Label helpLabel = new Label(null, theme.getIcon(Icon.HELP, Icon.Size.SMALL));
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.disambiguation_id.tooltip")));
-      HBox hBox = new HBox(5, label, helpLabel);
+      final HBox hBox = new HBox(5, label, helpLabel);
       hBox.setAlignment(Pos.CENTER_LEFT);
       // Only allow digits and empty text
       this.disambiguationIDField.setTextFormatter(new TextFormatter<>(
@@ -254,27 +254,27 @@ public class EditPersonDialog extends DialogBase<Person>
       ));
       this.disambiguationIDField.textProperty().addListener((observable, oldValue, newValue) -> this.updateButtons());
       gridPane.addRow(8, hBox, this.disambiguationIDField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      Label notesLabel = new Label(language.translate("dialog.edit_person.profile.notes"));
+      final Label notesLabel = new Label(language.translate("dialog.edit_person.profile.notes"));
       notesLabel.setPadding(new Insets(3, 0, 0, 0));
       GridPane.setValignment(notesLabel, VPos.TOP);
       gridPane.addRow(9, notesLabel, this.notesField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.ALWAYS);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      Label sourcesLabel = new Label(language.translate("dialog.edit_person.profile.sources"));
+      final Label sourcesLabel = new Label(language.translate("dialog.edit_person.profile.sources"));
       sourcesLabel.setPadding(new Insets(3, 0, 0, 0));
       GridPane.setValignment(sourcesLabel, VPos.TOP);
       gridPane.addRow(10, sourcesLabel, this.sourcesField);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.ALWAYS);
       gridPane.getRowConstraints().add(rc);
     }
@@ -284,56 +284,56 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private Tab createEventsTab() {
-    Language language = this.config.language();
-    Theme theme = this.config.theme();
+    final Language language = this.config.language();
+    final Theme theme = this.config.theme();
 
-    Tab tab = new Tab(language.translate("dialog.edit_person.events.title"));
+    final Tab tab = new Tab(language.translate("dialog.edit_person.events.title"));
     tab.setGraphic(theme.getIcon(Icon.LIFE_EVENTS_TAB, Icon.Size.SMALL));
 
-    Pane spacer = new Pane();
+    final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
     this.addEventButton.setText(language.translate("dialog.edit_person.add_event"));
     this.addEventButton.setGraphic(theme.getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
     this.addEventButton.setOnAction(event -> {
-      DateTimeWithPrecision date = new DateTimeWithPrecision(
+      final DateTimeWithPrecision date = new DateTimeWithPrecision(
           Calendars.GREGORIAN.convertDate(LocalDateTime.now(), true),
           DateTimePrecision.EXACT
       );
-      LifeEventType birth = this.familyTree.lifeEventTypeRegistry()
+      final LifeEventType birth = this.familyTree.lifeEventTypeRegistry()
           .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
       this.addEvent(new LifeEvent(date, birth), true);
     });
-    HBox buttonsBox = new HBox(spacer, this.addEventButton);
+    final HBox buttonsBox = new HBox(spacer, this.addEventButton);
 
     this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
 
-    VBox vBox = new VBox(5, buttonsBox, this.lifeEventsList);
+    final VBox vBox = new VBox(5, buttonsBox, this.lifeEventsList);
     vBox.setPadding(new Insets(5, 0, 0, 0));
     tab.setContent(vBox);
     return tab;
   }
 
   private Tab createParentsTab() {
-    Language language = this.config.language();
-    Theme theme = this.config.theme();
+    final Language language = this.config.language();
+    final Theme theme = this.config.theme();
 
-    Tab tab = new Tab(language.translate("dialog.edit_person.parents.title"));
+    final Tab tab = new Tab(language.translate("dialog.edit_person.parents.title"));
     tab.setGraphic(theme.getIcon(Icon.FAMILY_TAB, Icon.Size.SMALL));
 
-    GridPane gridPane = new GridPane();
+    final GridPane gridPane = new GridPane();
     gridPane.setHgap(5);
     gridPane.setVgap(5);
 
     {
-      Button parent1Button = new Button();
+      final Button parent1Button = new Button();
       parent1Button.setGraphic(theme.getIcon(Icon.EDIT_PARENT, Icon.Size.SMALL));
       parent1Button.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.edit_parent1")));
       parent1Button.setOnAction(e -> this.onParentSelect(1));
       this.removeParent1Button.setGraphic(theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
       this.removeParent1Button.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.remove_parent1")));
       this.removeParent1Button.setOnAction(e -> this.onRemoveParent(1));
-      Button parent2Button = new Button();
+      final Button parent2Button = new Button();
       parent2Button.setGraphic(theme.getIcon(Icon.EDIT_PARENT, Icon.Size.SMALL));
       parent2Button.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.edit_parent2")));
       parent2Button.setOnAction(e -> this.onParentSelect(2));
@@ -343,7 +343,7 @@ public class EditPersonDialog extends DialogBase<Person>
       this.swapParentsButton.setGraphic(theme.getIcon(Icon.SWAP_PARENTS, Icon.Size.SMALL));
       this.swapParentsButton.setTooltip(new Tooltip(language.translate("dialog.edit_person.parents.parents.swap")));
       this.swapParentsButton.setOnAction(e -> this.onSwapParents());
-      HBox parentsBox = new HBox(
+      final HBox parentsBox = new HBox(
           5,
           this.parent1Label,
           parent1Button,
@@ -355,21 +355,21 @@ public class EditPersonDialog extends DialogBase<Person>
       );
       parentsBox.setAlignment(Pos.CENTER_LEFT);
       this.addRow(gridPane, 0, "dialog.edit_person.parents.parents", parentsBox);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     int i = 1;
-    for (Person.RelativeType type : Person.RelativeType.values()) {
-      RelativesListView component = new RelativesListView(this.config);
+    for (final Person.RelativeType type : Person.RelativeType.values()) {
+      final RelativesListView component = new RelativesListView(this.config);
       component.setPersonRequestListener(this);
       this.relativesLists.put(type, component);
-      Label label = new Label(language.translate(
+      final Label label = new Label(language.translate(
           "dialog.edit_person.parents.%s_parents".formatted(type.name().toLowerCase())));
       label.setPadding(new Insets(3, 0, 0, 0));
       gridPane.addRow(i++, label, component);
-      RowConstraints rc = new RowConstraints();
+      final RowConstraints rc = new RowConstraints();
       rc.setValignment(VPos.TOP);
       rc.setVgrow(Priority.ALWAYS);
       gridPane.getRowConstraints().add(rc);
@@ -384,9 +384,9 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private void setupTabGridConstraints(@NotNull Tab tab, @NotNull GridPane gridPane) {
-    ColumnConstraints cc1 = new ColumnConstraints();
+    final ColumnConstraints cc1 = new ColumnConstraints();
     cc1.setHgrow(Priority.SOMETIMES);
-    ColumnConstraints cc2 = new ColumnConstraints();
+    final ColumnConstraints cc2 = new ColumnConstraints();
     cc2.setHgrow(Priority.ALWAYS);
     gridPane.getColumnConstraints().addAll(cc1, cc2);
 
@@ -398,13 +398,13 @@ public class EditPersonDialog extends DialogBase<Person>
    * Update the gender entries in the genders combobox.
    */
   public void updateGendersList() {
-    Language language = this.config.language();
-    Collator collator = Collator.getInstance(language.locale());
+    final Language language = this.config.language();
+    final Collator collator = Collator.getInstance(language.locale());
     this.genderCombo.getItems().clear();
     this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("genders.unknown")));
     this.genderCombo.getItems().addAll(this.familyTree.genderRegistry().entries().stream()
         .map(gender -> {
-          String text = gender.isBuiltin()
+          final String text = gender.isBuiltin()
               ? language.translate("genders." + gender.key().name())
               : Objects.requireNonNull(gender.userDefinedName());
           return new ComboBoxItem<>(gender, text);
@@ -423,7 +423,7 @@ public class EditPersonDialog extends DialogBase<Person>
   public void setPerson(Person person, final @NotNull List<ChildInfo> childInfo, @NotNull FamilyTree familyTree) {
     this.childInfo = new ArrayList<>(childInfo);
     this.familyTree = Objects.requireNonNull(familyTree);
-    Language language = this.config.language();
+    final Language language = this.config.language();
 
     this.creating = person == null;
     if (!this.creating) {
@@ -469,9 +469,9 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private void setPersonRelativesFields() {
-    var parents = this.person.parents();
+    final var parents = this.person.parents();
     this.setParents(parents.left().orElse(null), parents.right().orElse(null));
-    for (var type : Person.RelativeType.values())
+    for (final var type : Person.RelativeType.values())
       this.relativesLists.get(type)
           .setPersons(this.person.getRelatives(type));
   }
@@ -483,9 +483,9 @@ public class EditPersonDialog extends DialogBase<Person>
    * @param parent2 Person to set as parent 2.
    */
   public void setParents(Person parent1, Person parent2) {
-    Language language = this.config.language();
-    String cssClass = "unknown";
-    ObservableList<String> styleClass1 = this.parent1Label.getStyleClass();
+    final Language language = this.config.language();
+    final String cssClass = "unknown";
+    final ObservableList<String> styleClass1 = this.parent1Label.getStyleClass();
     if (parent1 != null) {
       this.parent1 = parent1;
       this.parent1Label.setText(parent1.toString());
@@ -496,7 +496,7 @@ public class EditPersonDialog extends DialogBase<Person>
       if (!styleClass1.contains(cssClass))
         styleClass1.add(cssClass);
     }
-    ObservableList<String> styleClass2 = this.parent2Label.getStyleClass();
+    final ObservableList<String> styleClass2 = this.parent2Label.getStyleClass();
     if (parent2 != null) {
       this.parent2 = parent2;
       this.parent2Label.setText(parent2.toString());
@@ -537,7 +537,7 @@ public class EditPersonDialog extends DialogBase<Person>
    * @param parentIndex Either 1 or 2.
    */
   private void onParentSelect(int parentIndex) {
-    List<Person> excl = new LinkedList<>();
+    final List<Person> excl = new LinkedList<>();
     excl.add(this.person);
     if (this.parent1 != null)
       excl.add(this.parent1);
@@ -581,14 +581,14 @@ public class EditPersonDialog extends DialogBase<Person>
    * @param expanded  Whether to expand the created form.
    */
   private void addEvent(@NotNull LifeEvent lifeEvent, boolean expanded) {
-    LifeEventView lifeEventView = new LifeEventView(
+    final LifeEventView lifeEventView = new LifeEventView(
         this.familyTree, lifeEvent, this.person, expanded, this.lifeEventsList, this.config);
     lifeEventView.setPersonRequestListener(this);
     lifeEventView.setCoordinatesRequestListener(this);
     lifeEventView.getDeletionListeners().add(this::onEventDelete);
     lifeEventView.getUpdateListeners().add(this::updateButtons);
     lifeEventView.getTypeListeners().add(t -> {
-      boolean anyDeath = this.lifeEventsList.getItems().stream()
+      final boolean anyDeath = this.lifeEventsList.getItems().stream()
           .anyMatch(i -> i.selectedLifeEventType().indicatesDeath());
       this.internalLifeStatusChange = true;
       this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(
@@ -609,8 +609,8 @@ public class EditPersonDialog extends DialogBase<Person>
    * @param lifeEventView Component to delete.
    */
   private void onEventDelete(@NotNull LifeEventView lifeEventView) {
-    String prefix = "alert.delete_life_event.";
-    boolean delete = Alerts.confirmation(
+    final String prefix = "alert.delete_life_event.";
+    final boolean delete = Alerts.confirmation(
         this.config, prefix + "header", prefix + "content", prefix + "title");
     if (delete) {
       this.eventsToDelete.add(lifeEventView);
@@ -624,19 +624,19 @@ public class EditPersonDialog extends DialogBase<Person>
    * Updates this dialog’s buttons.
    */
   private void updateButtons() {
-    Integer disambiguationID = this.getDisambiguationID();
+    final Integer disambiguationID = this.getDisambiguationID();
     boolean invalid = disambiguationID != null && disambiguationID == 0;
     this.disambiguationIDField.pseudoClassStateChanged(PseudoClasses.INVALID, invalid);
 
-    Map<LifeEventType, List<LifeEventView>> uniqueTypes = new HashMap<>();
+    final Map<LifeEventType, List<LifeEventView>> uniqueTypes = new HashMap<>();
     boolean anyDeath = false;
-    for (LifeEventView item : this.lifeEventsList.getItems()) {
+    for (final LifeEventView item : this.lifeEventsList.getItems()) {
       item.pseudoClassStateChanged(PseudoClasses.INVALID, false);
       if (item.lifeEvent().type().indicatesDeath())
         anyDeath = true;
       if (!item.checkValidity())
         invalid = true;
-      LifeEventType type = item.selectedLifeEventType();
+      final LifeEventType type = item.selectedLifeEventType();
       if (type.isUnique()) {
         if (!uniqueTypes.containsKey(type))
           uniqueTypes.put(type, new LinkedList<>());
@@ -649,7 +649,7 @@ public class EditPersonDialog extends DialogBase<Person>
     }
     this.lifeStatusCombo.setDisable(anyDeath);
 
-    boolean sameParents = this.parent1 != null && this.parent1 == this.parent2;
+    final boolean sameParents = this.parent1 != null && this.parent1 == this.parent2;
     this.parent1Label.pseudoClassStateChanged(PseudoClasses.INVALID, sameParents);
     this.parent2Label.pseudoClassStateChanged(PseudoClasses.INVALID, sameParents);
     invalid |= sameParents;
@@ -681,8 +681,8 @@ public class EditPersonDialog extends DialogBase<Person>
 
     // Life events
     this.lifeEventsList.getItems().forEach(LifeEventView::applyChanges);
-    for (LifeEventView lifeEventView : this.eventsToDelete) {
-      LifeEvent event = lifeEventView.lifeEvent();
+    for (final LifeEventView lifeEventView : this.eventsToDelete) {
+      final LifeEvent event = lifeEventView.lifeEvent();
       this.familyTree.removeActorFromLifeEvent(event, person);
       this.familyTree.removeWitnessFromLifeEvent(event, person);
     }
@@ -692,9 +692,9 @@ public class EditPersonDialog extends DialogBase<Person>
     // Relatives
     person.setParent(0, this.parent1);
     person.setParent(1, this.parent2);
-    for (var type : Person.RelativeType.values()) {
+    for (final var type : Person.RelativeType.values()) {
       // Clear relatives of the current type
-      for (Person relative : this.person.getRelatives(type))
+      for (final Person relative : this.person.getRelatives(type))
         this.person.removeRelative(relative, type);
       // Add back the selected relatives
       this.relativesLists.get(type).getPersons().forEach(p -> this.person.addRelative(p, type));

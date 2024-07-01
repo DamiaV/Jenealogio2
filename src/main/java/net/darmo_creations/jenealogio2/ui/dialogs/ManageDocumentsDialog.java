@@ -79,15 +79,15 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   public ManageDocumentsDialog(final @NotNull Config config) {
     super(config, "manage_object_documents", true, ButtonTypes.OK, ButtonTypes.APPLY, ButtonTypes.CANCEL);
 
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
     this.selectDocumentDialog = new SelectDocumentDialog(config);
     this.editDocumentDialog = new EditDocumentDialog(config);
 
-    VBox content = new VBox(5);
+    final VBox content = new VBox(5);
 
-    HBox hBox = new HBox(5,
+    final HBox hBox = new HBox(5,
         new Label(language.translate("dialog.manage_object_documents.main_image")),
         this.removeMainImageButton
     );
@@ -100,7 +100,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     this.mainImagePanel.managedProperty().bind(this.mainImagePanel.visibleProperty());
     content.getChildren().add(this.mainImagePanel);
 
-    Pane spacer = new Pane();
+    final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
 
     this.removeMainImageButton.setText(language.translate("dialog.manage_object_documents.remove_main_image"));
@@ -139,7 +139,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     this.deleteDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
         -> this.showButtonDescription(newValue, "dialog.manage_%s_documents.delete_document".formatted(this.genealogyObject != null ? "object" : "tree")));
 
-    HBox title = new HBox(
+    final HBox title = new HBox(
         5,
         new Label(language.translate("dialog.manage_object_documents.list")),
         spacer,
@@ -155,14 +155,14 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     this.filterTextInput = new ErasableTextField(config);
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
     this.filterTextInput.textField().setPromptText(language.translate("dialog.select_documents.filter"));
-    FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
+    final FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
     this.documentsList.setItems(filteredList);
     this.filterTextInput.textField().textProperty().addListener(((observable, oldValue, newValue) ->
         filteredList.setPredicate(documentView -> {
           if (newValue == null || newValue.isEmpty())
             return true;
-          String filter = newValue.toLowerCase();
-          AttachedDocument document = documentView.document();
+          final String filter = newValue.toLowerCase();
+          final AttachedDocument document = documentView.document();
           return document.fileName().toLowerCase().contains(filter)
                  || document.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
         })
@@ -182,7 +182,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     content.setPrefWidth(900);
     this.getDialogPane().setContent(content);
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(900);
     stage.setMinHeight(700);
 
@@ -193,7 +193,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     });
 
     this.setResultConverter(buttonType -> {
-      boolean updated = !buttonType.getButtonData().isCancelButton();
+      final boolean updated = !buttonType.getButtonData().isCancelButton();
       if (updated)
         this.updateObject();
       return new Result(updated, this.anyDocumentUpdated);
@@ -207,19 +207,19 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     this.documentsToRemove.clear();
     this.documentsToAdd.clear();
 
-    Language language = this.config.language();
+    final Language language = this.config.language();
 
-    boolean hasObject = object != null;
+    final boolean hasObject = object != null;
     this.mainImagePanel.setVisible(hasObject);
     this.setAsMainImageButton.setVisible(hasObject);
     this.removeDocumentButton.setVisible(hasObject);
-    Collection<AttachedDocument> documents;
+    final Collection<AttachedDocument> documents;
     if (hasObject) {
       this.setTitle(language.translate("dialog.manage_object_documents.title",
           new FormatArg("name", object.name(language))));
-      Optional<Picture> image = this.genealogyObject.mainPicture();
+      final Optional<Picture> image = this.genealogyObject.mainPicture();
       this.mainPicture = image.orElse(null);
-      Image defaultImage = object instanceof Person ? PersonWidget.DEFAULT_IMAGE : PersonDetailsView.DEFAULT_EVENT_IMAGE;
+      final Image defaultImage = object instanceof Person ? PersonWidget.DEFAULT_IMAGE : PersonDetailsView.DEFAULT_EVENT_IMAGE;
       this.mainImageView.setImage(image.flatMap(Picture::image).orElse(defaultImage));
       this.removeMainImageButton.setDisable(image.isEmpty());
       this.addDocumentButton.setText(language.translate("dialog.manage_object_documents.add_document"));
@@ -236,7 +236,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
 
     this.filterTextInput.textField().setText(null);
     this.documentsList_.clear();
-    for (var document : documents)
+    for (final var document : documents)
       this.documentsList_.add(new DocumentView(document, true, this.config));
     this.documentsList_.sort(null);
 
@@ -259,10 +259,10 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   }
 
   private void onSetAsMainImage() {
-    List<DocumentView> selection = this.getSelectedDocuments();
+    final List<DocumentView> selection = this.getSelectedDocuments();
     if (selection.size() != 1)
       return;
-    DocumentView dv = selection.get(0);
+    final DocumentView dv = selection.get(0);
     if (!(dv.document() instanceof Picture pic))
       return;
     this.mainPicture = pic;
@@ -272,7 +272,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   }
 
   private void onAddDocument() {
-    List<AttachedDocument> exclusionList = this.documentsList_.stream()
+    final List<AttachedDocument> exclusionList = this.documentsList_.stream()
         .map(DocumentView::document)
         .collect(Collectors.toCollection(LinkedList::new));
     exclusionList.addAll(this.documentsToDelete);
@@ -282,7 +282,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
 
   private void addDocumentsToList(final @NotNull Collection<AttachedDocument> documents) {
     documents.forEach(d -> {
-      DocumentView dv = new DocumentView(d, true, this.config);
+      final DocumentView dv = new DocumentView(d, true, this.config);
       this.documentsList_.add(dv);
       this.documentsList.scrollTo(dv);
       this.documentsToAdd.add(d);
@@ -297,11 +297,11 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   }
 
   private void onRemoveDocuments() {
-    List<DocumentView> selection = this.getSelectedDocuments();
+    final List<DocumentView> selection = this.getSelectedDocuments();
     if (selection.isEmpty())
       return;
     selection.forEach(dv -> {
-      AttachedDocument document = dv.document();
+      final AttachedDocument document = dv.document();
       if (document instanceof Picture pic && pic.equals(this.mainPicture))
         this.removeMainImage();
       this.documentsToRemove.add(document);
@@ -313,14 +313,14 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   }
 
   private void onDeleteDocuments() {
-    List<DocumentView> selection = this.getSelectedDocuments();
+    final List<DocumentView> selection = this.getSelectedDocuments();
     if (selection.isEmpty())
       return;
     if (!Alerts.confirmation(
         this.config, "alert.delete_documents.header", null, "alert.delete_documents.title"))
       return;
     selection.forEach(dv -> {
-      AttachedDocument document = dv.document();
+      final AttachedDocument document = dv.document();
       if (document instanceof Picture pic && pic.equals(this.mainPicture))
         this.removeMainImage();
       this.documentsToDelete.add(document);
@@ -332,7 +332,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   }
 
   private void onEditDocumentDesc() {
-    List<DocumentView> selection = this.getSelectedDocuments();
+    final List<DocumentView> selection = this.getSelectedDocuments();
     if (selection.size() == 1)
       this.openDocumentEditDialog(selection.get(0));
   }
@@ -364,12 +364,12 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
 
   private void updateButtons() {
     this.removeMainImageButton.setDisable(this.mainPicture == null);
-    var selectionModel = this.documentsList.getSelectionModel();
-    boolean noSelection = selectionModel.isEmpty();
+    final var selectionModel = this.documentsList.getSelectionModel();
+    final boolean noSelection = selectionModel.isEmpty();
     this.removeDocumentButton.setDisable(noSelection);
     this.deleteDocumentButton.setDisable(noSelection);
-    var selectedItems = selectionModel.getSelectedItems();
-    boolean not1Selected = selectedItems.size() != 1;
+    final var selectedItems = selectionModel.getSelectedItems();
+    final boolean not1Selected = selectedItems.size() != 1;
     this.setAsMainImageButton.setDisable(
         not1Selected ||
         selectedItems.get(0) != null // Selection list sometimes contains null

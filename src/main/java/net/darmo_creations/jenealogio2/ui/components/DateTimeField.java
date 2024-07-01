@@ -53,20 +53,20 @@ public class DateTimeField extends VBox {
     this.setupField(this.hourField, 40, "hour", false);
     this.setupField(this.minuteField, 40, "minute", false);
 
-    Language language = this.config.language();
-    for (Calendar<?> calendar : CALENDARS)
+    final Language language = this.config.language();
+    for (final Calendar<?> calendar : CALENDARS)
       this.calendarField.getItems()
           .add(new NotNullComboBoxItem<>(calendar, language.translate("calendar.%s.name".formatted(calendar.name()))));
     this.calendarField.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.updateMonths(newValue.data()));
     this.calendarField.getSelectionModel().select(0);
 
-    Label colonLabel = new Label(":");
+    final Label colonLabel = new Label(":");
     HBox.setMargin(colonLabel, new Insets(5, 0, 0, 0));
-    Pane spacer = new Pane();
+    final Pane spacer = new Pane();
     spacer.setPrefWidth(5);
 
-    HBox fieldsBox = new HBox(5,
+    final HBox fieldsBox = new HBox(5,
         this.dayField,
         this.monthField,
         this.yearField,
@@ -76,7 +76,7 @@ public class DateTimeField extends VBox {
         this.minuteField
     );
 
-    HBox calendarBox = new HBox(
+    final HBox calendarBox = new HBox(
         5,
         new Label(language.translate("date_time_field.calendar")),
         this.calendarField
@@ -93,7 +93,7 @@ public class DateTimeField extends VBox {
    * @param name      Field’s name.
    */
   private void setupField(@NotNull TextField textField, int width, @NotNull String name, boolean allowNegative) {
-    String regex = allowNegative ? "^-?\\d*$" : "^\\d*$";
+    final String regex = allowNegative ? "^-?\\d*$" : "^\\d*$";
     textField.setTextFormatter(new TextFormatter<>(
         new IntegerStringConverter(),
         null,
@@ -109,20 +109,20 @@ public class DateTimeField extends VBox {
    */
   public @Nullable CalendarSpecificDateTime getDate() {
     try {
-      int y = Integer.parseInt(this.yearField.getText());
-      int m = this.monthField.getSelectionModel().getSelectedIndex() + 1;
-      int d = Integer.parseInt(this.dayField.getText());
-      Integer h = this.getFieldValue(this.hourField);
-      Integer mi = this.getFieldValue(this.minuteField);
-      Calendar<?> calendar = this.calendarField.getSelectionModel().getSelectedItem().data();
+      final int y = Integer.parseInt(this.yearField.getText());
+      final int m = this.monthField.getSelectionModel().getSelectedIndex() + 1;
+      final int d = Integer.parseInt(this.dayField.getText());
+      final Integer h = this.getFieldValue(this.hourField);
+      final Integer mi = this.getFieldValue(this.minuteField);
+      final Calendar<?> calendar = this.calendarField.getSelectionModel().getSelectedItem().data();
       return calendar.getDate(y, m, d, h, mi);
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       return null;
     }
   }
 
   private @Nullable Integer getFieldValue(final @NotNull TextField field) {
-    String text = field.getText();
+    final String text = field.getText();
     return text == null || text.isEmpty() ? null : Integer.parseInt(text);
   }
 
@@ -155,8 +155,8 @@ public class DateTimeField extends VBox {
    */
   private void updateMonths(@NotNull Calendar<?> calendar) {
     this.monthField.getItems().clear();
-    Language language = this.config.language();
-    String name = calendar.name();
+    final Language language = this.config.language();
+    final String name = calendar.name();
     for (int i = 1; i <= calendar.lengthOfYearInMonths(); i++)
       this.monthField.getItems().add(language.translate("calendar.%s.month.%d".formatted(name, i)));
     this.monthField.getSelectionModel().select(0);

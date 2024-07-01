@@ -40,7 +40,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
    */
   public BirthdaysDialog(final @NotNull Config config) {
     super(config, "birthdays", true, false, ButtonTypes.CLOSE);
-    Language language = this.config.language();
+    final Language language = this.config.language();
 
     this.showDeceasedCheckBox.setText(language.translate("dialog.birthdays.show_deceased_birthdays"));
     this.showDeceasedCheckBox.setSelected(this.config.shouldShowDeceasedPersonsBirthdays());
@@ -48,13 +48,13 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
         .addListener((observable, oldValue, newValue) -> this.onCheckBoxSelection(newValue));
     HBox.setMargin(this.showDeceasedCheckBox, new Insets(5));
 
-    HBox hBox = new HBox(this.showDeceasedCheckBox);
+    final HBox hBox = new HBox(this.showDeceasedCheckBox);
 
     // First tab’s content
     VBox.setVgrow(this.todayList, Priority.ALWAYS);
     VBox.setVgrow(this.tomorrowList, Priority.ALWAYS);
     VBox.setVgrow(this.afterTomorrowList, Priority.ALWAYS);
-    VBox vBox = new VBox(
+    final VBox vBox = new VBox(
         5,
         new Label(language.translate("dialog.birthdays.tab.upcoming.today")),
         this.todayList,
@@ -66,7 +66,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     vBox.setPadding(new Insets(10, 0, 0, 0));
 
     this.tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-    Tab firstTab = new Tab(language.translate("dialog.birthdays.tab.upcoming"));
+    final Tab firstTab = new Tab(language.translate("dialog.birthdays.tab.upcoming"));
     firstTab.setContent(vBox);
     this.tabPane.getTabs().add(firstTab);
 
@@ -74,7 +74,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     for (int i = 1; i <= 12; i++)
       this.tabPane.getTabs().add(new BirthdayTab(i));
 
-    Label label = new Label(language.translate(
+    final Label label = new Label(language.translate(
         "dialog.birthdays.notice",
         new FormatArg("exact", language.translate("date_field.precision.exact")),
         new FormatArg("about", language.translate("date_field.precision.about")),
@@ -84,7 +84,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     label.setPrefHeight(35);
     label.setMinHeight(35);
     label.setAlignment(Pos.TOP_LEFT);
-    VBox content = new VBox(
+    final VBox content = new VBox(
         5,
         label,
         hBox,
@@ -94,7 +94,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     content.setPrefHeight(700);
     this.getDialogPane().setContent(content);
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(500);
     stage.setMinHeight(300);
   }
@@ -108,7 +108,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     this.config.setShouldShowDeceasedPersonsBirthdays(selected);
     try {
       this.config.save();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
     }
     if (this.familyTree != null)
@@ -122,17 +122,17 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
    */
   public void refresh(final @NotNull FamilyTree familyTree) {
     this.familyTree = Objects.requireNonNull(familyTree);
-    Map<Integer, Map<Integer, Set<PersonItem>>> perMonth = new HashMap<>();
+    final Map<Integer, Map<Integer, Set<PersonItem>>> perMonth = new HashMap<>();
 
-    boolean hideDeceased = !this.config.shouldShowDeceasedPersonsBirthdays();
-    for (Person person : familyTree.persons()) {
+    final boolean hideDeceased = !this.config.shouldShowDeceasedPersonsBirthdays();
+    for (final Person person : familyTree.persons()) {
       if (hideDeceased && person.lifeStatus().isConsideredDeceased())
         continue;
-      Optional<DateTime> birthDate = person.getBirthDate();
+      final Optional<DateTime> birthDate = person.getBirthDate();
       if (birthDate.isPresent()) {
-        DateTime date = birthDate.get();
+        final DateTime date = birthDate.get();
         if (date instanceof DateTimeWithPrecision d) {
-          DateTimePrecision precision = d.precision();
+          final DateTimePrecision precision = d.precision();
           if (precision == DateTimePrecision.EXACT
               || precision == DateTimePrecision.AFTER
               || precision == DateTimePrecision.POSSIBLY)
@@ -145,17 +145,17 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       ((BirthdayTab) this.tabPane.getTabs().get(i))
           .setEntries(perMonth.getOrDefault(i, Map.of()));
 
-    LocalDate today = LocalDate.now();
+    final LocalDate today = LocalDate.now();
     this.updateList(this.todayList, perMonth, today);
-    LocalDate tomorrow = today.plusDays(1);
+    final LocalDate tomorrow = today.plusDays(1);
     this.updateList(this.tomorrowList, perMonth, tomorrow);
-    LocalDate afterTomorrow = tomorrow.plusDays(1);
+    final LocalDate afterTomorrow = tomorrow.plusDays(1);
     this.updateList(this.afterTomorrowList, perMonth, afterTomorrow);
 
-    String baseTitle = this.config.language().translate("dialog.birthdays.tab.upcoming");
-    int nb = this.todayList.getItems().size() + this.tomorrowList.getItems().size() + this.afterTomorrowList.getItems().size();
+    final String baseTitle = this.config.language().translate("dialog.birthdays.tab.upcoming");
+    final int nb = this.todayList.getItems().size() + this.tomorrowList.getItems().size() + this.afterTomorrowList.getItems().size();
     if (nb != 0) {
-      String title = this.config.language().translate(
+      final String title = this.config.language().translate(
           "dialog.birthdays.tab.title_amount_format",
           new FormatArg("title", baseTitle),
           new FormatArg("number", nb)
@@ -188,11 +188,11 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       @NotNull LocalDateTime date,
       final @NotNull Person person
   ) {
-    int month = date.getMonthValue();
+    final int month = date.getMonthValue();
     if (!perMonth.containsKey(month))
       perMonth.put(month, new HashMap<>());
-    int day = date.getDayOfMonth();
-    var monthEntry = perMonth.get(month);
+    final int day = date.getDayOfMonth();
+    final var monthEntry = perMonth.get(month);
     if (!monthEntry.containsKey(day))
       monthEntry.put(day, new HashSet<>());
     monthEntry.get(day).add(new PersonItem(person));
@@ -219,10 +219,10 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       super(5);
       this.person = person;
       this.setAlignment(Pos.CENTER_LEFT);
-      Button button = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+      final Button button = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       button.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
       //noinspection OptionalGetWithoutIsPresent
-      Label birthYearLabel = new Label(
+      final Label birthYearLabel = new Label(
           PersonWidget.formatDateYear(person.getBirthDate().get()),
           BirthdaysDialog.this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL)
       );
@@ -270,12 +270,12 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     public void setEntries(final @NotNull Map<Integer, Set<PersonItem>> entries) {
       this.entriesList.getItems().clear();
 
-      var sortedEntries = entries.entrySet().stream()
+      final var sortedEntries = entries.entrySet().stream()
           .sorted(Map.Entry.comparingByKey())
           .toList();
       int nb = 0;
-      for (var entry : sortedEntries) {
-        Set<PersonItem> entrySet = entry.getValue();
+      for (final var entry : sortedEntries) {
+        final Set<PersonItem> entrySet = entry.getValue();
         this.entriesList.getItems().add(new DayItem(entry.getKey(), entrySet));
         nb += entrySet.size();
       }
@@ -285,7 +285,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
         return;
       }
 
-      String title = BirthdaysDialog.this.config.language().translate(
+      final String title = BirthdaysDialog.this.config.language().translate(
           "dialog.birthdays.tab.title_amount_format",
           new FormatArg("title", this.baseTitle),
           new FormatArg("number", nb)
@@ -296,7 +296,7 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     private class DayItem extends VBox {
       public DayItem(int day, final @NotNull Set<PersonItem> entries) {
         super(5);
-        Label dayLabel = new Label(day + BirthdaysDialog.this.config.language().getDaySuffix(day).orElse(""));
+        final Label dayLabel = new Label(day + BirthdaysDialog.this.config.language().getDaySuffix(day).orElse(""));
         dayLabel.getStyleClass().add("birth-day");
         this.getChildren().add(dayLabel);
         entries.stream()

@@ -31,9 +31,9 @@ public final class XmlUtils {
       @NotNull String name,
       boolean allowMissing
   ) throws IOException {
-    NodeList childNodes = element.getChildNodes();
+    final NodeList childNodes = element.getChildNodes();
     for (int i = 0; i < childNodes.getLength(); i++) {
-      Node item = childNodes.item(i);
+      final Node item = childNodes.item(i);
       if (item.getNodeName().equals(name))
         return Optional.of((Element) item);
     }
@@ -50,10 +50,10 @@ public final class XmlUtils {
    * @return List of read elements.
    */
   public static List<Element> getChildElements(final @NotNull Element element, @NotNull String name) {
-    List<Element> elements = new LinkedList<>();
-    NodeList childNodes = element.getChildNodes();
+    final List<Element> elements = new LinkedList<>();
+    final NodeList childNodes = element.getChildNodes();
     for (int i = 0; i < childNodes.getLength(); i++) {
-      Node item = childNodes.item(i);
+      final Node item = childNodes.item(i);
       if (item.getNodeName().equals(name))
         elements.add((Element) item);
     }
@@ -91,7 +91,7 @@ public final class XmlUtils {
     }
     try {
       return valueConverter.apply(rawValue);
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       throw new IOException(e);
     }
   }
@@ -110,7 +110,7 @@ public final class XmlUtils {
       @NotNull String name,
       @NotNull String value
   ) {
-    Attr attr = document.createAttribute(name);
+    final Attr attr = document.createAttribute(name);
     attr.setValue(value);
     element.setAttributeNode(attr);
   }
@@ -123,10 +123,10 @@ public final class XmlUtils {
    * @param config       The app’s config.
    */
   public static void writeFile(@NotNull OutputStream outputStream, final @NotNull Document document, final @NotNull Config config) {
-    Transformer tr;
+    final Transformer tr;
     try {
       tr = TransformerFactory.newInstance().newTransformer();
-    } catch (TransformerConfigurationException e) {
+    } catch (final TransformerConfigurationException e) {
       throw new RuntimeException(e);
     }
     tr.setOutputProperty(OutputKeys.INDENT, config.isDebug() ? "yes" : "no");
@@ -135,7 +135,7 @@ public final class XmlUtils {
     tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
     try {
       tr.transform(new DOMSource(document), new StreamResult(outputStream));
-    } catch (TransformerException e) {
+    } catch (final TransformerException e) {
       throw new RuntimeException(e);
     }
   }
@@ -150,7 +150,7 @@ public final class XmlUtils {
   public static Document readFile(@NotNull InputStream file) throws IOException {
     try {
       return newDocumentBuilder().parse(file);
-    } catch (SAXException e) {
+    } catch (final SAXException e) {
       throw new IOException(e);
     }
   }
@@ -161,7 +161,7 @@ public final class XmlUtils {
   public static DocumentBuilder newDocumentBuilder() {
     try {
       return BUILDER_FACTORY.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
+    } catch (final ParserConfigurationException e) {
       throw new RuntimeException(e); // Should never happen
     }
   }

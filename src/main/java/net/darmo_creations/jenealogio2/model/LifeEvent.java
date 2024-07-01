@@ -37,8 +37,10 @@ public class LifeEvent extends GenealogyObject<LifeEvent> implements Comparable<
 
   @Override
   public String name(@NotNull Language language) {
-    String name = language.translate("life_event_types." + this.type.key().name());
-    String actorsNames = this.actors.stream().map(a -> a.name(language)).collect(Collectors.joining(", "));
+    final String name = language.translate("life_event_types." + this.type.key().name());
+    final String actorsNames = this.actors.stream()
+        .map(a -> a.name(language))
+        .collect(Collectors.joining(", "));
     return "%s (%s)".formatted(name, actorsNames);
   }
 

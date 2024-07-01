@@ -40,34 +40,34 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
   public SelectDocumentDialog(final @NotNull Config config) {
     super(config, "select_documents", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
-    Label label = new Label(
+    final Label label = new Label(
         language.translate("dialog.select_documents.description"),
         theme.getIcon(Icon.INFO, Icon.Size.SMALL)
     );
     label.setWrapText(true);
 
-    Button addDocumentButton = new Button(
+    final Button addDocumentButton = new Button(
         language.translate("dialog.select_documents.open_file"),
         theme.getIcon(Icon.IMPORT_FILE, Icon.Size.SMALL)
     );
     addDocumentButton.setOnAction(e -> this.onAddDocument());
-    HBox hBox = new HBox(addDocumentButton);
+    final HBox hBox = new HBox(addDocumentButton);
     hBox.setAlignment(Pos.CENTER);
 
     this.filterTextInput = new ErasableTextField(config);
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
     this.filterTextInput.textField().setPromptText(language.translate("dialog.select_documents.filter"));
-    FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
+    final FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
     this.documentsList.setItems(filteredList);
     this.filterTextInput.textField().textProperty().addListener(((observable, oldValue, newValue) ->
         filteredList.setPredicate(documentView -> {
           if (newValue == null || newValue.isEmpty())
             return true;
-          String filter = newValue.toLowerCase();
-          AttachedDocument document = documentView.document();
+          final String filter = newValue.toLowerCase();
+          final AttachedDocument document = documentView.document();
           return document.fileName().toLowerCase().contains(filter)
                  || document.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
         })
@@ -79,13 +79,13 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     this.documentsList.setOnMouseClicked(this::onListClicked);
     VBox.setVgrow(this.documentsList, Priority.ALWAYS);
 
-    HBox filterBox = new HBox(
+    final HBox filterBox = new HBox(
         5,
         new Label(language.translate("dialog.select_documents.documents_list")),
         this.filterTextInput
     );
     filterBox.setAlignment(Pos.CENTER_LEFT);
-    VBox content = new VBox(
+    final VBox content = new VBox(
         5,
         label,
         hBox,
@@ -95,12 +95,12 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     content.setPrefWidth(400);
     this.getDialogPane().setContent(content);
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(600);
     stage.setMinHeight(700);
 
     // Files drag-and-drop
-    Scene scene = stage.getScene();
+    final Scene scene = stage.getScene();
     scene.setOnDragOver(event -> {
       if (event.getGestureSource() == null // From another application
           && this.isDragAndDropValid(event.getDragboard()))
@@ -108,8 +108,8 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
       event.consume();
     });
     scene.setOnDragDropped(event -> {
-      Dragboard db = event.getDragboard();
-      boolean success = this.isDragAndDropValid(db);
+      final Dragboard db = event.getDragboard();
+      final boolean success = this.isDragAndDropValid(db);
       if (success)
         this.importFiles(db.getFiles().stream().map(File::toPath).toList());
       event.setDropCompleted(success);
@@ -149,9 +149,9 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
   }
 
   private void onAddDocument() {
-    Optional<Path> file = FileChoosers.showFileChooser(this.config, this.stage(), null);
+    final Optional<Path> file = FileChoosers.showFileChooser(this.config, this.stage(), null);
     if (file.isPresent()) {
-      String name = file.get().getFileName().toString();
+      final String name = file.get().getFileName().toString();
       if (this.isFileImported(name))
         Alerts.warning(
             this.config,
@@ -163,7 +163,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
       else {
         try {
           this.importFile(file.get());
-        } catch (IOException e) {
+        } catch (final IOException e) {
           Alerts.error(
               this.config,
               "alert.load_error.header",
@@ -194,14 +194,14 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
   private void importFiles(final @NotNull List<Path> files) {
     boolean someAlreadyImported = false;
     int errorsNb = 0;
-    for (Path file : files) {
+    for (final Path file : files) {
       if (this.isFileImported(file.getFileName().toString())) {
         someAlreadyImported = true;
         continue;
       }
       try {
         this.importFile(file);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         errorsNb++;
       }
     }
@@ -223,15 +223,15 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
    * @param file The file to import.
    */
   private void importFile(final @NotNull Path file) throws IOException {
-    AttachedDocument document;
-    Optional<String> ext = FileUtils.splitExtension(file.getFileName().toString()).right();
+    final AttachedDocument document;
+    final Optional<String> ext = FileUtils.splitExtension(file.getFileName().toString()).right();
     if (ext.isPresent() && Arrays.asList(Picture.FILE_EXTENSIONS).contains(ext.get()))
-      try (var in = new FileInputStream(file.toFile())) {
+      try (final var in = new FileInputStream(file.toFile())) {
         document = new Picture(new Image(in), file, null, null);
       }
     else
       document = new AttachedDocument(file, null, null);
-    DocumentView dv = new DocumentView(document, true, this.config);
+    final DocumentView dv = new DocumentView(document, true, this.config);
     this.documentsList_.add(dv);
     this.documentsList_.sort(null);
     this.documentsList.scrollTo(dv);
@@ -246,7 +246,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
   }
 
   private void updateButtons() {
-    boolean noSelection = this.documentsList.getSelectionModel().getSelectedItems().isEmpty();
+    final boolean noSelection = this.documentsList.getSelectionModel().getSelectedItems().isEmpty();
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(noSelection);
   }
 }

@@ -78,9 +78,9 @@ public class Person extends GenealogyObject<Person> {
    * Create a new alive person.
    */
   public Person() {
-    for (RelativeType type : RelativeType.values()) {
-      this.relatives.put(type, new HashSet<>());
-      this.nonBiologicalChildren.put(type, new HashSet<>());
+    for (final var relativeType : RelativeType.values()) {
+      this.relatives.put(relativeType, new HashSet<>());
+      this.nonBiologicalChildren.put(relativeType, new HashSet<>());
     }
   }
 
@@ -145,7 +145,7 @@ public class Person extends GenealogyObject<Person> {
    *                                  but the argument is not {@link LifeStatus#DECEASED}.
    */
   public Person setLifeStatus(@NotNull LifeStatus lifeStatus) {
-    boolean isDead = this.getLifeEventsAsActor().stream().anyMatch(e -> e.type().indicatesDeath());
+    final boolean isDead = this.getLifeEventsAsActor().stream().anyMatch(e -> e.type().indicatesDeath());
     if (isDead && lifeStatus != LifeStatus.DECEASED)
       throw new IllegalArgumentException("cannot change status of a person with at least one event indicating death");
     this.lifeStatus = Objects.requireNonNull(lifeStatus);
@@ -308,9 +308,9 @@ public class Person extends GenealogyObject<Person> {
    * @return True if any match was found, false otherwise.
    */
   public boolean matchesName(@NotNull String s, @NotNull Language language) {
-    Locale locale = language.locale();
-    String lcString = s.toLowerCase(locale);
-    Predicate<String> p = n -> n != null && n.toLowerCase(locale).contains(lcString);
+    final Locale locale = language.locale();
+    final String lcString = s.toLowerCase(locale);
+    final Predicate<String> p = n -> n != null && n.toLowerCase(locale).contains(lcString);
     return p.test(this.legalLastName)
            || p.test(this.publicLastName)
            || this.legalFirstNames.stream().anyMatch(p)
@@ -403,7 +403,7 @@ public class Person extends GenealogyObject<Person> {
    * @param parent The parent.
    */
   public void setParent(int index, Person parent) {
-    Person previousParent = this.parents[index];
+    final Person previousParent = this.parents[index];
     if (previousParent == parent)
       return;
     this.parents[index] = parent;
@@ -442,11 +442,11 @@ public class Person extends GenealogyObject<Person> {
    * If a list is empty, the person has a union with this person but no children.
    */
   public Map<Optional<Person>, Set<Person>> getPartnersAndChildren() {
-    Map<Person, Set<Person>> partnersChildren = new HashMap<>();
-    for (Person child : this.children) {
-      var childParents = child.parents();
-      var parent1 = childParents.left();
-      var parent2 = childParents.right();
+    final Map<Person, Set<Person>> partnersChildren = new HashMap<>();
+    for (final Person child : this.children) {
+      final var childParents = child.parents();
+      final var parent1 = childParents.left();
+      final var parent2 = childParents.right();
       Person parent = null;
       if (parent1.isPresent() && parent1.get() != this)
         parent = parent1.get();
@@ -474,9 +474,9 @@ public class Person extends GenealogyObject<Person> {
    * @return The set of siblings.
    */
   public Set<Person> getSameParentsSiblings() {
-    Set<Person> siblings = new HashSet<>();
-    Person parent1 = this.parents[0];
-    Person parent2 = this.parents[1];
+    final Set<Person> siblings = new HashSet<>();
+    final Person parent1 = this.parents[0];
+    final Person parent2 = this.parents[1];
     if (parent1 != null)
       this.addChildren(siblings, parent1);
     else if (parent2 != null)
@@ -497,9 +497,9 @@ public class Person extends GenealogyObject<Person> {
    * It is guaranted that at least one of the parents in each pair is a parent of this person.
    */
   public Map<Pair<@Nullable Person, @Nullable Person>, Set<Person>> getAllSiblings() {
-    Map<Pair<Person, Person>, Set<Person>> siblings = new HashMap<>();
-    Person parent1 = this.parents[0];
-    Person parent2 = this.parents[1];
+    final Map<Pair<Person, Person>, Set<Person>> siblings = new HashMap<>();
+    final Person parent1 = this.parents[0];
+    final Person parent2 = this.parents[1];
     if (parent1 != null)
       this.addChildren(siblings, parent1);
     if (parent2 != null)
@@ -508,15 +508,15 @@ public class Person extends GenealogyObject<Person> {
   }
 
   private void addChildren(@NotNull Map<Pair<Person, Person>, Set<Person>> siblings, final @NotNull Person parent) {
-    for (Person child : parent.children()) {
+    for (final Person child : parent.children()) {
       if (child == this)
         continue;
-      Person p1 = child.parents[0];
-      Person p2 = child.parents[1];
-      var key1 = new Pair<>(p1, p2);
-      var key2 = new Pair<>(p2, p1);
+      final Person p1 = child.parents[0];
+      final Person p2 = child.parents[1];
+      final var key1 = new Pair<>(p1, p2);
+      final var key2 = new Pair<>(p2, p1);
       // Ensure that there isn’t already any key with the same persons but in a different order
-      var key = siblings.containsKey(key2) ? key2 : key1;
+      final var key = siblings.containsKey(key2) ? key2 : key1;
       if (!siblings.containsKey(key))
         siblings.put(key, new HashSet<>());
       siblings.get(key).add(child);
@@ -577,7 +577,7 @@ public class Person extends GenealogyObject<Person> {
    * @return The computed birth date.
    */
   public Optional<DateTime> getBirthDate() {
-    LifeEventType birthEventType = this.familyTree.lifeEventTypeRegistry()
+    final LifeEventType birthEventType = this.familyTree.lifeEventTypeRegistry()
         .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
     return this.getActedInEventsStream()
         .filter(lifeEvent -> lifeEvent.type().equals(birthEventType))
@@ -593,7 +593,7 @@ public class Person extends GenealogyObject<Person> {
    * @return The computed death date.
    */
   public Optional<DateTime> getDeathDate() {
-    LifeEventType deathEventType = this.familyTree.lifeEventTypeRegistry()
+    final LifeEventType deathEventType = this.familyTree.lifeEventTypeRegistry()
         .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "death"));
     return this.getActedInEventsStream()
         .filter(lifeEvent -> lifeEvent.type().equals(deathEventType))
@@ -686,8 +686,8 @@ public class Person extends GenealogyObject<Person> {
 
   @Override
   public String toString() {
-    String firstNames = this.getFirstNames().orElse("?");
-    String lastName = this.getLastName().orElse("?");
+    final String firstNames = this.getFirstNames().orElse("?");
+    final String lastName = this.getLastName().orElse("?");
     String s = firstNames + " " + lastName;
     if (this.disambiguationID != null)
       s += " (#%d)".formatted(this.disambiguationID);
@@ -716,7 +716,7 @@ public class Person extends GenealogyObject<Person> {
    */
   public static Comparator<Optional<Person>> optionalBirthDateThenNameComparator() {
     return (p1, p2) -> {
-      boolean p2Present = p2.isPresent();
+      final boolean p2Present = p2.isPresent();
       if (p1.isEmpty())
         return p2Present ? 1 : 0;
       if (!p2Present)

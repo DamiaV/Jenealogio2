@@ -14,11 +14,11 @@ import net.darmo_creations.jenealogio2.*;
  */
 class GluonHQMapView extends com.gluonhq.maps.MapView {
   GluonHQMapView() {
-    Hyperlink osmLink = new Hyperlink("OpenStreetMap");
+    final Hyperlink osmLink = new Hyperlink("OpenStreetMap");
     osmLink.setOnAction(e -> App.openURL("https://www.openstreetmap.org/copyright/"));
-    Hyperlink gluonLink = new Hyperlink("GluonHQ Maps");
+    final Hyperlink gluonLink = new Hyperlink("GluonHQ Maps");
     gluonLink.setOnAction(e -> App.openURL("https://github.com/gluonhq/maps"));
-    TextFlow label = new TextFlow(
+    final TextFlow label = new TextFlow(
         new Text("©"),
         osmLink,
         new Text("contributors | Powered by"),

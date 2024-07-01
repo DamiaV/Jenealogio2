@@ -40,17 +40,17 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
   ) {
     super(5);
     this.document = Objects.requireNonNull(document);
-    Node imageNode;
+    final Node imageNode;
     if (document instanceof Picture p) {
-      Optional<Image> image = p.image();
+      final Optional<Image> image = p.image();
       if (image.isPresent()) {
-        ImageView imageView = new ImageView(image.orElse(null));
+        final ImageView imageView = new ImageView(image.orElse(null));
         imageView.setPreserveRatio(true);
         imageView.setFitHeight(IMAGE_SIZE);
         imageView.setFitWidth(IMAGE_SIZE);
         imageNode = imageView;
       } else {
-        Label label = new Label(config.language().translate("document_view.no_image"));
+        final Label label = new Label(config.language().translate("document_view.no_image"));
         label.setAlignment(Pos.CENTER);
         label.setPrefHeight(IMAGE_SIZE);
         label.setPrefWidth(IMAGE_SIZE);
@@ -61,12 +61,12 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
       if (imageView == null)
         imageView = new ImageView();
       imageView.setPreserveRatio(true);
-      int size = Icon.Size.BIG.pixels();
+      final int size = Icon.Size.BIG.pixels();
       imageView.setFitHeight(size);
       imageView.setFitWidth(size);
       imageNode = imageView;
     }
-    VBox vBox = new VBox(5);
+    final VBox vBox = new VBox(5);
     if (showName)
       vBox.getChildren().add(this.nameLabel);
     this.dateLabel = new DateLabel("-", config);

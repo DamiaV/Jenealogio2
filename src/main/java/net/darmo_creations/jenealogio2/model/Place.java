@@ -30,7 +30,7 @@ public final class Place {
       return true;
     if (obj == null || obj.getClass() != this.getClass())
       return false;
-    var that = (Place) obj;
+    final Place that = (Place) obj;
     return Objects.equals(this.address, that.address)
            && Objects.equals(this.latLon, that.latLon);
   }

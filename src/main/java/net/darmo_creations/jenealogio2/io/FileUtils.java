@@ -24,25 +24,25 @@ public final class FileUtils {
    * @throws IOException If any I/O error occurs.
    */
   public static String unzip(final @NotNull Path zipFilePath, @NotNull Path destDir) throws IOException {
-    String dirName = splitExtension(zipFilePath.getFileName().toString()).left();
+    final String dirName = splitExtension(zipFilePath.getFileName().toString()).left();
     destDir = destDir.resolve(dirName);
     if (!Files.exists(destDir))
       Files.createDirectories(destDir);
 
-    byte[] buffer = new byte[1024];
-    try (FileInputStream fis = new FileInputStream(zipFilePath.toFile());
-         ZipInputStream zis = new ZipInputStream(fis)) {
+    final byte[] buffer = new byte[1024];
+    try (final FileInputStream fis = new FileInputStream(zipFilePath.toFile());
+         final ZipInputStream zis = new ZipInputStream(fis)) {
       ZipEntry ze;
       do {
         ze = zis.getNextEntry();
         if (ze != null) {
-          Path newFile = destDir.resolve(ze.getName());
+          final Path newFile = destDir.resolve(ze.getName());
           App.LOGGER.info("Unzipping to " + newFile.toAbsolutePath());
           if (ze.isDirectory())
             Files.createDirectories(newFile);
           else {
             Files.createDirectories(newFile.getParent());
-            try (FileOutputStream fos = new FileOutputStream(newFile.toFile())) {
+            try (final FileOutputStream fos = new FileOutputStream(newFile.toFile())) {
               int len;
               while ((len = zis.read(buffer)) > 0)
                 fos.write(buffer, 0, len);
@@ -65,8 +65,8 @@ public final class FileUtils {
    * @throws IOException If any I/O error occurs.
    */
   public static void zip(@NotNull Path targetDirectory, @NotNull Path destFile) throws IOException {
-    try (var fos = new FileOutputStream(destFile.toFile());
-         var zipOut = new ZipOutputStream(fos)) {
+    try (final var fos = new FileOutputStream(destFile.toFile());
+         final var zipOut = new ZipOutputStream(fos)) {
       zipFile(targetDirectory, null, zipOut); // Pass null to skip the target directory itself
     }
   }
@@ -84,19 +84,19 @@ public final class FileUtils {
           zipOut.putNextEntry(new ZipEntry(fileName + "/"));
         zipOut.closeEntry();
       }
-      try (Stream<Path> files = Files.walk(file, 1)) {
-        Iterator<Path> iterator = files.iterator();
+      try (final Stream<Path> files = Files.walk(file, 1)) {
+        final Iterator<Path> iterator = files.iterator();
         while (iterator.hasNext()) {
-          Path path = iterator.next();
+          final Path path = iterator.next();
           if (!Files.isSameFile(file, path)) // Files.walk() returns the passed path, avoid recursive loop
             zipFile(path, (fileName != null ? fileName + "/" : "") + path.getFileName(), zipOut);
         }
       }
     } else {
-      try (var fis = new FileInputStream(file.toFile())) {
-        ZipEntry zipEntry = new ZipEntry(Objects.requireNonNull(fileName));
+      try (final var fis = new FileInputStream(file.toFile())) {
+        final ZipEntry zipEntry = new ZipEntry(Objects.requireNonNull(fileName));
         zipOut.putNextEntry(zipEntry);
-        byte[] bytes = new byte[1024];
+        final byte[] bytes = new byte[1024];
         int length;
         while ((length = fis.read(bytes)) >= 0)
           zipOut.write(bytes, 0, length);
@@ -114,10 +114,10 @@ public final class FileUtils {
    */
   public static void deleteRecursively(@NotNull Path file) throws IOException {
     if (Files.isDirectory(file)) {
-      try (Stream<Path> files = Files.walk(file)) {
-        Iterator<Path> iterator = files.iterator();
+      try (final Stream<Path> files = Files.walk(file)) {
+        final Iterator<Path> iterator = files.iterator();
         while (iterator.hasNext()) {
-          Path path = iterator.next();
+          final Path path = iterator.next();
           if (!Files.isSameFile(path, file)) // Files.walk() returns the passed path, avoid recursive loop
             deleteRecursively(path);
         }
@@ -151,7 +151,7 @@ public final class FileUtils {
 
     try {
       Runtime.getRuntime().exec(command);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
     }
   }
@@ -164,9 +164,10 @@ public final class FileUtils {
    * If the file name has no extension, the returned value will be empty.
    * The extension includes the dot.
    */
+  // TODO return record instead of pair
   public static Pair<String, Optional<String>> splitExtension(@NotNull String fileName) {
     if (fileName.contains(".")) {
-      int lastDotIndex = fileName.lastIndexOf(".");
+      final int lastDotIndex = fileName.lastIndexOf(".");
       return new Pair<>(
           fileName.substring(0, lastDotIndex),
           Optional.of(fileName.substring(lastDotIndex))

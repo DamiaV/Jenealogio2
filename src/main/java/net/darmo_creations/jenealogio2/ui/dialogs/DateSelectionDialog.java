@@ -45,8 +45,8 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
   public DateSelectionDialog(final @NotNull Config config) {
     super(config, "select_date", true, ButtonTypes.OK, ButtonTypes.CANCEL);
 
-    Language language = config.language();
-    Theme theme = config.theme();
+    final Language language = config.language();
+    final Theme theme = config.theme();
 
     this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> this.onDateTypeUpdate(newValue.data()));
@@ -79,7 +79,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
     this.removeDateButton = new Button(null, theme.getIcon(Icon.REMOVE_DATE, Icon.Size.SMALL));
     this.removeDateButton.setTooltip(new Tooltip(language.translate("dialog.select_date.remove_date.tooltip")));
     this.removeDateButton.setOnAction(event -> {
-      DateTimeField selectedItem = this.dateTimeFieldList.getSelectionModel().getSelectedItem();
+      final DateTimeField selectedItem = this.dateTimeFieldList.getSelectionModel().getSelectedItem();
       if (selectedItem != null) {
         this.dateTimeFieldList.getItems().remove(selectedItem);
         this.checkValidity();
@@ -93,7 +93,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
     this.dateTimeFieldList.setPrefWidth(400);
     this.dateTimeFieldList.setPrefHeight(300);
 
-    HBox buttonsBox = new HBox(
+    final HBox buttonsBox = new HBox(
         5,
         this.addDateButton,
         this.removeDateButton,
@@ -105,7 +105,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
 
     this.errorLabel.setGraphic(theme.getIcon(Icon.WARNING, Icon.Size.SMALL));
 
-    HBox dateTypeBox = new HBox(
+    final HBox dateTypeBox = new HBox(
         5,
         new Label(language.translate("dialog.select_date.date_type")),
         this.datePrecisionCombo
@@ -119,7 +119,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
         this.errorLabel
     ));
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(500);
     stage.setMinHeight(300);
 
@@ -147,7 +147,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
       } else if (dateTime instanceof DateTimeAlternative d) {
         this.dateTimeFieldList.getItems().clear();
         d.dates().forEach(date -> {
-          DateTimeField f = this.newItem();
+          final DateTimeField f = this.newItem();
           this.dateTimeFieldList.getItems().add(f);
           f.setDate(date);
         });
@@ -166,7 +166,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
   }
 
   private DateTimeField newItem() {
-    DateTimeField dateTimeField = new DateTimeField(this.config);
+    final DateTimeField dateTimeField = new DateTimeField(this.config);
     dateTimeField.getUpdateListeners().add(this::checkValidity);
     return dateTimeField;
   }
@@ -203,8 +203,8 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
         }
       }
       case RANGE -> {
-        var date1 = this.dateTimeField1.getDate();
-        var date2 = this.dateTimeField2.getDate();
+        final var date1 = this.dateTimeField1.getDate();
+        final var date2 = this.dateTimeField2.getDate();
         if (date1 == null) {
           this.dateTimeField1.pseudoClassStateChanged(PseudoClasses.INVALID, true);
           this.errorLabel.setText(this.config.language().translate("dialog.select_date.error.invalid_date"));
@@ -221,7 +221,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
         }
       }
       case ALTERNATIVE -> {
-        int size = this.dateTimeFieldList.getItems().size();
+        final int size = this.dateTimeFieldList.getItems().size();
         invalid = size < 2 || size > DateTimeAlternative.MAX_DATES
                   || this.dateTimeFieldList.getItems().stream().anyMatch(d -> d.getDate() == null);
         if (invalid) {
@@ -235,7 +235,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
   }
 
   private void updateButtons() {
-    int size = this.dateTimeFieldList.getItems().size();
+    final int size = this.dateTimeFieldList.getItems().size();
     this.addDateButton.setDisable(size >= DateTimeAlternative.MAX_DATES);
     this.removeDateButton.setDisable(this.dateTimeFieldList.getItems().size() <= 2);
     this.checkValidity();
@@ -269,7 +269,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
   }
 
   private void populateDatePrecisionCombo() {
-    for (DateType dateType : DateType.values()) {
+    for (final DateType dateType : DateType.values()) {
       this.datePrecisionCombo.getItems()
           .add(new NotNullComboBoxItem<>(dateType, this.config.language().translate(dateType.key())));
     }

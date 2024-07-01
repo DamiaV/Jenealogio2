@@ -24,21 +24,21 @@ public class FamilyTreeReader extends TreeFileManager {
    * @throws IOException If any error occurs.
    */
   public FamilyTree loadFromDirectory(@NotNull Path directory) throws IOException {
-    Path filesDir = directory.resolve(FILES_DIR);
-    FamilyTree familyTree;
-    try (var in = new FileInputStream(directory.resolve(TREE_FILE_NAME).toFile())) {
-      List<String> extensions = Arrays.asList(Picture.FILE_EXTENSIONS);
+    final Path filesDir = directory.resolve(FILES_DIR);
+    final FamilyTree familyTree;
+    try (final var in = new FileInputStream(directory.resolve(TREE_FILE_NAME).toFile())) {
+      final List<String> extensions = Arrays.asList(Picture.FILE_EXTENSIONS);
       familyTree = this.treeXMLReader.readFromStream(
           in,
           (name, desc, date) -> {
-            Path path = filesDir.resolve(name);
-            Optional<String> ext = FileUtils.splitExtension(name).right();
+            final Path path = filesDir.resolve(name);
+            final Optional<String> ext = FileUtils.splitExtension(name).right();
             if (ext.isPresent() && extensions.contains(ext.get().toLowerCase()))
               return this.readImageFile(path, desc, date);
             return new AttachedDocument(path, desc, date);
           }
       );
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       throw new IOException(e);
     }
     return familyTree;
@@ -50,9 +50,9 @@ public class FamilyTreeReader extends TreeFileManager {
       DateTime date
   ) {
     Image image = null;
-    try (var inputStream = new FileInputStream(filePath.toFile())) {
+    try (final var inputStream = new FileInputStream(filePath.toFile())) {
       image = new Image(inputStream);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
     }
     return new Picture(image, filePath, description, date);

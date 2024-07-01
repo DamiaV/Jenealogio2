@@ -115,18 +115,14 @@ public final class LifeEventType extends RegistryEntry {
    */
   public void setActorsNumber(int min, int max, boolean isUnion) {
     this.ensureNotBuiltin("minActors/maxActors/indicatesUnion");
-    if (min < 1) {
+    if (min < 1)
       throw new IllegalArgumentException("min must be > 0, got " + min);
-    }
-    if (max > 2) {
+    if (max > 2)
       throw new IllegalArgumentException("max must be ≤ 2, got" + max);
-    }
-    if (max < min) {
+    if (max < min)
       throw new IllegalArgumentException("max cannot be less than min");
-    }
-    if (isUnion && min < 2) {
+    if (isUnion && min < 2)
       throw new IllegalArgumentException("not enough max actors for union: " + max);
-    }
     this.minActors = min;
     this.maxActors = max;
     this.indicatesUnion = isUnion;

@@ -102,7 +102,7 @@ public abstract class TreeXMLManager {
   protected DocumentBuilder newDocumentBuilder() {
     try {
       return this.documentBuilderFactory.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
+    } catch (final ParserConfigurationException e) {
       throw new RuntimeException(e); // Should never happen
     }
   }

@@ -53,32 +53,32 @@ public final class Config implements Cloneable {
     loadLanguages();
     Theme.loadThemes();
 
-    Wini ini = getOrCreateIniFile();
+    final Wini ini = getOrCreateIniFile();
 
-    String langCode = StringUtils.stripNullable(ini.get(APP_SECTION, LANGUAGE_OPTION)).orElse(DEFAULT_LANGUAGE_CODE);
+    final String langCode = StringUtils.stripNullable(ini.get(APP_SECTION, LANGUAGE_OPTION)).orElse(DEFAULT_LANGUAGE_CODE);
     if (!LANGUAGES.containsKey(langCode))
       throw new ConfigException("unsupported language code: " + langCode);
 
-    String themeID = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION)).orElse(Theme.DEFAULT_THEME_ID);
-    Theme theme = Theme.getTheme(themeID).orElseThrow(() -> new ConfigException("undefined theme: " + themeID));
+    final String themeID = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION)).orElse(Theme.DEFAULT_THEME_ID);
+    final Theme theme = Theme.getTheme(themeID).orElseThrow(() -> new ConfigException("undefined theme: " + themeID));
 
-    boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
+    final boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
     Integer maxTreeHeight = ini.get(APP_SECTION, MAX_TREE_HEIGHT_OPTION, Integer.class);
     if (maxTreeHeight == null)
       maxTreeHeight = FamilyTreePane.DEFAULT_MAX_HEIGHT;
 
-    int dateFormatOrdinal = ini.get(APP_SECTION, DATE_FORMAT_OPTION, int.class);
-    int timeFormatOrdinal = ini.get(APP_SECTION, TIME_FORMAT_OPTION, int.class);
-    DateFormat dateFormat;
-    TimeFormat timeFormat;
+    final int dateFormatOrdinal = ini.get(APP_SECTION, DATE_FORMAT_OPTION, int.class);
+    final int timeFormatOrdinal = ini.get(APP_SECTION, TIME_FORMAT_OPTION, int.class);
+    final DateFormat dateFormat;
+    final TimeFormat timeFormat;
     try {
       dateFormat = DateFormat.values()[dateFormatOrdinal];
       timeFormat = TimeFormat.values()[timeFormatOrdinal];
-    } catch (IndexOutOfBoundsException e) {
+    } catch (final IndexOutOfBoundsException e) {
       throw new ConfigException(e);
     }
 
-    boolean showDeceasedPersonsBirthdays = ini.get(APP_SECTION, SHOW_DECEASED_BIRTHDAYS_OPTION, boolean.class);
+    final boolean showDeceasedPersonsBirthdays = ini.get(APP_SECTION, SHOW_DECEASED_BIRTHDAYS_OPTION, boolean.class);
 
     try {
       return new Config(
@@ -91,7 +91,7 @@ public final class Config implements Cloneable {
           showDeceasedPersonsBirthdays,
           debug
       );
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new ConfigException(e);
     }
   }
@@ -115,10 +115,10 @@ public final class Config implements Cloneable {
    */
   private static void loadLanguages() throws IOException {
     LANGUAGES.clear();
-    for (String langCode : LANGUAGE_CODES) {
-      ResourceBundle bundle = getResourceBundle(new Locale(langCode));
+    for (final String langCode : LANGUAGE_CODES) {
+      final ResourceBundle bundle = getResourceBundle(new Locale(langCode));
       if (bundle != null) {
-        String langName = bundle.getString("language_name");
+        final String langName = bundle.getString("language_name");
         LANGUAGES.put(langCode, new Language(langCode, langName, new Locale(langCode), bundle));
       }
     }
@@ -314,7 +314,7 @@ public final class Config implements Cloneable {
   public Config clone() {
     try {
       return (Config) super.clone();
-    } catch (CloneNotSupportedException e) {
+    } catch (final CloneNotSupportedException e) {
       throw new RuntimeException(e);
     }
   }
@@ -324,7 +324,7 @@ public final class Config implements Cloneable {
    */
   public void save() throws IOException {
     App.LOGGER.info("Saving config…");
-    Wini ini = getOrCreateIniFile();
+    final Wini ini = getOrCreateIniFile();
     ini.put(APP_SECTION, LANGUAGE_OPTION, this.language.code());
     ini.put(APP_SECTION, THEME_OPTION, this.theme.id());
     ini.put(APP_SECTION, SYNC_TREE_OPTION, this.syncTreeWithMainPane);
@@ -342,7 +342,7 @@ public final class Config implements Cloneable {
       return true;
     if (o == null || this.getClass() != o.getClass())
       return false;
-    Config config = (Config) o;
+    final Config config = (Config) o;
     return this.debug == config.debug
            && this.syncTreeWithMainPane == config.syncTreeWithMainPane
            && this.maxTreeHeight == config.maxTreeHeight

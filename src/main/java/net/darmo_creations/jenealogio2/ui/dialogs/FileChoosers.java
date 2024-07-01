@@ -158,11 +158,11 @@ public final class FileChoosers {
       String defaultName,
       @NotNull String... extensions
   ) {
-    FileChooser fileChooser = new FileChooser();
+    final FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle(config.language().translate("dialog.%s.title".formatted(titleKey)));
     if (extensions.length != 0) {
-      List<String> exts = Arrays.stream(extensions).map(e -> "*" + e).toList();
-      String desc = config.language().translate(
+      final List<String> exts = Arrays.stream(extensions).map(e -> "*" + e).toList();
+      final String desc = config.language().translate(
           "dialog.%s.filter_description".formatted(Objects.requireNonNull(descKey)),
           new FormatArg("exts", String.join(", ", exts))
       );
@@ -176,7 +176,7 @@ public final class FileChoosers {
     File file = saver ? fileChooser.showSaveDialog(stage) : fileChooser.showOpenDialog(stage);
     Path path = null;
     if (file != null) {
-      String fileName = file.getName();
+      final String fileName = file.getName();
       if (extensions.length != 0 && Arrays.stream(extensions).noneMatch(fileName::endsWith)) {
         if (saver)
           file = new File(file.getPath() + extensions[0]);

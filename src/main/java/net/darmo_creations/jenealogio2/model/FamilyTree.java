@@ -115,17 +115,17 @@ public class FamilyTree {
       throw new IllegalArgumentException("cannot delete root");
     person.setParent(0, null);
     person.setParent(1, null);
-    for (LifeEvent lifeEvent : person.lifeEvents()) {
+    for (final LifeEvent lifeEvent : person.lifeEvents()) {
       this.removeActorFromLifeEvent(lifeEvent, person);
       lifeEvent.removeWitness(person);
       this.lifeEvents.remove(lifeEvent);
     }
-    for (Person child : person.children())
+    for (final Person child : person.children())
       child.removeParent(person);
-    for (var relativeType : Person.RelativeType.values()) {
-      for (Person nonBiologicalChild : person.nonBiologicalChildren(relativeType))
+    for (final var relativeType : Person.RelativeType.values()) {
+      for (final Person nonBiologicalChild : person.nonBiologicalChildren(relativeType))
         nonBiologicalChild.removeRelative(person, relativeType);
-      for (Person relative : person.getRelatives(relativeType))
+      for (final Person relative : person.getRelatives(relativeType))
         person.removeRelative(relative, relativeType);
     }
     this.persons.remove(person);
@@ -209,7 +209,7 @@ public class FamilyTree {
     Objects.requireNonNull(fileName);
     this.persons.forEach(p -> this.removeDocumentFromObject(fileName, p));
     this.lifeEvents.forEach(l -> this.removeDocumentFromObject(fileName, l));
-    AttachedDocument document = this.documents.remove(fileName);
+    final AttachedDocument document = this.documents.remove(fileName);
     this.fileOperations.add(new DeleteFileOperation(fileName, document));
     return document;
   }
@@ -223,16 +223,16 @@ public class FamilyTree {
    *                                  or the new name is already registered.
    */
   public void renameDocument(@NotNull String oldFileName, @NotNull String newName) {
-    var split = FileUtils.splitExtension(oldFileName);
-    String oldName = split.left();
-    String newFileName = newName + split.right().orElse("");
+    final var split = FileUtils.splitExtension(oldFileName);
+    final String oldName = split.left();
+    final String newFileName = newName + split.right().orElse("");
     if (oldName.equals(newName))
       throw new IllegalArgumentException("Old and new name should not be the same");
     if (!this.documents.containsKey(oldFileName))
       throw new IllegalArgumentException("No document with name \"%s\"".formatted(oldFileName));
     if (this.documents.containsKey(newFileName))
       throw new IllegalArgumentException("A document with the name \"%s\" already exists".formatted(newFileName));
-    AttachedDocument document = this.documents.remove(oldFileName);
+    final AttachedDocument document = this.documents.remove(oldFileName);
     document.setName(newName);
     this.documents.put(newFileName, document);
     this.fileOperations.add(new RenameFileOperation(oldFileName, newFileName, document));

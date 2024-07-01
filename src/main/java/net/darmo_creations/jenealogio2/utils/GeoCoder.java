@@ -37,46 +37,43 @@ public final class GeoCoder {
    */
   @SuppressWarnings("unchecked")
   public static CompletableFuture<Optional<LatLon>> geoCode(@NotNull String address) {
-    String strippedAddress = address.strip();
-    if (LAT_LON_CACHE.containsKey(strippedAddress)) {
+    final String strippedAddress = address.strip();
+    if (LAT_LON_CACHE.containsKey(strippedAddress))
       return CompletableFuture.completedFuture(Optional.of(LAT_LON_CACHE.get(strippedAddress)));
-    }
 
-    CompletableFuture<HttpResponse<String>> future;
+    final CompletableFuture<HttpResponse<String>> future;
     try {
       future = getHttp(new URL(BASE_URL.formatted(URLEncoder.encode(strippedAddress, StandardCharsets.UTF_8))));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return CompletableFuture.completedFuture(Optional.empty());
     }
 
     return future.thenApply(resp -> {
-      if (resp.statusCode() != 200) {
+      if (resp.statusCode() != 200)
         return Optional.empty();
-      }
-      Gson gson = new Gson();
-      List<Map<String, ?>> data = gson.fromJson(resp.body(), List.class);
-      for (var entry : data) {
+      final Gson gson = new Gson();
+      final List<Map<String, ?>> data = gson.fromJson(resp.body(), List.class);
+      for (final var entry : data)
         if (entry.containsKey("lat") && entry.containsKey("lon")) {
-          double lat = Double.parseDouble(String.valueOf(entry.get("lat")));
-          double lon = Double.parseDouble(String.valueOf(entry.get("lon")));
-          LatLon latLon = new LatLon(lat, lon);
+          final double lat = Double.parseDouble(String.valueOf(entry.get("lat")));
+          final double lon = Double.parseDouble(String.valueOf(entry.get("lon")));
+          final LatLon latLon = new LatLon(lat, lon);
           LAT_LON_CACHE.put(strippedAddress, latLon);
           return Optional.of(latLon);
         }
-      }
       return Optional.empty();
     });
   }
 
   private static CompletableFuture<HttpResponse<String>> getHttp(@NotNull URL url) throws IOException {
-    HttpRequest request;
+    final HttpRequest request;
     try {
       request = HttpRequest.newBuilder()
           .uri(url.toURI())
           .timeout(Duration.ofMinutes(1))
           .GET()
           .build();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException(e);
     }
     return HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString());

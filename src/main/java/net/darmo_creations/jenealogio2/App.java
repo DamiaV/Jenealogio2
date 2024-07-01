@@ -31,8 +31,17 @@ public class App extends Application {
    */
   public static final String IMAGES_PATH = RESOURCES_ROOT + "images/";
 
+  /**
+   * Path of the current working directory.
+   */
   public static final Path CURRENT_DIR = Paths.get("").toAbsolutePath();
+  /**
+   * Path of the "temp" directory.
+   */
   public static final Path TEMP_DIR = CURRENT_DIR.resolve("temp");
+  /**
+   * Path of the "user_data" directory containing all family trees this application manages.
+   */
   public static final Path USER_DATA_DIR = CURRENT_DIR.resolve("user_data");
 
   /**
@@ -111,11 +120,11 @@ public class App extends Application {
   public static void main(String[] args) {
     // For Gluon Maps
     System.setProperty("javafx.platform", "desktop");
-    Args parsedArgs;
+    final Args parsedArgs;
     try {
       parsedArgs = parseArgs(args);
       config = Config.loadConfig(parsedArgs.debug());
-    } catch (IOException | ParseException | ConfigException e) {
+    } catch (final IOException | ParseException | ConfigException e) {
       generateCrashReport(e);
       System.exit(1);
       return; // To shut up compiler errors
@@ -123,7 +132,7 @@ public class App extends Application {
     treeName = parsedArgs.treeName();
     try {
       launch();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       generateCrashReport(e.getCause()); // JavaFX wraps exceptions into a RuntimeException
       System.exit(2);
     }
@@ -137,28 +146,30 @@ public class App extends Application {
    * @throws ParseException If arguments could not be parsed.
    */
   private static Args parseArgs(@NotNull String[] args) throws ParseException {
-    CommandLineParser parser = new DefaultParser();
-    Options options = new Options();
+    final CommandLineParser parser = new DefaultParser();
+    final Options options = new Options();
     options.addOption(Option.builder("d")
         .desc("Run the application in debug mode")
         .longOpt("debug")
         .build());
-    CommandLine commandLine = parser.parse(options, args);
-    List<String> argList = commandLine.getArgList();
-    String treeName = argList.isEmpty() ? null : argList.get(0);
+    final CommandLine commandLine = parser.parse(options, args);
+    final List<String> argList = commandLine.getArgList();
+    final String treeName = argList.isEmpty() ? null : argList.get(0);
     return new Args(commandLine.hasOption('d'), treeName);
   }
 
   /**
    * Generate a crash report from the given throwable object.
    *
-   * @param e The throwable object that caused the unrecoverable crash.
+   * @param throwable The throwable object that caused the unrecoverable crash.
    */
-  public static void generateCrashReport(@NotNull Throwable e) {
-    LocalDateTime date = LocalDateTime.now();
-    StringWriter out = new StringWriter();
-    e.printStackTrace(new PrintWriter(out));
-    String template = """
+  public static void generateCrashReport(@NotNull Throwable throwable) {
+    final LocalDateTime date = LocalDateTime.now();
+    final StringWriter out = new StringWriter();
+    try (final var s = new PrintWriter(out)) {
+      throwable.printStackTrace(s);
+    }
+    final String template = """
         --- %s (v%s) Crash Report ---
                 
         Time: %s
@@ -171,25 +182,26 @@ public class App extends Application {
         System properties:
         %s
         """;
-    String message = template.formatted(
+    final String message = template.formatted(
         NAME,
         VERSION,
         DateTimeUtils.format(date),
-        e.getMessage(),
+        throwable.getMessage(),
         out,
         getSystemProperties()
     );
     LOGGER.fatal(message);
-    File logsDir = new File("logs");
-    if (!logsDir.exists()) {
-      //noinspection ResultOfMethodCallIgnored
-      logsDir.mkdir();
-    }
-    String fileName = "crash_report_%s.log".formatted(DateTimeUtils.formatFileName(date));
-    try (FileWriter fw = new FileWriter(new File(logsDir, fileName))) {
-      //noinspection BlockingMethodInNonBlockingContext
+    final Path logsDir = App.CURRENT_DIR.resolve("logs");
+    if (!Files.exists(logsDir))
+      try {
+        Files.createDirectory(logsDir);
+      } catch (final IOException e) {
+        throw new RuntimeException(e);
+      }
+    final String fileName = "crash_report_%s.log".formatted(DateTimeUtils.formatFileName(date));
+    try (final var fw = new FileWriter(logsDir.resolve(fileName).toFile())) {
       fw.write(message);
-    } catch (IOException ex) {
+    } catch (final IOException ex) {
       throw new RuntimeException(ex);
     }
   }
@@ -198,10 +210,10 @@ public class App extends Application {
    * Return a list of some system properties.
    */
   public static String getSystemProperties() {
-    StringJoiner systemProperties = new StringJoiner("\n");
+    final StringJoiner systemProperties = new StringJoiner("\n");
     System.getProperties().entrySet().stream()
         .filter(entry -> {
-          String key = entry.getKey().toString();
+          final String key = entry.getKey().toString();
           return !key.startsWith("user.")
                  && !key.startsWith("file.")
                  && !key.startsWith("jdk.")

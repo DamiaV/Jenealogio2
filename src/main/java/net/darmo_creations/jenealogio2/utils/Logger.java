@@ -1,12 +1,10 @@
 package net.darmo_creations.jenealogio2.utils;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.util.Objects;
+import java.io.*;
+import java.time.*;
+import java.util.*;
 
 /**
  * Simple custom logger implementation.
@@ -178,7 +176,7 @@ public final class Logger {
    * @param level     Logging level.
    */
   public void exception(@NotNull Throwable exception, @NotNull Level level) {
-    StringWriter out = new StringWriter();
+    final StringWriter out = new StringWriter();
     exception.printStackTrace(new PrintWriter(out));
     this.log(out.toString(), level);
   }
@@ -191,7 +189,7 @@ public final class Logger {
    */
   private void log(String message, @NotNull Level level) {
     if (level.isAboveOrSame(this.level)) {
-      String s = this.format
+      final String s = this.format
           .replace("${date}", DateTimeUtils.format(LocalDateTime.now()))
           .replace("${level}", level.name())
           .replace("${name}", this.name)

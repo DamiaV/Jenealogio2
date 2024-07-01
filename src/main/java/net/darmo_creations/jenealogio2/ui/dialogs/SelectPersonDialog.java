@@ -30,11 +30,11 @@ public class SelectPersonDialog extends DialogBase<Person> {
    */
   public SelectPersonDialog(final @NotNull Config config) {
     super(config, "select_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
-    Language language = config.language();
+    final Language language = config.language();
 
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
     this.filterTextInput.setPromptText(language.translate("dialog.select_person.filter"));
-    FilteredList<PersonView> filteredList = new FilteredList<>(this.personList, data -> true);
+    final FilteredList<PersonView> filteredList = new FilteredList<>(this.personList, data -> true);
     this.personListView.setItems(filteredList);
     this.filterTextInput.textProperty().addListener((observable, oldValue, newValue) ->
         filteredList.setPredicate(pictureView -> {
@@ -49,7 +49,7 @@ public class SelectPersonDialog extends DialogBase<Person> {
     this.personListView.setOnMouseClicked(this::onListClicked);
     VBox.setVgrow(this.personListView, Priority.ALWAYS);
 
-    VBox content = new VBox(
+    final VBox content = new VBox(
         5,
         new HBox(5, new Label(language.translate("dialog.select_person.persons_list")), this.filterTextInput),
         this.personListView
@@ -58,7 +58,7 @@ public class SelectPersonDialog extends DialogBase<Person> {
     content.setPrefHeight(400);
     this.getDialogPane().setContent(content);
 
-    Stage stage = this.stage();
+    final Stage stage = this.stage();
     stage.setMinWidth(400);
     stage.setMinHeight(400);
 
@@ -99,7 +99,7 @@ public class SelectPersonDialog extends DialogBase<Person> {
   }
 
   private void updateButtons() {
-    boolean noSelection = this.personListView.getSelectionModel().getSelectedItems().isEmpty();
+    final boolean noSelection = this.personListView.getSelectionModel().getSelectedItems().isEmpty();
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(noSelection);
   }
 
@@ -114,14 +114,14 @@ public class SelectPersonDialog extends DialogBase<Person> {
     public PersonView(final @NotNull Person person) {
       super(5);
       this.person = person;
-      ImageView imageView = new ImageView(person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+      final ImageView imageView = new ImageView(person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
       imageView.setPreserveRatio(true);
       imageView.setFitWidth(IMAGE_SIZE);
       imageView.setFitHeight(IMAGE_SIZE);
-      Label nameLabel = new Label(person.toString());
-      DateLabel birthLabel = new DateLabel(person.getBirthDate().orElse(null), "?", SelectPersonDialog.this.config);
+      final Label nameLabel = new Label(person.toString());
+      final DateLabel birthLabel = new DateLabel(person.getBirthDate().orElse(null), "?", SelectPersonDialog.this.config);
       birthLabel.setGraphic(SelectPersonDialog.this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
-      DateLabel deathLabel = new DateLabel(person.getDeathDate().orElse(null), "?", SelectPersonDialog.this.config);
+      final DateLabel deathLabel = new DateLabel(person.getDeathDate().orElse(null), "?", SelectPersonDialog.this.config);
       deathLabel.setGraphic(SelectPersonDialog.this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.getChildren().addAll(imageView, new VBox(5, nameLabel, birthLabel, deathLabel));
     }

@@ -13,6 +13,9 @@ import java.time.*;
 import java.util.*;
 import java.util.function.*;
 
+/**
+ * This class manages the metadata of trees in {@link App#USER_DATA_DIR}.
+ */
 public final class TreesMetadataManager {
   private static final String METADATA_FILE_NAME = "metadata.xml";
 
@@ -25,64 +28,64 @@ public final class TreesMetadataManager {
   private final Map<String, TreeMetadata> trees = new HashMap<>();
 
   public TreesMetadataManager() {
-    try (var files = Files.walk(App.USER_DATA_DIR, 1)) {
-      var openingDates = this.readMetadataFile();
-      var iterator = files
+    try (final var files = Files.walk(App.USER_DATA_DIR, 1)) {
+      final var openingDates = this.readMetadataFile();
+      final var iterator = files
           .filter(path -> Files.isDirectory(path) && Files.exists(path.resolve(TreeFileManager.TREE_FILE_NAME)))
           .iterator();
       while (iterator.hasNext()) {
-        Path path = iterator.next();
-        String dirName = path.getFileName().toString();
-        FamilyTree tree;
-        try (var in = Files.newInputStream(path.resolve(TreeFileManager.TREE_FILE_NAME))) {
+        final Path path = iterator.next();
+        final String dirName = path.getFileName().toString();
+        final FamilyTree tree;
+        try (final var in = Files.newInputStream(path.resolve(TreeFileManager.TREE_FILE_NAME))) {
           final List<String> list = Arrays.asList(Picture.FILE_EXTENSIONS);
           tree = new TreeXMLReader().readFromStream(
               in,
               (name, description, date) -> {
-                Path filePath = path.resolve(name);
-                Optional<String> ext = FileUtils.splitExtension(name).right();
+                final Path filePath = path.resolve(name);
+                final Optional<String> ext = FileUtils.splitExtension(name).right();
                 if (ext.isPresent() && list.contains(ext.get().toLowerCase()))
                   return new Picture(null, filePath, description, date);
                 return new AttachedDocument(filePath, description, date);
               }
           );
-        } catch (IOException e) {
+        } catch (final IOException e) {
           App.LOGGER.exception(e);
           continue;
         }
-        LocalDateTime lastOpeningDate = Optional.ofNullable(openingDates.get(dirName))
+        final LocalDateTime lastOpeningDate = Optional.ofNullable(openingDates.get(dirName))
             .flatMap(Function.identity())
             .orElse(null);
         this.trees.put(dirName, new TreeMetadata(tree.name(), dirName, lastOpeningDate));
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   private Map<String, Optional<LocalDateTime>> readMetadataFile() {
-    Map<String, Optional<LocalDateTime>> extracted = new HashMap<>();
-    Path metadataFile = App.CURRENT_DIR.resolve(METADATA_FILE_NAME);
+    final Map<String, Optional<LocalDateTime>> extracted = new HashMap<>();
+    final Path metadataFile = App.CURRENT_DIR.resolve(METADATA_FILE_NAME);
     if (Files.exists(metadataFile)) {
-      try (var metadata = Files.newInputStream(metadataFile)) {
-        Document document = XmlUtils.readFile(metadata);
-        NodeList childNodes = document.getChildNodes();
+      try (final var metadata = Files.newInputStream(metadataFile)) {
+        final Document document = XmlUtils.readFile(metadata);
+        final NodeList childNodes = document.getChildNodes();
         if (childNodes.getLength() != 1)
           return extracted;
-        Element root = (Element) childNodes.item(0);
-        Optional<Element> trees = XmlUtils.getChildElement(root, TREES_TAG, true);
+        final Element root = (Element) childNodes.item(0);
+        final Optional<Element> trees = XmlUtils.getChildElement(root, TREES_TAG, true);
         if (trees.isPresent())
-          for (Element treeElement : XmlUtils.getChildElements(trees.get(), TREE_METADATA_TAG))
+          for (final Element treeElement : XmlUtils.getChildElements(trees.get(), TREE_METADATA_TAG))
             try {
-              String dirName = XmlUtils.getAttr(
+              final String dirName = XmlUtils.getAttr(
                   treeElement, DIRECTORY_NAME_ATTR, Function.identity(), null, false);
-              LocalDateTime lastOpeningDate = XmlUtils.getAttr(
+              final LocalDateTime lastOpeningDate = XmlUtils.getAttr(
                   treeElement, LAST_OPENING_DATE_ATTR, LocalDateTime::parse, () -> null, false);
               extracted.put(dirName, Optional.ofNullable(lastOpeningDate));
-            } catch (IOException e) {
+            } catch (final IOException e) {
               App.LOGGER.exception(e);
             }
-      } catch (IOException e) {
+      } catch (final IOException e) {
         App.LOGGER.exception(e);
       }
     }
@@ -102,22 +105,22 @@ public final class TreesMetadataManager {
       final @NotNull Config config
   ) {
     this.trees.put(directoryName, new TreeMetadata(tree.name(), directoryName, LocalDateTime.now()));
-    Document document = XmlUtils.newDocumentBuilder().newDocument();
-    Element root = (Element) document.appendChild(document.createElement(METADATA_TAG));
-    Element treesElement = (Element) root.appendChild(document.createElement(TREES_TAG));
-    for (TreeMetadata metadata : this.trees.values()) {
-      Element treeMetadata = document.createElement(TREE_METADATA_TAG);
+    final Document document = XmlUtils.newDocumentBuilder().newDocument();
+    final Element root = (Element) document.appendChild(document.createElement(METADATA_TAG));
+    final Element treesElement = (Element) root.appendChild(document.createElement(TREES_TAG));
+    for (final TreeMetadata metadata : this.trees.values()) {
+      final Element treeMetadata = document.createElement(TREE_METADATA_TAG);
       XmlUtils.setAttr(document, treeMetadata, DIRECTORY_NAME_ATTR, metadata.directoryName());
-      LocalDateTime date = directoryName.equals(metadata.directoryName())
+      final LocalDateTime date = directoryName.equals(metadata.directoryName())
           ? LocalDateTime.now()
           : metadata.lastOpenDate();
       if (date != null)
         XmlUtils.setAttr(document, treeMetadata, LAST_OPENING_DATE_ATTR, date.withNano(0).toString());
       treesElement.appendChild(treeMetadata);
     }
-    try (var out = Files.newOutputStream(App.CURRENT_DIR.resolve(METADATA_FILE_NAME))) {
+    try (final var out = Files.newOutputStream(App.CURRENT_DIR.resolve(METADATA_FILE_NAME))) {
       XmlUtils.writeFile(out, document, config);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       App.LOGGER.exception(e);
     }
   }

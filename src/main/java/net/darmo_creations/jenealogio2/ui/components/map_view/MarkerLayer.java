@@ -39,7 +39,7 @@ class MarkerLayer extends MapLayer {
   ) {
     this.config = Objects.requireNonNull(config);
     this.latLon = latLon;
-    Image markerIcon = color.image();
+    final Image markerIcon = color.image();
     this.markerWidth = markerIcon != null ? markerIcon.getWidth() : 32;
     this.markerHeight = markerIcon != null ? markerIcon.getHeight() : 32;
     this.markerImageView = new ImageView(markerIcon);
@@ -59,7 +59,7 @@ class MarkerLayer extends MapLayer {
       this.popOver.show(this.markerImageView);
       if (!this.popOverStyleInitialized) {
         // From https://stackoverflow.com/a/36404968/3779986
-        ObservableList<String> stylesheets = ((Parent) this.popOver.getSkin().getNode()).getStylesheets();
+        final ObservableList<String> stylesheets = ((Parent) this.popOver.getSkin().getNode()).getStylesheets();
         this.config.theme().getStyleSheets()
             .forEach(path -> stylesheets.add(path.toExternalForm()));
         this.popOverStyleInitialized = true;
@@ -69,7 +69,7 @@ class MarkerLayer extends MapLayer {
 
   @Override
   protected void layoutLayer() {
-    Point2D point2d = this.getMapPoint(this.latLon.lat(), this.latLon.lon());
+    final Point2D point2d = this.getMapPoint(this.latLon.lat(), this.latLon.lon());
     this.markerImageView.setTranslateX(point2d.getX() - this.markerWidth / 2);
     this.markerImageView.setTranslateY(point2d.getY() - this.markerHeight);
   }

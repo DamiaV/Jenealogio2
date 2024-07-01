@@ -64,7 +64,7 @@ class PlaceAutoCompletionBinding extends AutoCompletionBinding<Place> {
 
   @Override
   protected void completeUserInput(@NotNull Place completion) {
-    String newText = completion.address();
+    final String newText = completion.address();
     this.getCompletionTarget().setText(newText);
     this.getCompletionTarget().positionCaret(newText.length());
     this.onCompletion.accept(completion);

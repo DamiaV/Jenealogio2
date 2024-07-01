@@ -18,7 +18,7 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
 
   public AttachedDocument(@NotNull Path path, String description, final DateTime date) {
     this.path = path;
-    var split = FileUtils.splitExtension(path.getFileName().toString());
+    final var split = FileUtils.splitExtension(path.getFileName().toString());
     this.fileName = path.getFileName().toString();
     this.setName(split.left());
     this.normalizedFileExt = split.right().map(String::toLowerCase).orElse(null);
@@ -82,7 +82,7 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
       return true;
     if (o == null || this.getClass() != o.getClass())
       return false;
-    Picture picture = (Picture) o;
+    final Picture picture = (Picture) o;
     return Objects.equals(this.fileName(), picture.fileName());
   }
 
@@ -92,7 +92,7 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
       return o.date == null ? this.compareNames(o) : -1;
     if (o.date == null)
       return 1;
-    int c = this.date.compareTo(o.date);
+    final int c = this.date.compareTo(o.date);
     return c == 0 ? this.compareNames(o) : c;
   }
 

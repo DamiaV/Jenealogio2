@@ -26,15 +26,15 @@ public final class Gender extends RegistryEntry {
   }
 
   private @Nullable Image loadIcon() {
-    String iconName = this.key().name();
-    String path = "%s%s.png".formatted(App.IMAGES_PATH + "gender_icons/", iconName);
-    try (var stream = Gender.class.getResourceAsStream(path)) {
+    final String iconName = this.key().name();
+    final String path = "%s%s.png".formatted(App.IMAGES_PATH + "gender_icons/", iconName);
+    try (final var stream = Gender.class.getResourceAsStream(path)) {
       if (stream == null) {
         App.LOGGER.warn("Missing icon: " + iconName);
         return null;
       }
       return new Image(stream);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return null;
     }
   }

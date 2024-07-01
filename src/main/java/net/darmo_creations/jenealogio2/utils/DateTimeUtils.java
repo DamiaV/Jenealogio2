@@ -48,8 +48,8 @@ public final class DateTimeUtils {
    */
   public static String formatDateTime(@NotNull DateTime date, boolean useIsoDate, final @NotNull Config config) {
     Objects.requireNonNull(date);
-    Language language = config.language();
-    var formatter = getCalendarDateTimeFormatter(config, language, useIsoDate);
+    final Language language = config.language();
+    final var formatter = getCalendarDateTimeFormatter(config, language, useIsoDate);
 
     if (date instanceof DateTimeWithPrecision d)
       return language.translate(
@@ -63,10 +63,10 @@ public final class DateTimeUtils {
           new FormatArg("date2", formatter.apply(d.endDate()))
       );
     else if (date instanceof DateTimeAlternative d) {
-      String comma = language.translate("list_comma");
-      String or = language.translate("list_or");
-      String str = d.dates().stream().map(formatter).collect(Collectors.joining(comma));
-      StringBuilder sb = new StringBuilder(str);
+      final String comma = language.translate("list_comma");
+      final String or = language.translate("list_or");
+      final String str = d.dates().stream().map(formatter).collect(Collectors.joining(comma));
+      final StringBuilder sb = new StringBuilder(str);
       // Replace last occurrence of "comma" by "or"
       sb.replace(str.lastIndexOf(comma), str.lastIndexOf(comma) + comma.length(), or);
       return sb.toString();
@@ -76,15 +76,15 @@ public final class DateTimeUtils {
   }
 
   private static Function<CalendarSpecificDateTime, String> getCalendarDateTimeFormatter(final @NotNull Config config, @NotNull Language language, boolean useIsoDate) {
-    String dateFormat = config.dateFormat().getFormat();
-    TimeFormat tf = config.timeFormat();
-    String timeFormat = tf.getFormat();
-    String fullTimeFormat = tf.getFullVersion().getFormat();
-    var dateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, timeFormat));
-    var fullDateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, fullTimeFormat));
-    var dateFormatterNoHour = new CalendarDateTimeFormatter(language, dateFormat);
+    final String dateFormat = config.dateFormat().getFormat();
+    final TimeFormat tf = config.timeFormat();
+    final String timeFormat = tf.getFormat();
+    final String fullTimeFormat = tf.getFullVersion().getFormat();
+    final var dateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, timeFormat));
+    final var fullDateFormatter = new CalendarDateTimeFormatter(language, "%s, %s".formatted(dateFormat, fullTimeFormat));
+    final var dateFormatterNoHour = new CalendarDateTimeFormatter(language, dateFormat);
     return d -> {
-      CalendarDateTimeFormatter f;
+      final CalendarDateTimeFormatter f;
       if (d.isTimeSet())
         f = useIsoDate || d.calendar().hoursInDay() == 24 ? dateFormatter : fullDateFormatter;
       else
