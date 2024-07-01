@@ -418,10 +418,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     String g = null;
     if (gender.isPresent()) {
       RegistryEntryKey key = gender.get().key();
-      String name = key.name();
-      g = key.isBuiltin() ? this.config.language().translate("genders." + name) : gender.get().userDefinedName();
+      if (key.isBuiltin())
+        g = this.config.language().translate("genders." + key.name());
+      else
+        g = gender.get().userDefinedName();
     }
     this.genderLabel.setText(g);
+    this.genderLabel.setGraphic(gender.map(g_ -> new ImageView(g_.icon())).orElse(null));
     this.genderLabel.setTooltip(g != null ? new Tooltip(g) : null);
     this.occupationLabel.setText(this.person.mainOccupation().orElse(null));
     this.occupationLabel.setTooltip(this.person.mainOccupation().map(Tooltip::new).orElse(null));
