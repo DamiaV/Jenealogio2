@@ -6,9 +6,9 @@ import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
-import net.darmo_creations.jenealogio2.utils.Pair;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -47,8 +47,8 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
     stage.setMinHeight(200);
   }
 
-  public Pair<List<LifeEventType>, List<Gender>> getSelectedItems() {
-    return new Pair<>(this.eventTypesTab.getSelectedItems(), this.gendersTab.getSelectedItems());
+  public RegistriesValues getSelectedItems() {
+    return new RegistriesValues(this.eventTypesTab.getSelectedItems(), this.gendersTab.getSelectedItems());
   }
 
   public void setItems(

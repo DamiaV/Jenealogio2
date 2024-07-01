@@ -72,13 +72,13 @@ public class TreeXMLReader extends TreeXMLManager {
    * @return The corresponding registries.
    * @throws IOException If any error occurs.
    */
-  public RegistriesWrapper loadRegistriesFile(final @NotNull Path file) throws IOException {
+  public RegistriesValues loadRegistriesFile(final @NotNull Path file) throws IOException {
     final FamilyTree dummyTree = new FamilyTree("dummy");
     final Document document = XmlUtils.readFile(new FileInputStream(file.toFile()));
     final NodeList childNodes = document.getChildNodes();
     final Element registriesElement = this.getRootElement(childNodes, REGISTRIES_TAG, REGISTRIES_VERSION_ATTR);
     this.loadUserRegistries(registriesElement, dummyTree);
-    return new RegistriesWrapper(
+    return new RegistriesValues(
         dummyTree.lifeEventTypeRegistry().serializableEntries(),
         dummyTree.genderRegistry().serializableEntries()
     );

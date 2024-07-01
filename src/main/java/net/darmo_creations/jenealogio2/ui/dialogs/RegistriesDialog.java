@@ -19,7 +19,6 @@ import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
-import net.darmo_creations.jenealogio2.utils.Pair;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -115,7 +114,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     final Optional<Path> file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
     if (file.isEmpty())
       return;
-    final TreeXMLManager.RegistriesWrapper registries;
+    final RegistriesValues registries;
     try {
       registries = this.treeXMLReader.loadRegistriesFile(file.get());
     } catch (final IOException e) {
@@ -140,9 +139,9 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE)
       return;
     final var selectedItems = this.importDialog.getSelectedItems();
-    for (final LifeEventType lifeEventType : selectedItems.left())
+    for (final LifeEventType lifeEventType : selectedItems.lifeEventTypes())
       this.eventTypesView.importEntry(lifeEventType);
-    for (final Gender gender : selectedItems.right())
+    for (final Gender gender : selectedItems.genders())
       this.gendersView.importEntry(gender);
   }
 
@@ -158,13 +157,13 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     final Optional<Path> file = FileChoosers.showRegistriesFileSaver(this.config, this.getOwner(), "registries");
     if (file.isEmpty())
       return;
-    final var selectedItems = this.exportDialog.getSelectedItems();
-    final var selectedKeys = new Pair<>(
-        selectedItems.left().stream().map(RegistryEntry::key).toList(),
-        selectedItems.right().stream().map(RegistryEntry::key).toList()
-    );
     try {
-      this.treeXMLWriter.saveRegistriesToFile(file.get(), this.familyTree, selectedKeys, this.config);
+      this.treeXMLWriter.saveRegistriesToFile(
+          file.get(),
+          this.familyTree,
+          this.exportDialog.getSelectedItems(),
+          this.config
+      );
     } catch (final IOException e) {
       App.LOGGER.exception(e);
       Alerts.error(

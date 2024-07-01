@@ -1,10 +1,6 @@
 package net.darmo_creations.jenealogio2.io;
 
-import net.darmo_creations.jenealogio2.model.*;
-import org.jetbrains.annotations.*;
-
 import javax.xml.parsers.*;
-import java.util.*;
 
 /**
  * Base class for tree XML serializers.
@@ -104,16 +100,6 @@ public abstract class TreeXMLManager {
       return this.documentBuilderFactory.newDocumentBuilder();
     } catch (final ParserConfigurationException e) {
       throw new RuntimeException(e); // Should never happen
-    }
-  }
-
-  public record RegistriesWrapper(
-      @NotNull List<LifeEventType> lifeEventTypes,
-      @NotNull List<Gender> genders
-  ) {
-    public RegistriesWrapper {
-      Objects.requireNonNull(lifeEventTypes);
-      Objects.requireNonNull(genders);
     }
   }
 }

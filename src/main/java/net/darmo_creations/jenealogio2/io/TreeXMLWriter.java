@@ -67,7 +67,7 @@ public class TreeXMLWriter extends TreeXMLManager {
   public void saveRegistriesToFile(
       @NotNull Path file,
       final @NotNull FamilyTree familyTree,
-      final @NotNull Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep,
+      final @NotNull RegistriesValues keep,
       final @NotNull Config config
   ) throws IOException {
     final Document document = this.newDocumentBuilder().newDocument();
@@ -90,21 +90,20 @@ public class TreeXMLWriter extends TreeXMLManager {
    * @param document          Current XML document.
    * @param familyTreeElement XML element to write into.
    * @param familyTree        Tree to get entries from.
-   * @param keep              Lists of {@link RegistryEntryKey} of entries to save.
-   *                          If null, all eligible entries are kept
+   * @param keep              The {@link RegistryEntry} values to save.
+   *                          If null, all eligible entries are kept.
    */
   private void writeUserRegistryEntries(
       @NotNull Document document,
       @NotNull Element familyTreeElement,
       final @NotNull FamilyTree familyTree,
-      final Pair<List<RegistryEntryKey>, List<RegistryEntryKey>> keep
+      final RegistriesValues keep
   ) {
-    final Predicate<RegistryEntry> keepPredicate = entry -> keep == null || keep.right().contains(entry.key());
     final Element registriesElement = document.createElement(REGISTRIES_TAG);
     final List<LifeEventType> userLifeEventTypes = familyTree.lifeEventTypeRegistry().serializableEntries().stream()
-        .filter(keepPredicate).toList();
+        .filter((Predicate<RegistryEntry>) entry -> keep == null || keep.lifeEventTypeKeys().contains(entry.key())).toList();
     final List<Gender> userGenders = familyTree.genderRegistry().serializableEntries().stream()
-        .filter(keepPredicate).toList();
+        .filter((Predicate<RegistryEntry>) entry -> keep == null || keep.genderKeys().contains(entry.key())).toList();
 
     if (!userGenders.isEmpty()) {
       final Element gendersElement = document.createElement(GENDERS_TAG);
