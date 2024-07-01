@@ -20,8 +20,8 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
     this.path = path;
     final var split = FileUtils.splitExtension(path.getFileName().toString());
     this.fileName = path.getFileName().toString();
-    this.setName(split.left());
-    this.normalizedFileExt = split.right().map(String::toLowerCase).orElse(null);
+    this.setName(split.fileName());
+    this.normalizedFileExt = split.extension().map(String::toLowerCase).orElse(null);
     this.setDescription(description);
     this.setDate(date);
   }
@@ -57,7 +57,7 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
 
   public final void setName(@NotNull String name) {
     this.name = Objects.requireNonNull(name);
-    this.fileName = name + FileUtils.splitExtension(this.fileName).right().orElse("");
+    this.fileName = name + FileUtils.splitExtension(this.fileName).extension().orElse("");
   }
 
   public final Optional<String> description() {

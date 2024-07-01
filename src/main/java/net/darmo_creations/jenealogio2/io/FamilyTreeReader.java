@@ -32,7 +32,7 @@ public class FamilyTreeReader extends TreeFileManager {
           in,
           (name, desc, date) -> {
             final Path path = filesDir.resolve(name);
-            final Optional<String> ext = FileUtils.splitExtension(name).right();
+            final Optional<String> ext = FileUtils.splitExtension(name).extension();
             if (ext.isPresent() && extensions.contains(ext.get().toLowerCase()))
               return this.readImageFile(path, desc, date);
             return new AttachedDocument(path, desc, date);

@@ -236,7 +236,7 @@ public enum Icon {
    * @return The matching file extension icon or {@link #UNKNOWN_FILE_EXT} if none matched.
    */
   public static Icon forFile(@NotNull String name) {
-    final Optional<String> ext = FileUtils.splitExtension(name).right();
+    final Optional<String> ext = FileUtils.splitExtension(name).extension();
     if (ext.isEmpty())
       return UNKNOWN_FILE_EXT;
     final String iconName = "FILE_EXT_" + ext.get().substring(1).toUpperCase();

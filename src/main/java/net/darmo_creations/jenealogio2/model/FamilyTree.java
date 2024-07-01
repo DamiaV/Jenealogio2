@@ -224,8 +224,8 @@ public class FamilyTree {
    */
   public void renameDocument(@NotNull String oldFileName, @NotNull String newName) {
     final var split = FileUtils.splitExtension(oldFileName);
-    final String oldName = split.left();
-    final String newFileName = newName + split.right().orElse("");
+    final String oldName = split.fileName();
+    final String newFileName = newName + split.extension().orElse("");
     if (oldName.equals(newName))
       throw new IllegalArgumentException("Old and new name should not be the same");
     if (!this.documents.containsKey(oldFileName))

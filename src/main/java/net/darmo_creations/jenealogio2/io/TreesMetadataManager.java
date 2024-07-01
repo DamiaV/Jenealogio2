@@ -43,7 +43,7 @@ public final class TreesMetadataManager {
               in,
               (name, description, date) -> {
                 final Path filePath = path.resolve(name);
-                final Optional<String> ext = FileUtils.splitExtension(name).right();
+                final Optional<String> ext = FileUtils.splitExtension(name).extension();
                 if (ext.isPresent() && list.contains(ext.get().toLowerCase()))
                   return new Picture(null, filePath, description, date);
                 return new AttachedDocument(filePath, description, date);

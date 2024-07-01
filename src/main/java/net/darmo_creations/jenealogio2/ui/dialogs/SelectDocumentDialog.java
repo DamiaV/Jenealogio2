@@ -224,7 +224,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
    */
   private void importFile(final @NotNull Path file) throws IOException {
     final AttachedDocument document;
-    final Optional<String> ext = FileUtils.splitExtension(file.getFileName().toString()).right();
+    final Optional<String> ext = FileUtils.splitExtension(file.getFileName().toString()).extension();
     if (ext.isPresent() && Arrays.asList(Picture.FILE_EXTENSIONS).contains(ext.get()))
       try (final var in = new FileInputStream(file.toFile())) {
         document = new Picture(new Image(in), file, null, null);

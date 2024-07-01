@@ -1,7 +1,6 @@
 package net.darmo_creations.jenealogio2.io;
 
 import net.darmo_creations.jenealogio2.*;
-import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
@@ -24,7 +23,7 @@ public final class FileUtils {
    * @throws IOException If any I/O error occurs.
    */
   public static String unzip(final @NotNull Path zipFilePath, @NotNull Path destDir) throws IOException {
-    final String dirName = splitExtension(zipFilePath.getFileName().toString()).left();
+    final String dirName = splitExtension(zipFilePath.getFileName().toString()).fileName();
     destDir = destDir.resolve(dirName);
     if (!Files.exists(destDir))
       Files.createDirectories(destDir);
@@ -164,16 +163,15 @@ public final class FileUtils {
    * If the file name has no extension, the returned value will be empty.
    * The extension includes the dot.
    */
-  // TODO return record instead of pair
-  public static Pair<String, Optional<String>> splitExtension(@NotNull String fileName) {
+  public static FileName splitExtension(@NotNull String fileName) {
     if (fileName.contains(".")) {
       final int lastDotIndex = fileName.lastIndexOf(".");
-      return new Pair<>(
+      return new FileName(
           fileName.substring(0, lastDotIndex),
           Optional.of(fileName.substring(lastDotIndex))
       );
     }
-    return new Pair<>(fileName, Optional.empty());
+    return new FileName(fileName, Optional.empty());
   }
 
   private FileUtils() {

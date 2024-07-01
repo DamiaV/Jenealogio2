@@ -194,16 +194,16 @@ class StringUtilsTest {
 
   @Test
   void splitExtension() {
-    assertEquals(new Pair<>("a", Optional.of(".png")), FileUtils.splitExtension("a.png"));
+    assertEquals(new FileName("a", Optional.of(".png")), FileUtils.splitExtension("a.png"));
   }
 
   @Test
   void splitExtensionMultipleDots() {
-    assertEquals(new Pair<>("a.b", Optional.of(".png")), FileUtils.splitExtension("a.b.png"));
+    assertEquals(new FileName("a.b", Optional.of(".png")), FileUtils.splitExtension("a.b.png"));
   }
 
   @Test
   void splitExtensionNoExtension() {
-    assertEquals(new Pair<>("a", Optional.empty()), FileUtils.splitExtension("a"));
+    assertEquals(new FileName("a", Optional.empty()), FileUtils.splitExtension("a"));
   }
 }

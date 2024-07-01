@@ -118,7 +118,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.documentNameField.setText(document.name());
     // Disable renaming if document is not yet registered in the tree
     this.documentNameField.setDisable(familyTree.getDocument(document.fileName()).isEmpty());
-    final Optional<String> ext = FileUtils.splitExtension(document.fileName()).right();
+    final Optional<String> ext = FileUtils.splitExtension(document.fileName()).extension();
     this.fileExtensionLabel.setText(ext.orElse(null));
     this.fileExtensionGraphicsLabel.setGraphic(this.config.theme().getIcon(Icon.forFile(document.fileName()), Icon.Size.SMALL));
     this.documentDescTextInput.setText(document.description().orElse(""));
