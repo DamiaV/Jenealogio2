@@ -3,7 +3,6 @@ package net.darmo_creations.jenealogio2.model;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.GregorianCalendar;
-import net.darmo_creations.jenealogio2.utils.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -20,7 +19,7 @@ class PersonTest {
 
   @BeforeEach
   void setUp() {
-    FamilyTree tree = new FamilyTree("tree");
+    final FamilyTree tree = new FamilyTree("tree");
     tree.addPerson(this.person = new Person());
     this.person.setDisambiguationID(1);
     tree.addPerson(this.parent1 = new Person());
@@ -31,7 +30,7 @@ class PersonTest {
 
   @Test
   void setFamilyTree() {
-    FamilyTree t = new FamilyTree("t");
+    final FamilyTree t = new FamilyTree("t");
     this.person.setFamilyTree(t);
     assertSame(t, this.person.familyTree());
   }
@@ -73,8 +72,8 @@ class PersonTest {
 
   @Test
   void setLifeStatusThrowsIfHasDeathEvent() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
     l.setActors(Set.of(this.person));
     assertThrows(IllegalArgumentException.class, () -> this.person.setLifeStatus(LifeStatus.LIVING));
   }
@@ -220,7 +219,7 @@ class PersonTest {
 
   @Test
   void setGender() {
-    Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
+    final Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
     this.person.setGender(gender);
     //noinspection OptionalGetWithoutIsPresent
     assertEquals(gender, this.person.gender().get());
@@ -237,24 +236,24 @@ class PersonTest {
   void parentsBothDefined() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    assertEquals(new Pair<>(Optional.of(this.parent1), Optional.of(this.parent2)), this.person.parents());
+    assertEquals(new Parents(Optional.of(this.parent1), Optional.of(this.parent2)), this.person.parents());
   }
 
   @Test
   void parentsFirstDefined() {
     this.person.setParent(0, this.parent1);
-    assertEquals(new Pair<>(Optional.of(this.parent1), Optional.empty()), this.person.parents());
+    assertEquals(new Parents(Optional.of(this.parent1), Optional.empty()), this.person.parents());
   }
 
   @Test
   void parentsSecondDefined() {
     this.person.setParent(1, this.parent2);
-    assertEquals(new Pair<>(Optional.empty(), Optional.of(this.parent2)), this.person.parents());
+    assertEquals(new Parents(Optional.empty(), Optional.of(this.parent2)), this.person.parents());
   }
 
   @Test
   void parentsNoneDefined() {
-    assertEquals(new Pair<>(Optional.empty(), Optional.empty()), this.person.parents());
+    assertEquals(new Parents(Optional.empty(), Optional.empty()), this.person.parents());
   }
 
   @Test
@@ -287,7 +286,7 @@ class PersonTest {
   void hasSameParentsSameIndices() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
     person2.setParent(1, this.parent2);
     assertTrue(this.person.hasSameParents(person2));
@@ -297,7 +296,7 @@ class PersonTest {
   void hasSameParentsSwappedIndices() {
     this.person.setParent(1, this.parent1);
     this.person.setParent(0, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
     person2.setParent(1, this.parent2);
     assertTrue(this.person.hasSameParents(person2));
@@ -307,7 +306,7 @@ class PersonTest {
   void hasSameParentsFalseIfOnlyOneSame() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
     person2.setParent(1, new Person());
     assertFalse(this.person.hasSameParents(person2));
@@ -317,7 +316,7 @@ class PersonTest {
   void hasSameParentsFalseIfOnlyNoneSame() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, new Person());
     person2.setParent(1, new Person());
     assertFalse(this.person.hasSameParents(person2));
@@ -365,14 +364,14 @@ class PersonTest {
   void setParentUpdatesPerson0() {
     this.person.setParent(0, this.parent1);
     //noinspection OptionalGetWithoutIsPresent
-    assertSame(this.parent1, this.person.parents().left().get());
+    assertSame(this.parent1, this.person.parents().parent1().get());
   }
 
   @Test
   void setParentUpdatesPerson1() {
     this.person.setParent(1, this.parent1);
     //noinspection OptionalGetWithoutIsPresent
-    assertSame(this.parent1, this.person.parents().right().get());
+    assertSame(this.parent1, this.person.parents().parent2().get());
   }
 
   @Test
@@ -392,23 +391,23 @@ class PersonTest {
   void removeParent0() {
     this.person.setParent(0, this.parent1);
     this.person.removeParent(this.parent1);
-    assertTrue(this.person.parents().left().isEmpty());
-    assertTrue(this.person.parents().right().isEmpty());
+    assertTrue(this.person.parents().parent1().isEmpty());
+    assertTrue(this.person.parents().parent2().isEmpty());
   }
 
   @Test
   void removeParent1() {
     this.person.setParent(1, this.parent1);
     this.person.removeParent(this.parent1);
-    assertTrue(this.person.parents().left().isEmpty());
-    assertTrue(this.person.parents().right().isEmpty());
+    assertTrue(this.person.parents().parent1().isEmpty());
+    assertTrue(this.person.parents().parent2().isEmpty());
   }
 
   @Test
   void getPartnersAndChildrenExactSameParents() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
     person2.setParent(1, this.parent2);
     assertEquals(Map.of(
@@ -419,8 +418,8 @@ class PersonTest {
 
   @Test
   void getPartnersAndChildrenNoChildrenWithPartner() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
     l.setActors(Set.of(this.parent1, this.parent2));
     assertEquals(Map.of(
         Optional.of(this.parent2),
@@ -432,9 +431,9 @@ class PersonTest {
   void getPartnersAndChildrenOneCommonParents() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
-    Person parent3 = new Person();
+    final Person parent3 = new Person();
     person2.setParent(1, parent3);
     assertEquals(Map.of(
         Optional.of(this.parent2),
@@ -447,7 +446,7 @@ class PersonTest {
   @Test
   void getPartnersAndChildrenNoPartner() {
     this.person.setParent(0, this.parent1);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
     assertEquals(Map.of(
         Optional.empty(),
@@ -459,7 +458,7 @@ class PersonTest {
   void getSameParentsSiblings() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
     person2.setParent(1, this.parent2);
     assertEquals(Set.of(person2), this.person.getSameParentsSiblings());
@@ -470,7 +469,7 @@ class PersonTest {
   void getSameParentsSiblingsEmptyIfOnlyOneCommon() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
     person2.setParent(1, new Person());
     assertTrue(this.person.getSameParentsSiblings().isEmpty());
@@ -480,7 +479,7 @@ class PersonTest {
   @Test
   void getSameParentsSiblingsOneNull() {
     this.person.setParent(0, this.parent1);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
     assertEquals(Set.of(person2), this.person.getSameParentsSiblings());
     assertEquals(Set.of(this.person), person2.getSameParentsSiblings());
@@ -490,17 +489,17 @@ class PersonTest {
   void getAllSiblings() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    Person person2 = new Person();
+    final Person person2 = new Person();
     person2.setParent(0, this.parent1);
-    Person parent3 = new Person();
+    final Person parent3 = new Person();
     person2.setParent(1, parent3);
-    Person person3 = new Person();
+    final Person person3 = new Person();
     person3.setParent(0, parent3);
     person3.setParent(1, this.parent2);
     assertEquals(Map.of(
-        new Pair<>(this.parent1, parent3),
+        new Parents(Optional.of(this.parent1), Optional.of(parent3)),
         Set.of(person2),
-        new Pair<>(parent3, this.parent2),
+        new Parents(Optional.of(parent3), Optional.of(this.parent2)),
         Set.of(person3)
     ), this.person.getAllSiblings());
   }
@@ -542,16 +541,16 @@ class PersonTest {
 
   @Test
   void getBirthDateNonBirthEvent() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:diploma")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:diploma")));
     l.setActors(Set.of(this.person));
     assertTrue(this.person.getBirthDate().isEmpty());
   }
 
   @Test
   void getBirthDateBirthEvent() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
     //noinspection OptionalGetWithoutIsPresent
     assertEquals(date, this.person.getBirthDate().get());
@@ -564,16 +563,16 @@ class PersonTest {
 
   @Test
   void getDeathDateNonDeathEvent() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:diploma")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:diploma")));
     l.setActors(Set.of(this.person));
     assertTrue(this.person.getDeathDate().isEmpty());
   }
 
   @Test
   void getDeathDateDeathEvent() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
     l.setActors(Set.of(this.person));
     //noinspection OptionalGetWithoutIsPresent
     assertEquals(date, this.person.getDeathDate().get());
@@ -581,51 +580,51 @@ class PersonTest {
 
   @Test
   void lifeEventsAreSortedByDates() {
-    DateTime date2 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2084, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l2 = new LifeEvent(date2, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
+    final DateTime date2 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2084, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l2 = new LifeEvent(date2, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
     l2.setActors(Set.of(this.person));
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
     assertEquals(List.of(l, l2), this.person.lifeEvents());
   }
 
   @Test
   void getLifeEventsAsActor() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
     assertEquals(List.of(l), this.person.getLifeEventsAsActor());
   }
 
   @Test
   void getLifeEventsAsActorIgnoresWitnessed() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.addWitness(this.person);
     assertTrue(this.person.getLifeEventsAsActor().isEmpty());
   }
 
   @Test
   void getLifeEventsAsWitness() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.addWitness(this.person);
     assertEquals(List.of(l), this.person.getLifeEventsAsWitness());
   }
 
   @Test
   void getLifeEventsAsWitnessIgnoresActed() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
     assertTrue(this.person.getLifeEventsAsWitness().isEmpty());
   }
 
   @Test
   void addLifeEvent() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     this.person.addLifeEvent(l);
     assertSame(l, this.person.lifeEvents().get(0));
   }

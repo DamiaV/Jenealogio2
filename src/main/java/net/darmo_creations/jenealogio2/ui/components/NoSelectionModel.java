@@ -1,8 +1,8 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.MultipleSelectionModel;
+import javafx.collections.*;
+import javafx.scene.control.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Custom selection model that prevents item selection.
@@ -19,7 +19,7 @@ public class NoSelectionModel<T> extends MultipleSelectionModel<T> {
   }
 
   @Override
-  public void selectIndices(int index, int... indices) {
+  public void selectIndices(int index, @NotNull int... indices) {
   }
 
   @Override

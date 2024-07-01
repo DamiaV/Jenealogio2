@@ -64,21 +64,21 @@ class FamilyTreeTest {
 
   @Test
   void getLifeEventsNotEmptyOnePerson() {
-    Person person = new Person();
-    LifeEvent event = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian").getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT), typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
+    final Person person = new Person();
+    final LifeEvent event = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian").getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT), typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
     this.tree.setLifeEventActors(event, Set.of(person));
     assertEquals(1, this.tree.lifeEvents().size());
   }
 
   @Test
   void getLifeEventsNotEmptyTwoPersons() {
-    Person person1 = new Person();
-    LifeEvent event1 = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian")
+    final Person person1 = new Person();
+    final LifeEvent event1 = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian")
         .getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT),
         typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
     this.tree.setLifeEventActors(event1, Set.of(person1));
-    Person person2 = new Person();
-    LifeEvent event2 = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian")
+    final Person person2 = new Person();
+    final LifeEvent event2 = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian")
         .getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT),
         typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
     this.tree.setLifeEventActors(event2, Set.of(person2));
@@ -92,7 +92,7 @@ class FamilyTreeTest {
 
   @Test
   void getDocument() {
-    AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
+    final AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
     this.tree.addDocument(doc);
     //noinspection OptionalGetWithoutIsPresent
     assertSame(doc, this.tree.getDocument("doc.pdf").get());
@@ -105,14 +105,14 @@ class FamilyTreeTest {
 
   @Test
   void addPerson() {
-    Person person = new Person();
+    final Person person = new Person();
     this.tree.addPerson(person);
     assertSame(person, this.tree.persons().iterator().next());
   }
 
   @Test
   void addPersonSetsRootIfEmtpy() {
-    Person person = new Person();
+    final Person person = new Person();
     this.tree.addPerson(person);
     //noinspection OptionalGetWithoutIsPresent
     assertSame(person, this.tree.root().get());
@@ -120,7 +120,7 @@ class FamilyTreeTest {
 
   @Test
   void addPersonSetsTree() {
-    Person person = new Person();
+    final Person person = new Person();
     this.tree.addPerson(person);
     //noinspection OptionalGetWithoutIsPresent
     assertSame(this.tree, this.tree.root().get().familyTree());
@@ -128,8 +128,8 @@ class FamilyTreeTest {
 
   @Test
   void removePerson() {
-    Person p1 = new Person();
-    Person p2 = new Person();
+    final Person p1 = new Person();
+    final Person p2 = new Person();
     this.tree.addPerson(p1);
     this.tree.addPerson(p2);
     this.tree.removePerson(p2);
@@ -139,16 +139,16 @@ class FamilyTreeTest {
 
   @Test
   void removePersonThrowsIfRoot() {
-    Person p = new Person();
+    final Person p = new Person();
     this.tree.addPerson(p);
     assertThrows(IllegalArgumentException.class, () -> this.tree.removePerson(p));
   }
 
   @Test
   void removePersonUpdatesParents() {
-    Person p = new Person();
-    Person p1 = new Person();
-    Person p2 = new Person();
+    final Person p = new Person();
+    final Person p1 = new Person();
+    final Person p2 = new Person();
     p.setParent(0, p1);
     p.setParent(1, p2);
     this.tree.addPerson(new Person()); // So that "p" is not root
@@ -160,24 +160,24 @@ class FamilyTreeTest {
 
   @Test
   void removePersonUpdatesChildren() {
-    Person p = new Person();
-    Person p1 = new Person();
+    final Person p = new Person();
+    final Person p1 = new Person();
     p.setParent(0, p1);
     this.tree.addPerson(new Person()); // So that "p1" is not root
     this.tree.addPerson(p1);
     this.tree.removePerson(p1);
-    assertTrue(p.parents().left().isEmpty());
-    assertTrue(p.parents().right().isEmpty());
+    assertTrue(p.parents().parent1().isEmpty());
+    assertTrue(p.parents().parent2().isEmpty());
   }
 
   @Test
   void removePersonUpdatesLifeEventActors() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEventTypeRegistry reg = new LifeEventTypeRegistry();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEventTypeRegistry reg = new LifeEventTypeRegistry();
     reg.registerEntry(new RegistryEntryKey("user:test"), "Test", new LifeEventTypeRegistry.RegistryArgs(LifeEventType.Group.ADMIN, false, false, 1, 2, false));
-    LifeEvent l = new LifeEvent(date, reg.getEntry(new RegistryEntryKey("user:test")));
-    Person p1 = new Person();
-    Person p2 = new Person();
+    final LifeEvent l = new LifeEvent(date, reg.getEntry(new RegistryEntryKey("user:test")));
+    final Person p1 = new Person();
+    final Person p2 = new Person();
     l.setActors(Set.of(p1, p2));
     this.tree.addPerson(new Person()); // So that "p1" is not root
     this.tree.addPerson(p1);
@@ -188,10 +188,10 @@ class FamilyTreeTest {
 
   @Test
   void removePersonUpdatesLifeEventWitnesses() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    Person p1 = new Person();
-    Person p2 = new Person();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final Person p1 = new Person();
+    final Person p2 = new Person();
     l.addWitness(p1);
     l.setActors(Set.of(p2));
     this.tree.addPerson(new Person()); // So that "p1" is not root
@@ -203,8 +203,8 @@ class FamilyTreeTest {
   @ParameterizedTest
   @EnumSource(Person.RelativeType.class)
   void removePersonUpdatesRelatives(Person.RelativeType relativeType) {
-    Person p = new Person();
-    Person parent = new Person();
+    final Person p = new Person();
+    final Person parent = new Person();
     p.addRelative(parent, relativeType);
     this.tree.addPerson(new Person()); // So that "p" is not root
     this.tree.addPerson(p);
@@ -215,27 +215,27 @@ class FamilyTreeTest {
 
   @Test
   void setLifeEventActorsAddsEventToTree() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    Person p = new Person();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final Person p = new Person();
     this.tree.setLifeEventActors(l, Set.of(p));
     assertSame(l, this.tree.lifeEvents().iterator().next());
   }
 
   @Test
   void setLifeEventActorsAddsEventToActors() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    Person p = new Person();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final Person p = new Person();
     this.tree.setLifeEventActors(l, Set.of(p));
     assertSame(p, l.actors().iterator().next());
   }
 
   @Test
   void setLifeEventActorsRemovesEventFromPreviousActors() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    Person p = new Person();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final Person p = new Person();
     this.tree.setLifeEventActors(l, Set.of(p));
     this.tree.setLifeEventActors(l, Set.of(new Person()));
     assertNotSame(p, l.actors().iterator().next());
@@ -243,31 +243,31 @@ class FamilyTreeTest {
 
   @Test
   void setLifeEventActorsThrowsIfActorIsWitness() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    Person p1 = new Person();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final Person p1 = new Person();
     l.addWitness(p1);
     assertThrows(IllegalArgumentException.class, () -> this.tree.setLifeEventActors(l, Set.of(p1)));
   }
 
   @Test
   void setLifeEventActorsThrowsIfInvalidActorsNumber() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     assertThrows(IllegalArgumentException.class, () -> this.tree.setLifeEventActors(l, Set.of()));
     assertThrows(IllegalArgumentException.class, () -> this.tree.setLifeEventActors(l, Set.of(new Person(), new Person())));
   }
 
   @Test
   void removeActorFromLifeEventRemovesActor() {
-    var registry = new LifeEventTypeRegistry();
-    var key = new RegistryEntryKey(Registry.USER_NS, "test");
+    final var registry = new LifeEventTypeRegistry();
+    final var key = new RegistryEntryKey(Registry.USER_NS, "test");
     registry.registerEntry(key, "test", new LifeEventTypeRegistry.RegistryArgs(LifeEventType.Group.OTHER, false, false, 1, 2, false));
-    LifeEventType type = registry.getEntry(key);
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, type);
-    Person p1 = new Person();
-    Person p2 = new Person();
+    final LifeEventType type = registry.getEntry(key);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, type);
+    final Person p1 = new Person();
+    final Person p2 = new Person();
     this.tree.setLifeEventActors(l, Set.of(p1, p2));
     this.tree.removeActorFromLifeEvent(l, p1);
     assertEquals(1, l.actors().size());
@@ -276,9 +276,9 @@ class FamilyTreeTest {
 
   @Test
   void removeActorFromLifeEventRemovesEventIfNotEnoughActors() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    Person p1 = new Person();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final Person p1 = new Person();
     this.tree.setLifeEventActors(l, Set.of(p1));
     this.tree.removeActorFromLifeEvent(l, p1);
     assertTrue(this.tree.lifeEvents().isEmpty());
@@ -286,10 +286,10 @@ class FamilyTreeTest {
 
   @Test
   void removeActorFromLifeEventDissociatesActorsIfNotEnoughActors() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
-    Person p1 = new Person();
-    Person p2 = new Person();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
+    final Person p1 = new Person();
+    final Person p2 = new Person();
     this.tree.setLifeEventActors(l, Set.of(p1, p2));
     this.tree.removeActorFromLifeEvent(l, p1);
     assertTrue(p1.getLifeEventsAsActor().stream().noneMatch(le -> le.hasActor(p1)));
@@ -298,11 +298,11 @@ class FamilyTreeTest {
 
   @Test
   void removeActorFromLifeEventDissociatesWitnessesIfNotEnoughActors() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
-    Person p1 = new Person();
-    Person p2 = new Person();
-    Person w = new Person();
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
+    final Person p1 = new Person();
+    final Person p2 = new Person();
+    final Person w = new Person();
     this.tree.setLifeEventActors(l, Set.of(p1, p2));
     l.addWitness(w);
     this.tree.removeActorFromLifeEvent(l, p1);
@@ -311,30 +311,30 @@ class FamilyTreeTest {
 
   @Test
   void addWitnessToLifeEventAddsWitness() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(new Person()));
-    Person w = new Person();
+    final Person w = new Person();
     this.tree.addWitnessToLifeEvent(l, w);
     assertSame(w, l.witnesses().iterator().next());
   }
 
   @Test
   void addWitnessToLifeEventAddsEventToWitness() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(new Person()));
-    Person w = new Person();
+    final Person w = new Person();
     this.tree.addWitnessToLifeEvent(l, w);
     assertSame(l, w.getLifeEventsAsWitness().iterator().next());
   }
 
   @Test
   void removeWitnessFromLifeEventRemovesWitness() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(new Person()));
-    Person w = new Person();
+    final Person w = new Person();
     this.tree.addWitnessToLifeEvent(l, w);
     this.tree.removeWitnessFromLifeEvent(l, w);
     assertTrue(l.witnesses().isEmpty());
@@ -342,10 +342,10 @@ class FamilyTreeTest {
 
   @Test
   void removeWitnessFromLifeEventRemovesEventFromWitness() {
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(new Person()));
-    Person w = new Person();
+    final Person w = new Person();
     this.tree.addWitnessToLifeEvent(l, w);
     this.tree.removeWitnessFromLifeEvent(l, w);
     assertFalse(w.getLifeEventsAsWitness().iterator().hasNext());
@@ -353,21 +353,21 @@ class FamilyTreeTest {
 
   @Test
   void addDocumentAddsDocumentAndReturnsTrue() throws IOException {
-    Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     assertTrue(this.tree.addDocument(p));
     assertSame(p, this.tree.documents().iterator().next());
   }
 
   @Test
   void addDocumentReturnsFalseIfAlreadyAdded() throws IOException {
-    Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(p);
     assertFalse(this.tree.addDocument(p));
   }
 
   @Test
   void removeDocumentRemovesFromTree() throws IOException {
-    Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(p);
     this.tree.removeDocument(p.fileName());
     assertTrue(this.tree.documents().isEmpty());
@@ -375,19 +375,19 @@ class FamilyTreeTest {
 
   @Test
   void removeDocumentReturnsDocument() throws IOException {
-    Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture p = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(p);
     assertSame(p, this.tree.removeDocument(p.fileName()));
   }
 
   @Test
   void removeDocumentRemovesFromGenealogyObjects() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
-    Person p = new Person();
+    final Person p = new Person();
     p.addDocument(pic);
-    DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
-    LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.addDocument(pic);
     this.tree.addPerson(p);
     this.tree.setLifeEventActors(l, Set.of(p));
@@ -398,7 +398,7 @@ class FamilyTreeTest {
 
   @Test
   void renameDocumentRenamesDocument() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
     this.tree.addDocument(pic);
     this.tree.renameDocument("test.png", "test1");
     assertEquals("test1.png", pic.fileName());
@@ -406,7 +406,7 @@ class FamilyTreeTest {
 
   @Test
   void renameDocumentRenamesDocumentInTree() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
     this.tree.addDocument(pic);
     this.tree.renameDocument("test.png", "test1");
     //noinspection OptionalGetWithoutIsPresent
@@ -416,32 +416,32 @@ class FamilyTreeTest {
 
   @Test
   void renameDocumentThrowsIfBothArgsEqual() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
     assertThrows(IllegalArgumentException.class, () -> this.tree.renameDocument("app_icon.png", "app_icon"));
   }
 
   @Test
   void renameDocumentThrowsIfOldNameNotRegistered() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
     this.tree.addDocument(pic);
     assertThrows(IllegalArgumentException.class, () -> this.tree.renameDocument("test1.png", "test2"));
   }
 
   @Test
   void renameDocumentThrowsIfNewNameAlreadyRegistered() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
     this.tree.addDocument(pic);
-    Picture pic1 = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test1.png"), null, null);
+    final Picture pic1 = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test1.png"), null, null);
     this.tree.addDocument(pic1);
     assertThrows(IllegalArgumentException.class, () -> this.tree.renameDocument("test.png", "test1"));
   }
 
   @Test
   void addDocumentToObjectAddsDocument() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
-    Person p = new Person();
+    final Person p = new Person();
     this.tree.addPerson(p);
     this.tree.addDocumentToObject("app_icon.png", p);
     assertSame(pic, p.documents().iterator().next());
@@ -449,18 +449,18 @@ class FamilyTreeTest {
 
   @Test
   void addDocumentToObjectThrowsIfInvalidName() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
-    Person p = new Person();
+    final Person p = new Person();
     this.tree.addPerson(p);
     assertThrows(NoSuchElementException.class, () -> this.tree.addDocumentToObject("invalid", p));
   }
 
   @Test
   void removeDocumentFromObjectRemovesDocument() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
-    Person p = new Person();
+    final Person p = new Person();
     this.tree.addPerson(p);
     this.tree.removeDocumentFromObject("app_icon.png", p);
     assertTrue(p.documents().isEmpty());
@@ -468,9 +468,9 @@ class FamilyTreeTest {
 
   @Test
   void setMainPictureOfObjectSetsMainPicture() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
-    Person p = new Person();
+    final Person p = new Person();
     this.tree.addPerson(p);
     this.tree.addDocumentToObject("app_icon.png", p);
     this.tree.setMainPictureOfObject("app_icon.png", p);
@@ -480,18 +480,18 @@ class FamilyTreeTest {
 
   @Test
   void setMainPictureOfObjectThrowsIfNotAddedToObject() throws IOException {
-    Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
+    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
-    Person p = new Person();
+    final Person p = new Person();
     this.tree.addPerson(p);
     assertThrows(IllegalArgumentException.class, () -> this.tree.setMainPictureOfObject("invalid", p));
   }
 
   @Test
   void setMainPictureOfObjectThrowsIfNotPicture() {
-    AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
+    final AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
     this.tree.addDocument(doc);
-    Person p = new Person();
+    final Person p = new Person();
     this.tree.addPerson(p);
     this.tree.addDocumentToObject("doc.pdf", p);
     assertThrows(ClassCastException.class, () -> this.tree.setMainPictureOfObject("doc.pdf", p));
@@ -500,7 +500,7 @@ class FamilyTreeTest {
   @Test
   void setRoot() {
     this.tree.addPerson(new Person());
-    Person p = new Person();
+    final Person p = new Person();
     this.tree.addPerson(p);
     this.tree.setRoot(p);
     //noinspection OptionalGetWithoutIsPresent

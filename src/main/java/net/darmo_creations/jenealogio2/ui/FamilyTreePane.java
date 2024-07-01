@@ -119,16 +119,16 @@ public class FamilyTreePane extends FamilyTreeComponent {
             final Person c = child.get();
             final var parents = c.parents();
             final PersonWidget parent1Widget = this.createWidget(
-                parents.left().orElse(null),
+                parents.parent1().orElse(null),
                 List.of(new ChildInfo(c, 0)),
-                this.hasHiddenRelatives(parents.left(), i, c, 1),
+                this.hasHiddenRelatives(parents.parent1(), i, c, 1),
                 false,
                 familyTree
             );
             final PersonWidget parent2Widget = this.createWidget(
-                parents.right().orElse(null),
+                parents.parent2().orElse(null),
                 List.of(new ChildInfo(c, 1)),
-                this.hasHiddenRelatives(parents.right(), i, c, 1),
+                this.hasHiddenRelatives(parents.parent2(), i, c, 1),
                 false,
                 familyTree
             );

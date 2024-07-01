@@ -943,8 +943,8 @@ public class AppController {
   private void onAddSiblingAction() {
     this.getSelectedPerson().ifPresent(person -> {
       final var parents = person.parents();
-      final Person parent1 = parents.left().orElse(null);
-      final Person parent2 = parents.right().orElse(null);
+      final Person parent1 = parents.parent1().orElse(null);
+      final Person parent2 = parents.parent2().orElse(null);
       this.openEditPersonDialog(null, List.of(), parent1, parent2, EditPersonDialog.TAB_PROFILE);
     });
   }

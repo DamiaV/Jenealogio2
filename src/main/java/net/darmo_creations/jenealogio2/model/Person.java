@@ -355,10 +355,10 @@ public class Person extends GenealogyObject<Person> {
   /**
    * This person’s biological parents. We consider only two.
    *
-   * @return A pair containing the first parent as the left value and the second parent as the right value.
+   * @return A {@link Parents} object containg the parents.
    */
-  public Pair<Optional<Person>, Optional<Person>> parents() {
-    return new Pair<>(Optional.ofNullable(this.parents[0]), Optional.ofNullable(this.parents[1]));
+  public Parents parents() {
+    return new Parents(Optional.ofNullable(this.parents[0]), Optional.ofNullable(this.parents[1]));
   }
 
   public Optional<Integer> getParentIndex(final Person person) {
@@ -445,8 +445,8 @@ public class Person extends GenealogyObject<Person> {
     final Map<Person, Set<Person>> partnersChildren = new HashMap<>();
     for (final Person child : this.children) {
       final var childParents = child.parents();
-      final var parent1 = childParents.left();
-      final var parent2 = childParents.right();
+      final var parent1 = childParents.parent1();
+      final var parent2 = childParents.parent2();
       Person parent = null;
       if (parent1.isPresent() && parent1.get() != this)
         parent = parent1.get();
@@ -493,11 +493,11 @@ public class Person extends GenealogyObject<Person> {
   /**
    * Return all sibling of this person, i.e. all persons that share at least one parent with this one.
    *
-   * @return A map associating a pair of parents to their children.
-   * It is guaranted that at least one of the parents in each pair is a parent of this person.
+   * @return A map associating a parents to their children.
+   * It is guaranted that at least one of the parents in each {@link Parents} object is a parent of this person.
    */
-  public Map<Pair<@Nullable Person, @Nullable Person>, Set<Person>> getAllSiblings() {
-    final Map<Pair<Person, Person>, Set<Person>> siblings = new HashMap<>();
+  public Map<Parents, Set<Person>> getAllSiblings() {
+    final Map<Parents, Set<Person>> siblings = new HashMap<>();
     final Person parent1 = this.parents[0];
     final Person parent2 = this.parents[1];
     if (parent1 != null)
@@ -507,14 +507,14 @@ public class Person extends GenealogyObject<Person> {
     return siblings;
   }
 
-  private void addChildren(@NotNull Map<Pair<Person, Person>, Set<Person>> siblings, final @NotNull Person parent) {
+  private void addChildren(@NotNull Map<Parents, Set<Person>> siblings, final @NotNull Person parent) {
     for (final Person child : parent.children()) {
       if (child == this)
         continue;
-      final Person p1 = child.parents[0];
-      final Person p2 = child.parents[1];
-      final var key1 = new Pair<>(p1, p2);
-      final var key2 = new Pair<>(p2, p1);
+      final Optional<Person> p1 = Optional.ofNullable(child.parents[0]);
+      final Optional<Person> p2 = Optional.ofNullable(child.parents[1]);
+      final var key1 = new Parents(p1, p2);
+      final var key2 = new Parents(p2, p1);
       // Ensure that there isn’t already any key with the same persons but in a different order
       final var key = siblings.containsKey(key2) ? key2 : key1;
       if (!siblings.containsKey(key))

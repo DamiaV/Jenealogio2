@@ -29,7 +29,7 @@ public final class Alerts {
       @NotNull String headerKey,
       String contentKey,
       String titleKey,
-      final FormatArg @NotNull ... contentArgs
+      final @NotNull FormatArg @NotNull ... contentArgs
   ) {
     alert(config, Alert.AlertType.INFORMATION, headerKey, contentKey, titleKey, contentArgs);
   }
@@ -48,7 +48,7 @@ public final class Alerts {
       @NotNull String headerKey,
       String contentKey,
       String titleKey,
-      final FormatArg @NotNull ... contentArgs
+      final @NotNull FormatArg @NotNull ... contentArgs
   ) {
     alert(config, Alert.AlertType.WARNING, headerKey, contentKey, titleKey, contentArgs);
   }
@@ -67,7 +67,7 @@ public final class Alerts {
       @NotNull String headerKey,
       String contentKey,
       String titleKey,
-      final FormatArg @NotNull ... contentArgs
+      final @NotNull FormatArg @NotNull ... contentArgs
   ) {
     alert(config, Alert.AlertType.ERROR, headerKey, contentKey, titleKey, contentArgs);
   }
@@ -87,7 +87,7 @@ public final class Alerts {
       @NotNull String headerKey,
       String contentKey,
       String titleKey,
-      final FormatArg @NotNull ... contentArgs
+      final @NotNull FormatArg @NotNull ... contentArgs
   ) {
     final Optional<ButtonType> result = alert(config, Alert.AlertType.CONFIRMATION, headerKey, contentKey, titleKey, contentArgs);
     return result.isPresent() && !result.get().getButtonData().isCancelButton();
@@ -112,7 +112,7 @@ public final class Alerts {
       String titleKey,
       String defaultText,
       TextFormatter<?> textFormatter,
-      final FormatArg @NotNull ... contentArgs
+      final @NotNull FormatArg @NotNull ... contentArgs
   ) {
     final Alert alert = getAlert(config, Alert.AlertType.CONFIRMATION, headerKey, titleKey, contentArgs);
     final HBox hBox = new HBox(5);
@@ -142,7 +142,7 @@ public final class Alerts {
       @NotNull String headerKey,
       String contentKey,
       String titleKey,
-      final @NotNull FormatArg... contentArgs
+      final @NotNull FormatArg @NotNull ... contentArgs
   ) {
     final Alert alert = getAlert(config, type, headerKey, titleKey, contentArgs);
     if (contentKey != null)
@@ -165,7 +165,7 @@ public final class Alerts {
       @NotNull Alert.AlertType type,
       @NotNull String headerKey,
       String titleKey,
-      final FormatArg @NotNull ... contentArgs
+      final @NotNull FormatArg @NotNull ... contentArgs
   ) {
     if (type == Alert.AlertType.NONE) {
       throw new IllegalArgumentException(type.name());

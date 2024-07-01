@@ -101,7 +101,10 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   }
 
   @SuppressWarnings("unchecked")
-  private BorderPane getBorderPane(@NotNull String title, final Pair<String, ? extends Control>... rows) {
+  private BorderPane getBorderPane(
+      @NotNull String title,
+      final @NotNull Pair<String, ? extends Control> @NotNull ... rows
+  ) {
     final Label titleLabel = new Label(this.config.language().translate(title));
     BorderPane.setAlignment(titleLabel, Pos.CENTER);
 

@@ -470,10 +470,10 @@ public class EditPersonDialog extends DialogBase<Person>
 
   private void setPersonRelativesFields() {
     final var parents = this.person.parents();
-    this.setParents(parents.left().orElse(null), parents.right().orElse(null));
-    for (final var type : Person.RelativeType.values())
-      this.relativesLists.get(type)
-          .setPersons(this.person.getRelatives(type));
+    this.setParents(parents.parent1().orElse(null), parents.parent2().orElse(null));
+    for (final var relativeType : Person.RelativeType.values())
+      this.relativesLists.get(relativeType)
+          .setPersons(this.person.getRelatives(relativeType));
   }
 
   /**

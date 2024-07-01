@@ -125,7 +125,7 @@ public final class FileChoosers {
    * @return The selected file.
    */
   public static Optional<Path> showFileChooser(
-      final @NotNull Config config, final @NotNull Window stage, String descKey, @NotNull String... extensions) {
+      final @NotNull Config config, final @NotNull Window stage, String descKey, @NotNull String @NotNull ... extensions) {
     return getFile(
         config,
         stage,
@@ -156,7 +156,7 @@ public final class FileChoosers {
       boolean saver,
       String descKey,
       String defaultName,
-      @NotNull String... extensions
+      @NotNull String @NotNull ... extensions
   ) {
     final FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle(config.language().translate("dialog.%s.title".formatted(titleKey)));

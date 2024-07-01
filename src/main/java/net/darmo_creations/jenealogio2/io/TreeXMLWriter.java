@@ -325,11 +325,11 @@ public class TreeXMLWriter extends TreeXMLManager {
     final Element parentsElement = document.createElement(PARENTS_TAG);
     final Function<Integer, Consumer<Optional<Person>>> writeParent = index -> p ->
         XmlUtils.setAttr(document, parentsElement, "id" + index, p.map(p_ -> String.valueOf(personIDs.get(p_))).orElse(""));
-    final Optional<Person> leftParent = parents.left();
-    final Optional<Person> rightParent = parents.right();
-    writeParent.apply(1).accept(leftParent);
-    writeParent.apply(2).accept(rightParent);
-    if (leftParent.isPresent() || rightParent.isPresent()) {
+    final Optional<Person> parent1 = parents.parent1();
+    final Optional<Person> parent2 = parents.parent2();
+    writeParent.apply(1).accept(parent1);
+    writeParent.apply(2).accept(parent2);
+    if (parent1.isPresent() || parent2.isPresent()) {
       personElement.appendChild(parentsElement);
     }
   }

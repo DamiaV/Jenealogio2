@@ -32,7 +32,7 @@ public abstract class Registry<E extends RegistryEntry, A> {
   protected Registry(
       @NotNull String name,
       @NotNull EntryFactory<E, A> entryFactory,
-      final @NotNull BuiltinEntry<A>... defaults
+      final @NotNull BuiltinEntry<A> @NotNull ... defaults
   ) {
     this.name = Objects.requireNonNull(name);
     this.entryFactory = Objects.requireNonNull(entryFactory);

@@ -448,25 +448,26 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted((e1, e2) -> {
           final var key1 = e1.getKey();
           final var key2 = e2.getKey();
-          final Person left1 = key1.left();
-          final Person right1 = key1.right();
-          final Person left2 = key2.left();
-          final Person right2 = key2.right();
+          final Optional<Person> left1 = key1.parent1();
+          final Optional<Person> right1 = key1.parent2();
+          final Optional<Person> left2 = key2.parent1();
+          final Optional<Person> right2 = key2.parent2();
           final Supplier<Integer> testRight = () -> {
-            if (right1 == null)
-              return right2 != null ? 1 : 0;
-            if (right2 == null)
+            if (right1.isEmpty())
+              return right2.isPresent() ? 1 : 0;
+            //noinspection OptionalIsPresent
+            if (right2.isEmpty())
               return -1;
-            return Person.birthDateThenNameComparator(false).compare(right1, right2);
+            return Person.birthDateThenNameComparator(false).compare(right1.get(), right2.get());
           };
-          if (left1 == null) {
-            if (left2 != null)
+          if (left1.isEmpty()) {
+            if (left2.isPresent())
               return 1;
             return testRight.get();
           }
-          if (left2 == null)
+          if (left2.isEmpty())
             return -1;
-          final int c = Person.birthDateThenNameComparator(false).compare(left1, left2);
+          final int c = Person.birthDateThenNameComparator(false).compare(left1.get(), left2.get());
           if (c != 0)
             return c;
           return testRight.get();
@@ -477,7 +478,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
               .sorted(Person.birthDateThenNameComparator(false))
               .toList();
           final var parents = e.getKey();
-          this.siblingsList.getItems().add(new ChildrenItem(parents.left(), parents.right(), sortedChildren));
+          this.siblingsList.getItems().add(new ChildrenItem(
+              parents.parent1().orElse(null),
+              parents.parent2().orElse(null),
+              sortedChildren
+          ));
         });
 
     this.person.getPartnersAndChildren().entrySet().stream()
@@ -500,8 +505,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private void populateParentCards() {
     final var parents = this.person.parents();
-    final Person parent1 = parents.left().orElse(null);
-    final Person parent2 = parents.right().orElse(null);
+    final Person parent1 = parents.parent1().orElse(null);
+    final Person parent2 = parents.parent2().orElse(null);
     final Set<Person> sameParentsSiblings = this.person.getSameParentsSiblings();
     sameParentsSiblings.add(this.person);
     final List<ChildInfo> childInfo = new LinkedList<>();

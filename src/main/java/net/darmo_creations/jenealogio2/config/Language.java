@@ -118,7 +118,7 @@ public final class Language {
    * @param formatArgs Format arguments to use to format the translated text.
    * @return The translated and formatted text.
    */
-  public String translate(@NotNull String key, final FormatArg @NotNull ... formatArgs) {
+  public String translate(@NotNull String key, final @NotNull FormatArg @NotNull ... formatArgs) {
     return this.translate(key, null, formatArgs);
   }
 
