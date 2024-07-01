@@ -36,7 +36,7 @@ public final class FrenchRepublicanCalendar extends Calendar<FrenchRepublicanDat
   @Override
   public FrenchRepublicanDateTime convertDate(@NotNull LocalDateTime date, boolean isTimeSet) {
     //noinspection MagicConstant
-    var cal = new GregorianCalendar(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
+    final var cal = new GregorianCalendar(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
     cal.setGregorianChange(new Date(Long.MIN_VALUE));
     return new FrenchRepublicanDateTime(
         CAL.getDate(cal),

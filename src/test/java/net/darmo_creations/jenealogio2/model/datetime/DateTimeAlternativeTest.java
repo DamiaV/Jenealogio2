@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DateTimeAlternativeTest {
   @Test
   void dateIsFirstDate() {
-    var date = new DateTimeAlternative(new ArrayList<>(List.of(
+    final var date = new DateTimeAlternative(new ArrayList<>(List.of(
         Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0),
         Calendar.forName(GregorianCalendar.NAME).getDate(2024, 2, 1, 0, 0))));
     assertEquals(date.dates().get(0), date.date());
@@ -41,7 +41,7 @@ class DateTimeAlternativeTest {
 
   @Test
   void tooManyDatesThrows() {
-    List<CalendarSpecificDateTime> dates = new ArrayList<>();
+    final List<CalendarSpecificDateTime> dates = new ArrayList<>();
     for (int i = 0; i < DateTimeAlternative.MAX_DATES + 1; i++) {
       dates.add(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, i));
     }
