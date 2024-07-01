@@ -114,10 +114,6 @@ public class MapView extends AnchorPane {
     this.layers.clear();
   }
 
-  public void showAllMarkers() {
-    // TODO
-  }
-
   /**
    * Convert a {@link LatLon} object into a {@link MapPoint} object.
    */

@@ -45,7 +45,7 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.eventTypeCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> {
           if (!this.internalUpdate)
-            this.updateMap(false);
+            this.updateMap();
         });
 
     this.searchField = new ErasableTextField(config);
@@ -135,15 +135,13 @@ public class MapDialog extends DialogBase<ButtonType> {
   public void refresh(final @NotNull FamilyTree familyTree) {
     this.familyTree = Objects.requireNonNull(familyTree);
     this.populateEventTypeCombo();
-    this.updateMap(true);
+    this.updateMap();
   }
 
   /**
    * Refresh the map markers.
-   *
-   * @param resetView Whether the view should be reset, i.e. should show all markers after refresh.
    */
-  private void updateMap(boolean resetView) {
+  private void updateMap() {
     this.mapView.removeMarkers();
     this.placesList.getItems().clear();
 
@@ -199,9 +197,6 @@ public class MapDialog extends DialogBase<ButtonType> {
           this.mapView.addMarker(latLon, color, new EventTypesTooltip(place.address(), typeCounts, this.config));
           this.placesList.getItems().add(new PlaceView(place, nb));
         });
-
-    if (resetView)
-      this.mapView.showAllMarkers();
   }
 
   /**
