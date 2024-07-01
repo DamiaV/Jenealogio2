@@ -487,18 +487,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         });
 
     this.person.getPartnersAndChildren().entrySet().stream()
-        .sorted((e1, e2) -> {
-          Optional<Person> p1 = e1.getKey();
-          Optional<Person> p2 = e2.getKey();
-          boolean p2Present = p2.isPresent();
-          if (p1.isEmpty()) {
-            return p2Present ? 1 : 0;
-          }
-          if (!p2Present) {
-            return -1;
-          }
-          return Person.birthDateThenNameComparator(false).compare(p1.get(), p2.get());
-        })
+        .sorted((e1, e2) -> Person.optionalBirthDateThenNameComparator().compare(e1.getKey(), e2.getKey()))
         .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey().orElse(null), null, new LinkedList<>(e.getValue()))));
 
     this.person.getRelatives(Person.RelativeType.ADOPTIVE).stream()
@@ -780,15 +769,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     }
   }
 
-  /**
-   * Item for showing a {@link LifeEvent} in a {@link ListView}.
-   */
-  private class LifeEventItem extends VBox {
-    private final LifeEvent lifeEvent;
+  private abstract class EventItem extends VBox {
+    protected final LifeEvent lifeEvent;
 
-    private LifeEventItem(final @NotNull LifeEvent lifeEvent, final @NotNull Person mainActor) {
+    private EventItem(final @NotNull LifeEvent lifeEvent) {
       super(5);
-      this.lifeEvent = lifeEvent;
+      this.lifeEvent = Objects.requireNonNull(lifeEvent);
       this.getStyleClass().add("life-events-list-item");
       Config config = PersonDetailsView.this.config;
       Language language = config.language();
@@ -807,11 +793,27 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, config);
       header.getChildren().addAll(typeLabel, spacer, dateLabel);
       this.getChildren().add(header);
+    }
 
+    /**
+     * The life event wrapped by this node.
+     */
+    public LifeEvent lifeEvent() {
+      return this.lifeEvent;
+    }
+  }
+
+  /**
+   * Item for showing a {@link LifeEvent} lived by a {@link Person}.
+   */
+  private class LifeEventItem extends EventItem {
+    private LifeEventItem(final @NotNull LifeEvent lifeEvent, final @NotNull Person mainActor) {
+      super(lifeEvent);
+      Config config = PersonDetailsView.this.config;
       if (lifeEvent.type().maxActors() > 1) {
         Optional<Person> partner = lifeEvent.actors().stream().filter(p -> p != mainActor).findFirst();
         if (partner.isPresent()) {
-          Label partnerLabel = new Label(language.translate("person_details_view.life_events.with"));
+          Label partnerLabel = new Label(config.language().translate("person_details_view.life_events.with"));
           Button b = new Button(partner.get().toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
           b.setUserData(partner.get());
           b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
@@ -825,49 +827,22 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       placeLabel.setWrapText(true);
       this.getChildren().add(placeLabel);
     }
-
-    /**
-     * The life event wrapped by this node.
-     */
-    public LifeEvent lifeEvent() {
-      return this.lifeEvent;
-    }
   }
 
   /**
-   * Item for showing a {@link LifeEvent} that the current person witnessed, in a {@link ListView}.
+   * Item for showing a {@link LifeEvent} that the current person witnessed.
    */
-  private class WitnessedEventItem extends VBox {
-    private final LifeEvent lifeEvent;
-
+  private class WitnessedEventItem extends EventItem {
     public WitnessedEventItem(final @NotNull LifeEvent lifeEvent) {
-      super(5);
-      this.lifeEvent = lifeEvent;
-      this.getStyleClass().add("life-events-list-item");
-      Language language = PersonDetailsView.this.config.language();
-      HBox header = new HBox(5);
-      header.getStyleClass().add("life-events-list-item-header");
-      RegistryEntryKey typeKey = lifeEvent.type().key();
-      String type;
-      if (typeKey.isBuiltin()) {
-        type = language.translate("life_event_types." + typeKey.name());
-      } else {
-        type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
-      }
-      Label typeLabel = new Label(type);
-      Pane spacer = new Pane();
-      HBox.setHgrow(spacer, Priority.ALWAYS);
-      DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, PersonDetailsView.this.config);
-      header.getChildren().addAll(typeLabel, spacer, dateLabel);
-      this.getChildren().add(header);
-
+      super(lifeEvent);
+      Config config = PersonDetailsView.this.config;
       VBox actorsBox = new VBox(5);
       List<Person> actors = lifeEvent.actors().stream()
           .sorted(Person.birthDateThenNameComparator(false)).toList();
       boolean first = true;
       for (Person actor : actors) {
-        Label label = new Label(language.translate("person_details_view.life_events." + (first ? "of" : "and")));
-        Button b = new Button(actor.toString(), PersonDetailsView.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+        Label label = new Label(config.language().translate("person_details_view.life_events." + (first ? "of" : "and")));
+        Button b = new Button(actor.toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
         b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
         b.setUserData(actor);
         HBox hBox = new HBox(5, label, b);
@@ -876,13 +851,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         first = false;
       }
       this.getChildren().add(actorsBox);
-    }
-
-    /**
-     * The life event wrapped by this node.
-     */
-    public LifeEvent lifeEvent() {
-      return this.lifeEvent;
     }
   }
 

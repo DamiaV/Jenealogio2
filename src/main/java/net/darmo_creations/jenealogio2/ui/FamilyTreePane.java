@@ -238,16 +238,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
         }));
 
     List<Optional<Person>> partners = childrenMap.keySet().stream()
-        .sorted((p1, p2) -> {
-          boolean p2Present = p2.isPresent();
-          if (p1.isEmpty()) {
-            return p2Present ? 1 : 0;
-          }
-          if (!p2Present) {
-            return -1;
-          }
-          return Person.birthDateThenNameComparator(false).compare(p1.get(), p2.get());
-        })
+        .sorted(Person.optionalBirthDateThenNameComparator())
         .toList();
 
     // Used to detect whether any widget have a negative x coordinate

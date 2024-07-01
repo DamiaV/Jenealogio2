@@ -729,6 +729,27 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
+   * Return a comparator of {@link Optional}-wrapped {@link Person} objects.
+   * <p>
+   * {@link Optional}s are sorted according to whether they are empty or not.
+   * If both optionals are present, comparison is delegate to {@link #birthDateThenNameComparator(boolean)}.
+   *
+   * @return A comparator object.
+   */
+  public static Comparator<Optional<Person>> optionalBirthDateThenNameComparator() {
+    return (p1, p2) -> {
+      boolean p2Present = p2.isPresent();
+      if (p1.isEmpty()) {
+        return p2Present ? 1 : 0;
+      }
+      if (!p2Present) {
+        return -1;
+      }
+      return birthDateThenNameComparator(false).compare(p1.get(), p2.get());
+    };
+  }
+
+  /**
    * Return a comparator of {@link Person} objects.
    * <p>
    * Objects are sorted according to the following property order:
