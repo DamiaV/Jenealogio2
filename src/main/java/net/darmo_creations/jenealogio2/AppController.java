@@ -850,7 +850,7 @@ public class AppController {
    * Open person edit dialog to create a new person.
    */
   private void onAddPersonAction() {
-    this.openEditPersonDialog(null, List.of(), null, null, EditPersonDialog.TAB_PROFILE);
+    this.openEditPersonDialog(null, List.of(), new Parents(), EditPersonDialog.TAB_PROFILE);
   }
 
   /**
@@ -879,7 +879,7 @@ public class AppController {
    */
   private void openEditPersonDialogOnTab(int tabIndex) {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, List.of(), null, null, tabIndex));
+        person -> this.openEditPersonDialog(person, List.of(), new Parents(), tabIndex));
   }
 
   /**
@@ -941,12 +941,8 @@ public class AppController {
    * Open person edit dialog to create a new sibling of the selected person.
    */
   private void onAddSiblingAction() {
-    this.getSelectedPerson().ifPresent(person -> {
-      final var parents = person.parents();
-      final Person parent1 = parents.parent1().orElse(null);
-      final Person parent2 = parents.parent2().orElse(null);
-      this.openEditPersonDialog(null, List.of(), parent1, parent2, EditPersonDialog.TAB_PROFILE);
-    });
+    this.getSelectedPerson().ifPresent(
+        person -> this.openEditPersonDialog(null, List.of(), person.parents(), EditPersonDialog.TAB_PROFILE));
   }
 
   /**
@@ -954,7 +950,7 @@ public class AppController {
    */
   private void onAddChildAction() {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(null, List.of(), person, null, EditPersonDialog.TAB_PROFILE));
+        person -> this.openEditPersonDialog(null, List.of(), new Parents(person, null), EditPersonDialog.TAB_PROFILE));
   }
 
   /**
@@ -963,7 +959,7 @@ public class AppController {
    * @param childInfo Information about the children of the parent to create.
    */
   private void onNewParentClick(@NotNull List<ChildInfo> childInfo) {
-    this.openEditPersonDialog(null, childInfo, null, null, EditPersonDialog.TAB_PROFILE);
+    this.openEditPersonDialog(null, childInfo, new Parents(), EditPersonDialog.TAB_PROFILE);
   }
 
   /**
@@ -1007,7 +1003,7 @@ public class AppController {
     }
     this.personDetailsView.setPerson(person, this.familyTree);
     if (event instanceof PersonClickedEvent e && e.action() == PersonClickedEvent.Action.EDIT)
-      this.openEditPersonDialog(person, List.of(), null, null, EditPersonDialog.TAB_PROFILE);
+      this.openEditPersonDialog(person, List.of(), new Parents(), EditPersonDialog.TAB_PROFILE);
     this.updateUI();
   }
 
@@ -1063,13 +1059,12 @@ public class AppController {
   private void openEditPersonDialog(
       Person person,
       final @NotNull List<ChildInfo> childInfo,
-      Person parent1,
-      Person parent2,
+      @NotNull Parents parents,
       int tabIndex
   ) {
     this.editPersonDialog.setPerson(person, childInfo, this.familyTree);
-    if (parent1 != null || parent2 != null)
-      this.editPersonDialog.setParents(parent1, parent2);
+    if (parents.anyPresent())
+      this.editPersonDialog.setParents(parents);
     this.editPersonDialog.selectTab(tabIndex);
     this.editPersonDialog.showAndWait().ifPresent(editedPerson -> {
       this.familyTreeView.refresh();

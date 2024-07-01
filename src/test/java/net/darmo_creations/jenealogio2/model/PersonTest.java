@@ -236,24 +236,24 @@ class PersonTest {
   void parentsBothDefined() {
     this.person.setParent(0, this.parent1);
     this.person.setParent(1, this.parent2);
-    assertEquals(new Parents(Optional.of(this.parent1), Optional.of(this.parent2)), this.person.parents());
+    assertEquals(new Parents(this.parent1, this.parent2), this.person.parents());
   }
 
   @Test
   void parentsFirstDefined() {
     this.person.setParent(0, this.parent1);
-    assertEquals(new Parents(Optional.of(this.parent1), Optional.empty()), this.person.parents());
+    assertEquals(new Parents(this.parent1, null), this.person.parents());
   }
 
   @Test
   void parentsSecondDefined() {
     this.person.setParent(1, this.parent2);
-    assertEquals(new Parents(Optional.empty(), Optional.of(this.parent2)), this.person.parents());
+    assertEquals(new Parents(null, this.parent2), this.person.parents());
   }
 
   @Test
   void parentsNoneDefined() {
-    assertEquals(new Parents(Optional.empty(), Optional.empty()), this.person.parents());
+    assertEquals(new Parents(), this.person.parents());
   }
 
   @Test
@@ -497,9 +497,9 @@ class PersonTest {
     person3.setParent(0, parent3);
     person3.setParent(1, this.parent2);
     assertEquals(Map.of(
-        new Parents(Optional.of(this.parent1), Optional.of(parent3)),
+        new Parents(this.parent1, parent3),
         Set.of(person2),
-        new Parents(Optional.of(parent3), Optional.of(this.parent2)),
+        new Parents(parent3, this.parent2),
         Set.of(person3)
     ), this.person.getAllSiblings());
   }

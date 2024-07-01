@@ -358,7 +358,7 @@ public class Person extends GenealogyObject<Person> {
    * @return A {@link Parents} object containg the parents.
    */
   public Parents parents() {
-    return new Parents(Optional.ofNullable(this.parents[0]), Optional.ofNullable(this.parents[1]));
+    return new Parents(this.parents[0], this.parents[1]);
   }
 
   public Optional<Integer> getParentIndex(final Person person) {
@@ -511,8 +511,8 @@ public class Person extends GenealogyObject<Person> {
     for (final Person child : parent.children()) {
       if (child == this)
         continue;
-      final Optional<Person> p1 = Optional.ofNullable(child.parents[0]);
-      final Optional<Person> p2 = Optional.ofNullable(child.parents[1]);
+      final Person p1 = child.parents[0];
+      final Person p2 = child.parents[1];
       final var key1 = new Parents(p1, p2);
       final var key2 = new Parents(p2, p1);
       // Ensure that there isn’t already any key with the same persons but in a different order

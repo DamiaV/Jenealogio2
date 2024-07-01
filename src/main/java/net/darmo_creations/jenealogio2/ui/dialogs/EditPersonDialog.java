@@ -469,8 +469,7 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private void setPersonRelativesFields() {
-    final var parents = this.person.parents();
-    this.setParents(parents.parent1().orElse(null), parents.parent2().orElse(null));
+    this.setParents(this.person.parents());
     for (final var relativeType : Person.RelativeType.values())
       this.relativesLists.get(relativeType)
           .setPersons(this.person.getRelatives(relativeType));
@@ -479,16 +478,15 @@ public class EditPersonDialog extends DialogBase<Person>
   /**
    * Set the values of the parents fields.
    *
-   * @param parent1 Person to set as parent 1.
-   * @param parent2 Person to set as parent 2.
+   * @param parents The parents.
    */
-  public void setParents(Person parent1, Person parent2) {
+  public void setParents(@NotNull Parents parents) {
     final Language language = this.config.language();
     final String cssClass = "unknown";
     final ObservableList<String> styleClass1 = this.parent1Label.getStyleClass();
-    if (parent1 != null) {
-      this.parent1 = parent1;
-      this.parent1Label.setText(parent1.toString());
+    if (parents.parent1().isPresent()) {
+      this.parent1 = parents.parent1().get();
+      this.parent1Label.setText(this.parent1.toString());
       styleClass1.remove(cssClass);
     } else {
       this.parent1 = null;
@@ -497,9 +495,9 @@ public class EditPersonDialog extends DialogBase<Person>
         styleClass1.add(cssClass);
     }
     final ObservableList<String> styleClass2 = this.parent2Label.getStyleClass();
-    if (parent2 != null) {
-      this.parent2 = parent2;
-      this.parent2Label.setText(parent2.toString());
+    if (parents.parent2().isPresent()) {
+      this.parent2 = parents.parent2().get();
+      this.parent2Label.setText(this.parent2.toString());
       styleClass2.remove(cssClass);
     } else {
       this.parent2 = null;
@@ -546,9 +544,9 @@ public class EditPersonDialog extends DialogBase<Person>
     this.selectPersonDialog.updatePersonList(this.familyTree, excl);
     this.selectPersonDialog.showAndWait().ifPresent(p -> {
       if (parentIndex == 1)
-        this.setParents(p, this.parent2);
+        this.setParents(new Parents(p, this.parent2));
       else if (parentIndex == 2)
-        this.setParents(this.parent1, p);
+        this.setParents(new Parents(this.parent1, p));
       else
         throw new IllegalArgumentException("Invalid parent index: " + parentIndex);
     });
@@ -562,16 +560,16 @@ public class EditPersonDialog extends DialogBase<Person>
    */
   private void onRemoveParent(int parentIndex) {
     if (parentIndex == 1)
-      this.setParents(null, this.parent2);
+      this.setParents(new Parents(null, this.parent2));
     else if (parentIndex == 2)
-      this.setParents(this.parent1, null);
+      this.setParents(new Parents(this.parent1, null));
     else
       throw new IllegalArgumentException("Invalid parent index: " + parentIndex);
     this.updateButtons();
   }
 
   private void onSwapParents() {
-    this.setParents(this.parent2, this.parent1);
+    this.setParents(new Parents(this.parent2, this.parent1));
   }
 
   /**
