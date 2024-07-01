@@ -106,9 +106,8 @@ public class AppController {
     this.config = Objects.requireNonNull(config);
     Theme theme = config.theme();
     Image icon = theme.getAppIcon();
-    if (icon != null) {
+    if (icon != null)
       stage.getIcons().add(icon);
-    }
     stage.setMinWidth(300);
     stage.setMinHeight(200);
     stage.setTitle(App.NAME);
@@ -137,26 +136,21 @@ public class AppController {
     // Files drag-and-drop
     scene.setOnDragOver(event -> {
       if (event.getGestureSource() == null // From another application
-          && this.isDragAndDropValid(event.getDragboard())) {
+          && this.isDragAndDropValid(event.getDragboard()))
         event.acceptTransferModes(TransferMode.COPY);
-      }
       event.consume();
     });
     scene.setOnDragDropped(event -> {
       Dragboard db = event.getDragboard();
       boolean success = this.isDragAndDropValid(db);
-      if (success) {
-        if (this.unsavedChanges) {
-          boolean open = Alerts.confirmation(
-              config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-          if (!open) {
-            success = false;
-          }
-        }
+      if (success && this.unsavedChanges) {
+        boolean open = Alerts.confirmation(
+            config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
+        if (!open)
+          success = false;
       }
-      if (success) {
+      if (success)
         this.loadTree(db.getFiles().get(0).getName());
-      }
       event.setDropCompleted(success);
       event.consume();
     });
@@ -548,13 +542,13 @@ public class AppController {
     if (treeName != null && this.loadTree(treeName))
       return;
 
-    var treesMetadata = App.treesMetadataManager().treesMetadata();
+    Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
 
     // Only one choice, open it
     if (treesMetadata.size() == 1 && this.loadTree(treesMetadata.keySet().iterator().next()))
       return;
 
-    var lastOpened = treesMetadata
+    Optional<TreeMetadata> lastOpened = treesMetadata
         .values()
         .stream()
         .filter(m -> m.lastOpenDate() != null)
@@ -580,8 +574,7 @@ public class AppController {
   }
 
   public void onConfigUpdate() {
-    Config config = this.config;
-    this.familyTreePane.setMaxHeight(config.maxTreeHeight());
+    this.familyTreePane.setMaxHeight(this.config.maxTreeHeight());
     this.familyTreePane.refresh();
     this.familyTreeView.refresh();
   }
@@ -816,9 +809,8 @@ public class AppController {
    * Return the currently selected person in the focused tree component.
    */
   private Optional<Person> getSelectedPerson() {
-    if (this.focusedComponent != null) {
+    if (this.focusedComponent != null)
       return this.focusedComponent.getSelectedPerson();
-    }
     return Optional.empty();
   }
 
@@ -833,8 +825,8 @@ public class AppController {
         || direction > 0 && this.selectionIndex == this.selectionHistory.size() - 1)
       return;
     this.selectionIndex += direction;
-    var selection = this.selectionHistory.get(this.selectionIndex);
-    PersonClickedEvent event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
+    Person selection = this.selectionHistory.get(this.selectionIndex);
+    var event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
     this.updateWidgetsSelection(event, this.familyTreePane);
     this.updateWidgetsSelection(event, this.familyTreeView);
     this.personDetailsView.setPerson(selection, this.familyTree);
@@ -894,14 +886,12 @@ public class AppController {
    * Open dialog to edit the documents of the selected person.
    */
   private void onEditObjectDocumentsAction() {
-    Optional<? extends GenealogyObject<?>> selectedObject = Optional.empty();
+    Optional<? extends GenealogyObject<?>> selectedObject;
     Optional<LifeEvent> selectedLifeEvent = this.personDetailsView.getDisplayedLifeEvent();
-    Optional<Person> selectedPerson = this.getSelectedPerson();
-    if (selectedLifeEvent.isPresent()) {
+    if (selectedLifeEvent.isPresent())
       selectedObject = selectedLifeEvent;
-    } else if (selectedPerson.isPresent()) {
-      selectedObject = selectedPerson;
-    }
+    else
+      selectedObject = this.getSelectedPerson();
     selectedObject.ifPresent(o -> {
       this.editDocumentsDialog.setObject(o, this.familyTree);
       this.editDocumentsDialog.showAndWait().ifPresent(result -> {
@@ -990,7 +980,10 @@ public class AppController {
    * @param event    The event that was fired.
    * @param fromNode The {@link FamilyTreeComponent} in which the click occurred. Null if another node fired it.
    */
-  private void onPersonClick(@NotNull PersonClickEvent event, FamilyTreeComponent fromNode) {
+  private void onPersonClick(
+      final @NotNull PersonClickEvent event,
+      FamilyTreeComponent fromNode
+  ) {
     if (fromNode == null) {
       // Click occurred outside of tree pane and tree view, select person in tree pane
       this.updateWidgetsSelection(event, this.familyTreePane);
@@ -998,11 +991,10 @@ public class AppController {
     }
     this.focusedComponent = fromNode;
     if (this.config.shouldSyncTreeWithMainPane()) {
-      if (fromNode == this.familyTreeView) {
+      if (fromNode == this.familyTreeView)
         this.updateWidgetsSelection(event, this.familyTreePane);
-      } else {
+      else
         this.updateWidgetsSelection(event, this.familyTreeView);
-      }
     }
     Person person = null;
     if (event instanceof PersonClickedEvent e) {
@@ -1014,21 +1006,22 @@ public class AppController {
       }
     }
     this.personDetailsView.setPerson(person, this.familyTree);
-    if (event instanceof PersonClickedEvent e && e.action() == PersonClickedEvent.Action.EDIT) {
+    if (event instanceof PersonClickedEvent e && e.action() == PersonClickedEvent.Action.EDIT)
       this.openEditPersonDialog(person, List.of(), null, null, EditPersonDialog.TAB_PROFILE);
-    }
     this.updateUI();
   }
 
   /**
    * Update the selection of a {@link FamilyTreeComponent} depending on the given {@link PersonClickEvent}.
    */
-  private void updateWidgetsSelection(@NotNull PersonClickEvent event, @NotNull FamilyTreeComponent component) {
-    if (event instanceof DeselectPersonsEvent) {
+  private void updateWidgetsSelection(
+      final @NotNull PersonClickEvent event,
+      @NotNull FamilyTreeComponent component
+  ) {
+    if (event instanceof DeselectPersonsEvent)
       component.deselectAll();
-    } else if (event instanceof PersonClickedEvent e) {
+    else if (event instanceof PersonClickedEvent e)
       component.select(e.person(), e.action().shouldUpdateTarget());
-    }
   }
 
   /**
@@ -1068,23 +1061,24 @@ public class AppController {
    * @param tabIndex  Index of the tab to show.
    */
   private void openEditPersonDialog(
-      Person person, final @NotNull List<ChildInfo> childInfo, Person parent1, Person parent2, int tabIndex) {
+      Person person,
+      final @NotNull List<ChildInfo> childInfo,
+      Person parent1,
+      Person parent2,
+      int tabIndex
+  ) {
     this.editPersonDialog.setPerson(person, childInfo, this.familyTree);
-    if (parent1 != null || parent2 != null) {
+    if (parent1 != null || parent2 != null)
       this.editPersonDialog.setParents(parent1, parent2);
-    }
     this.editPersonDialog.selectTab(tabIndex);
-    Optional<Person> p = this.editPersonDialog.showAndWait();
-    boolean present = p.isPresent();
-    if (present) {
+    this.editPersonDialog.showAndWait().ifPresent(editedPerson -> {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
-      if (person == null && childInfo.isEmpty()) {
-        this.onPersonClick(new PersonClickedEvent(p.get(), PersonClickedEvent.Action.SET_AS_TARGET), null);
-      }
+      if (person == null && childInfo.isEmpty())
+        this.onPersonClick(new PersonClickedEvent(editedPerson, PersonClickedEvent.Action.SET_AS_TARGET), null);
       this.unsavedChanges = true;
       this.updateUI();
-    }
+    });
   }
 
   /**
@@ -1099,12 +1093,10 @@ public class AppController {
         this.loadedFile.getFileName()
     ));
 
-    if (this.birthdaysDialog.isShowing()) {
+    if (this.birthdaysDialog.isShowing())
       this.birthdaysDialog.refresh(this.familyTree);
-    }
-    if (this.mapDialog.isShowing()) {
+    if (this.mapDialog.isShowing())
       this.mapDialog.refresh(this.familyTree);
-    }
 
     Optional<Person> selectedPerson = this.getSelectedPerson();
     boolean selection = selectedPerson.isPresent();
@@ -1112,7 +1104,7 @@ public class AppController {
     boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
 
     this.openTreeMenu.getItems().clear();
-    var treesMetadata = App.treesMetadataManager().treesMetadata();
+    Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
     if (!treesMetadata.isEmpty()) {
       treesMetadata.values().stream()
           .filter(m -> !m.directoryName().equals(this.loadedFile.getFileName().toString()))
@@ -1152,9 +1144,8 @@ public class AppController {
    * Open birthdays dialog.
    */
   private void onShowBirthdaysDialog() {
-    if (this.birthdaysDialog.isShowing()) {
+    if (this.birthdaysDialog.isShowing())
       return;
-    }
     this.birthdaysDialog.refresh(this.familyTree);
     this.birthdaysDialog.show();
   }
@@ -1163,9 +1154,8 @@ public class AppController {
    * Open map dialog.
    */
   private void onShowMapDialog() {
-    if (this.mapDialog.isShowing()) {
+    if (this.mapDialog.isShowing())
       return;
-    }
     this.mapDialog.refresh(this.familyTree);
     this.mapDialog.show();
   }
@@ -1192,9 +1182,8 @@ public class AppController {
     if (this.unsavedChanges) {
       boolean close = Alerts.confirmation(
           this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-      if (!close) {
+      if (!close)
         return;
-      }
     }
     Platform.exit();
   }

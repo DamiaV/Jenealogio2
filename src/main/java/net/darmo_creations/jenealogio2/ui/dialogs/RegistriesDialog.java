@@ -96,9 +96,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     stage.setMinHeight(500);
 
     this.setResultConverter(buttonType -> {
-      if (buttonType == ButtonTypes.OK) {
+      if (buttonType == ButtonTypes.OK)
         this.applyChanges();
-      }
       return buttonType;
     });
 
@@ -114,9 +113,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
 
   private void onImport() {
     Optional<Path> file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
-    if (file.isEmpty()) {
+    if (file.isEmpty())
       return;
-    }
     TreeXMLManager.RegistriesWrapper registries;
     try {
       registries = this.treeXMLReader.loadRegistriesFile(file.get());
@@ -183,7 +181,11 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     if (eventTypes.isEmpty() && genders.isEmpty()) {
       String key = exporting ? "export" : "import";
       Alerts.warning(
-          this.config, "alert.nothing_to_%s.header".formatted(key), null, "alert.nothing_to_%s.title".formatted(key));
+          this.config,
+          "alert.nothing_to_%s.header".formatted(key),
+          null,
+          "alert.nothing_to_%s.title".formatted(key)
+      );
       return false;
     }
     return true;
@@ -312,9 +314,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
      * @param entry Entry to add.
      */
     public void importEntry(@NotNull RE entry) {
-      if (!entry.isBuiltin()) {
+      if (!entry.isBuiltin())
         this.entriesTable.getItems().add(this.newEntry(entry, 0));
-      }
     }
 
     /**
@@ -341,9 +342,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
         if (entry == null) {
           String label = item.getName();
           this.registry.registerEntry(this.generateKey(), label, item.getBuildArgs());
-        } else {
+        } else
           item.updateEntry();
-        }
       }
     }
 
@@ -352,9 +352,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       while (true) {
         String keyName = String.valueOf(rng.nextInt(1_000_000));
         RegistryEntryKey key = new RegistryEntryKey(Registry.USER_NS, keyName);
-        if (!this.registry.containsKey(key)) {
+        if (!this.registry.containsKey(key))
           return key;
-        }
       }
     }
 
@@ -378,9 +377,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       Set<TI> toDelete = new HashSet<>();
       for (var selectedItem : this.entriesTable.getSelectionModel().getSelectedItems()) {
         RE entry = selectedItem.entry();
-        if (entry != null) {
+        if (entry != null)
           this.entriesToDelete.add(entry);
-        }
         toDelete.add(selectedItem);
       }
       this.entriesTable.getItems().removeAll(toDelete);
@@ -457,18 +455,15 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
           super.updateItem(item, empty);
           if (this.isEditable()) {
             var row = this.getTableRow();
-            if (row == null) {
+            if (row == null)
               return;
-            }
             var rowItem = row.getItem();
-            if (rowItem == null) {
+            if (rowItem == null)
               return;
-            }
             boolean editable = rowItem.actorsNbProperty().get() >= 2;
             this.setEditable(editable);
-            if (!editable) {
+            if (!editable)
               rowItem.indicatesUnionProperty().set(false);
-            }
           }
         }
       });
@@ -578,9 +573,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
             break;
           }
         }
-      } else {
+      } else
         super.importEntry(entry);
-      }
     }
   }
 
@@ -593,14 +587,12 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
       this.usage = usage;
       this.entry = isNew ? null : entry;
       String label;
-      boolean builtin = entry != null && entry.isBuiltin();
-      if (builtin) {
+      if (entry != null && entry.isBuiltin())
         label = RegistriesDialog.this.config.language().translate(registryName + "." + entry.key().name());
-      } else if (entry != null) {
+      else if (entry != null)
         label = Objects.requireNonNull(entry.userDefinedName());
-      } else {
+      else
         label = "";
-      }
       this.nameProperty.set(label);
       this.nameProperty.addListener((observable, oldValue, newValue) -> {
         RegistriesDialog.this.changes = true;
@@ -609,9 +601,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
 
     public void updateEntry() {
-      if (!this.entry.isBuiltin()) {
+      if (!this.entry.isBuiltin())
         this.entry.setUserDefinedName(this.getName());
-      }
     }
 
     public boolean isValid() {
@@ -677,9 +668,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     public void updateEntry() {
       super.updateEntry();
       LifeEventType entry = this.entry();
-      if (entry.isBuiltin()) {
+      if (entry.isBuiltin())
         return;
-      }
       entry.setGroup(this.groupProperty.get());
       entry.setIndicatesDeath(this.indicatesDeathProperty.get());
       if (this.usage() == 0) {

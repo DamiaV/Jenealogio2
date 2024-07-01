@@ -128,9 +128,8 @@ public class EditPersonDialog extends DialogBase<Person>
         this.updatePerson(this.person);
         if (this.creating) {
           this.familyTree.addPerson(this.person);
-          for (ChildInfo info : this.childInfo) {
+          for (ChildInfo info : this.childInfo)
             info.child().setParent(info.parentIndex(), this.person);
-          }
         }
         this.dispose();
         return this.person;
@@ -157,15 +156,14 @@ public class EditPersonDialog extends DialogBase<Person>
 
     {
       this.lifeStatusCombo.getItems().addAll(Arrays.stream(LifeStatus.values())
-          .map(lifeStatus -> {
-            String text = language.translate("life_status." + lifeStatus.name().toLowerCase());
-            return new NotNullComboBoxItem<>(lifeStatus, text);
-          })
+          .map(lifeStatus -> new NotNullComboBoxItem<>(
+              lifeStatus,
+              language.translate("life_status." + lifeStatus.name().toLowerCase())
+          ))
           .toList());
       this.lifeStatusCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-        if (!this.internalLifeStatusChange) {
+        if (!this.internalLifeStatusChange)
           this.lifeStatusCache = newValue.data();
-        }
       });
       this.addRow(gridPane, 0, "dialog.edit_person.profile.life_status", this.lifeStatusCombo);
       RowConstraints rc = new RowConstraints();
@@ -406,9 +404,8 @@ public class EditPersonDialog extends DialogBase<Person>
     this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("genders.unknown")));
     this.genderCombo.getItems().addAll(this.familyTree.genderRegistry().entries().stream()
         .map(gender -> {
-          RegistryEntryKey key = gender.key();
           String text = gender.isBuiltin()
-              ? language.translate("genders." + key.name())
+              ? language.translate("genders." + gender.key().name())
               : Objects.requireNonNull(gender.userDefinedName());
           return new ComboBoxItem<>(gender, text);
         })
@@ -462,21 +459,21 @@ public class EditPersonDialog extends DialogBase<Person>
   private void setPersonLifeEventsFields() {
     this.lifeEventsList.getItems().forEach(LifeEventView::dispose);
     this.lifeEventsList.getItems().clear();
-    this.person.getLifeEventsAsActor().stream().sorted().forEach(lifeEvent -> {
-      this.addEvent(lifeEvent, false);
-      if (lifeEvent.type().indicatesDeath()) {
-        this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
-      }
-    });
+    this.person.getLifeEventsAsActor().stream()
+        .sorted()
+        .forEach(lifeEvent -> {
+          this.addEvent(lifeEvent, false);
+          if (lifeEvent.type().indicatesDeath())
+            this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
+        });
   }
 
   private void setPersonRelativesFields() {
     var parents = this.person.parents();
     this.setParents(parents.left().orElse(null), parents.right().orElse(null));
-    for (Person.RelativeType type : Person.RelativeType.values()) {
-      RelativesListView list = this.relativesLists.get(type);
-      list.setPersons(this.person.getRelatives(type));
-    }
+    for (var type : Person.RelativeType.values())
+      this.relativesLists.get(type)
+          .setPersons(this.person.getRelatives(type));
   }
 
   /**
@@ -496,9 +493,8 @@ public class EditPersonDialog extends DialogBase<Person>
     } else {
       this.parent1 = null;
       this.parent1Label.setText(language.translate("dialog.edit_person.parents.parents.unknown"));
-      if (!styleClass1.contains(cssClass)) {
+      if (!styleClass1.contains(cssClass))
         styleClass1.add(cssClass);
-      }
     }
     ObservableList<String> styleClass2 = this.parent2Label.getStyleClass();
     if (parent2 != null) {
@@ -508,9 +504,8 @@ public class EditPersonDialog extends DialogBase<Person>
     } else {
       this.parent2 = null;
       this.parent2Label.setText(language.translate("dialog.edit_person.parents.parents.unknown"));
-      if (!styleClass2.contains(cssClass)) {
+      if (!styleClass2.contains(cssClass))
         styleClass2.add(cssClass);
-      }
     }
   }
 
@@ -544,21 +539,18 @@ public class EditPersonDialog extends DialogBase<Person>
   private void onParentSelect(int parentIndex) {
     List<Person> excl = new LinkedList<>();
     excl.add(this.person);
-    if (this.parent1 != null) {
+    if (this.parent1 != null)
       excl.add(this.parent1);
-    }
-    if (this.parent2 != null) {
+    if (this.parent2 != null)
       excl.add(this.parent2);
-    }
     this.selectPersonDialog.updatePersonList(this.familyTree, excl);
     this.selectPersonDialog.showAndWait().ifPresent(p -> {
-      if (parentIndex == 1) {
+      if (parentIndex == 1)
         this.setParents(p, this.parent2);
-      } else if (parentIndex == 2) {
+      else if (parentIndex == 2)
         this.setParents(this.parent1, p);
-      } else {
+      else
         throw new IllegalArgumentException("Invalid parent index: " + parentIndex);
-      }
     });
     this.updateButtons();
   }
@@ -569,13 +561,12 @@ public class EditPersonDialog extends DialogBase<Person>
    * @param parentIndex Index of the parent to remove.
    */
   private void onRemoveParent(int parentIndex) {
-    if (parentIndex == 1) {
+    if (parentIndex == 1)
       this.setParents(null, this.parent2);
-    } else if (parentIndex == 2) {
+    else if (parentIndex == 2)
       this.setParents(this.parent1, null);
-    } else {
+    else
       throw new IllegalArgumentException("Invalid parent index: " + parentIndex);
-    }
     this.updateButtons();
   }
 
@@ -600,11 +591,9 @@ public class EditPersonDialog extends DialogBase<Person>
       boolean anyDeath = this.lifeEventsList.getItems().stream()
           .anyMatch(i -> i.selectedLifeEventType().indicatesDeath());
       this.internalLifeStatusChange = true;
-      if (anyDeath) {
-        this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(LifeStatus.DECEASED));
-      } else {
-        this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.lifeStatusCache));
-      }
+      this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(
+          anyDeath ? LifeStatus.DECEASED : this.lifeStatusCache
+      ));
       this.internalLifeStatusChange = false;
       this.lifeStatusCombo.setDisable(anyDeath);
     });
@@ -643,17 +632,15 @@ public class EditPersonDialog extends DialogBase<Person>
     boolean anyDeath = false;
     for (LifeEventView item : this.lifeEventsList.getItems()) {
       item.pseudoClassStateChanged(PseudoClasses.INVALID, false);
-      if (item.lifeEvent().type().indicatesDeath()) {
+      if (item.lifeEvent().type().indicatesDeath())
         anyDeath = true;
-      }
-      if (!item.checkValidity()) {
+      if (!item.checkValidity())
         invalid = true;
-      }
       LifeEventType type = item.selectedLifeEventType();
       if (type.isUnique()) {
-        if (!uniqueTypes.containsKey(type)) {
+        if (!uniqueTypes.containsKey(type))
           uniqueTypes.put(type, new LinkedList<>());
-        } else {
+        else {
           item.pseudoClassStateChanged(PseudoClasses.INVALID, true);
           invalid = true;
         }
@@ -705,11 +692,10 @@ public class EditPersonDialog extends DialogBase<Person>
     // Relatives
     person.setParent(0, this.parent1);
     person.setParent(1, this.parent2);
-    for (Person.RelativeType type : Person.RelativeType.values()) {
+    for (var type : Person.RelativeType.values()) {
       // Clear relatives of the current type
-      for (Person relative : this.person.getRelatives(type)) {
+      for (Person relative : this.person.getRelatives(type))
         this.person.removeRelative(relative, type);
-      }
       // Add back the selected relatives
       this.relativesLists.get(type).getPersons().forEach(p -> this.person.addRelative(p, type));
     }
@@ -719,8 +705,9 @@ public class EditPersonDialog extends DialogBase<Person>
    * Get the disambiguation ID from the corresponding text field.
    */
   private @Nullable Integer getDisambiguationID() {
-    String text = this.disambiguationIDField.getText();
-    return text.isEmpty() ? null : Integer.parseInt(text);
+    return StringUtils.stripNullable(this.disambiguationIDField.getText())
+        .map(Integer::parseInt)
+        .orElse(null);
   }
 
   /**

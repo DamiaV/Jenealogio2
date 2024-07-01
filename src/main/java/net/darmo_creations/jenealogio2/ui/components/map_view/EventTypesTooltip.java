@@ -41,9 +41,8 @@ public class EventTypesTooltip extends VBox {
       Label subTitleLabel = new Label(split[1].strip());
       subTitleLabel.getStyleClass().add("subtitle");
       this.getChildren().add(subTitleLabel);
-    } else {
+    } else
       titleText = placeAdress;
-    }
     int totalCount = eventTypesCounts.values().stream().mapToInt(i -> i).sum();
     titleLabel.setText(config.language().translate(
         "dialog.map.place_count",
@@ -60,11 +59,10 @@ public class EventTypesTooltip extends VBox {
           LifeEventType type = e.getKey();
           RegistryEntryKey key = type.key();
           String name;
-          if (key.namespace().equals(Registry.BUILTIN_NS)) {
+          if (key.namespace().equals(Registry.BUILTIN_NS))
             name = language.translate("life_event_types." + key.name(), count);
-          } else {
+          else
             name = type.userDefinedName();
-          }
           Label label = new Label(
               language.translate(
                   "dialog.map.tooltip.life_event_type_count",

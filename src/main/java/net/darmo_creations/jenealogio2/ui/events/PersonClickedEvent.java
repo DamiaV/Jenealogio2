@@ -1,10 +1,10 @@
 package net.darmo_creations.jenealogio2.ui.events;
 
-import javafx.scene.input.MouseButton;
-import net.darmo_creations.jenealogio2.model.Person;
-import org.jetbrains.annotations.NotNull;
+import javafx.scene.input.*;
+import net.darmo_creations.jenealogio2.model.*;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This event indicates that a node wrapping the given {@link Person} object should be selected.
@@ -36,16 +36,13 @@ public record PersonClickedEvent(@NotNull Person person, @NotNull PersonClickedE
    * @throws IllegalArgumentException If {@code clickCount ≤ 0}.
    */
   public static Action getClickType(int clickCount, @NotNull MouseButton mouseButton) {
-    if (clickCount <= 0) {
+    if (clickCount <= 0)
       throw new IllegalArgumentException("Click count == 0");
-    }
     Objects.requireNonNull(mouseButton);
-    if (mouseButton == MouseButton.SECONDARY) {
+    if (mouseButton == MouseButton.SECONDARY)
       return Action.SET_AS_TARGET;
-    }
-    if (clickCount == 1) {
+    if (clickCount == 1)
       return Action.SELECT;
-    }
     return Action.EDIT;
   }
 

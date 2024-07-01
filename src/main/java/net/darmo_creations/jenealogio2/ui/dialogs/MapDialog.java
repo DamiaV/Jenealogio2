@@ -44,9 +44,8 @@ public class MapDialog extends DialogBase<ButtonType> {
 
     this.eventTypeCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> {
-          if (!this.internalUpdate) {
+          if (!this.internalUpdate)
             this.updateMap(false);
-          }
         });
 
     this.searchField = new ErasableTextField(config);
@@ -152,17 +151,15 @@ public class MapDialog extends DialogBase<ButtonType> {
     Map<LatLon, List<LifeEvent>> groupedEvents = new HashMap<>();
 
     for (LifeEvent lifeEvent : this.familyTree.lifeEvents()) {
-      if (type != null && !lifeEvent.type().equals(type)) {
+      if (type != null && !lifeEvent.type().equals(type))
         continue;
-      }
       Optional<Place> place = lifeEvent.place();
       if (place.isPresent()) {
         Optional<LatLon> latLon = place.get().latLon();
         if (latLon.isPresent()) {
           LatLon ll = latLon.get();
-          if (!groupedEvents.containsKey(ll)) {
+          if (!groupedEvents.containsKey(ll))
             groupedEvents.put(ll, new LinkedList<>());
-          }
           groupedEvents.get(ll).add(lifeEvent);
         }
       }
@@ -173,9 +170,8 @@ public class MapDialog extends DialogBase<ButtonType> {
           List<LifeEvent> events1 = e1.getValue();
           List<LifeEvent> events2 = e2.getValue();
           int compare = -Integer.compare(events1.size(), events2.size());
-          if (compare != 0) {
+          if (compare != 0)
             return compare;
-          }
           // place() will always return a non-empty value because we filtered events above
           //noinspection OptionalGetWithoutIsPresent
           return events1.get(0).place().get().address()
@@ -186,17 +182,16 @@ public class MapDialog extends DialogBase<ButtonType> {
           List<LifeEvent> events = e.getValue();
           int nb = events.size();
           MapMarkerColor color;
-          if (nb <= 5) {
+          if (nb <= 5)
             color = MapMarkerColor.GREEN;
-          } else if (nb <= 10) {
+          else if (nb <= 10)
             color = MapMarkerColor.YELLOW_GREEN;
-          } else if (nb <= 15) {
+          else if (nb <= 15)
             color = MapMarkerColor.YELLOW;
-          } else if (nb <= 20) {
+          else if (nb <= 20)
             color = MapMarkerColor.ORANGE;
-          } else {
+          else
             color = MapMarkerColor.RED;
-          }
           //noinspection OptionalGetWithoutIsPresent
           Place place = events.get(0).place().get();
           Map<LifeEventType, Integer> typeCounts = events.stream()
@@ -205,9 +200,8 @@ public class MapDialog extends DialogBase<ButtonType> {
           this.placesList.getItems().add(new PlaceView(place, nb));
         });
 
-    if (resetView) {
+    if (resetView)
       this.mapView.showAllMarkers();
-    }
   }
 
   /**
@@ -224,11 +218,10 @@ public class MapDialog extends DialogBase<ButtonType> {
 
     LifeEventView.populateEventTypeCombo(this.familyTree, this.eventTypeCombo, this.config);
 
-    if (selectedItem != null && this.eventTypeCombo.getItems().contains(selectedItem)) {
+    if (selectedItem != null && this.eventTypeCombo.getItems().contains(selectedItem))
       this.eventTypeCombo.getSelectionModel().select(selectedItem);
-    } else {
+    else
       this.eventTypeCombo.getSelectionModel().select(0);
-    }
     this.internalUpdate = false;
   }
 

@@ -139,9 +139,9 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
     if (dateTime != null) {
       this.datePrecisionCombo.getSelectionModel().select(new NotNullComboBoxItem<>(DateType.fromDate(dateTime)));
       this.resetFields(); // Must be called after select() so that this.dateType is correctly updated.
-      if (dateTime instanceof DateTimeWithPrecision d) {
+      if (dateTime instanceof DateTimeWithPrecision d)
         this.dateTimeField1.setDate(d.date());
-      } else if (dateTime instanceof DateTimeRange d) {
+      else if (dateTime instanceof DateTimeRange d) {
         this.dateTimeField1.setDate(d.startDate());
         this.dateTimeField2.setDate(d.endDate());
       } else if (dateTime instanceof DateTimeAlternative d) {
@@ -333,7 +333,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
      */
     public static DateType fromDate(@NotNull DateTime date) {
       Objects.requireNonNull(date);
-      if (date instanceof DateTimeWithPrecision d) {
+      if (date instanceof DateTimeWithPrecision d)
         return switch (d.precision()) {
           case EXACT -> EXACT;
           case ABOUT -> ABOUT;
@@ -341,7 +341,6 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
           case BEFORE -> BEFORE;
           case AFTER -> AFTER;
         };
-      }
       if (date instanceof DateTimeAlternative)
         return ALTERNATIVE;
       if (date instanceof DateTimeRange)

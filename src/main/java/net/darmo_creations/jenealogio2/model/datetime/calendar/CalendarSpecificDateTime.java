@@ -38,15 +38,13 @@ public abstract sealed class CalendarSpecificDateTime implements Comparable<Cale
     this.day = day;
     this.calendar = Objects.requireNonNull(calendar);
     this.isTimeSet = hour != null && minute != null;
-    if (this.isTimeSet && (hour < 0 || hour >= this.calendar.hoursInDay())) {
+    if (this.isTimeSet && (hour < 0 || hour >= this.calendar.hoursInDay()))
       throw new IllegalArgumentException(
           "Hour out of range: expected [0, %d[, got %d".formatted(this.calendar.hoursInDay(), hour));
-    }
     this.hour = this.isTimeSet ? hour : null;
-    if (this.isTimeSet && (minute < 0 || minute >= this.calendar.minutesInHour())) {
+    if (this.isTimeSet && (minute < 0 || minute >= this.calendar.minutesInHour()))
       throw new IllegalArgumentException(
           "Minute out of range: expected [0, %d[, got %d".formatted(this.calendar.minutesInHour(), minute));
-    }
     this.minute = this.isTimeSet ? minute : null;
   }
 
@@ -111,12 +109,10 @@ public abstract sealed class CalendarSpecificDateTime implements Comparable<Cale
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (this == o)
       return true;
-    }
-    if (o == null || this.getClass() != o.getClass()) {
+    if (o == null || this.getClass() != o.getClass())
       return false;
-    }
     CalendarSpecificDateTime that = (CalendarSpecificDateTime) o;
     return this.year == that.year && this.month == that.month && this.day == that.day && this.isTimeSet == that.isTimeSet && Objects.equals(this.calendar, that.calendar) && Objects.equals(this.hour, that.hour) && Objects.equals(this.minute, that.minute);
   }
@@ -129,16 +125,14 @@ public abstract sealed class CalendarSpecificDateTime implements Comparable<Cale
   @Override
   public final String toString() {
     String date;
-    if (this.year >= 0) {
+    if (this.year >= 0)
       date = "%04d-%02d-%02d".formatted(this.year, this.month, this.day);
-    } else {
+    else
       date = "-%04d-%02d-%02d".formatted(-this.year, this.month, this.day);
-    }
     String hour = this.hour != null ? "%02d".formatted(this.hour) : "#";
     String minute = this.minute != null ? "%02d".formatted(this.minute) : "#";
-    if (this.isTimeSet) {
+    if (this.isTimeSet)
       date += "T%s:%s".formatted(hour, minute);
-    }
     return date;
   }
 }

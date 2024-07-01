@@ -169,26 +169,19 @@ public final class FileChoosers {
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(desc, exts));
     }
     if (defaultName != null) {
-      if (!defaultName.endsWith(extensions[0])) {
+      if (!defaultName.endsWith(extensions[0]))
         defaultName += extensions[0];
-      }
       fileChooser.setInitialFileName(defaultName);
     }
-    File file;
-    if (saver) {
-      file = fileChooser.showSaveDialog(stage);
-    } else {
-      file = fileChooser.showOpenDialog(stage);
-    }
+    File file = saver ? fileChooser.showSaveDialog(stage) : fileChooser.showOpenDialog(stage);
     Path path = null;
     if (file != null) {
       String fileName = file.getName();
       if (extensions.length != 0 && Arrays.stream(extensions).noneMatch(fileName::endsWith)) {
-        if (saver) {
+        if (saver)
           file = new File(file.getPath() + extensions[0]);
-        } else {
+        else
           return Optional.empty();
-        }
       }
       path = file.toPath();
     }

@@ -123,9 +123,8 @@ public class Person extends GenealogyObject<Person> {
    * @return This object.
    */
   public Person setDisambiguationID(Integer disambiguationID) {
-    if (disambiguationID != null && disambiguationID < 1) {
+    if (disambiguationID != null && disambiguationID < 1)
       throw new IllegalArgumentException("Disambiguation ID must be > 0");
-    }
     this.disambiguationID = disambiguationID;
     return this;
   }
@@ -147,9 +146,8 @@ public class Person extends GenealogyObject<Person> {
    */
   public Person setLifeStatus(@NotNull LifeStatus lifeStatus) {
     boolean isDead = this.getLifeEventsAsActor().stream().anyMatch(e -> e.type().indicatesDeath());
-    if (isDead && lifeStatus != LifeStatus.DECEASED) {
+    if (isDead && lifeStatus != LifeStatus.DECEASED)
       throw new IllegalArgumentException("cannot change status of a person with at least one event indicating death");
-    }
     this.lifeStatus = Objects.requireNonNull(lifeStatus);
     return this;
   }
@@ -310,9 +308,9 @@ public class Person extends GenealogyObject<Person> {
    * @return True if any match was found, false otherwise.
    */
   public boolean matchesName(@NotNull String s, @NotNull Language language) {
-    final Locale locale = language.locale();
-    final String lcString = s.toLowerCase(locale);
-    final Predicate<String> p = n -> n != null && n.toLowerCase(locale).contains(lcString);
+    Locale locale = language.locale();
+    String lcString = s.toLowerCase(locale);
+    Predicate<String> p = n -> n != null && n.toLowerCase(locale).contains(lcString);
     return p.test(this.legalLastName)
            || p.test(this.publicLastName)
            || this.legalFirstNames.stream().anyMatch(p)
@@ -364,11 +362,9 @@ public class Person extends GenealogyObject<Person> {
   }
 
   public Optional<Integer> getParentIndex(final Person person) {
-    for (int i = 0; i < this.parents.length; i++) {
-      if (this.parents[i] == person) {
+    for (int i = 0; i < this.parents.length; i++)
+      if (this.parents[i] == person)
         return Optional.of(i);
-      }
-    }
     return Optional.empty();
   }
 
@@ -408,16 +404,13 @@ public class Person extends GenealogyObject<Person> {
    */
   public void setParent(int index, Person parent) {
     Person previousParent = this.parents[index];
-    if (previousParent == parent) {
+    if (previousParent == parent)
       return;
-    }
     this.parents[index] = parent;
-    if (parent != null) {
+    if (parent != null)
       parent.children.add(this);
-    }
-    if (previousParent != null) {
+    if (previousParent != null)
       previousParent.children.removeIf(person -> person == this);
-    }
   }
 
   /**
@@ -427,15 +420,13 @@ public class Person extends GenealogyObject<Person> {
    */
   public void removeParent(@NotNull Person parent) {
     int index = -1;
-    for (int i = 0; i < this.parents.length; i++) {
+    for (int i = 0; i < this.parents.length; i++)
       if (this.parents[i] == parent) {
         index = i;
         break;
       }
-    }
-    if (index >= 0) {
+    if (index >= 0)
       this.setParent(index, null);
-    }
   }
 
   /**
@@ -457,14 +448,12 @@ public class Person extends GenealogyObject<Person> {
       var parent1 = childParents.left();
       var parent2 = childParents.right();
       Person parent = null;
-      if (parent1.isPresent() && parent1.get() != this) {
+      if (parent1.isPresent() && parent1.get() != this)
         parent = parent1.get();
-      } else if (parent2.isPresent() && parent2.get() != this) {
+      else if (parent2.isPresent() && parent2.get() != this)
         parent = parent2.get();
-      }
-      if (!partnersChildren.containsKey(parent)) {
+      if (!partnersChildren.containsKey(parent))
         partnersChildren.put(parent, new HashSet<>());
-      }
       partnersChildren.get(parent).add(child);
     }
     // Add all partners that did not have any children with this person
@@ -473,11 +462,8 @@ public class Person extends GenealogyObject<Person> {
         .filter(e -> e.type().indicatesUnion())
         // Partner always present in unions
         .map(e -> e.actors().stream().filter(p -> p != this).findFirst().get())
-        .forEach(person -> {
-          if (!partnersChildren.containsKey(person)) {
-            partnersChildren.put(person, new HashSet<>());
-          }
-        });
+        .filter(person -> !partnersChildren.containsKey(person))
+        .forEach(person -> partnersChildren.put(person, new HashSet<>()));
     return partnersChildren.entrySet().stream()
         .collect(Collectors.toMap(e -> Optional.ofNullable(e.getKey()), Map.Entry::getValue));
   }
@@ -491,11 +477,10 @@ public class Person extends GenealogyObject<Person> {
     Set<Person> siblings = new HashSet<>();
     Person parent1 = this.parents[0];
     Person parent2 = this.parents[1];
-    if (parent1 != null) {
+    if (parent1 != null)
       this.addChildren(siblings, parent1);
-    } else if (parent2 != null) {
+    else if (parent2 != null)
       this.addChildren(siblings, parent2);
-    }
     return siblings;
   }
 
@@ -515,29 +500,25 @@ public class Person extends GenealogyObject<Person> {
     Map<Pair<Person, Person>, Set<Person>> siblings = new HashMap<>();
     Person parent1 = this.parents[0];
     Person parent2 = this.parents[1];
-    if (parent1 != null) {
+    if (parent1 != null)
       this.addChildren(siblings, parent1);
-    }
-    if (parent2 != null) {
+    if (parent2 != null)
       this.addChildren(siblings, parent2);
-    }
     return siblings;
   }
 
   private void addChildren(@NotNull Map<Pair<Person, Person>, Set<Person>> siblings, final @NotNull Person parent) {
     for (Person child : parent.children()) {
-      if (child == this) {
+      if (child == this)
         continue;
-      }
       Person p1 = child.parents[0];
       Person p2 = child.parents[1];
       var key1 = new Pair<>(p1, p2);
       var key2 = new Pair<>(p2, p1);
       // Ensure that there isn’t already any key with the same persons but in a different order
       var key = siblings.containsKey(key2) ? key2 : key1;
-      if (!siblings.containsKey(key)) {
+      if (!siblings.containsKey(key))
         siblings.put(key, new HashSet<>());
-      }
       siblings.get(key).add(child);
     }
   }
@@ -659,13 +640,11 @@ public class Person extends GenealogyObject<Person> {
    */
   void addLifeEvent(final @NotNull LifeEvent event) {
     if (event.type().isUnique() && event.hasActor(this)
-        && this.getActedInEventsStream().anyMatch(e -> e.type().equals(event.type()))) {
+        && this.getActedInEventsStream().anyMatch(e -> e.type().equals(event.type())))
       throw new IllegalArgumentException("%s already acts in an event of type '%s'"
           .formatted(this, event.type().key().fullName()));
-    }
-    if (event.hasActor(this) && event.type().indicatesDeath()) {
+    if (event.hasActor(this) && event.type().indicatesDeath())
       this.lifeStatus = LifeStatus.DECEASED;
-    }
     if (!this.lifeEvents.contains(event)) {
       this.lifeEvents.add(event);
       this.lifeEvents.sort(null);
@@ -710,9 +689,8 @@ public class Person extends GenealogyObject<Person> {
     String firstNames = this.getFirstNames().orElse("?");
     String lastName = this.getLastName().orElse("?");
     String s = firstNames + " " + lastName;
-    if (this.disambiguationID != null) {
+    if (this.disambiguationID != null)
       s += " (#%d)".formatted(this.disambiguationID);
-    }
     return s;
   }
 
@@ -739,12 +717,10 @@ public class Person extends GenealogyObject<Person> {
   public static Comparator<Optional<Person>> optionalBirthDateThenNameComparator() {
     return (p1, p2) -> {
       boolean p2Present = p2.isPresent();
-      if (p1.isEmpty()) {
+      if (p1.isEmpty())
         return p2Present ? 1 : 0;
-      }
-      if (!p2Present) {
+      if (!p2Present)
         return -1;
-      }
       return birthDateThenNameComparator(false).compare(p1.get(), p2.get());
     };
   }

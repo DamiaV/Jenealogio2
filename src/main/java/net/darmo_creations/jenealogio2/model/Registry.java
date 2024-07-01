@@ -29,12 +29,15 @@ public abstract class Registry<E extends RegistryEntry, A> {
    * @param defaults     List of default entries’ data to be registered.
    */
   @SafeVarargs
-  protected Registry(@NotNull String name, @NotNull EntryFactory<E, A> entryFactory, final @NotNull BuiltinEntry<A>... defaults) {
+  protected Registry(
+      @NotNull String name,
+      @NotNull EntryFactory<E, A> entryFactory,
+      final @NotNull BuiltinEntry<A>... defaults
+  ) {
     this.name = Objects.requireNonNull(name);
     this.entryFactory = Objects.requireNonNull(entryFactory);
-    for (var e : defaults) {
+    for (var e : defaults)
       this.registerEntry(new RegistryEntryKey(BUILTIN_NS, e.name()), null, e.args(), true);
-    }
   }
 
   /**
@@ -103,15 +106,12 @@ public abstract class Registry<E extends RegistryEntry, A> {
    */
   private E registerEntry(@NotNull RegistryEntryKey key, String label, A args, boolean allowBuiltin) {
     Objects.requireNonNull(this.name);
-    if (!allowBuiltin && key.isBuiltin()) {
+    if (!allowBuiltin && key.isBuiltin())
       throw new IllegalArgumentException("cannot register entries in the '%s' namespace.".formatted(BUILTIN_NS));
-    }
-    if (this.entries.containsKey(key)) {
+    if (this.entries.containsKey(key))
       throw new IllegalArgumentException("key '%s' already exists".formatted(key));
-    }
-    if (!key.isBuiltin() && label.isEmpty()) {
+    if (!key.isBuiltin() && label.isEmpty())
       throw new IllegalArgumentException("label is empty for non-builtin key '%s'".formatted(key));
-    }
     E entry = this.entryFactory.apply(key, label, args);
     this.entries.put(key, entry);
     return entry;
@@ -124,9 +124,8 @@ public abstract class Registry<E extends RegistryEntry, A> {
    * @throws IllegalArgumentException If the entry is in {@link #BUILTIN_NS}.
    */
   public void removeEntry(E entry) {
-    if (entry.isBuiltin()) {
+    if (entry.isBuiltin())
       throw new IllegalArgumentException("cannot delete builtin entry '%s'".formatted(entry.key()));
-    }
     this.entries.remove(entry.key());
   }
 

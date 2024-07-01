@@ -66,9 +66,8 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
     stage.setMinHeight(400);
 
     this.setResultConverter(buttonType -> {
-      if (!buttonType.getButtonData().isCancelButton()) {
+      if (!buttonType.getButtonData().isCancelButton())
         return this.selectedPointProperty.get();
-      }
       return null;
     });
 

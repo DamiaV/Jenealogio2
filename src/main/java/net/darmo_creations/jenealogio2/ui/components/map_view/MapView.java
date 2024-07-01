@@ -102,9 +102,8 @@ public class MapView extends AnchorPane {
    */
   public void removeMarker(int id) {
     MapLayer removedLayer = this.layers.remove(id);
-    if (removedLayer != null) {
+    if (removedLayer != null)
       this.mapView.removeLayer(removedLayer);
-    }
   }
 
   /**

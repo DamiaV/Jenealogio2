@@ -36,14 +36,13 @@ public class SelectPersonDialog extends DialogBase<Person> {
     this.filterTextInput.setPromptText(language.translate("dialog.select_person.filter"));
     FilteredList<PersonView> filteredList = new FilteredList<>(this.personList, data -> true);
     this.personListView.setItems(filteredList);
-    this.filterTextInput.textProperty().addListener(((observable, oldValue, newValue) ->
+    this.filterTextInput.textProperty().addListener((observable, oldValue, newValue) ->
         filteredList.setPredicate(pictureView -> {
-          if (newValue == null || newValue.isEmpty()) {
+          if (newValue == null || newValue.isEmpty())
             return true;
-          }
           return pictureView.person().matchesName(newValue.toLowerCase(), language);
         })
-    ));
+    );
 
     this.personListView.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.updateButtons());
@@ -64,10 +63,14 @@ public class SelectPersonDialog extends DialogBase<Person> {
     stage.setMinHeight(400);
 
     this.setResultConverter(buttonType -> {
-      if (!buttonType.getButtonData().isCancelButton()) {
-        return this.personListView.getSelectionModel().getSelectedItems()
-            .stream().map(PersonView::person).findFirst().orElse(null);
-      }
+      if (!buttonType.getButtonData().isCancelButton())
+        return this.personListView
+            .getSelectionModel()
+            .getSelectedItems()
+            .stream()
+            .map(PersonView::person)
+            .findFirst()
+            .orElse(null);
       return null;
     });
   }
@@ -84,17 +87,15 @@ public class SelectPersonDialog extends DialogBase<Person> {
     tree.persons().stream()
         .filter(p -> !exclusionList.contains(p))
         .forEach(p -> this.personList.add(new PersonView(p)));
-    Comparator<Person> personComparator = Person.lastThenFirstNamesComparator();
-    this.personList.sort((p1, p2) -> personComparator.compare(p1.person(), p2.person()));
+    this.personList.sort((p1, p2) -> Person.lastThenFirstNamesComparator().compare(p1.person(), p2.person()));
   }
 
   /**
    * Enable double-click on a person to select it.
    */
   private void onListClicked(final @NotNull MouseEvent event) {
-    if (event.getClickCount() > 1) {
+    if (event.getClickCount() > 1)
       ((Button) this.getDialogPane().lookupButton(ButtonTypes.OK)).fire();
-    }
   }
 
   private void updateButtons() {

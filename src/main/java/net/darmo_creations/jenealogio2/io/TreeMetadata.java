@@ -5,6 +5,13 @@ import org.jetbrains.annotations.*;
 import java.time.*;
 import java.util.*;
 
+/**
+ * This class holds metadata about a family tree directory.
+ *
+ * @param name          The tree’s name.
+ * @param directoryName The directory’s name.
+ * @param lastOpenDate  The last time the tree was opened in the app.
+ */
 public record TreeMetadata(@NotNull String name, @NotNull String directoryName, LocalDateTime lastOpenDate)
     implements Comparable<TreeMetadata> {
   public TreeMetadata {

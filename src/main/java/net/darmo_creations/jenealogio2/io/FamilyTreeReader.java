@@ -27,7 +27,7 @@ public class FamilyTreeReader extends TreeFileManager {
     Path filesDir = directory.resolve(FILES_DIR);
     FamilyTree familyTree;
     try (var in = new FileInputStream(directory.resolve(TREE_FILE_NAME).toFile())) {
-      final List<String> extensions = Arrays.asList(Picture.FILE_EXTENSIONS);
+      List<String> extensions = Arrays.asList(Picture.FILE_EXTENSIONS);
       familyTree = this.treeXMLReader.readFromStream(
           in,
           (name, desc, date) -> {

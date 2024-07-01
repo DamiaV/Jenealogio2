@@ -103,26 +103,27 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     Scene scene = stage.getScene();
     scene.setOnDragOver(event -> {
       if (event.getGestureSource() == null // From another application
-          && this.isDragAndDropValid(event.getDragboard())) {
+          && this.isDragAndDropValid(event.getDragboard()))
         event.acceptTransferModes(TransferMode.COPY);
-      }
       event.consume();
     });
     scene.setOnDragDropped(event -> {
       Dragboard db = event.getDragboard();
       boolean success = this.isDragAndDropValid(db);
-      if (success) {
+      if (success)
         this.importFiles(db.getFiles().stream().map(File::toPath).toList());
-      }
       event.setDropCompleted(success);
       event.consume();
     });
 
     this.setResultConverter(buttonType -> {
-      if (!buttonType.getButtonData().isCancelButton()) {
-        return this.documentsList.getSelectionModel().getSelectedItems()
-            .stream().map(DocumentView::document).toList();
-      }
+      if (!buttonType.getButtonData().isCancelButton())
+        return this.documentsList
+            .getSelectionModel()
+            .getSelectedItems()
+            .stream()
+            .map(DocumentView::document)
+            .toList();
       return List.of();
     });
   }
@@ -151,7 +152,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     Optional<Path> file = FileChoosers.showFileChooser(this.config, this.stage(), null);
     if (file.isPresent()) {
       String name = file.get().getFileName().toString();
-      if (this.isFileImported(name)) {
+      if (this.isFileImported(name))
         Alerts.warning(
             this.config,
             "alert.document_already_imported.header",
@@ -159,7 +160,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
             null,
             new FormatArg("file_name", name)
         );
-      } else {
+      else {
         try {
           this.importFile(file.get());
         } catch (IOException e) {
@@ -204,7 +205,7 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
         errorsNb++;
       }
     }
-    if (errorsNb != 0) {
+    if (errorsNb != 0)
       Alerts.error(
           this.config,
           "alert.load_errors.header",
@@ -212,10 +213,8 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
           "alert.load_errors.title",
           new FormatArg("nb", errorsNb)
       );
-    }
-    if (someAlreadyImported) {
+    if (someAlreadyImported)
       Alerts.warning(this.config, "alert.documents_already_imported.header", null, null);
-    }
   }
 
   /**
@@ -242,9 +241,8 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
    * Enable double-click on an document to select it.
    */
   private void onListClicked(final @NotNull MouseEvent event) {
-    if (event.getClickCount() > 1) {
+    if (event.getClickCount() > 1)
       ((Button) this.getDialogPane().lookupButton(ButtonTypes.OK)).fire();
-    }
   }
 
   private void updateButtons() {

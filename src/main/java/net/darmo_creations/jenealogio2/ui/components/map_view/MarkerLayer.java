@@ -53,9 +53,9 @@ class MarkerLayer extends MapLayer {
   }
 
   private void onMouseClicked() {
-    if (this.popOver.isShowing()) {
+    if (this.popOver.isShowing())
       this.popOver.hide();
-    } else {
+    else {
       this.popOver.show(this.markerImageView);
       if (!this.popOverStyleInitialized) {
         // From https://stackoverflow.com/a/36404968/3779986

@@ -1,14 +1,13 @@
 package net.darmo_creations.jenealogio2.config;
 
-import net.darmo_creations.jenealogio2.App;
-import net.darmo_creations.jenealogio2.themes.Theme;
-import net.darmo_creations.jenealogio2.ui.FamilyTreePane;
-import net.darmo_creations.jenealogio2.utils.StringUtils;
-import org.ini4j.Wini;
-import org.jetbrains.annotations.NotNull;
+import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.*;
+import net.darmo_creations.jenealogio2.utils.*;
+import org.ini4j.*;
+import org.jetbrains.annotations.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -57,18 +56,16 @@ public final class Config implements Cloneable {
     Wini ini = getOrCreateIniFile();
 
     String langCode = StringUtils.stripNullable(ini.get(APP_SECTION, LANGUAGE_OPTION)).orElse(DEFAULT_LANGUAGE_CODE);
-    if (!LANGUAGES.containsKey(langCode)) {
+    if (!LANGUAGES.containsKey(langCode))
       throw new ConfigException("unsupported language code: " + langCode);
-    }
 
     String themeID = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION)).orElse(Theme.DEFAULT_THEME_ID);
     Theme theme = Theme.getTheme(themeID).orElseThrow(() -> new ConfigException("undefined theme: " + themeID));
 
     boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
     Integer maxTreeHeight = ini.get(APP_SECTION, MAX_TREE_HEIGHT_OPTION, Integer.class);
-    if (maxTreeHeight == null) {
+    if (maxTreeHeight == null)
       maxTreeHeight = FamilyTreePane.DEFAULT_MAX_HEIGHT;
-    }
 
     int dateFormatOrdinal = ini.get(APP_SECTION, DATE_FORMAT_OPTION, int.class);
     int timeFormatOrdinal = ini.get(APP_SECTION, TIME_FORMAT_OPTION, int.class);
@@ -106,9 +103,8 @@ public final class Config implements Cloneable {
    * @throws IOException If the file does not exist and could not be created.
    */
   private static Wini getOrCreateIniFile() throws IOException {
-    if (!SETTINGS_FILE.exists() && !SETTINGS_FILE.createNewFile()) {
+    if (!SETTINGS_FILE.exists() && !SETTINGS_FILE.createNewFile())
       throw new IOException("Could not create %s file!".formatted(SETTINGS_FILE));
-    }
     return new Wini(SETTINGS_FILE);
   }
 
@@ -126,9 +122,8 @@ public final class Config implements Cloneable {
         LANGUAGES.put(langCode, new Language(langCode, langName, new Locale(langCode), bundle));
       }
     }
-    if (LANGUAGES.isEmpty()) {
-      throw new IOException("no languages found");
-    }
+    if (LANGUAGES.isEmpty())
+      throw new IOException("No languages found");
   }
 
   /**
@@ -236,9 +231,8 @@ public final class Config implements Cloneable {
    * @param height The new maximum height.
    */
   public void setMaxTreeHeight(int height) {
-    if (height < FamilyTreePane.MIN_ALLOWED_HEIGHT || height > FamilyTreePane.MAX_ALLOWED_HEIGHT) {
+    if (height < FamilyTreePane.MIN_ALLOWED_HEIGHT || height > FamilyTreePane.MAX_ALLOWED_HEIGHT)
       throw new IllegalArgumentException("invalid max tree height");
-    }
     this.maxTreeHeight = height;
   }
 
@@ -344,22 +338,32 @@ public final class Config implements Cloneable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (this == o)
       return true;
-    }
-    if (o == null || this.getClass() != o.getClass()) {
+    if (o == null || this.getClass() != o.getClass())
       return false;
-    }
     Config config = (Config) o;
-    return this.debug == config.debug && this.syncTreeWithMainPane == config.syncTreeWithMainPane
-        && this.maxTreeHeight == config.maxTreeHeight && Objects.equals(this.language, config.language)
-        && Objects.equals(this.theme, config.theme) && this.dateFormat == config.dateFormat
-        && this.timeFormat == config.timeFormat && this.showDeceasedPersonsBirthdays == config.showDeceasedPersonsBirthdays;
+    return this.debug == config.debug
+           && this.syncTreeWithMainPane == config.syncTreeWithMainPane
+           && this.maxTreeHeight == config.maxTreeHeight
+           && Objects.equals(this.language, config.language)
+           && Objects.equals(this.theme, config.theme)
+           && this.dateFormat == config.dateFormat
+           && this.timeFormat == config.timeFormat
+           && this.showDeceasedPersonsBirthdays == config.showDeceasedPersonsBirthdays;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.language, this.theme, this.debug, this.syncTreeWithMainPane, this.maxTreeHeight,
-        this.dateFormat, this.timeFormat, this.showDeceasedPersonsBirthdays);
+    return Objects.hash(
+        this.language,
+        this.theme,
+        this.debug,
+        this.syncTreeWithMainPane,
+        this.maxTreeHeight,
+        this.dateFormat,
+        this.timeFormat,
+        this.showDeceasedPersonsBirthdays
+    );
   }
 }

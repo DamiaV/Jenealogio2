@@ -131,9 +131,8 @@ public final class Alerts {
       e.consume();
     });
     Optional<ButtonType> buttonType = alert.showAndWait();
-    if (buttonType.isPresent() && !buttonType.get().getButtonData().isCancelButton()) {
+    if (buttonType.isPresent() && !buttonType.get().getButtonData().isCancelButton())
       return StringUtils.stripNullable(textField.getText());
-    }
     return Optional.empty();
   }
 
@@ -146,9 +145,8 @@ public final class Alerts {
       final @NotNull FormatArg... contentArgs
   ) {
     Alert alert = getAlert(config, type, headerKey, titleKey, contentArgs);
-    if (contentKey != null) {
+    if (contentKey != null)
       alert.setContentText(config.language().translate(contentKey, contentArgs));
-    }
     return alert.showAndWait();
   }
 
@@ -182,9 +180,8 @@ public final class Alerts {
     });
     config.theme().getStyleSheets()
         .forEach(url -> dialogPane.getStylesheets().add(url.toExternalForm()));
-    if (titleKey == null) {
+    if (titleKey == null)
       titleKey = "alert.%s.title".formatted(type.name().toLowerCase());
-    }
     Language language = config.language();
     alert.setTitle(language.translate(titleKey));
     alert.setHeaderText(language.translate(headerKey, contentArgs));

@@ -67,9 +67,8 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
       imageNode = imageView;
     }
     VBox vBox = new VBox(5);
-    if (showName) {
+    if (showName)
       vBox.getChildren().add(this.nameLabel);
-    }
     this.dateLabel = new DateLabel("-", config);
     vBox.getChildren().addAll(this.dateLabel, this.descLabel);
     HBox.setHgrow(vBox, Priority.ALWAYS);

@@ -41,19 +41,17 @@ public final class Theme {
     THEMES.clear();
     for (String themeID : THEME_IDS) {
       try (var stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
-        if (stream != null) {
+        if (stream != null)
           try (var reader = new InputStreamReader(stream)) {
             var data = new Gson().fromJson(reader, Map.class);
             THEMES.put(themeID, new Theme(themeID, (String) data.get("name")));
           }
-        }
       } catch (RuntimeException e) {
         App.LOGGER.exception(e);
       }
     }
-    if (THEMES.isEmpty()) {
+    if (THEMES.isEmpty())
       throw new IOException("no themes found");
-    }
   }
 
   /**

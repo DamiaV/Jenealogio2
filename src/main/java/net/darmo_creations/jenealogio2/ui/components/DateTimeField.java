@@ -54,10 +54,9 @@ public class DateTimeField extends VBox {
     this.setupField(this.minuteField, 40, "minute", false);
 
     Language language = this.config.language();
-    for (Calendar<?> calendar : CALENDARS) {
+    for (Calendar<?> calendar : CALENDARS)
       this.calendarField.getItems()
           .add(new NotNullComboBoxItem<>(calendar, language.translate("calendar.%s.name".formatted(calendar.name()))));
-    }
     this.calendarField.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.updateMonths(newValue.data()));
     this.calendarField.getSelectionModel().select(0);
@@ -158,9 +157,8 @@ public class DateTimeField extends VBox {
     this.monthField.getItems().clear();
     Language language = this.config.language();
     String name = calendar.name();
-    for (int i = 1; i <= calendar.lengthOfYearInMonths(); i++) {
+    for (int i = 1; i <= calendar.lengthOfYearInMonths(); i++)
       this.monthField.getItems().add(language.translate("calendar.%s.month.%d".formatted(name, i)));
-    }
     this.monthField.getSelectionModel().select(0);
   }
 

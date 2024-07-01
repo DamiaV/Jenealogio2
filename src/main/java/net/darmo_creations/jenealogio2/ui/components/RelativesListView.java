@@ -47,9 +47,8 @@ public class RelativesListView extends VBox implements PersonRequester {
     this.personsListView.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onSelection());
     this.personsListView.setOnKeyPressed(event -> {
-      if (event.getCode() == KeyCode.DELETE) {
+      if (event.getCode() == KeyCode.DELETE)
         this.onRemove();
-      }
     });
 
     this.getChildren().addAll(buttonsHBox, this.personsListView);

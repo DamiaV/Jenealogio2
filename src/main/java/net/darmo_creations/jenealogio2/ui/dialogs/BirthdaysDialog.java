@@ -71,9 +71,8 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     this.tabPane.getTabs().add(firstTab);
 
     // Per-month tabs
-    for (int i = 1; i <= 12; i++) {
+    for (int i = 1; i <= 12; i++)
       this.tabPane.getTabs().add(new BirthdayTab(i));
-    }
 
     Label label = new Label(language.translate(
         "dialog.birthdays.notice",
@@ -112,9 +111,8 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     } catch (IOException e) {
       App.LOGGER.exception(e);
     }
-    if (this.familyTree != null) {
+    if (this.familyTree != null)
       this.refresh(this.familyTree);
-    }
   }
 
   /**
@@ -128,9 +126,8 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
 
     boolean hideDeceased = !this.config.shouldShowDeceasedPersonsBirthdays();
     for (Person person : familyTree.persons()) {
-      if (hideDeceased && person.lifeStatus().isConsideredDeceased()) {
+      if (hideDeceased && person.lifeStatus().isConsideredDeceased())
         continue;
-      }
       Optional<DateTime> birthDate = person.getBirthDate();
       if (birthDate.isPresent()) {
         DateTime date = birthDate.get();
@@ -144,10 +141,9 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       }
     }
 
-    for (int i = 1; i <= 12; i++) {
-      var monthEntry = perMonth.getOrDefault(i, Map.of());
-      ((BirthdayTab) this.tabPane.getTabs().get(i)).setEntries(monthEntry);
-    }
+    for (int i = 1; i <= 12; i++)
+      ((BirthdayTab) this.tabPane.getTabs().get(i))
+          .setEntries(perMonth.getOrDefault(i, Map.of()));
 
     LocalDate today = LocalDate.now();
     this.updateList(this.todayList, perMonth, today);
@@ -231,13 +227,11 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
           BirthdaysDialog.this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL)
       );
       this.getChildren().addAll(button, birthYearLabel);
-      if (person.getDeathDate().isPresent()) {
-        Label deathYearLabel = new Label(
+      if (person.getDeathDate().isPresent())
+        this.getChildren().add(new Label(
             PersonWidget.formatDateYear(person.getDeathDate().get()),
             BirthdaysDialog.this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL)
-        );
-        this.getChildren().add(deathYearLabel);
-      }
+        ));
     }
 
     public Person person() {
@@ -259,9 +253,8 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
      * @param month Month’s value (1 for January, etc.).
      */
     public BirthdayTab(int month) {
-      if (month < 1 || month > 12) {
+      if (month < 1 || month > 12)
         throw new IllegalArgumentException("invalid month value: " + month);
-      }
       this.baseTitle = BirthdaysDialog.this.config.language().translate("calendar.gregorian.month." + month);
       this.setText(this.baseTitle);
 

@@ -18,6 +18,7 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * This dialog manages the documents of {@link GenealogyObject}s.
@@ -271,7 +272,9 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   }
 
   private void onAddDocument() {
-    var exclusionList = new LinkedList<>(this.documentsList_.stream().map(DocumentView::document).toList());
+    List<AttachedDocument> exclusionList = this.documentsList_.stream()
+        .map(DocumentView::document)
+        .collect(Collectors.toCollection(LinkedList::new));
     exclusionList.addAll(this.documentsToDelete);
     this.selectDocumentDialog.updateDocumentsList(this.familyTree, exclusionList);
     this.selectDocumentDialog.showAndWait().ifPresent(this::addDocumentsToList);

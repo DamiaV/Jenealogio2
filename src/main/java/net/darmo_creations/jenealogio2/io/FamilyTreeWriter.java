@@ -42,9 +42,9 @@ public class FamilyTreeWriter extends TreeFileManager {
             Path newPath = Files.copy(ifo.sourceFile(), root.resolve(ifo.fileName()));
             operation.document().setPath(newPath);
           }
-        } else if (operation instanceof DeleteFileOperation dfo) {
+        } else if (operation instanceof DeleteFileOperation dfo)
           Files.deleteIfExists(root.resolve(dfo.fileName()));
-        } else if (operation instanceof RenameFileOperation rfo) {
+        else if (operation instanceof RenameFileOperation rfo) {
           Path newPath = Files.move(root.resolve(rfo.fileName()), root.resolve(rfo.newFileName()));
           operation.document().setPath(newPath);
         }

@@ -85,19 +85,19 @@ public class FamilyTreeView extends FamilyTreeComponent {
     this.treeView.setRoot(root);
     this.treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
       if (!this.internalSelectionChange) {
-        if (newValue != null && newValue.getValue() instanceof Person person) {
+        if (newValue != null && newValue.getValue() instanceof Person person)
           this.firePersonClickEvent(new PersonClickedEvent(person, PersonClickedEvent.Action.SELECT));
-        } else {
+        else
           this.firePersonClickEvent(new DeselectPersonsEvent());
-        }
       }
     });
     this.treeView.setOnMouseClicked(event -> {
       TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
-      if (selectedItem != null && selectedItem.getValue() instanceof Person person) {
-        var clickType = PersonClickedEvent.getClickType(event.getClickCount(), event.getButton());
-        this.firePersonClickEvent(new PersonClickedEvent(person, clickType));
-      }
+      if (selectedItem != null && selectedItem.getValue() instanceof Person person)
+        this.firePersonClickEvent(new PersonClickedEvent(
+            person,
+            PersonClickedEvent.getClickType(event.getClickCount(), event.getButton())
+        ));
     });
   }
 
@@ -118,9 +118,9 @@ public class FamilyTreeView extends FamilyTreeComponent {
   @Override
   public Optional<Person> getSelectedPerson() {
     TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
-    return selectedItem != null && selectedItem.getValue() instanceof Person person
-        ? Optional.of(person)
-        : Optional.empty();
+    if (selectedItem != null && selectedItem.getValue() instanceof Person person)
+      return Optional.of(person);
+    return Optional.empty();
   }
 
   @Override
@@ -167,12 +167,13 @@ public class FamilyTreeView extends FamilyTreeComponent {
    * @param searchFilter Search filter.
    */
   private void searchMatchingItems(
-      @NotNull TreeItem<Object> searchNode, @NotNull Set<TreeItem<Object>> matches, @NotNull String searchFilter) {
-    for (TreeItem<Object> item : searchNode.getChildren()) {
-      if (item.getValue().toString().toLowerCase().contains(searchFilter.toLowerCase())) {
+      final @NotNull TreeItem<Object> searchNode,
+      @NotNull Set<TreeItem<Object>> matches,
+      @NotNull String searchFilter
+  ) {
+    for (TreeItem<Object> item : searchNode.getChildren())
+      if (item.getValue().toString().toLowerCase().contains(searchFilter.toLowerCase()))
         matches.add(item);
-      }
-    }
   }
 
   /**
@@ -201,11 +202,10 @@ public class FamilyTreeView extends FamilyTreeComponent {
       super.updateItem(item, empty);
       this.setText(empty ? null : item.toString());
       Optional<FamilyTree> familyTree = FamilyTreeView.this.familyTree();
-      if (familyTree.isPresent() && item instanceof Person p && familyTree.get().isRoot(p)) {
+      if (familyTree.isPresent() && item instanceof Person p && familyTree.get().isRoot(p))
         this.setGraphic(FamilyTreeView.this.config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
-      } else {
+      else
         this.setGraphic(null);
-      }
     }
   }
 }

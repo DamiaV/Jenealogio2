@@ -190,25 +190,22 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private void setupEventsTab() {
     this.eventsTabPane.setOrientation(Orientation.VERTICAL);
     this.eventsTab.contentProperty().addListener((observable, oldValue, newValue) -> {
-      if (newValue == this.eventsTabPane) {
+      if (newValue == this.eventsTabPane)
         this.displayedLifeEvent = null; // Reset whenever a life event’s detailled view is closed
-      }
     });
     this.eventsTab.setContent(this.eventsTabPane);
 
     this.lifeEventsList.setOnMouseClicked(event -> {
       var selectedItem = this.lifeEventsList.getSelectionModel().getSelectedItem();
-      if (selectedItem != null) {
+      if (selectedItem != null)
         this.showEvent(selectedItem.lifeEvent());
-      }
     });
     this.lifeEventsList.getStyleClass().add("life-event-list");
 
     this.witnessedEventsList.setOnMouseClicked(event -> {
       var selectedItem = this.witnessedEventsList.getSelectionModel().getSelectedItem();
-      if (selectedItem != null) {
+      if (selectedItem != null)
         this.showEvent(selectedItem.lifeEvent());
-      }
     });
     this.witnessedEventsList.getStyleClass().add("life-event-list");
 
@@ -331,7 +328,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    * @param object        The object whose main picture was clicked. May be null.
    * @param documentsList The document list in which to select the picture.
    */
-  private void onMainImageClicked(final GenealogyObject<?> object, @NotNull ListView<DocumentView> documentsList) {
+  private void onMainImageClicked(
+      final GenealogyObject<?> object,
+      @NotNull ListView<DocumentView> documentsList
+  ) {
     if (object != null) {
       object.mainPicture()
           .flatMap(mainPicture -> documentsList.getItems().stream()
@@ -345,10 +345,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void onDocumentListClicked(final @NotNull MouseEvent event) {
-    if (event.getClickCount() > 1) {
+    if (event.getClickCount() > 1)
       //noinspection unchecked
       this.onEditDocument((ListView<DocumentView>) event.getSource());
-    }
   }
 
   private void onEditDocument(@NotNull ListView<DocumentView> list) {
@@ -368,19 +367,17 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   public void setPerson(final Person person, @NotNull final FamilyTree familyTree) {
-    if (person != null && this.person == person) {
+    if (person != null && this.person == person)
       return;
-    }
     this.person = person;
     this.familyTree = Objects.requireNonNull(familyTree);
 
     this.resetLists();
 
-    if (this.person != null) {
+    if (this.person != null)
       this.populateFields();
-    } else {
+    else
       this.resetFields();
-    }
   }
 
   /**
@@ -454,27 +451,22 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
           Person left1 = key1.left(), right1 = key1.right();
           Person left2 = key2.left(), right2 = key2.right();
           Supplier<Integer> testRight = () -> {
-            if (right1 == null) {
+            if (right1 == null)
               return right2 != null ? 1 : 0;
-            }
-            if (right2 == null) {
+            if (right2 == null)
               return -1;
-            }
             return Person.birthDateThenNameComparator(false).compare(right1, right2);
           };
           if (left1 == null) {
-            if (left2 != null) {
+            if (left2 != null)
               return 1;
-            }
             return testRight.get();
           }
-          if (left2 == null) {
+          if (left2 == null)
             return -1;
-          }
           int c = Person.birthDateThenNameComparator(false).compare(left1, left2);
-          if (c != 0) {
+          if (c != 0)
             return c;
-          }
           return testRight.get();
         })
         .forEach(e -> {
@@ -511,15 +503,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     Set<Person> sameParentsSiblings = this.person.getSameParentsSiblings();
     sameParentsSiblings.add(this.person);
     List<ChildInfo> childInfo = new LinkedList<>();
-    for (Person child : sameParentsSiblings) {
+    for (Person child : sameParentsSiblings)
       childInfo.add(new ChildInfo(child, 0));
-    }
     this.parent1Card.setPerson(parent1, childInfo);
     this.parent1Card.setVisible(true);
     childInfo.clear();
-    for (Person child : sameParentsSiblings) {
+    for (Person child : sameParentsSiblings)
       childInfo.add(new ChildInfo(child, 1));
-    }
     this.parent2Card.setPerson(parent2, childInfo);
     this.parent2Card.setVisible(true);
   }
@@ -551,11 +541,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     Language language = this.config.language();
 
     String text;
-    if (lifeEvent.type().isBuiltin()) {
+    if (lifeEvent.type().isBuiltin())
       text = language.translate("life_event_types." + lifeEvent.type().key().name());
-    } else {
+    else
       text = Objects.requireNonNull(lifeEvent.type().userDefinedName());
-    }
     this.eventTypeLabel.setText(text);
 
     this.eventActorsPane.getChildren().clear();
@@ -624,8 +613,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    * @param person The person.
    */
   private void firePersonClickEvent(final @NotNull Person person, @NotNull MouseButton mouseButton) {
-    var clickType = PersonClickedEvent.getClickType(1, mouseButton);
-    this.firePersonClickEvent(new PersonClickedEvent(person, clickType));
+    this.firePersonClickEvent(new PersonClickedEvent(
+        person,
+        PersonClickedEvent.getClickType(1, mouseButton)
+    ));
   }
 
   /**
@@ -686,7 +677,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       Language language = PersonDetailsView.this.config.language();
       Theme theme = PersonDetailsView.this.config.theme();
 
-      final int imageSize = 50;
+      int imageSize = 50;
       this.imageView.setPreserveRatio(true);
       this.imageView.setFitHeight(imageSize);
       this.imageView.setFitWidth(imageSize);
@@ -763,9 +754,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
       boolean consideredDeceased = person.lifeStatus().isConsideredDeceased();
       this.deathBox.setVisible(consideredDeceased);
-      if (consideredDeceased) {
+      if (consideredDeceased)
         this.deathDateLabel.setDateTime(person.getDeathDate().orElse(null));
-      }
     }
   }
 
@@ -782,11 +772,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       header.getStyleClass().add("life-events-list-item-header");
       RegistryEntryKey typeKey = lifeEvent.type().key();
       String type;
-      if (typeKey.isBuiltin()) {
+      if (typeKey.isBuiltin())
         type = language.translate("life_event_types." + typeKey.name());
-      } else {
+      else
         type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
-      }
       Label typeLabel = new Label(type);
       Pane spacer = new Pane();
       HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -861,11 +850,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     public ChildrenItem(final Person parent1, final Person parent2, final @NotNull List<Person> children) {
       super(5);
       List<ChildInfo> childInfo = new LinkedList<>();
-      for (Person child : children) {
+      for (Person child : children)
         //noinspection OptionalGetWithoutIsPresent
-        int parentIndex = child.getParentIndex(parent1).get(); // Will always exist in this context
-        childInfo.add(new ChildInfo(child, parentIndex));
-      }
+        childInfo.add(new ChildInfo(child, child.getParentIndex(parent1).get())); // Will always exist in this context
       Theme theme = PersonDetailsView.this.config.theme();
       HBox parentsBox = new HBox(5);
       PersonCard parent1Card = new PersonCard(parent1, childInfo);
@@ -902,9 +889,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       Tooltip tooltip = new Tooltip(PersonDetailsView.this.config.language().translate("person_details_view.main_image.tooltip"));
       this.setImage(defaultImage);
       this.imageProperty().addListener((observable, oldValue, newValue) -> {
-        if (this.internalUpdate) {
+        if (this.internalUpdate)
           return;
-        }
         this.internalUpdate = true;
         if (newValue != null) {
           this.getStyleClass().add("clickable-image");

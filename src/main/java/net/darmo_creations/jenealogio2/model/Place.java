@@ -26,15 +26,13 @@ public final class Place {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == this) {
+    if (obj == this)
       return true;
-    }
-    if (obj == null || obj.getClass() != this.getClass()) {
+    if (obj == null || obj.getClass() != this.getClass())
       return false;
-    }
     var that = (Place) obj;
-    return Objects.equals(this.address, that.address) &&
-        Objects.equals(this.latLon, that.latLon);
+    return Objects.equals(this.address, that.address)
+           && Objects.equals(this.latLon, that.latLon);
   }
 
   @Override

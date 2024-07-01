@@ -13,9 +13,8 @@ public abstract class RegistryEntry {
 
   protected RegistryEntry(@NotNull RegistryEntryKey key, String userDefinedName) {
     this.key = Objects.requireNonNull(key);
-    if (!this.isBuiltin() && (userDefinedName == null || userDefinedName.isEmpty())) {
+    if (!this.isBuiltin() && (userDefinedName == null || userDefinedName.isEmpty()))
       throw new IllegalArgumentException("empty label for key '%s'".formatted(key));
-    }
     this.userDefinedName = userDefinedName;
   }
 
@@ -61,12 +60,10 @@ public abstract class RegistryEntry {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (this == o)
       return true;
-    }
-    if (o == null || this.getClass() != o.getClass()) {
+    if (o == null || this.getClass() != o.getClass())
       return false;
-    }
     RegistryEntry that = (RegistryEntry) o;
     return Objects.equals(this.key, that.key);
   }

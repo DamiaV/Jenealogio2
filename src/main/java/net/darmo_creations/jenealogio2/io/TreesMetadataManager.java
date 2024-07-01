@@ -71,8 +71,8 @@ public final class TreesMetadataManager {
           return extracted;
         Element root = (Element) childNodes.item(0);
         Optional<Element> trees = XmlUtils.getChildElement(root, TREES_TAG, true);
-        if (trees.isPresent()) {
-          for (Element treeElement : XmlUtils.getChildElements(trees.get(), TREE_METADATA_TAG)) {
+        if (trees.isPresent())
+          for (Element treeElement : XmlUtils.getChildElements(trees.get(), TREE_METADATA_TAG))
             try {
               String dirName = XmlUtils.getAttr(
                   treeElement, DIRECTORY_NAME_ATTR, Function.identity(), null, false);
@@ -82,8 +82,6 @@ public final class TreesMetadataManager {
             } catch (IOException e) {
               App.LOGGER.exception(e);
             }
-          }
-        }
       } catch (IOException e) {
         App.LOGGER.exception(e);
       }
@@ -110,11 +108,11 @@ public final class TreesMetadataManager {
     for (TreeMetadata metadata : this.trees.values()) {
       Element treeMetadata = document.createElement(TREE_METADATA_TAG);
       XmlUtils.setAttr(document, treeMetadata, DIRECTORY_NAME_ATTR, metadata.directoryName());
-      LocalDateTime date = directoryName.equals(metadata.directoryName()) ? LocalDateTime.now() : metadata.lastOpenDate();
-      if (date != null) {
-        date = date.withNano(0);
-        XmlUtils.setAttr(document, treeMetadata, LAST_OPENING_DATE_ATTR, date.toString());
-      }
+      LocalDateTime date = directoryName.equals(metadata.directoryName())
+          ? LocalDateTime.now()
+          : metadata.lastOpenDate();
+      if (date != null)
+        XmlUtils.setAttr(document, treeMetadata, LAST_OPENING_DATE_ATTR, date.withNano(0).toString());
       treesElement.appendChild(treeMetadata);
     }
     try (var out = Files.newOutputStream(App.CURRENT_DIR.resolve(METADATA_FILE_NAME))) {

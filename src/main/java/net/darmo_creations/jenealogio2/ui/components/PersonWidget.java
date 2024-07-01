@@ -87,13 +87,10 @@ public class PersonWidget extends AnchorPane {
     this.getChildren().add(pane);
 
     BorderPane iconsBox = new BorderPane();
-    if (person != null && person.disambiguationID().isPresent()) {
-      int id = person.disambiguationID().get();
-      Label idLabel = new Label("#" + id);
-      iconsBox.setLeft(idLabel);
-    } else {
+    if (person != null && person.disambiguationID().isPresent())
+      iconsBox.setLeft(new Label("#" + person.disambiguationID().get()));
+    else
       iconsBox.setLeft(new Label()); // Empty label for proper alignment
-    }
     HBox iconsRightBox = new HBox(5);
     iconsBox.setRight(iconsRightBox);
     if (isRoot) {

@@ -85,15 +85,13 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
         cell.setConverter(new StringConverter<>() {
           @Override
           public String toString(TreeItem<T> item) {
-            if (item == null) {
+            if (item == null)
               return "";
-            }
             T entry = item.getValue();
-            if (entry.isBuiltin()) {
+            if (entry.isBuiltin())
               return language.translate(registryName + "." + entry.key().name());
-            } else {
+            else
               return entry.userDefinedName();
-            }
           }
 
           @Override
@@ -107,11 +105,9 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
     }
 
     private void select(@NotNull SelectionMode mode) {
-      for (TreeItem<T> child : this.treeView.getRoot().getChildren()) {
-        if (child instanceof CheckBoxTreeItem<T> i) {
+      for (TreeItem<T> child : this.treeView.getRoot().getChildren())
+        if (child instanceof CheckBoxTreeItem<T> i)
           i.setSelected(mode.apply(i.isSelected()));
-        }
-      }
       RegistriesImportExportDialog.this.updateButtons();
     }
 
@@ -124,9 +120,8 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
 
     public void setItems(final @NotNull List<T> items) {
       this.treeView.getRoot().getChildren().clear();
-      for (T eventType : items) {
+      for (T eventType : items)
         this.treeView.getRoot().getChildren().add(new CheckBoxTreeItem<>(eventType, null, true));
-      }
     }
 
     private enum SelectionMode {

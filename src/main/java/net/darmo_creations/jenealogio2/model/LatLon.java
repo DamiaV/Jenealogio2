@@ -17,9 +17,8 @@ public record LatLon(double lat, double lon) {
    */
   public static LatLon fromString(@NotNull String s) {
     String[] split = s.split(",", 2);
-    if (split.length != 2) {
+    if (split.length != 2)
       throw new IllegalArgumentException("Could not parse LatLon string: " + s);
-    }
     return new LatLon(Double.parseDouble(split[0]), Double.parseDouble(split[1]));
   }
 

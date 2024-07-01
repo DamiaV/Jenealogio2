@@ -45,9 +45,8 @@ public class SettingsDialog extends DialogBase<ButtonType> {
           try {
             App.updateConfig(this.localConfig);
             this.localConfig.save();
-            if (changeType.needsRestart()) {
+            if (changeType.needsRestart())
               Alerts.info(config, "dialog.settings.alert.needs_restart.header", null, null);
-            }
           } catch (IOException e) {
             App.LOGGER.exception(e);
             Alerts.error(config, "dialog.settings.alert.save_error.header", null, null);
@@ -68,17 +67,15 @@ public class SettingsDialog extends DialogBase<ButtonType> {
         .addListener((observable, oldValue, newValue) -> this.onThemeSelect(newValue));
 
     LocalDateTime sampleDate = LocalDateTime.of(1970, 9, 1, 1, 2);
-    for (DateFormat dateFormat : DateFormat.values()) {
+    for (DateFormat dateFormat : DateFormat.values())
       this.dateFormatCombo.getItems().add(new NotNullComboBoxItem<>(dateFormat,
           new CalendarDateTimeFormatter(language, dateFormat.getFormat()).format(sampleDate)));
-    }
     this.dateFormatCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onDateFormatSelect(newValue));
 
-    for (TimeFormat timeFormat : TimeFormat.values()) {
+    for (TimeFormat timeFormat : TimeFormat.values())
       this.timeFormatCombo.getItems().add(new NotNullComboBoxItem<>(timeFormat,
           new CalendarDateTimeFormatter(language, timeFormat.getFormat()).format(sampleDate)));
-    }
     this.timeFormatCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onTimeFormatSelect(newValue));
 
@@ -168,9 +165,8 @@ public class SettingsDialog extends DialogBase<ButtonType> {
    */
   private ChangeType configChanged() {
     if (!this.localConfig.language().equals(this.config.language())
-        || !this.localConfig.theme().equals(this.config.theme())) {
+        || !this.localConfig.theme().equals(this.config.theme()))
       return ChangeType.NEEDS_RESTART;
-    }
     return !this.localConfig.equals(this.config) ? ChangeType.NO_RESTART_NEEDED : ChangeType.NONE;
   }
 

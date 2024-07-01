@@ -8,6 +8,7 @@ import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
+import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.utils.*;
@@ -121,7 +122,7 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.fileExtensionLabel.setText(ext.orElse(null));
     this.fileExtensionGraphicsLabel.setGraphic(this.config.theme().getIcon(Icon.forFile(document.fileName()), Icon.Size.SMALL));
     this.documentDescTextInput.setText(document.description().orElse(""));
-    var date = document.date();
+    Optional<DateTime> date = document.date();
     this.dateTimeSelector.setDateTime(date.orElse(null));
   }
 }

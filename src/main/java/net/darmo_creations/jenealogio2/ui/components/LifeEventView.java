@@ -211,12 +211,10 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     sourcesLabel.setPadding(new Insets(3, 0, 0, 0));
     gridPane.addRow(6, sourcesLabel, this.sourcesField);
 
-    for (int i = 0; i < gridPane.getColumnCount(); i++) {
+    for (int i = 0; i < gridPane.getColumnCount(); i++)
       gridPane.getColumnConstraints().add(new ColumnConstraints());
-    }
-    for (int i = 0; i < gridPane.getRowCount(); i++) {
+    for (int i = 0; i < gridPane.getRowCount(); i++)
       gridPane.getRowConstraints().add(new RowConstraints());
-    }
     gridPane.getColumnConstraints().get(1).setHgrow(Priority.ALWAYS);
     ObservableList<RowConstraints> rowConstraints = gridPane.getRowConstraints();
     rowConstraints.get(1).setValignment(VPos.TOP);
@@ -297,9 +295,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
 
   private List<Person> getExclusionList() {
     List<Person> exclusionList = new LinkedList<>(this.witnessesList.getItems());
-    if (this.partner != null) {
+    if (this.partner != null)
       exclusionList.add(this.partner);
-    }
     return exclusionList;
   }
 
@@ -350,20 +347,18 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     this.lifeEvent.setType(this.eventTypeCombo.getSelectionModel().getSelectedItem().data());
     Set<Person> actors = new HashSet<>();
     actors.add(this.person);
-    if (!this.partnerButton.isDisabled()) {
+    if (!this.partnerButton.isDisabled())
       actors.add(this.partner);
-    }
     this.familyTree.setLifeEventActors(this.lifeEvent, actors);
 
     // Remove all witnesses and add back the selected ones
-    for (Person witness : this.lifeEvent.witnesses()) {
+    for (Person witness : this.lifeEvent.witnesses())
       this.familyTree.removeWitnessFromLifeEvent(this.lifeEvent, witness);
-    }
-    for (Person witness : this.witnessesList.getItems()) {
+    for (Person witness : this.witnessesList.getItems())
       this.familyTree.addWitnessToLifeEvent(this.lifeEvent, witness);
-    }
 
-    this.lifeEvent.setDate(Optional.ofNullable(this.dateTimeSelector.getDateTime()).orElseThrow(() -> new IllegalArgumentException("missing date")));
+    this.lifeEvent.setDate(Optional.ofNullable(this.dateTimeSelector.getDateTime())
+        .orElseThrow(() -> new IllegalArgumentException("Missing date")));
     String address = StringUtils.stripNullable(this.placeAddressField.getText()).orElse(null);
     if (address != null) {
       LatLon latLon;
@@ -375,9 +370,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
         latLon = null;
       }
       this.lifeEvent.setPlace(new Place(address, latLon));
-    } else {
+    } else
       this.lifeEvent.setPlace(null);
-    }
     this.lifeEvent.setNotes(StringUtils.stripNullable(this.notesField.getText()).orElse(null));
     this.lifeEvent.setSources(StringUtils.stripNullable(this.sourcesField.getText()).orElse(null));
   }
@@ -451,10 +445,9 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   ) {
     Map<LifeEventType.Group, List<LifeEventType>> groups = new HashMap<>();
     for (LifeEventType eventType : familyTree.lifeEventTypeRegistry().entries()) {
-      LifeEventType.Group group = eventType.group();
-      if (!groups.containsKey(group)) {
+      var group = eventType.group();
+      if (!groups.containsKey(group))
         groups.put(group, new LinkedList<>());
-      }
       groups.get(group).add(eventType);
     }
 
@@ -463,7 +456,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     for (LifeEventType.Group group : LifeEventType.Group.values()) {
       List<LifeEventType> types = groups.get(group);
       String prefix = "[%s] ".formatted(language.translate("life_event_type_group." + group.name().toLowerCase()));
-      types.stream().map(type -> {
+      types.stream()
+          .map(type -> {
             String name = type.isBuiltin()
                 ? language.translate("life_event_types." + type.key().name())
                 : Objects.requireNonNull(type.userDefinedName());
@@ -513,9 +507,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       styleClass.remove(cssClass);
     } else {
       this.partnerLabel.setText(this.config.language().translate("life_event_view.partner.not_set"));
-      if (!styleClass.contains(cssClass)) {
+      if (!styleClass.contains(cssClass))
         styleClass.add(cssClass);
-      }
     }
   }
 

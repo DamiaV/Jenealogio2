@@ -71,9 +71,8 @@ public sealed abstract class Calendar<D extends CalendarSpecificDateTime>
    */
   public final D parse(@NotNull String dateString) throws DateTimeParseException {
     Matcher matcher = DATE_PATTERN.matcher(dateString);
-    if (!matcher.find()) {
+    if (!matcher.find())
       throw new DateTimeParseException("String \"%s\" does not represent a valid date".formatted(dateString), dateString, 0);
-    }
     int year = Integer.parseInt(matcher.group(1));
     int month = Integer.parseInt(matcher.group(2));
     int day = Integer.parseInt(matcher.group(3));
@@ -101,9 +100,8 @@ public sealed abstract class Calendar<D extends CalendarSpecificDateTime>
    */
   public final String getMonthName(@NotNull Language language, int month, boolean shortForm) {
     String key = "calendar.%s.month.%d".formatted(this.name(), month);
-    if (!shortForm) {
+    if (!shortForm)
       return language.translate(key);
-    }
     String shortKey = key + ".short";
     return language.translate(language.hasKey(shortKey) ? shortKey : key);
   }

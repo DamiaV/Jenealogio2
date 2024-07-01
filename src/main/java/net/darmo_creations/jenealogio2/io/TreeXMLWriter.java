@@ -40,9 +40,8 @@ public class TreeXMLWriter extends TreeXMLManager {
 
     Map<Person, Integer> personIDs = new HashMap<>();
     List<Person> persons = new LinkedList<>(familyTree.persons());
-    for (int i = 0; i < persons.size(); i++) {
+    for (int i = 0; i < persons.size(); i++)
       personIDs.put(persons.get(i), i);
-    }
 
     this.writeUserRegistryEntries(document, familyTreeElement, familyTree, null);
     this.writeDocuments(document, familyTreeElement, familyTree);
@@ -50,9 +49,8 @@ public class TreeXMLWriter extends TreeXMLManager {
     this.writePersons(document, familyTreeElement, peopleElement, familyTree, persons, personIDs);
     Element lifeEventsElement = document.createElement(LIFE_EVENTS_TAG);
     this.writeEvents(document, lifeEventsElement, familyTree.lifeEvents(), personIDs);
-    if (lifeEventsElement.hasChildNodes()) {
+    if (lifeEventsElement.hasChildNodes())
       familyTreeElement.appendChild(lifeEventsElement);
-    }
 
     XmlUtils.writeFile(outputStream, document, config);
   }
@@ -116,9 +114,8 @@ public class TreeXMLWriter extends TreeXMLManager {
         XmlUtils.setAttr(document, entryElement, REGISTRY_ENTRY_LABEL_ATTR, Objects.requireNonNull(gender.userDefinedName()));
         XmlUtils.setAttr(document, entryElement, GENDER_ICON_ATTR, imageToBase64(gender.icon()));
       }
-      if (gendersElement.hasChildNodes()) {
+      if (gendersElement.hasChildNodes())
         registriesElement.appendChild(gendersElement);
-      }
     }
 
     if (!userLifeEventTypes.isEmpty()) {
@@ -133,14 +130,12 @@ public class TreeXMLWriter extends TreeXMLManager {
         XmlUtils.setAttr(document, entryElement, LIFE_EVENT_TYPE_ACTORS_NB_ATTR, String.valueOf(lifeEventType.minActors()));
         XmlUtils.setAttr(document, entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, String.valueOf(lifeEventType.isUnique()));
       });
-      if (typesElement.hasChildNodes()) {
+      if (typesElement.hasChildNodes())
         registriesElement.appendChild(typesElement);
-      }
     }
 
-    if (registriesElement.hasChildNodes()) {
+    if (registriesElement.hasChildNodes())
       familyTreeElement.appendChild(registriesElement);
-    }
   }
 
   /**
@@ -211,10 +206,9 @@ public class TreeXMLWriter extends TreeXMLManager {
       final @NotNull Map<Person, Integer> personIDs
   ) {
     for (Person person : persons) {
-      if (familyTree.isRoot(person)) {
-        // Set root ID attribute
-        XmlUtils.setAttr(document, familyTreeElement, "root", String.valueOf(personIDs.get(person)));
-      }
+      // Set root ID attribute
+      if (familyTree.isRoot(person))
+        XmlUtils.setAttr(document, familyTreeElement, FAMILY_TREE_ROOT_ATTR, String.valueOf(personIDs.get(person)));
 
       Element personElement = (Element) peopleElement.appendChild(document.createElement(PERSON_TAG));
 
@@ -348,9 +342,8 @@ public class TreeXMLWriter extends TreeXMLManager {
     Element relativesElement = document.createElement(RELATIVES_TAG);
     for (Person.RelativeType type : Person.RelativeType.values()) {
       Set<Person> relatives = person.getRelatives(type);
-      if (relatives.isEmpty()) {
+      if (relatives.isEmpty())
         continue;
-      }
       Element groupElement = (Element) relativesElement.appendChild(document.createElement(GROUP_TAG));
       XmlUtils.setAttr(document, groupElement, GROUP_ORDINAL_ATTR, String.valueOf(type.ordinal()));
       for (Person relative : relatives) {
@@ -358,9 +351,8 @@ public class TreeXMLWriter extends TreeXMLManager {
         XmlUtils.setAttr(document, relativeElement, RELATIVE_ID_ATTR, String.valueOf(personIDs.get(relative)));
       }
     }
-    if (relativesElement.hasChildNodes()) {
+    if (relativesElement.hasChildNodes())
       personElement.appendChild(relativesElement);
-    }
   }
 
   private void writeNotesTag(
@@ -460,9 +452,8 @@ public class TreeXMLWriter extends TreeXMLManager {
       var dates = d.dates();
       for (int i = 0; i < dates.size(); i++)
         XmlUtils.setAttr(document, dateElement, "date" + (i + 1), this.serializeDate(dates.get(i)));
-    } else {
+    } else
       throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
-    }
     XmlUtils.setAttr(document, dateElement, DATE_TYPE_ATTR, dateType);
   }
 
@@ -516,9 +507,8 @@ public class TreeXMLWriter extends TreeXMLManager {
       Element personElement = (Element) witnessesElement.appendChild(document.createElement(PERSON_TAG));
       XmlUtils.setAttr(document, personElement, PERSON_ID_ATTR, String.valueOf(personIDs.get(person)));
     });
-    if (witnessesElement.hasChildNodes()) {
+    if (witnessesElement.hasChildNodes())
       lifeEventElement.appendChild(witnessesElement);
-    }
   }
 
   // endregion

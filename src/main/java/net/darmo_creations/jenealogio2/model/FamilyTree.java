@@ -98,9 +98,8 @@ public class FamilyTree {
    * @param person The person to add.
    */
   public void addPerson(@NotNull Person person) {
-    if (this.persons.isEmpty()) {
+    if (this.persons.isEmpty())
       this.root = person;
-    }
     person.setFamilyTree(this);
     this.persons.add(person);
   }
@@ -112,9 +111,8 @@ public class FamilyTree {
    * @throws IllegalArgumentException If the passed person is this tree’s root.
    */
   public void removePerson(Person person) {
-    if (person == this.root) {
+    if (person == this.root)
       throw new IllegalArgumentException("cannot delete root");
-    }
     person.setParent(0, null);
     person.setParent(1, null);
     for (LifeEvent lifeEvent : person.lifeEvents()) {
@@ -122,16 +120,13 @@ public class FamilyTree {
       lifeEvent.removeWitness(person);
       this.lifeEvents.remove(lifeEvent);
     }
-    for (Person child : person.children()) {
+    for (Person child : person.children())
       child.removeParent(person);
-    }
-    for (var type : Person.RelativeType.values()) {
-      for (Person nonBiologicalChild : person.nonBiologicalChildren(type)) {
-        nonBiologicalChild.removeRelative(person, type);
-      }
-      for (Person relative : person.getRelatives(type)) {
-        person.removeRelative(relative, type);
-      }
+    for (var relativeType : Person.RelativeType.values()) {
+      for (Person nonBiologicalChild : person.nonBiologicalChildren(relativeType))
+        nonBiologicalChild.removeRelative(person, relativeType);
+      for (Person relative : person.getRelatives(relativeType))
+        person.removeRelative(relative, relativeType);
     }
     this.persons.remove(person);
   }
@@ -155,17 +150,15 @@ public class FamilyTree {
    * @param actor     Actor to remove.
    */
   public void removeActorFromLifeEvent(@NotNull LifeEvent lifeEvent, @NotNull Person actor) {
-    if (!lifeEvent.hasActor(actor)) {
+    if (!lifeEvent.hasActor(actor))
       return;
-    }
     if (lifeEvent.actors().size() <= lifeEvent.type().minActors()) {
       lifeEvent.actors().forEach(a -> a.removeLifeEvent(lifeEvent));
       lifeEvent.witnesses().forEach(w -> w.removeLifeEvent(lifeEvent));
       actor.removeLifeEvent(lifeEvent);
       this.lifeEvents.remove(lifeEvent);
-    } else {
+    } else
       lifeEvent.removeActor(actor);
-    }
   }
 
   /**
@@ -196,9 +189,8 @@ public class FamilyTree {
    * @return True if the document was added, false otherwise.
    */
   public boolean addDocument(@NotNull AttachedDocument document) {
-    if (this.documents.containsKey(document.fileName())) {
+    if (this.documents.containsKey(document.fileName()))
       return false;
-    }
     this.documents.put(document.fileName(), document);
     this.fileOperations.add(new ImportFileOperation(document.fileName(), document.path(), document));
     return true;
@@ -313,9 +305,8 @@ public class FamilyTree {
    * @throws NoSuchElementException If the passed person is not a member of this tree.
    */
   public void setRoot(@NotNull Person root) {
-    if (!this.persons.contains(root)) {
+    if (!this.persons.contains(root))
       throw new NoSuchElementException("Person %s is not in this family tree".formatted(root));
-    }
     this.root = Objects.requireNonNull(root);
   }
 }

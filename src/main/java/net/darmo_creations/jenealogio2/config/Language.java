@@ -69,22 +69,20 @@ public final class Language {
     while (iterator.hasNext()) {
       String key = iterator.next();
       Matcher matcher = CALENDAR_SUFFIX_PATTERN.matcher(key);
-      if (matcher.matches()) {
+      if (matcher.matches())
         calendarSuffixes.add(new Pair<>(matcher.group(1), this.translate(key)));
-      } else {
+      else {
         matcher = PLURAL_SUFFIX_PATTERN.matcher(key);
         if (matcher.matches()) {
           String baseKey = matcher.group(1);
-          if (!plurals.containsKey(baseKey)) {
+          if (!plurals.containsKey(baseKey))
             plurals.put(baseKey, new HashMap<>());
-          }
           String number = matcher.group(2);
           String value = this.resources.getString(key);
-          if (number == null || number.isEmpty()) {
+          if (number == null || number.isEmpty())
             plurals.get(baseKey).put(DEFAULT_PLURAL_KEY, value);
-          } else {
+          else
             plurals.get(baseKey).put(Integer.parseInt(number), value);
-          }
         }
       }
     }
@@ -132,15 +130,14 @@ public final class Language {
    * @param formatArgs Format arguments to use to format the translated text.
    * @return The translated and formatted text.
    */
-  public String translate(@NotNull String key, Integer count, final FormatArg @NotNull ... formatArgs) {
+  public String translate(@NotNull String key, Integer count, final @NotNull FormatArg @NotNull ... formatArgs) {
     String text = null;
     if (count != null && count > 1) {
       Map<Integer, String> p = this.plurals.get(key);
       if (p != null) {
         text = p.get(count);
-        if (text == null) {
+        if (text == null)
           text = p.get(DEFAULT_PLURAL_KEY);
-        }
       }
     }
     if (text == null) {
@@ -151,9 +148,8 @@ public final class Language {
         return key;
       }
     }
-    if (formatArgs.length != 0) {
+    if (formatArgs.length != 0)
       return StringUtils.format(text, formatArgs);
-    }
     return text;
   }
 
@@ -174,9 +170,8 @@ public final class Language {
    * @return The corresponding suffix.
    */
   public Optional<String> getDaySuffix(int day) {
-    if (day < 1) {
+    if (day < 1)
       throw new IllegalArgumentException("Invalid day number: " + day);
-    }
     return this.daySuffixes.stream()
         .filter(p -> p.left().matcher(String.valueOf(day)).matches())
         .findFirst()
@@ -190,17 +185,15 @@ public final class Language {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == this) {
+    if (obj == this)
       return true;
-    }
-    if (obj == null || obj.getClass() != this.getClass()) {
+    if (obj == null || obj.getClass() != this.getClass())
       return false;
-    }
-    var that = (Language) obj;
+    Language that = (Language) obj;
     return Objects.equals(this.code, that.code) &&
-        Objects.equals(this.name, that.name) &&
-        Objects.equals(this.locale, that.locale) &&
-        Objects.equals(this.resources, that.resources);
+           Objects.equals(this.name, that.name) &&
+           Objects.equals(this.locale, that.locale) &&
+           Objects.equals(this.resources, that.resources);
   }
 
   @Override

@@ -1,8 +1,8 @@
 package net.darmo_creations.jenealogio2.model;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class represents the key of a {@link RegistryEntry} in a {@link Registry}.
@@ -39,9 +39,8 @@ public record RegistryEntryKey(@NotNull String namespace, @NotNull String name) 
    * @throws IllegalArgumentException If no namespace could be found.
    */
   private static String[] splitKey(@NotNull String key) {
-    if (!key.contains(":")) {
+    if (!key.contains(":"))
       throw new IllegalArgumentException("Missing namespace");
-    }
     return key.split(":", 2);
   }
 
@@ -63,14 +62,13 @@ public record RegistryEntryKey(@NotNull String namespace, @NotNull String name) 
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (this == o)
       return true;
-    }
-    if (o == null || this.getClass() != o.getClass()) {
+    if (o == null || this.getClass() != o.getClass())
       return false;
-    }
     RegistryEntryKey that = (RegistryEntryKey) o;
-    return Objects.equals(this.namespace, that.namespace) && Objects.equals(this.name, that.name);
+    return Objects.equals(this.namespace, that.namespace)
+           && Objects.equals(this.name, that.name);
   }
 
   @Override

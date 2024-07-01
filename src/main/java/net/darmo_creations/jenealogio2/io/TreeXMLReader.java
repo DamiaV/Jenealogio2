@@ -112,14 +112,13 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull FamilyTree familyTree
   ) throws IOException {
     Optional<Element> gendersElement = XmlUtils.getChildElement(registriesElement, GENDERS_TAG, true);
-    if (gendersElement.isPresent()) {
+    if (gendersElement.isPresent())
       for (Element entryElement : XmlUtils.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
         RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_KEY_ATTR, s -> s, null, false));
         String base64 = XmlUtils.getAttr(entryElement, GENDER_ICON_ATTR, s -> s, null, false);
         String label = XmlUtils.getAttr(entryElement, REGISTRY_ENTRY_LABEL_ATTR, s -> s, null, true);
         familyTree.genderRegistry().registerEntry(key, label, new GenderRegistry.RegistryArgs(base64ToImage(base64)));
       }
-    }
 
     Optional<Element> eventTypeElement = XmlUtils.getChildElement(registriesElement, LIFE_EVENT_TYPES_TAG, true);
     if (eventTypeElement.isPresent()) {
@@ -136,9 +135,8 @@ public class TreeXMLReader extends TreeXMLManager {
         boolean indicatesDeath = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_DEATH_ATTR, Boolean::parseBoolean, null, false);
         boolean indicatesUnion = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_INDICATES_UNION_ATTR, Boolean::parseBoolean, null, false);
         int actorsNb = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_ACTORS_NB_ATTR, Integer::parseInt, null, false);
-        if (actorsNb > 2) {
+        if (actorsNb > 2)
           throw new IOException("invalid actors number: " + actorsNb);
-        }
         boolean unique = XmlUtils.getAttr(entryElement, LIFE_EVENT_TYPE_UNIQUE_ATTR, Boolean::parseBoolean, null, false);
         var args = new LifeEventTypeRegistry.RegistryArgs(group, indicatesDeath, indicatesUnion, actorsNb, actorsNb, unique);
         try {
@@ -160,12 +158,11 @@ public class TreeXMLReader extends TreeXMLManager {
     byte[] bytes = Base64.getDecoder().decode(base64);
     int w = bytes[0], h = bytes[1];
     int[] pixels = new int[w * h];
-    for (int i = 0; i < pixels.length; i++) {
+    for (int i = 0; i < pixels.length; i++)
       pixels[i] = bytes[2 + 4 * i] << 24
                   | bytes[2 + 4 * i + 1] << 16
                   | bytes[2 + 4 * i + 2] << 8
                   | bytes[2 + 4 * i + 3];
-    }
     WritableImage image = new WritableImage(w, h);
     image.getPixelWriter().setPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), pixels, 0, w);
     return image;
@@ -331,9 +328,8 @@ public class TreeXMLReader extends TreeXMLManager {
       try {
         RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(genderElement.get(), GENDER_KEY_ATTR, s -> s, null, false));
         Gender gender = familyTree.genderRegistry().getEntry(key);
-        if (gender == null) {
+        if (gender == null)
           throw new IOException("Undefined gender registry key: " + key.fullName());
-        }
         person.setGender(gender);
       } catch (IllegalArgumentException e) {
         throw new IOException(e);
@@ -374,9 +370,8 @@ public class TreeXMLReader extends TreeXMLManager {
     if (parentsElement.isPresent()) {
       Integer id1 = XmlUtils.getAttr(parentsElement.get(), PARENT_ID_1_ATTR, Integer::parseInt, () -> null, false);
       Integer id2 = XmlUtils.getAttr(parentsElement.get(), PARENT_ID_2_ATTR, Integer::parseInt, () -> null, false);
-      if (id1 != null && id2 != null && id1.intValue() == id2.intValue()) {
+      if (id1 != null && id2 != null && id1.intValue() == id2.intValue())
         throw new IOException("Parents cannot be identical");
-      }
       // Defer setting parents to when all person objects have been deserialized
       parentIDS.put(person, new Pair<>(id1, id2));
     }
@@ -452,20 +447,18 @@ public class TreeXMLReader extends TreeXMLManager {
       Person person = entry.getKey();
       Integer id1 = entry.getValue().left();
       Integer id2 = entry.getValue().right();
-      if (id1 != null) {
+      if (id1 != null)
         try {
           person.setParent(0, persons.get(id1));
         } catch (IndexOutOfBoundsException e) {
           throw new IOException(e);
         }
-      }
-      if (id2 != null) {
+      if (id2 != null)
         try {
           person.setParent(1, persons.get(id2));
         } catch (IndexOutOfBoundsException e) {
           throw new IOException(e);
         }
-      }
     }
   }
 
@@ -477,13 +470,12 @@ public class TreeXMLReader extends TreeXMLManager {
       Person person = entry.getKey();
       for (var group : entry.getValue().entrySet()) {
         Person.RelativeType type = group.getKey();
-        for (int personID : group.getValue()) {
+        for (int personID : group.getValue())
           try {
             person.addRelative(persons.get(personID), type);
           } catch (IndexOutOfBoundsException e) {
             throw new IOException(e);
           }
-        }
       }
     }
   }
@@ -502,13 +494,12 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull Consumer<String> consumer
   ) throws IOException {
     Optional<Element> nameElement = XmlUtils.getChildElement(personElement, elementName, true);
-    if (nameElement.isPresent()) {
+    if (nameElement.isPresent())
       try {
         consumer.accept(XmlUtils.getAttr(nameElement.get(), NAME_VALUE_ATTR, s -> s, null, true));
       } catch (IllegalArgumentException e) {
         throw new IOException(e);
       }
-    }
   }
 
   /**
@@ -527,13 +518,12 @@ public class TreeXMLReader extends TreeXMLManager {
     Optional<Element> namesElement = XmlUtils.getChildElement(personElement, elementName, true);
     if (namesElement.isPresent()) {
       List<String> names = new LinkedList<>();
-      for (Element nameElement : XmlUtils.getChildElements(namesElement.get(), NAME_TAG)) {
+      for (Element nameElement : XmlUtils.getChildElements(namesElement.get(), NAME_TAG))
         try {
           names.add(XmlUtils.getAttr(nameElement, NAME_VALUE_ATTR, s -> s, null, true));
         } catch (IllegalArgumentException e) {
           throw new IOException(e);
         }
-      }
       consumer.accept(names);
     }
   }
@@ -587,9 +577,8 @@ public class TreeXMLReader extends TreeXMLManager {
   private @Nullable DateTime readDateTag(final @NotNull Element eventElement, boolean allowMissing) throws IOException {
     Optional<Element> childElement = XmlUtils.getChildElement(eventElement, DATE_TAG, allowMissing);
     if (childElement.isEmpty()) {
-      if (allowMissing) {
+      if (allowMissing)
         return null;
-      }
       throw new IOException("Missing tag: " + DATE_TAG);
     }
     Element dateElement = childElement.get();
@@ -633,9 +622,8 @@ public class TreeXMLReader extends TreeXMLManager {
 
   private CalendarSpecificDateTime deserializeDate(@NotNull String s) {
     String[] split = s.split(";", 2);
-    if (split.length != 2) {
+    if (split.length != 2)
       throw new DateTimeParseException("Invalid date format: " + s, s, 0);
-    }
     return Calendar.forName(split[1]).parse(split[0]);
   }
 
@@ -657,9 +645,8 @@ public class TreeXMLReader extends TreeXMLManager {
     try {
       RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(typeElement, TYPE_KEY_ATTR, s -> s, null, false));
       type = familyTree.lifeEventTypeRegistry().getEntry(key);
-      if (type == null) {
+      if (type == null)
         throw new IOException("Undefined life event type registry key: " + key.fullName());
-      }
     } catch (IllegalArgumentException e) {
       throw new IOException(e);
     }
@@ -683,10 +670,9 @@ public class TreeXMLReader extends TreeXMLManager {
     List<Person> actors = new LinkedList<>();
     this.extractPersons(eventElement, ACTORS_TAG, persons, actors::add, false);
     int actorsNb = actors.size();
-    if (actorsNb < type.minActors() || actorsNb > type.maxActors()) {
+    if (actorsNb < type.minActors() || actorsNb > type.maxActors())
       throw new IOException("Wrong number of actors for event type '%s': %d"
           .formatted(type.key().fullName(), actorsNb));
-    }
     return actors;
   }
 
@@ -728,9 +714,8 @@ public class TreeXMLReader extends TreeXMLManager {
       boolean allowMissing
   ) throws IOException {
     Optional<Element> personsElement = XmlUtils.getChildElement(eventElement, elementName, allowMissing);
-    if (personsElement.isEmpty()) {
+    if (personsElement.isEmpty())
       return;
-    }
     for (Element actorElement : XmlUtils.getChildElements(personsElement.get(), PERSON_TAG)) {
       int id = XmlUtils.getAttr(actorElement, PERSON_ID_ATTR, Integer::parseInt, null, false);
       try {

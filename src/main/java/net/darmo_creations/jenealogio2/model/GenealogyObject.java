@@ -109,8 +109,7 @@ public abstract class GenealogyObject<T extends GenealogyObject<T>> {
       if (!(this.documents.get(fileName) instanceof Picture p))
         throw new ClassCastException("File \"%s\" is not an image".formatted(fileName));
       this.mainPicture = p;
-    } else {
+    } else
       this.mainPicture = null;
-    }
   }
 }
