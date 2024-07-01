@@ -40,7 +40,7 @@ public final class FrenchRepublicanDecimalDateTime extends CalendarSpecificDateT
         Locale.getDefault(), this.year(), this.month(), this.dayOfMonth(),
         this.hour().orElse(0), this.minute().orElse(0), this.seconds);
     GregorianCalendar gd = FrenchRepublicanCalendar.CAL.getDate(date);
-    // Converted gregorian date is in UTC, add 1h to account for France’s timezone offset
-    return LocalDateTime.ofInstant(gd.toInstant(), ZoneId.of("+01:00"));
+    // Converted gregorian date is in UTC, convert it to France’s timezone
+    return LocalDateTime.ofInstant(gd.toInstant(), ZoneId.of("Europe/Paris"));
   }
 }
