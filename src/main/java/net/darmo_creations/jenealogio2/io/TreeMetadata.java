@@ -27,7 +27,7 @@ public record TreeMetadata(@NotNull String name, @NotNull String directoryName, 
       return 1;
     if (o.lastOpenDate() == null)
       return -1;
-    int i = -this.lastOpenDate().compareTo(o.lastOpenDate()); // Sort by latest date first
+    final int i = -this.lastOpenDate().compareTo(o.lastOpenDate()); // Sort by latest date first
     return i == 0 ? this.compareNames(o) : i;
   }
 
