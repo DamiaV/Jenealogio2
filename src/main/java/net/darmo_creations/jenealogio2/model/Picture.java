@@ -13,6 +13,9 @@ import java.util.*;
 public class Picture extends AttachedDocument {
   /**
    * The list of allowed picture extensions.
+   *
+   * @apiNote BMP files with alpha channel are not rendered by {@link ImageView},
+   * see <a href="https://bugs.openjdk.org/browse/JDK-8149621">this JDK bug report</a>.
    */
   @Unmodifiable
   public static final List<String> FILE_EXTENSIONS = List.of(".jpg", ".jpeg", ".png", ".gif", ".bmp");
