@@ -28,6 +28,13 @@ public final class TreesMetadataManager {
   private final Map<String, TreeMetadata> trees = new HashMap<>();
 
   public TreesMetadataManager() {
+    if (!Files.exists(App.USER_DATA_DIR))
+      try {
+        Files.createDirectory(App.USER_DATA_DIR);
+      } catch (final IOException e) {
+        throw new RuntimeException(e);
+      }
+
     try (final var files = Files.walk(App.USER_DATA_DIR, 1)) {
       final var openingDates = this.readMetadataFile();
       final var iterator = files
