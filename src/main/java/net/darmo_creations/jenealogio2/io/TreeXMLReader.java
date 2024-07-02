@@ -10,6 +10,7 @@ import org.jetbrains.annotations.*;
 import org.w3c.dom.*;
 
 import java.io.*;
+import java.nio.*;
 import java.nio.file.*;
 import java.time.format.*;
 import java.util.*;
@@ -155,17 +156,14 @@ public class TreeXMLReader extends TreeXMLManager {
    * @return The computed image.
    */
   private static Image base64ToImage(@NotNull String base64) {
-    final byte[] bytes = Base64.getDecoder().decode(base64);
-    final int w = bytes[0];
-    final int h = bytes[1];
-    final int[] pixels = new int[w * h];
-    for (int i = 0; i < pixels.length; i++)
-      pixels[i] = bytes[2 + 4 * i] << 24
-                  | bytes[2 + 4 * i + 1] << 16
-                  | bytes[2 + 4 * i + 2] << 8
-                  | bytes[2 + 4 * i + 3];
+    final var bb = ByteBuffer.wrap(Base64.getDecoder().decode(base64));
+    final int w = bb.get(0);
+    final int h = bb.get(1);
+    final int[] buffer = new int[w * h];
+    for (int i = 0; i < buffer.length; i++)
+      buffer[i] = bb.getInt(2 + 4 * i);
     final WritableImage image = new WritableImage(w, h);
-    image.getPixelWriter().setPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), pixels, 0, w);
+    image.getPixelWriter().setPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), buffer, 0, w);
     return image;
   }
 

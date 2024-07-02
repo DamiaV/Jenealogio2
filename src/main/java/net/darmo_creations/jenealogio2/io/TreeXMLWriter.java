@@ -10,6 +10,7 @@ import org.jetbrains.annotations.*;
 import org.w3c.dom.*;
 
 import java.io.*;
+import java.nio.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
@@ -146,19 +147,14 @@ public class TreeXMLWriter extends TreeXMLManager {
   private static String imageToBase64(@NotNull Image image) {
     final int w = (int) image.getWidth();
     final int h = (int) image.getHeight();
-    final byte[] bytes = new byte[2 + 4 * (w * h)];
-    bytes[0] = (byte) w;
-    bytes[1] = (byte) h;
-    final PixelReader pixelReader = image.getPixelReader();
+    final var bb = ByteBuffer.allocate(2 + 4 * (w * h));
+    bb.put((byte) w);
+    bb.put((byte) h);
     final int[] buffer = new int[w * h];
-    pixelReader.getPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), buffer, 0, w);
-    for (int i = 0; i < buffer.length; i++) {
-      bytes[2 + 4 * i] = (byte) (buffer[i] >> 24 & 0xff);
-      bytes[2 + 4 * i + 1] = (byte) (buffer[i] >> 16 & 0xff);
-      bytes[2 + 4 * i + 2] = (byte) (buffer[i] >> 8 & 0xff);
-      bytes[2 + 4 * i + 3] = (byte) (buffer[i] & 0xff);
-    }
-    return Base64.getEncoder().encodeToString(bytes);
+    image.getPixelReader().getPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), buffer, 0, w);
+    for (final int argb : buffer)
+      bb.putInt(argb);
+    return Base64.getEncoder().encodeToString(bb.array());
   }
 
   // endregion
