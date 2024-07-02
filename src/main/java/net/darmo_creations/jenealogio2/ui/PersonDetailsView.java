@@ -526,6 +526,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.fullNameLabel.setText(null);
     this.fullNameLabel.setTooltip(null);
     this.genderLabel.setText(null);
+    this.genderLabel.setGraphic(null);
     this.genderLabel.setTooltip(null);
     this.occupationLabel.setText(null);
     this.occupationLabel.setTooltip(null);
