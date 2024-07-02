@@ -11,7 +11,11 @@ import java.util.*;
  * This class represents a picture (file) that can be attached to a {@link Person} or {@link LifeEventType}.
  */
 public class Picture extends AttachedDocument {
-  public static final String[] FILE_EXTENSIONS = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+  /**
+   * The list of allowed picture extensions.
+   */
+  @Unmodifiable
+  public static final List<String> FILE_EXTENSIONS = List.of(".jpg", ".jpeg", ".png", ".gif", ".bmp");
 
   private final Image image;
 

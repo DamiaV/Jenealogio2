@@ -38,13 +38,12 @@ public final class TreesMetadataManager {
         final String dirName = path.getFileName().toString();
         final FamilyTree tree;
         try (final var in = Files.newInputStream(path.resolve(TreeFileManager.TREE_FILE_NAME))) {
-          final List<String> list = Arrays.asList(Picture.FILE_EXTENSIONS);
           tree = new TreeXMLReader().readFromStream(
               in,
               (name, description, date) -> {
                 final Path filePath = path.resolve(name);
                 final Optional<String> ext = FileUtils.splitExtension(name).extension();
-                if (ext.isPresent() && list.contains(ext.get().toLowerCase()))
+                if (ext.isPresent() && Picture.FILE_EXTENSIONS.contains(ext.get().toLowerCase()))
                   return new Picture(null, filePath, description, date);
                 return new AttachedDocument(filePath, description, date);
               }

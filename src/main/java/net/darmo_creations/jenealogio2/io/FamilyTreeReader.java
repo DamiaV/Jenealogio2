@@ -27,13 +27,12 @@ public class FamilyTreeReader extends TreeFileManager {
     final Path filesDir = directory.resolve(FILES_DIR);
     final FamilyTree familyTree;
     try (final var in = new FileInputStream(directory.resolve(TREE_FILE_NAME).toFile())) {
-      final List<String> extensions = Arrays.asList(Picture.FILE_EXTENSIONS);
       familyTree = this.treeXMLReader.readFromStream(
           in,
           (name, desc, date) -> {
             final Path path = filesDir.resolve(name);
             final Optional<String> ext = FileUtils.splitExtension(name).extension();
-            if (ext.isPresent() && extensions.contains(ext.get().toLowerCase()))
+            if (ext.isPresent() && Picture.FILE_EXTENSIONS.contains(ext.get().toLowerCase()))
               return this.readImageFile(path, desc, date);
             return new AttachedDocument(path, desc, date);
           }
