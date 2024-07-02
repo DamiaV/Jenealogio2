@@ -8,6 +8,9 @@ import org.jetbrains.annotations.*;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * This class represents a document (file) that can be attached to a {@link Person} or {@link LifeEventType}.
+ */
 public class AttachedDocument implements Comparable<AttachedDocument> {
   private Path path;
   private String fileName;
@@ -16,6 +19,13 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
   private String description;
   private DateTime date;
 
+  /**
+   * Create a new document.
+   *
+   * @param path        The document’s path on the file system.
+   * @param description The document’s description.
+   * @param date        The date of the document.
+   */
   public AttachedDocument(@NotNull Path path, String description, final DateTime date) {
     this.path = path;
     final var split = FileUtils.splitExtension(path.getFileName().toString());
@@ -43,6 +53,10 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
     this.path = path;
   }
 
+  /**
+   * The file name of this document.
+   * May differ from the name of {@link #path()}.
+   */
   public String fileName() {
     return this.fileName;
   }
@@ -51,27 +65,51 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
     return Optional.ofNullable(this.normalizedFileExt);
   }
 
+  /**
+   * This document’s name. It corresponds to the value of {@link #fileName()} before the extension’s dot.
+   */
   public final String name() {
     return this.name;
   }
 
+  /**
+   * Set this document’s name. Also updates the {@link #fileName()} property, keeping the extension.
+   *
+   * @param name The new name.
+   */
   public final void setName(@NotNull String name) {
     this.name = Objects.requireNonNull(name);
     this.fileName = name + FileUtils.splitExtension(this.fileName).extension().orElse("");
   }
 
+  /**
+   * This document’s description.
+   */
   public final Optional<String> description() {
     return Optional.ofNullable(this.description);
   }
 
+  /**
+   * Set this document’s description.
+   *
+   * @param description The new description. May be null.
+   */
   public final void setDescription(String description) {
     this.description = StringUtils.stripNullable(description).orElse(null);
   }
 
+  /**
+   * This document’s date.
+   */
   public final Optional<DateTime> date() {
     return Optional.ofNullable(this.date);
   }
 
+  /**
+   * Set this document’s date.
+   *
+   * @param date The new date. May be null.
+   */
   public final void setDate(final DateTime date) {
     this.date = date;
   }
