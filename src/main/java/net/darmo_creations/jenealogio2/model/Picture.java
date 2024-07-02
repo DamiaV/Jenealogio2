@@ -8,8 +8,7 @@ import java.nio.file.*;
 import java.util.*;
 
 public class Picture extends AttachedDocument {
-  // TODO check other image formats (BMP, WEBP, APNG, etc.)
-  public static final String[] FILE_EXTENSIONS = { ".jpg", ".jpeg", ".png", ".gif" };
+  public static final String[] FILE_EXTENSIONS = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
 
   private final Image image;
 
