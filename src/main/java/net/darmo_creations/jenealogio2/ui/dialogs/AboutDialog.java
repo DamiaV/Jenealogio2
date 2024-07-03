@@ -1,11 +1,13 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
+import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.*;
+import javafx.stage.*;
 import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.themes.*;
@@ -24,10 +26,12 @@ public class AboutDialog extends DialogBase<ButtonType> {
    * @param config The app’s config.
    */
   public AboutDialog(final @NotNull Config config) {
-    super(config, "about", false, ButtonTypes.CLOSE);
+    super(config, "about", true, ButtonTypes.CLOSE);
     final Label titleLabel = new Label();
     titleLabel.setText(App.NAME);
     titleLabel.setStyle("-fx-font-size: 1.5em; -fx-font-weight: bold");
+
+    final Label systemPropsLabel = new Label(config.language().translate("dialog.about.system_properties"));
 
     final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -40,12 +44,15 @@ public class AboutDialog extends DialogBase<ButtonType> {
       Clipboard.getSystemClipboard().setContent(clipboardContent);
     });
 
-    final HBox hBox = new HBox(5, titleLabel, spacer, button);
+    final HBox buttonBox = new HBox(5, systemPropsLabel, spacer, button);
+    buttonBox.setAlignment(Pos.CENTER_LEFT);
 
-    final var contentView = getTextArea();
-    VBox.setVgrow(contentView, Priority.ALWAYS);
+    final TextArea systemPropsTextArea = new TextArea(App.getSystemProperties());
+    systemPropsTextArea.setEditable(false);
+    VBox.setVgrow(systemPropsTextArea, Priority.ALWAYS);
 
-    final VBox vBox = new VBox(10, hBox, contentView);
+    final VBox vBox = new VBox(5, titleLabel, getTextArea(), buttonBox, systemPropsTextArea);
+    HBox.setHgrow(vBox, Priority.ALWAYS);
 
     final ImageView logo = new ImageView(config.theme().getAppIcon());
     logo.setFitHeight(100);
@@ -55,12 +62,16 @@ public class AboutDialog extends DialogBase<ButtonType> {
     content.setPrefWidth(600);
     content.setPrefHeight(600);
     this.getDialogPane().setContent(content);
+
+    final Stage stage = this.stage();
+    stage.setMinHeight(400);
+    stage.setMinWidth(600);
   }
 
   private static Node getTextArea() {
-    final TextFlow contentView = new TextFlow();
+    final TextFlow textFlow = new TextFlow();
     final String text = """
-        App version: %s
+        Version: %s
                 
         Developped by Damia Vergnet (@Darmo117 on GitHub).
         This application is available under GPL-3.0 license.
@@ -70,12 +81,9 @@ public class AboutDialog extends DialogBase<ButtonType> {
         Map view by Gluon Maps (<https://github.com/gluonhq/maps>).
                 
         Map tile data and geocoding service by OpenStreetMap and its contributors (<https://www.openstreetmap.org/copyright>).
-                
-        System properties:
-        %s
-        """.formatted(App.VERSION, App.getSystemProperties());
-    contentView.getChildren().addAll(StringUtils.parseText(text, App::openURL));
-    return new ScrollPane(contentView);
+        """.formatted(App.VERSION);
+    textFlow.getChildren().addAll(StringUtils.parseText(text, App::openURL));
+    return textFlow;
   }
 
   @Override
