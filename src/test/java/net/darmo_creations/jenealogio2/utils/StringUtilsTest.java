@@ -88,7 +88,7 @@ class StringUtilsTest {
   @Test
   void testParseTextMultipleLines() {
     assertTextsEqual(
-        List.of("line 1\n", "line 2"),
+        List.of("line 1\nline 2"),
         StringUtils.parseText("line 1\nline 2", url -> {
         })
     );
@@ -97,7 +97,7 @@ class StringUtilsTest {
   @Test
   void testParseTextLF() {
     assertTextsEqual(
-        List.of("line 1\n", "line 2"),
+        List.of("line 1\nline 2"),
         StringUtils.parseText("line 1\nline 2", url -> {
         })
     );
@@ -106,7 +106,7 @@ class StringUtilsTest {
   @Test
   void testParseTextCR() {
     assertTextsEqual(
-        List.of("line 1\n", "line 2"),
+        List.of("line 1\nline 2"),
         StringUtils.parseText("line 1\rline 2", url -> {
         })
     );
@@ -115,7 +115,7 @@ class StringUtilsTest {
   @Test
   void testParseTextCRLF() {
     assertTextsEqual(
-        List.of("line 1\n", "line 2"),
+        List.of("line 1\nline 2"),
         StringUtils.parseText("line 1\r\nline 2", url -> {
         })
     );
@@ -131,9 +131,18 @@ class StringUtilsTest {
   }
 
   @Test
+  void testParseTextOpenChevronInUrl() {
+    assertTextsEqual(
+        List.of("http://example.com/<y", " blabla"),
+        StringUtils.parseText("<http://example.com/<y> blabla", url -> {
+        })
+    );
+  }
+
+  @Test
   void testParseTextUrlWithLineFeedTreatedAsPlainText() {
     assertTextsEqual(
-        List.of("<http://example.com\n", "/yo> blabla"),
+        List.of("<http://example.com\n/yo> blabla"),
         StringUtils.parseText("<http://example.com\n/yo> blabla", url -> {
         })
     );
@@ -142,18 +151,18 @@ class StringUtilsTest {
   @Test
   void testParseTextUrlWithWhitespaceTreatedAsPlainText() {
     assertTextsEqual(
-        List.of("<http://example.com/a b/c.png> blabla"),
-        StringUtils.parseText("<http://example.com/a b/c.png> blabla", url -> {
+        List.of("<http://exampl e.com> blabla"),
+        StringUtils.parseText("<http://exampl e.com> blabla", url -> {
         })
     );
     assertTextsEqual(
-        List.of("<http://example.com/ab/c.png > blabla"),
-        StringUtils.parseText("<http://example.com/ab/c.png > blabla", url -> {
+        List.of("<http://example.com > blabla"),
+        StringUtils.parseText("<http://example.com > blabla", url -> {
         })
     );
     assertTextsEqual(
-        List.of("< http://example.com/ab/c.png> blabla"),
-        StringUtils.parseText("< http://example.com/ab/c.png> blabla", url -> {
+        List.of("< http://example.com> blabla"),
+        StringUtils.parseText("< http://example.com> blabla", url -> {
         })
     );
   }
