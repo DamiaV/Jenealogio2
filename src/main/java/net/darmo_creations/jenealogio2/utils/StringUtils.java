@@ -64,13 +64,11 @@ public final class StringUtils {
     final StringBuilder builder = new StringBuilder();
     final StringBuilder urlBuffer = new StringBuilder();
 
-    final int[] codepoints = s.strip().replaceAll("\r\n|\n|\r", "\n").chars().toArray();
-    for (int i = 0; i < codepoints.length; i++) {
-      final int codepoint = codepoints[i];
+    final int[] codepoints = s.strip().replaceAll("\r\n?|\n", "\n").chars().toArray();
+    for (final int codepoint : codepoints) {
       if (codepoint == '<' || !urlBuffer.isEmpty()) { // Handle HTTP(S) urls
-        final boolean isLastChar = i == codepoints.length - 1;
         if (codepoint == '>') {
-          // Remove leading '<'
+          // Call deleteCharAt() to remove leading '<'
           final String urlCandidate = urlBuffer.deleteCharAt(0).toString();
           if (URL_REGEX.matcher(urlCandidate).matches()) { // Text matched, treat as hyperlink and make clickable
             if (!builder.isEmpty()) {
