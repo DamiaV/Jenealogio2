@@ -131,6 +131,15 @@ class StringUtilsTest {
   }
 
   @Test
+  void testParseTextUrlWithLineFeedTreatedAsPlainText() {
+    assertTextsEqual(
+        List.of("<http://example.com\n", "/yo> blabla"),
+        StringUtils.parseText("<http://example.com\n/yo> blabla", url -> {
+        })
+    );
+  }
+
+  @Test
   void testParseTextUrlWithWhitespaceTreatedAsPlainText() {
     assertTextsEqual(
         List.of("<http://example.com/a b/c.png> blabla"),
@@ -145,6 +154,15 @@ class StringUtilsTest {
     assertTextsEqual(
         List.of("< http://example.com/ab/c.png> blabla"),
         StringUtils.parseText("< http://example.com/ab/c.png> blabla", url -> {
+        })
+    );
+  }
+
+  @Test
+  void testParseTextChevronsWithoutUrlIsPlainText() {
+    assertTextsEqual(
+        List.of("<ab> blabla"),
+        StringUtils.parseText("<ab> blabla", url -> {
         })
     );
   }
@@ -197,7 +215,7 @@ class StringUtilsTest {
   @Test
   void testParseTextInvalidUrl() {
     assertTextsEqual(
-        List.of("address: http://exam blabla"),
+        List.of("address: <http://exam> blabla"),
         StringUtils.parseText("address: <http://exam> blabla", url -> {
         })
     );

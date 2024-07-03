@@ -61,44 +61,53 @@ public final class StringUtils {
    */
   public static List<Text> parseText(@NotNull String s, @NotNull Consumer<String> urlClickListener) {
     final List<Text> texts = new LinkedList<>();
-    final StringBuilder builder = new StringBuilder();
-    final StringBuilder urlBuffer = new StringBuilder();
+    final var textBuffer = new StringBuilder();
+    final var urlBuffer = new StringBuilder();
 
-    final int[] codepoints = s.strip().replaceAll("\r\n?|\n", "\n").chars().toArray();
-    for (final int codepoint : codepoints) {
-      if (codepoint == '<' || !urlBuffer.isEmpty()) { // Handle HTTP(S) urls
+    for (final int codepoint : s.strip().replaceAll("\r\n?|\n", "\n").chars().toArray()) {
+      if (codepoint == '<')
+        urlBuffer.append(Character.toString(codepoint));
+      else if (codepoint == '\n') {
+        // Start new line
+        if (!urlBuffer.isEmpty()) {
+          // We were parsing a URL, abort and treat its content as plain text
+          textBuffer.append(urlBuffer);
+          urlBuffer.setLength(0);
+        }
+        texts.add(new Text(textBuffer + Character.toString(codepoint)));
+        textBuffer.setLength(0);
+      } else if (!urlBuffer.isEmpty()) {
+        // Handle HTTP(S) urls
         if (codepoint == '>') {
-          // Call deleteCharAt() to remove leading '<'
-          final String urlCandidate = urlBuffer.deleteCharAt(0).toString();
-          if (URL_REGEX.matcher(urlCandidate).matches()) { // Text matched, treat as hyperlink and make clickable
-            if (!builder.isEmpty()) {
-              texts.add(new Text(builder.toString()));
-              builder.setLength(0); // Clear
+          final String urlCandidate = urlBuffer.substring(1);
+          if (URL_REGEX.matcher(urlCandidate).matches()) {
+            // Text matched, treat as hyperlink and render clickable
+            if (!textBuffer.isEmpty()) {
+              texts.add(new Text(textBuffer.toString()));
+              textBuffer.setLength(0);
             }
             final Text url = new Text(urlCandidate);
-            url.getStyleClass().add("hyperlink"); // JavaFX adds some default styling with this class
+            url.getStyleClass().add("hyperlink"); // Add built-in JavaFX CSS class to format link
             url.setOnMouseClicked(event -> urlClickListener.accept(urlCandidate));
             texts.add(url);
           } else
-            builder.append(urlCandidate); // Text did not match, add it to the main builder as plain text
-          urlBuffer.setLength(0); // Clear
-        } else if (Character.isWhitespace(codepoint)) { // Text did not match, add it to the main builder as plain text
-          builder.append(urlBuffer);
-          builder.append(Character.toString(codepoint));
-          urlBuffer.setLength(0); // Clear
+            // Text did not match, abort and treat it as plain text
+            textBuffer.append(urlBuffer).append(Character.toString(codepoint));
+          urlBuffer.setLength(0);
+        } else if (Character.isWhitespace(codepoint)) {
+          // Whitespace character encountered in URL, abort and treat it as plain text
+          textBuffer.append(urlBuffer).append(Character.toString(codepoint));
+          urlBuffer.setLength(0);
         } else
           urlBuffer.append(Character.toString(codepoint));
-      } else if (codepoint == '\n') { // Start new line
-        texts.add(new Text(builder + Character.toString(codepoint)));
-        builder.setLength(0); // Clear
       } else
-        builder.append(Character.toString(codepoint));
+        textBuffer.append(Character.toString(codepoint));
     }
 
     if (!urlBuffer.isEmpty())
-      builder.append(urlBuffer);
-    if (!builder.isEmpty())
-      texts.add(new Text(builder.toString()));
+      textBuffer.append(urlBuffer);
+    if (!textBuffer.isEmpty())
+      texts.add(new Text(textBuffer.toString()));
 
     return texts;
   }
