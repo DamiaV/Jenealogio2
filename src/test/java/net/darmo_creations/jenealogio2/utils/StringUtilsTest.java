@@ -122,10 +122,19 @@ class StringUtilsTest {
   }
 
   @Test
+  void testParseTextNonBracedUrlTreatedAsPlainText() {
+    assertTextsEqual(
+        List.of("http://example.com blabla"),
+        StringUtils.parseText("http://example.com blabla", url -> {
+        })
+    );
+  }
+
+  @Test
   void testParseTextUrlAtStart() {
     assertTextsEqual(
         List.of("http://example.com", " blabla"),
-        StringUtils.parseText("http://example.com blabla", url -> {
+        StringUtils.parseText("<http://example.com> blabla", url -> {
         })
     );
   }
@@ -134,7 +143,7 @@ class StringUtilsTest {
   void testParseTextUrlAtEnd() {
     assertTextsEqual(
         List.of("blabla ", "http://example.com"),
-        StringUtils.parseText("blabla http://example.com", url -> {
+        StringUtils.parseText("blabla <http://example.com>", url -> {
         })
     );
   }
@@ -143,7 +152,7 @@ class StringUtilsTest {
   void testParseTextOneUrl() {
     assertTextsEqual(
         List.of("address: ", "http://example.com", " blabla"),
-        StringUtils.parseText("address: http://example.com blabla", url -> {
+        StringUtils.parseText("address: <http://example.com> blabla", url -> {
         })
     );
   }
@@ -152,7 +161,7 @@ class StringUtilsTest {
   void testParseTextTwoUrls() {
     assertTextsEqual(
         List.of("address: ", "http://example.com", " ", "http://exemple.com", " blabla"),
-        StringUtils.parseText("address: http://example.com http://exemple.com blabla", url -> {
+        StringUtils.parseText("address: <http://example.com> <http://exemple.com> blabla", url -> {
         })
     );
   }
@@ -161,7 +170,7 @@ class StringUtilsTest {
   void testParseTextTwoUrlsTwoLines() {
     assertTextsEqual(
         List.of("address: ", "http://example.com", "\n", "http://exemple.com", " blabla"),
-        StringUtils.parseText("address: http://example.com\nhttp://exemple.com blabla", url -> {
+        StringUtils.parseText("address: <http://example.com>\n<http://exemple.com> blabla", url -> {
         })
     );
   }
@@ -170,7 +179,7 @@ class StringUtilsTest {
   void testParseTextInvalidUrl() {
     assertTextsEqual(
         List.of("address: http://exam blabla"),
-        StringUtils.parseText("address: http://exam blabla", url -> {
+        StringUtils.parseText("address: <http://exam> blabla", url -> {
         })
     );
   }

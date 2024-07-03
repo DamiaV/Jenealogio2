@@ -44,9 +44,8 @@ public final class StringUtils {
     final Set<String> argNames = new HashSet<>();
     for (final FormatArg arg : args) {
       final String name = arg.name();
-      if (argNames.contains(name)) {
+      if (argNames.contains(name))
         throw new IllegalArgumentException("Duplicate format argument: " + name);
-      }
       argNames.add(name);
       pattern = pattern.replace("{" + name + "}", Objects.toString(arg.value()));
     }
@@ -68,15 +67,11 @@ public final class StringUtils {
     final int[] codepoints = s.strip().replaceAll("\r\n|\n|\r", "\n").chars().toArray();
     for (int i = 0; i < codepoints.length; i++) {
       final int codepoint = codepoints[i];
-      if (codepoint == 'h' || !urlBuffer.isEmpty()) { // Handle HTTP(S) urls
-        final boolean lastChar = i == codepoints.length - 1;
-        if (Character.isWhitespace(codepoint) || lastChar) {
-          if (lastChar) {
-            urlBuffer.append(Character.toString(codepoint));
-          } else {
-            i--; // Step back to parse the whitespace char at next iteration
-          }
-          final String urlCandidate = urlBuffer.toString();
+      if (codepoint == '<' || !urlBuffer.isEmpty()) { // Handle HTTP(S) urls
+        final boolean isLastChar = i == codepoints.length - 1;
+        if (codepoint == '>') {
+          // Remove leading '<'
+          final String urlCandidate = urlBuffer.deleteCharAt(0).toString();
           if (URL_REGEX.matcher(urlCandidate).matches()) { // Text matched, treat as hyperlink and make clickable
             if (!builder.isEmpty()) {
               texts.add(new Text(builder.toString()));
@@ -86,27 +81,26 @@ public final class StringUtils {
             url.getStyleClass().add("hyperlink"); // JavaFX adds some default styling with this class
             url.setOnMouseClicked(event -> urlClickListener.accept(urlCandidate));
             texts.add(url);
-          } else { // Text did not match, add it to the main builder as plain text
-            builder.append(urlCandidate);
-          }
+          } else
+            builder.append(urlCandidate); // Text did not match, add it to the main builder as plain text
           urlBuffer.setLength(0); // Clear
-        } else {
+        } else if (Character.isWhitespace(codepoint)) { // Text did not match, add it to the main builder as plain text
+          builder.append(urlBuffer);
+          builder.append(Character.toString(codepoint));
+          urlBuffer.setLength(0); // Clear
+        } else
           urlBuffer.append(Character.toString(codepoint));
-        }
       } else if (codepoint == '\n') { // Start new line
         texts.add(new Text(builder + Character.toString(codepoint)));
         builder.setLength(0); // Clear
-      } else {
+      } else
         builder.append(Character.toString(codepoint));
-      }
     }
 
-    if (!urlBuffer.isEmpty()) {
+    if (!urlBuffer.isEmpty())
       builder.append(urlBuffer);
-    }
-    if (!builder.isEmpty()) {
+    if (!builder.isEmpty())
       texts.add(new Text(builder.toString()));
-    }
 
     return texts;
   }
