@@ -114,6 +114,8 @@ public enum Icon {
 
   WARNING("error"),
 
+  COPY_TO_CLIPBOARD("clipboard_invoice"),
+
   // File extensions
   UNKNOWN_FILE_EXT("page_white"),
   FILE_EXT_SWF("file_extension_swf"),
