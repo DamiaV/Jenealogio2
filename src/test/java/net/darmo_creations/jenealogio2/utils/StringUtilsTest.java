@@ -131,6 +131,25 @@ class StringUtilsTest {
   }
 
   @Test
+  void testParseTextUrlWithWhitespaceTreatedAsPlainText() {
+    assertTextsEqual(
+        List.of("<http://example.com/a b/c.png> blabla"),
+        StringUtils.parseText("<http://example.com/a b/c.png> blabla", url -> {
+        })
+    );
+    assertTextsEqual(
+        List.of("<http://example.com/ab/c.png > blabla"),
+        StringUtils.parseText("<http://example.com/ab/c.png > blabla", url -> {
+        })
+    );
+    assertTextsEqual(
+        List.of("< http://example.com/ab/c.png> blabla"),
+        StringUtils.parseText("< http://example.com/ab/c.png> blabla", url -> {
+        })
+    );
+  }
+
+  @Test
   void testParseTextUrlAtStart() {
     assertTextsEqual(
         List.of("http://example.com", " blabla"),
