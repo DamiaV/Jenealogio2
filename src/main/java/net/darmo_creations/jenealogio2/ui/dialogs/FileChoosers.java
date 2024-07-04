@@ -15,42 +15,48 @@ import java.util.*;
  */
 public final class FileChoosers {
   /**
-   * Open a dialog to choose a .zip file.
+   * Open a dialog to choose a ZIPped tree file.
    *
    * @param config The app’s config.
    * @param stage  The parent stage object.
    * @return The selected file.
    */
-  public static Optional<Path> showZipFileChooser(
-      final @NotNull Config config, final @NotNull Window stage, @NotNull String titleKey, @NotNull String descKey) {
-    return getFile(
+  public static Optional<Path> showZippedTreeFileChooser(
+      final @NotNull Config config,
+      final @NotNull Window stage
+  ) {
+    return showFileChooser(
         config,
         stage,
-        titleKey,
+        "zipped_tree_file_chooser",
         false,
-        descKey,
+        "zipped_tree_file",
         null,
-        FileUtils.EXTENSIONS.toArray(new String[0])
+        ".zip"
     );
   }
 
   /**
-   * Open a dialog to save a .zip file.
+   * Open a dialog to save a ZIPped tree file.
    *
-   * @param config The app’s config.
-   * @param stage  The parent stage object.
+   * @param config      The app’s config.
+   * @param stage       The parent stage object.
+   * @param defaultName The file’s default name.
    * @return The selected file.
    */
-  public static Optional<Path> showZipFileSaver(
-      final @NotNull Config config, final @NotNull Window stage, @NotNull String titleKey, @NotNull String descKey) {
-    return getFile(
+  public static Optional<Path> showZippedTreeFileSaver(
+      final @NotNull Config config,
+      final @NotNull Window stage,
+      String defaultName
+  ) {
+    return showFileChooser(
         config,
         stage,
-        titleKey,
+        "zipped_tree_file_saver",
         true,
-        descKey,
-        null,
-        FileUtils.EXTENSIONS.toArray(new String[0])
+        "zipped_tree_file",
+        defaultName,
+        ".zip"
     );
   }
 
@@ -64,12 +70,14 @@ public final class FileChoosers {
    */
   public static Optional<Path> showRegistriesFileSaver(
       final @NotNull Config config, final @NotNull Window stage, String defaultName) {
-    return getRegistriesFile(
+    return showFileChooser(
         config,
         stage,
         "registries_file_saver",
         true,
-        defaultName
+        "registries_file_chooser",
+        defaultName,
+        TreeXMLManager.REG_FILE_EXTENSION
     );
   }
 
@@ -83,32 +91,11 @@ public final class FileChoosers {
    */
   public static Optional<Path> showRegistriesFileChooser(
       final @NotNull Config config, final @NotNull Window stage, String defaultName) {
-    return getRegistriesFile(
+    return showFileChooser(
         config,
         stage,
         "registries_file_chooser",
         false,
-        defaultName
-    );
-  }
-
-  /**
-   * Open a .jtreereg file chooser/saver.
-   *
-   * @param config      The app’s config.
-   * @param stage       The parent stage object.
-   * @param titleKey    Title translation key.
-   * @param saver       True to open a file saver, false for file chooser.
-   * @param defaultName Default file name.
-   * @return The selected file.
-   */
-  private static Optional<Path> getRegistriesFile(
-      final @NotNull Config config, @NotNull Window stage, @NotNull String titleKey, boolean saver, String defaultName) {
-    return getFile(
-        config,
-        stage,
-        titleKey,
-        saver,
         "registries_file_chooser",
         defaultName,
         TreeXMLManager.REG_FILE_EXTENSION
@@ -125,8 +112,12 @@ public final class FileChoosers {
    * @return The selected file.
    */
   public static Optional<Path> showFileChooser(
-      final @NotNull Config config, final @NotNull Window stage, String descKey, @NotNull String @NotNull ... extensions) {
-    return getFile(
+      final @NotNull Config config,
+      final @NotNull Window stage,
+      String descKey,
+      @NotNull String... extensions
+  ) {
+    return showFileChooser(
         config,
         stage,
         "file_chooser",
@@ -149,7 +140,7 @@ public final class FileChoosers {
    * @param extensions  Allowed file extensions. Leave empty to allow any file type.
    * @return The selected file.
    */
-  private static Optional<Path> getFile(
+  private static Optional<Path> showFileChooser(
       final @NotNull Config config,
       @NotNull Window stage,
       @NotNull String titleKey,

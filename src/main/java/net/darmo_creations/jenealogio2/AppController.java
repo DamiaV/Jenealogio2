@@ -696,8 +696,7 @@ public class AppController {
       if (!proceed)
         return;
     }
-    final Optional<Path> f = FileChoosers.showZipFileChooser(
-        this.config, this.stage, "zipped_tree_file_chooser", "zipped_tree_file");
+    final Optional<Path> f = FileChoosers.showZippedTreeFileChooser(this.config, this.stage);
     if (f.isEmpty())
       return;
     final String targetDir;
@@ -724,8 +723,7 @@ public class AppController {
    * Open a file chooser dialog to export this tree as a ZIP file.
    */
   private void onExportTreeAction() {
-    final Optional<Path> file = FileChoosers.showZipFileSaver(
-        this.config, this.stage, "zipped_tree_file_saver", "zipped_tree_file");
+    final Optional<Path> file = FileChoosers.showZippedTreeFileSaver(this.config, this.stage, this.familyTree.name());
     if (file.isEmpty())
       return;
     try {

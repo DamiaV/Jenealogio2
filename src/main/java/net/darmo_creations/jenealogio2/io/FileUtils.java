@@ -10,9 +10,6 @@ import java.util.stream.*;
 import java.util.zip.*;
 
 public final class FileUtils {
-  @Unmodifiable
-  public static final List<String> EXTENSIONS = List.of(".zip");
-
   /**
    * Unzip the given .zip file into the given directory.
    * The ZIP file’s content will be unzipped in a sub-directory named after the ZIP file.
