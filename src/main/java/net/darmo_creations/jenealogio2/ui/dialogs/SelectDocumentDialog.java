@@ -234,7 +234,9 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     final DocumentView dv = new DocumentView(document, true, this.config);
     this.documentsList_.add(dv);
     this.documentsList_.sort(null);
+    this.documentsList.getSelectionModel().select(dv);
     this.documentsList.scrollTo(dv);
+    this.documentsList.requestFocus();
   }
 
   /**
