@@ -103,6 +103,8 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
   @Override
   public void refresh() {
+    this.internalSelectionChange = true;
+    final Optional<Person> selectedPerson = this.getSelectedPerson();
     this.personsItem.getChildren().clear();
     this.searchField.textField().clear();
     this.familyTree().ifPresent(familyTree -> {
@@ -113,6 +115,11 @@ public class FamilyTreeView extends FamilyTreeComponent {
     });
     // Option may have been updated from elsewhere
     this.syncTreeButton.setSelected(this.config.shouldSyncTreeWithMainPane());
+    selectedPerson.ifPresent(p -> { // Keep current selection
+      if (this.familyTree().isPresent() && this.familyTree().get().persons().contains(p))
+        this.select(p, false);
+    });
+    this.internalSelectionChange = false;
   }
 
   @Override

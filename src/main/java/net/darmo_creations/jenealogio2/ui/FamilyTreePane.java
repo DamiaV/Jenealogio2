@@ -72,6 +72,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
 
   @Override
   public void refresh() {
+    final Optional<Person> selectedPerson = this.getSelectedPerson();
     this.pane.getChildren().clear();
     this.personWidgets.clear();
     if (this.familyTree().isEmpty())
@@ -93,6 +94,11 @@ public class FamilyTreePane extends FamilyTreeComponent {
           .forEach(w -> w.setLayoutX(w.getLayoutX() - xOffset + HGAP));
 
     this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
+    if (selectedPerson.isPresent() && familyTree.persons().contains(selectedPerson.get())) { // Keep current selection
+      this.internalClick = true;
+      this.select(selectedPerson.get(), false);
+      this.internalClick = false;
+    }
 
     this.centerNodeInScrollPane(root);
   }

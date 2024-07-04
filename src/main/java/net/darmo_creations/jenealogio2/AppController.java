@@ -577,6 +577,7 @@ public class AppController {
     this.familyTreePane.setMaxHeight(this.config.maxTreeHeight());
     this.familyTreePane.refresh();
     this.familyTreeView.refresh();
+    this.personDetailsView.refresh();
   }
 
   /**
@@ -840,6 +841,7 @@ public class AppController {
       this.unsavedChanges = true;
       this.familyTreePane.refresh();
       this.familyTreeView.refresh();
+      this.personDetailsView.refresh();
       this.updateUI();
     });
   }
@@ -892,14 +894,7 @@ public class AppController {
       selectedObject = this.getSelectedPerson();
     selectedObject.ifPresent(o -> {
       this.editDocumentsDialog.setObject(o, this.familyTree);
-      this.editDocumentsDialog.showAndWait().ifPresent(result -> {
-        if (result.targetUpdated() || result.anyDocumentUpdated()) {
-          this.familyTreeView.refresh();
-          this.familyTreePane.refresh();
-          this.unsavedChanges = true;
-          this.updateUI();
-        }
-      });
+      this.editDocumentsDialog.showAndWait().ifPresent(this::onDocumentsUpdate);
     });
   }
 
@@ -929,6 +924,10 @@ public class AppController {
         // Update UI
         this.familyTreePane.refresh();
         this.familyTreeView.refresh();
+        if (this.personDetailsView.person() == person)
+          this.personDetailsView.setPerson(null, this.familyTree);
+        else
+          this.personDetailsView.refresh();
         this.unsavedChanges = true;
         this.updateUI();
       }
@@ -1027,6 +1026,7 @@ public class AppController {
     if (result.isPresent() && !result.get().getButtonData().isCancelButton()) {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
+      this.personDetailsView.refresh();
       this.unsavedChanges = true;
       this.updateUI();
     }
@@ -1037,14 +1037,17 @@ public class AppController {
    */
   private void onEditTreeDocumentsAction() {
     this.editDocumentsDialog.setObject(null, this.familyTree);
-    this.editDocumentsDialog.showAndWait().ifPresent(result -> {
-      if (result.targetUpdated() || result.anyDocumentUpdated()) {
-        this.familyTreeView.refresh();
-        this.familyTreePane.refresh();
-        this.unsavedChanges = true;
-        this.updateUI();
-      }
-    });
+    this.editDocumentsDialog.showAndWait().ifPresent(this::onDocumentsUpdate);
+  }
+
+  private void onDocumentsUpdate(@NotNull ManageDocumentsDialog.Result result) {
+    if (result.targetUpdated() || result.anyDocumentUpdated()) {
+      this.familyTreeView.refresh();
+      this.familyTreePane.refresh();
+      this.personDetailsView.refresh();
+      this.unsavedChanges = true;
+      this.updateUI();
+    }
   }
 
   /**
@@ -1067,6 +1070,7 @@ public class AppController {
     this.editPersonDialog.showAndWait().ifPresent(editedPerson -> {
       this.familyTreeView.refresh();
       this.familyTreePane.refresh();
+      this.personDetailsView.refresh();
       if (person == null && childInfo.isEmpty())
         this.onPersonClick(new PersonClickedEvent(editedPerson, PersonClickedEvent.Action.SET_AS_TARGET), null);
       this.unsavedChanges = true;
