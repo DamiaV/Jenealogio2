@@ -125,6 +125,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     this.removeDocumentButton.setText(language.translate("dialog.manage_object_documents.remove_document"));
     this.removeDocumentButton.setGraphic(theme.getIcon(Icon.REMOVE_DOCUMENT, Icon.Size.SMALL));
     this.removeDocumentButton.setOnAction(e -> this.onRemoveDocuments());
+    this.stage().getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE), this::onRemoveDocuments);
     this.removeDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
         -> this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_document"));
     this.removeDocumentButton.managedProperty().bind(this.removeDocumentButton.visibleProperty());
@@ -136,6 +137,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
 
     this.deleteDocumentButton.setGraphic(theme.getIcon(Icon.DELETE_DOCUMENT, Icon.Size.SMALL));
     this.deleteDocumentButton.setOnAction(e -> this.onDeleteDocuments());
+    this.stage().getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.SHIFT_DOWN), this::onDeleteDocuments);
     this.deleteDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
         -> this.showButtonDescription(newValue, "dialog.manage_%s_documents.delete_document".formatted(this.genealogyObject != null ? "object" : "tree")));
 
