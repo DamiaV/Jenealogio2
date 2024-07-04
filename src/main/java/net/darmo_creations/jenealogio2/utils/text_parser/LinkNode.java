@@ -15,7 +15,8 @@ class LinkNode extends TextNode {
   /**
    * This node’s text, i.e. the URL.
    *
-   * @param url The text/URL.
+   * @param url  The link’s URL.
+   * @param text The link’s text. If null, the URL will be used as text.
    */
   public LinkNode(@NotNull String url, String text) {
     super(text != null ? text : url);
