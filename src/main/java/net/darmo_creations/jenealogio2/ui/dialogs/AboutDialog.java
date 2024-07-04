@@ -71,16 +71,17 @@ public class AboutDialog extends DialogBase<ButtonType> {
   private static Node getTextArea() {
     final TextFlow textFlow = new TextFlow();
     final String text = """
-        Version: %s
+        Version: *%s*
                 
-        Developped by Damia Vergnet (@Darmo117 on GitHub).
-        This application is available under GPL-3.0 license.
+        Developped by Damia Vergnet ([@Darmo117](https://github.com/Darmo117) on GitHub).
+        This application is available under [GPL-3.0 license](https://github.com/Darmo117/Jenealogio2/blob/master/LICENSE).
+        Check for updates at <https://github.com/Darmo117/Jenealogio2>.
                 
-        Icons from FatCow (<https://github.com/gammasoft/fatcow>).
+        Icons from [FatCow](https://github.com/gammasoft/fatcow).
                 
-        Map view by Gluon Maps (<https://github.com/gluonhq/maps>).
+        Map view powered by [Gluon Maps](https://github.com/gluonhq/maps).
                 
-        Map tile data and geocoding service by OpenStreetMap and its contributors (<https://www.openstreetmap.org/copyright>).
+        Map tile data and geocoding service by [OpenStreetMap and its contributors](https://www.openstreetmap.org/copyright).
         """.formatted(App.VERSION);
     textFlow.getChildren().addAll(StringUtils.parseText(text, App::openURL));
     return textFlow;

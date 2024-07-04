@@ -84,11 +84,28 @@ public class TextParser {
           escaping = true;
 
       } else if (!escaping && codepoint == '<') {
-        sequence.addChild(new PlainTextNode(textBuffer.toString()));
-        textBuffer.setLength(0);
+        if (!textBuffer.isEmpty()) {
+          sequence.addChild(new PlainTextNode(textBuffer.toString()));
+          textBuffer.setLength(0);
+        }
         final int i = this.index;
         this.index++;
         final Optional<Node> node = this.parseUrl();
+        if (node.isPresent())
+          sequence.addChild(node.get());
+        else { // Could not parse URL, rollback to the initial position
+          this.index = i;
+          textBuffer.append(Character.toString(codepoint));
+        }
+
+      } else if (!escaping && codepoint == '[') {
+        if (!textBuffer.isEmpty()) {
+          sequence.addChild(new PlainTextNode(textBuffer.toString()));
+          textBuffer.setLength(0);
+        }
+        final int i = this.index;
+        this.index++;
+        final Optional<Node> node = this.parseUrlWithText();
         if (node.isPresent())
           sequence.addChild(node.get());
         else { // Could not parse URL, rollback to the initial position
@@ -183,13 +200,44 @@ public class TextParser {
       if (codepoint == '>') {
         final String urlCandidate = buffer.toString();
         if (URL_REGEX.matcher(urlCandidate).matches())
-          return Optional.of(new LinkNode(urlCandidate));
+          return Optional.of(new LinkNode(urlCandidate, null));
         else
           return Optional.empty();
       } else if (Character.isWhitespace(codepoint))
         return Optional.empty();
       else
         buffer.append(Character.toString(codepoint));
+    }
+
+    return Optional.empty();
+  }
+
+  private Optional<Node> parseUrlWithText() {
+    final var textBuffer = new StringBuilder();
+    final var urlBuffer = new StringBuilder();
+    boolean inText = true;
+    boolean inUrl = false;
+
+    for (; this.index < this.codepoints.length; this.index++) {
+      final int codepoint = this.codepoints[this.index];
+      if (inText) {
+        if (codepoint == ']')
+          inText = false;
+        else
+          textBuffer.append(Character.toString(codepoint));
+      } else if (inUrl) {
+        if (codepoint == ')') {
+          final String urlCandidate = urlBuffer.toString();
+          if (URL_REGEX.matcher(urlCandidate).matches())
+            return Optional.of(new LinkNode(urlCandidate, textBuffer.toString()));
+          else
+            return Optional.empty();
+        } else
+          urlBuffer.append(Character.toString(codepoint));
+      } else if (codepoint == '(')
+        inUrl = true;
+      else
+        return Optional.empty();
     }
 
     return Optional.empty();

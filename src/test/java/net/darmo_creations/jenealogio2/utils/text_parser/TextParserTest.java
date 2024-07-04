@@ -68,7 +68,7 @@ class TextParserTest {
   @Test
   void parseTextOpenChevronInUrl() {
     assertEquals(
-        newSequenceNode(TextStyle.NONE, new LinkNode("http://example.com/<y"), new PlainTextNode(" blabla")),
+        newSequenceNode(TextStyle.NONE, new LinkNode("http://example.com/<y", null), new PlainTextNode(" blabla")),
         this.parser.parseTree("<http://example.com/<y> blabla")
     );
   }
@@ -108,7 +108,7 @@ class TextParserTest {
   @Test
   void parseTextUrlAtStart() {
     assertEquals(
-        newSequenceNode(TextStyle.NONE, new LinkNode("http://example.com"), new PlainTextNode(" blabla")),
+        newSequenceNode(TextStyle.NONE, new LinkNode("http://example.com", null), new PlainTextNode(" blabla")),
         this.parser.parseTree("<http://example.com> blabla")
     );
   }
@@ -116,7 +116,7 @@ class TextParserTest {
   @Test
   void parseTextUrlAtEnd() {
     assertEquals(
-        newSequenceNode(TextStyle.NONE, new PlainTextNode("blabla "), new LinkNode("http://example.com")),
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("blabla "), new LinkNode("http://example.com", null)),
         this.parser.parseTree("blabla <http://example.com>")
     );
   }
@@ -124,7 +124,7 @@ class TextParserTest {
   @Test
   void parseTextOneUrl() {
     assertEquals(
-        newSequenceNode(TextStyle.NONE, new PlainTextNode("address: "), new LinkNode("http://example.com"), new PlainTextNode(" blabla")),
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("address: "), new LinkNode("http://example.com", null), new PlainTextNode(" blabla")),
         this.parser.parseTree("address: <http://example.com> blabla")
     );
   }
@@ -132,7 +132,7 @@ class TextParserTest {
   @Test
   void parseTextTwoUrls() {
     assertEquals(
-        newSequenceNode(TextStyle.NONE, new PlainTextNode("address: "), new LinkNode("http://example.com"), new PlainTextNode(" "), new LinkNode("http://exemple.com"), new PlainTextNode(" blabla")),
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("address: "), new LinkNode("http://example.com", null), new PlainTextNode(" "), new LinkNode("http://exemple.com", null), new PlainTextNode(" blabla")),
         this.parser.parseTree("address: <http://example.com> <http://exemple.com> blabla")
     );
   }
@@ -140,7 +140,7 @@ class TextParserTest {
   @Test
   void parseTextTwoUrlsTwoLines() {
     assertEquals(
-        newSequenceNode(TextStyle.NONE, new PlainTextNode("address: "), new LinkNode("http://example.com"), new PlainTextNode("\n"), new LinkNode("http://exemple.com"), new PlainTextNode(" blabla")),
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("address: "), new LinkNode("http://example.com", null), new PlainTextNode("\n"), new LinkNode("http://exemple.com", null), new PlainTextNode(" blabla")),
         this.parser.parseTree("address: <http://example.com>\n<http://exemple.com> blabla")
     );
   }
@@ -150,6 +150,121 @@ class TextParserTest {
     assertEquals(
         new PlainTextNode("address: <http://exam> blabla"),
         this.parser.parseTree("address: <http://exam> blabla")
+    );
+  }
+
+  @Test
+  void parseUrlWithText() {
+    assertEquals(
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("aa "), new LinkNode("http://example.com", "link"), new PlainTextNode(" bb")),
+        this.parser.parseTree("aa [link](http://example.com) bb")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextAtStart() {
+    assertEquals(
+        newSequenceNode(TextStyle.NONE, new LinkNode("http://example.com", "link"), new PlainTextNode(" bb")),
+        this.parser.parseTree("[link](http://example.com) bb")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextAtEnd() {
+    assertEquals(
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("aa "), new LinkNode("http://example.com", "link")),
+        this.parser.parseTree("aa [link](http://example.com)")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextWithSpaces() {
+    assertEquals(
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("aa "), new LinkNode("http://example.com", "link with spaces"), new PlainTextNode(" bb")),
+        this.parser.parseTree("aa [link with spaces](http://example.com) bb")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextEOL() {
+    assertEquals(
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("aa "), new LinkNode("http://example.com", "link"), new PlainTextNode("\nbb")),
+        this.parser.parseTree("aa [link](http://example.com)\nbb")
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("tagsSource")
+  void parseUrlWithTextWithFormatTags(TextStyle style, String tag) {
+    assertEquals(
+        newSequenceNode(style, new LinkNode("http://example.com", "link")),
+        this.parser.parseTree("%1$s[link](http://example.com)%1$s".formatted(tag))
+    );
+  }
+
+  @Test
+  void parseUrlWithTextCharacterAfterBracket() {
+    assertEquals(
+        new PlainTextNode("[link]b(http://example.com)"),
+        this.parser.parseTree("[link]b(http://example.com)")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextUnclosedBracket() {
+    assertEquals(
+        new PlainTextNode("[link(http://example.com)"),
+        this.parser.parseTree("[link(http://example.com)")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextUnclosedParenthesis() {
+    assertEquals(
+        new PlainTextNode("[link](http://example.com"),
+        this.parser.parseTree("[link](http://example.com")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextSpaceAfterUrl() {
+    assertEquals(
+        new PlainTextNode("[link](http://example.com )"),
+        this.parser.parseTree("[link](http://example.com )")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextSpaceBeforeUrl() {
+    assertEquals(
+        new PlainTextNode("[link]( http://example.com)"),
+        this.parser.parseTree("[link]( http://example.com)")
+    );
+  }
+
+  @Test
+  void parseUrlWithTextSpaceInUrl() {
+    assertEquals(
+        new PlainTextNode("[link](http://example .com)"),
+        this.parser.parseTree("[link](http://example .com)")
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("tagsSource")
+  void parseUrlWithTextIgnoreFormatTags(TextStyle ignoredStyle, String tag) {
+    assertEquals(
+        new LinkNode("http://example.com", "%1$slink%1$s".formatted(tag)),
+        this.parser.parseTree("[%1$slink%1$s](http://example.com)".formatted(tag))
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("tagsSource")
+  void parseUrlWithTextInterwovenFormatTags(TextStyle ignoredStyle, String tag) {
+    assertEquals(
+        newSequenceNode(TextStyle.NONE, new PlainTextNode("aa%1$saa ".formatted(tag)), new LinkNode("http://example.com", "link%1$sbb".formatted(tag))),
+        this.parser.parseTree("aa%1$saa [link%1$sbb](http://example.com)".formatted(tag))
     );
   }
 
