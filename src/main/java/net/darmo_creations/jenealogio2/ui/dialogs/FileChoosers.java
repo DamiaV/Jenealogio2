@@ -147,7 +147,7 @@ public final class FileChoosers {
       boolean saver,
       String descKey,
       String defaultName,
-      @NotNull String @NotNull ... extensions
+      @NotNull String... extensions
   ) {
     final FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle(config.language().translate("dialog.%s.title".formatted(titleKey)));

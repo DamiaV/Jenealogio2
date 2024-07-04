@@ -26,7 +26,7 @@ public abstract class DialogBase<T> extends Dialog<T> {
    * @param resizable   Whether the dialog should be resizable.
    * @param buttonTypes The dialog’s button types.
    */
-  public DialogBase(@NotNull Config config, @NotNull String name, boolean resizable, @NotNull ButtonType @NotNull ... buttonTypes) {
+  public DialogBase(@NotNull Config config, @NotNull String name, boolean resizable, @NotNull ButtonType... buttonTypes) {
     this(config, name, resizable, true, buttonTypes);
   }
 
@@ -39,7 +39,7 @@ public abstract class DialogBase<T> extends Dialog<T> {
    * @param modal       Whether this dialog should be modal.
    * @param buttonTypes The dialog’s button types.
    */
-  public DialogBase(@NotNull Config config, @NotNull String name, boolean resizable, boolean modal, @NotNull ButtonType @NotNull ... buttonTypes) {
+  public DialogBase(@NotNull Config config, @NotNull String name, boolean resizable, boolean modal, @NotNull ButtonType... buttonTypes) {
     this.config = config;
     config.theme().getStyleSheets()
         .forEach(url -> this.stage().getScene().getStylesheets().add(url.toExternalForm()));

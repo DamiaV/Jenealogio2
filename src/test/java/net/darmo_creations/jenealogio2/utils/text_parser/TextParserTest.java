@@ -414,7 +414,7 @@ class TextParserTest {
     );
   }
 
-  private static SequenceNode newSequenceNode(@NotNull TextStyle style, @NotNull Node @NotNull ... nodes) {
+  private static SequenceNode newSequenceNode(@NotNull TextStyle style, @NotNull Node... nodes) {
     final SequenceNode sequenceNode = new SequenceNode(style);
     for (final Node node : nodes)
       sequenceNode.addChild(node);

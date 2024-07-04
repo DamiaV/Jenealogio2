@@ -36,7 +36,7 @@ public final class StringUtils {
    *                Placeholders will be substituted by the value of the format argument with the exact same name.
    * @return The formatted string.
    */
-  public static String format(@NotNull String pattern, final @NotNull FormatArg @NotNull ... args) {
+  public static String format(@NotNull String pattern, final @NotNull FormatArg... args) {
     final Set<String> argNames = new HashSet<>();
     for (final FormatArg arg : args) {
       final String name = arg.name();

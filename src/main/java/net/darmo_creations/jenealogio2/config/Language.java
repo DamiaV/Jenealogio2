@@ -118,7 +118,7 @@ public final class Language {
    * @param formatArgs Format arguments to use to format the translated text.
    * @return The translated and formatted text.
    */
-  public String translate(@NotNull String key, final @NotNull FormatArg @NotNull ... formatArgs) {
+  public String translate(@NotNull String key, final @NotNull FormatArg... formatArgs) {
     return this.translate(key, null, formatArgs);
   }
 
@@ -130,7 +130,7 @@ public final class Language {
    * @param formatArgs Format arguments to use to format the translated text.
    * @return The translated and formatted text.
    */
-  public String translate(@NotNull String key, Integer count, final @NotNull FormatArg @NotNull ... formatArgs) {
+  public String translate(@NotNull String key, Integer count, final @NotNull FormatArg... formatArgs) {
     String text = null;
     if (count != null && count > 1) {
       final Map<Integer, String> p = this.plurals.get(key);
