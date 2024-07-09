@@ -1,8 +1,13 @@
 package net.darmo_creations.jenealogio2.io;
 
+import javafx.embed.swing.*;
+import javafx.scene.image.*;
 import net.darmo_creations.jenealogio2.*;
+import net.darmo_creations.jenealogio2.model.*;
 import org.jetbrains.annotations.*;
 
+import javax.imageio.*;
+import java.awt.image.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -170,6 +175,44 @@ public final class FileUtils {
     }
     return new FileName(fileName, Optional.empty());
   }
+
+  /**
+   * Load the given image. If the file’s format is not supported by JavaFX,
+   * but is in the {@link Picture#FILE_EXTENSIONS} list, the image will be converted in-memory
+   * into a format that JavaFX supports.
+   *
+   * @param path The path to the image file.
+   * @return The loaded image.
+   * @throws IOException              If any I/O error occurs.
+   * @throws IllegalArgumentException If the file’s extension in not in {@link Picture#FILE_EXTENSIONS}.
+   */
+  public static Image loadImage(@NotNull Path path) throws IOException {
+    final FileName fileName = splitExtension(path.getFileName().toString());
+    final Optional<String> ext = fileName.extension();
+
+    if (ext.isEmpty())
+      throw new IllegalArgumentException("Unsupported image format");
+    else if (!Picture.FILE_EXTENSIONS.contains(ext.get().toLowerCase()))
+      throw new IllegalArgumentException("Unsupported image format: " + ext.get());
+
+    if (JAVAFX_FILE_EXTENSIONS.contains(ext.get().toLowerCase()))
+      try (final var inputStream = new FileInputStream(path.toFile())) {
+        return new Image(inputStream);
+      }
+
+    // Load with ImageIO then convert to Image
+    final BufferedImage image = ImageIO.read(path.toFile());
+    return SwingFXUtils.toFXImage(image, null);
+  }
+
+  /**
+   * The list of image formats supported by JavaFX.
+   * <p>
+   * BMP format is excluded as BMP images with an alpha channel are not rendered by {@link ImageView},
+   * see <a href="https://bugs.openjdk.org/browse/JDK-8149621">this JDK bug report</a>.
+   */
+  @Unmodifiable
+  private static final List<String> JAVAFX_FILE_EXTENSIONS = List.of(".jpg", ".jpeg", ".png", ".gif");
 
   private FileUtils() {
   }

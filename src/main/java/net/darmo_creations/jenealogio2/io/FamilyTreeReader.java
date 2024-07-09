@@ -49,8 +49,8 @@ public class FamilyTreeReader extends TreeFileManager {
       DateTime date
   ) {
     Image image = null;
-    try (final var inputStream = new FileInputStream(filePath.toFile())) {
-      image = new Image(inputStream);
+    try {
+      image = FileUtils.loadImage(filePath);
     } catch (final IOException e) {
       App.LOGGER.exception(e);
     }

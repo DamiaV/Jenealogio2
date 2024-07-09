@@ -5,7 +5,6 @@ import javafx.collections.transformation.*;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
@@ -225,10 +224,8 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
   private void importFile(final @NotNull Path file) throws IOException {
     final AttachedDocument document;
     final Optional<String> ext = FileUtils.splitExtension(file.getFileName().toString()).extension();
-    if (ext.isPresent() && Picture.FILE_EXTENSIONS.contains(ext.get()))
-      try (final var in = new FileInputStream(file.toFile())) {
-        document = new Picture(new Image(in), file, null, null);
-      }
+    if (ext.isPresent() && Picture.FILE_EXTENSIONS.contains(ext.get().toLowerCase()))
+      document = new Picture(FileUtils.loadImage(file), file, null, null);
     else
       document = new AttachedDocument(file, null, null);
     final DocumentView dv = new DocumentView(document, true, this.config);
