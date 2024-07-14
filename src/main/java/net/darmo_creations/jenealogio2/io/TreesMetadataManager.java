@@ -35,13 +35,11 @@ public final class TreesMetadataManager {
         throw new RuntimeException(e);
       }
 
-    try (final var files = Files.walk(App.USER_DATA_DIR, 1)) {
+    try (final var files = Files.newDirectoryStream(App.USER_DATA_DIR)) {
       final var openingDates = this.readMetadataFile();
-      final var iterator = files
-          .filter(path -> Files.isDirectory(path) && Files.exists(path.resolve(TreeFileManager.TREE_FILE_NAME)))
-          .iterator();
-      while (iterator.hasNext()) {
-        final Path path = iterator.next();
+      for (final var path : files) {
+        if (!Files.isDirectory(path) || !Files.exists(path.resolve(TreeFileManager.TREE_FILE_NAME)))
+          continue;
         final String dirName = path.getFileName().toString();
         final FamilyTree tree;
         try (final var in = Files.newInputStream(path.resolve(TreeFileManager.TREE_FILE_NAME))) {

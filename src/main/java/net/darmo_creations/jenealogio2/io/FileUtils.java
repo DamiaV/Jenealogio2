@@ -11,7 +11,6 @@ import java.awt.image.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.stream.*;
 import java.util.zip.*;
 
 public final class FileUtils {
@@ -85,13 +84,9 @@ public final class FileUtils {
           zipOut.putNextEntry(new ZipEntry(fileName + "/"));
         zipOut.closeEntry();
       }
-      try (final Stream<Path> files = Files.walk(file, 1)) {
-        final Iterator<Path> iterator = files.iterator();
-        while (iterator.hasNext()) {
-          final Path path = iterator.next();
-          if (!Files.isSameFile(file, path)) // Files.walk() returns the passed path, avoid recursive loop
-            zipFile(path, (fileName != null ? fileName + "/" : "") + path.getFileName(), zipOut);
-        }
+      try (final var files = Files.newDirectoryStream(file)) {
+        for (final Path path : files)
+          zipFile(path, (fileName != null ? fileName + "/" : "") + path.getFileName(), zipOut);
       }
     } else {
       try (final var fis = new FileInputStream(file.toFile())) {
@@ -115,13 +110,9 @@ public final class FileUtils {
    */
   public static void deleteRecursively(@NotNull Path file) throws IOException {
     if (Files.isDirectory(file)) {
-      try (final Stream<Path> files = Files.walk(file)) {
-        final Iterator<Path> iterator = files.iterator();
-        while (iterator.hasNext()) {
-          final Path path = iterator.next();
-          if (!Files.isSameFile(path, file)) // Files.walk() returns the passed path, avoid recursive loop
-            deleteRecursively(path);
-        }
+      try (final var files = Files.newDirectoryStream(file)) {
+        for (final Path path : files)
+          deleteRecursively(path);
       }
     }
     Files.deleteIfExists(file);
