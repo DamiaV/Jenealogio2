@@ -24,6 +24,8 @@ import java.util.stream.*;
  * This dialog manages the documents of {@link GenealogyObject}s.
  */
 public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Result> {
+  private static final int MAX_IMAGE_SIZE = 100;
+
   private final SelectDocumentDialog selectDocumentDialog;
   private final EditDocumentDialog editDocumentDialog;
 
@@ -93,8 +95,6 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     );
     hBox.setAlignment(Pos.CENTER_LEFT);
     this.mainImageView.setPreserveRatio(true);
-    this.mainImageView.setFitWidth(100);
-    this.mainImageView.setFitHeight(100);
 
     this.mainImagePanel = new VBox(5, hBox, this.mainImageView);
     this.mainImagePanel.managedProperty().bind(this.mainImagePanel.visibleProperty());
@@ -219,11 +219,14 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     if (hasObject) {
       this.setTitle(language.translate("dialog.manage_object_documents.title",
           new FormatArg("name", object.name(language))));
-      final Optional<Picture> image = this.genealogyObject.mainPicture();
-      this.mainPicture = image.orElse(null);
+      final Optional<Picture> picture = this.genealogyObject.mainPicture();
+      this.mainPicture = picture.orElse(null);
       final Image defaultImage = object instanceof Person ? PersonWidget.DEFAULT_IMAGE : PersonDetailsView.DEFAULT_EVENT_IMAGE;
-      this.mainImageView.setImage(image.flatMap(Picture::image).orElse(defaultImage));
-      this.removeMainImageButton.setDisable(image.isEmpty());
+      final Optional<Image> image = picture.map(p -> p.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+      this.mainImageView.setImage(image.orElse(defaultImage));
+      this.mainImageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
+      this.mainImageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
+      this.removeMainImageButton.setDisable(picture.isEmpty());
       this.addDocumentButton.setText(language.translate("dialog.manage_object_documents.add_document"));
       this.editDocumentDescButton.setText(language.translate("dialog.manage_object_documents.edit_document_desc"));
       this.deleteDocumentButton.setText(language.translate("dialog.manage_object_documents.delete_document"));
@@ -268,7 +271,11 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     if (!(dv.document() instanceof Picture pic))
       return;
     this.mainPicture = pic;
-    this.mainImageView.setImage(this.mainPicture.image().orElse(null));
+    final Image image = this.mainPicture.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG));
+    this.mainImageView.setImage(image);
+    //noinspection DataFlowIssue
+    this.mainImageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.getHeight()));
+    this.mainImageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.getWidth()));
     this.pendingUpdates = true;
     this.updateButtons();
   }

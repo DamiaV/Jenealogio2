@@ -1,6 +1,5 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
@@ -42,20 +41,13 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
     this.document = Objects.requireNonNull(document);
     final Node imageNode;
     if (document instanceof Picture p) {
-      final Optional<Image> image = p.image();
-      if (image.isPresent()) {
-        final ImageView imageView = new ImageView(image.orElse(null));
-        imageView.setPreserveRatio(true);
-        imageView.setFitHeight(IMAGE_SIZE);
-        imageView.setFitWidth(IMAGE_SIZE);
-        imageNode = imageView;
-      } else {
-        final Label label = new Label(config.language().translate("document_view.no_image"));
-        label.setAlignment(Pos.CENTER);
-        label.setPrefHeight(IMAGE_SIZE);
-        label.setPrefWidth(IMAGE_SIZE);
-        imageNode = label;
-      }
+      final Image image = p.image().orElse(config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG));
+      final ImageView imageView = new ImageView(image);
+      imageView.setPreserveRatio(true);
+      //noinspection DataFlowIssue
+      imageView.setFitHeight(Math.min(IMAGE_SIZE, image.getHeight()));
+      imageView.setFitWidth(Math.min(IMAGE_SIZE, image.getWidth()));
+      imageNode = imageView;
     } else {
       ImageView imageView = config.theme().getIcon(Icon.forFile(document.fileName()), Icon.Size.BIG);
       if (imageView == null)

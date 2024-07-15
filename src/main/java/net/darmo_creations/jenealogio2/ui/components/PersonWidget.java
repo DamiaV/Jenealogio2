@@ -20,6 +20,7 @@ import java.util.stream.*;
  * A JavaFX component representing a single person in the {@link FamilyTreePane}.
  */
 public class PersonWidget extends AnchorPane {
+  private static final int MAX_IMAGE_SIZE = 50;
   public static final int WIDTH = 120;
   public static final int HEIGHT = 180;
 
@@ -117,14 +118,11 @@ public class PersonWidget extends AnchorPane {
     }
     pane.getChildren().add(iconsBox);
 
-    final int imageSize = 50;
     this.imageView.setPreserveRatio(true);
-    this.imageView.setFitHeight(imageSize);
-    this.imageView.setFitWidth(imageSize);
     final HBox imageBox = new HBox(this.imageView);
     imageBox.setAlignment(Pos.CENTER);
-    imageBox.setMinHeight(imageSize);
-    imageBox.setMinWidth(imageSize);
+    imageBox.setMinHeight(MAX_IMAGE_SIZE);
+    imageBox.setMinWidth(MAX_IMAGE_SIZE);
     pane.getChildren().add(imageBox);
 
     final VBox infoPane = new VBox(5, this.firstNameLabel, this.lastNameLabel, this.birthDateLabel, this.deathDateLabel);
@@ -221,11 +219,17 @@ public class PersonWidget extends AnchorPane {
   private void populateFields() {
     if (this.person == null) {
       this.imageView.setImage(ADD_IMAGE);
+      this.imageView.setFitHeight(MAX_IMAGE_SIZE);
+      this.imageView.setFitWidth(MAX_IMAGE_SIZE);
       this.getStyleClass().add("add-parent");
       return;
     }
 
-    this.imageView.setImage(this.person.mainPicture().flatMap(Picture::image).orElse(DEFAULT_IMAGE));
+    final Optional<Image> image = this.person.mainPicture()
+        .map(p -> p.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+    this.imageView.setImage(image.orElse(DEFAULT_IMAGE));
+    this.imageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
+    this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
 
     final String firstNames = this.person.getFirstNames().orElse(EMPTY_LABEL_VALUE);
     this.firstNameLabel.setText(firstNames);

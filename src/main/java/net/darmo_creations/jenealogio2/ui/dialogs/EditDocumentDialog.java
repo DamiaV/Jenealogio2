@@ -22,6 +22,7 @@ import java.util.*;
 public class EditDocumentDialog extends DialogBase<ButtonType> {
   private AttachedDocument document;
   private FamilyTree familyTree;
+  private final HBox imageViewBox;
   private final ImageView imageView = new ImageView();
   private final TextField documentNameField = new TextField();
   private final Label fileExtensionLabel = new Label();
@@ -39,8 +40,11 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
 
     final Language language = config.language();
 
-    final HBox imageViewBox = new HBox(this.imageView);
-    imageViewBox.setAlignment(Pos.CENTER);
+    this.imageViewBox = new HBox(this.imageView);
+    this.imageViewBox.setAlignment(Pos.CENTER);
+    this.imageViewBox.setMinHeight(200);
+    this.imageViewBox.heightProperty().addListener((observable, oldValue, newValue) -> this.updateImageViewSize());
+    this.stage().widthProperty().addListener((observable, oldValue, newValue) -> this.updateImageViewSize());
     this.imageView.setPreserveRatio(true);
     this.imageView.managedProperty().bind(this.imageView.visibleProperty());
 
@@ -60,9 +64,8 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
 
     VBox.setVgrow(this.documentDescTextInput, Priority.ALWAYS);
 
-    final VBox content = new VBox(
+    final VBox vBox = new VBox(
         5,
-        imageViewBox,
         new Label(language.translate("dialog.edit_document.name")),
         documentNameBox,
         new Label(language.translate("dialog.edit_document.date")),
@@ -70,12 +73,12 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
         new Label(language.translate("dialog.edit_document.description")),
         this.documentDescTextInput
     );
+    final SplitPane content = new SplitPane(this.imageViewBox, vBox);
+    content.setOrientation(Orientation.VERTICAL);
+    content.setDividerPositions(0.75);
     content.setPrefWidth(850);
     content.setPrefHeight(600);
     this.getDialogPane().setContent(content);
-
-    this.imageView.fitWidthProperty().bind(this.stage().widthProperty().subtract(20));
-    this.imageView.fitHeightProperty().bind(this.stage().heightProperty().subtract(300));
 
     final Stage stage = this.stage();
     stage.setMinWidth(850);
@@ -96,6 +99,16 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.updateUI();
   }
 
+  private void updateImageViewSize() {
+    final Image image = this.imageView.getImage();
+    if (image != null) {
+      final double width = Math.min(image.getWidth(), this.stage().getWidth() - 20);
+      this.imageView.setFitWidth(width);
+      final double height = Math.min(image.getHeight(), this.imageViewBox.getHeight() - 10);
+      this.imageView.setFitHeight(height);
+    }
+  }
+
   private void updateUI() {
     final var name = StringUtils.stripNullable(this.documentNameField.getText());
     this.getDialogPane().lookupButton(ButtonTypes.OK)
@@ -113,14 +126,19 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     this.familyTree = Objects.requireNonNull(familyTree);
     this.setTitle(this.config.language().translate("dialog.edit_document.title",
         new FormatArg("name", document.fileName())));
-    this.imageView.setImage(document instanceof Picture pic ? pic.image().orElse(null) : null);
-    this.imageView.setVisible(document instanceof Picture);
+    final Icon fileTypeIcon = Icon.forFile(document.fileName());
+    final Image image;
+    if (document instanceof Picture pic)
+      image = pic.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG));
+    else
+      image = this.config.theme().getIconImage(fileTypeIcon, Icon.Size.BIG);
+    this.imageView.setImage(image);
     this.documentNameField.setText(document.name());
     // Disable renaming if document is not yet registered in the tree
     this.documentNameField.setDisable(familyTree.getDocument(document.fileName()).isEmpty());
     final Optional<String> ext = FileUtils.splitExtension(document.fileName()).extension();
     this.fileExtensionLabel.setText(ext.orElse(null));
-    this.fileExtensionGraphicsLabel.setGraphic(this.config.theme().getIcon(Icon.forFile(document.fileName()), Icon.Size.SMALL));
+    this.fileExtensionGraphicsLabel.setGraphic(this.config.theme().getIcon(fileTypeIcon, Icon.Size.SMALL));
     this.documentDescTextInput.setText(document.description().orElse(""));
     final Optional<DateTime> date = document.date();
     this.dateTimeSelector.setDateTime(date.orElse(null));

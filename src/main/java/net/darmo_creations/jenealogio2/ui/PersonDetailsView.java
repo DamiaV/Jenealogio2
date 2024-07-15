@@ -26,6 +26,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   @SuppressWarnings("DataFlowIssue")
   public static final Image DEFAULT_EVENT_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_event_image.png"));
+  private static final int MAX_IMAGE_SIZE = 100;
 
   private final Config config;
 
@@ -134,8 +135,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     vHeader.getStyleClass().add("person-details-header");
     final HBox header = new HBox(8);
     this.imageView.setPreserveRatio(true);
-    this.imageView.setFitWidth(100);
-    this.imageView.setFitHeight(100);
     this.imageView.setOnMouseClicked(e -> this.onMainImageClicked(this.person, this.documentsList));
     this.fullNameLabel.getStyleClass().add("person-details-title");
     this.fullNameLabel.setWrapText(true);
@@ -222,8 +221,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     // Event pane, hidden by default
 
     this.eventImageView.setPreserveRatio(true);
-    this.eventImageView.setFitWidth(100);
-    this.eventImageView.setFitHeight(100);
     this.eventImageView.setOnMouseClicked(e -> this.onMainImageClicked(this.displayedLifeEvent, this.eventDocumentsList));
 
     this.eventTypeLabel.getStyleClass().add("person-details-title");
@@ -417,7 +414,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void populateFields() {
-    this.imageView.setImage(this.person.mainPicture().flatMap(Picture::image).orElse(null));
+    final Optional<Image> image = this.person.mainPicture()
+        .map(picture -> picture.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+    this.imageView.setImage(image.orElse(null));
+    this.imageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
+    this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
     this.fullNameLabel.setText(this.person.toString());
     this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
     final Optional<Gender> gender = this.person.gender();
@@ -532,6 +533,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private void resetFields() {
     this.imageView.setImage(null);
+    this.imageView.setFitHeight(MAX_IMAGE_SIZE);
+    this.imageView.setFitWidth(MAX_IMAGE_SIZE);
     this.fullNameLabel.setText(null);
     this.fullNameLabel.setTooltip(null);
     this.genderLabel.setText(null);
@@ -583,7 +586,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventDateLabel.setDateTime(lifeEvent.date());
     this.eventPlaceLabel.setText(lifeEvent.place().map(Place::address).orElse("-"));
 
-    this.eventImageView.setImage(lifeEvent.mainPicture().flatMap(Picture::image).orElse(null));
+    final Optional<Image> image = lifeEvent.mainPicture()
+        .map(picture -> picture.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+    this.eventImageView.setImage(image.orElse(null));
+    this.eventImageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
+    this.eventImageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
 
     this.eventNotesTextFlow.getChildren().clear();
     lifeEvent.notes().ifPresent(s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
@@ -661,6 +668,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    * Small component that displays a person’s image, name, birth and death dates.
    */
   private class PersonCard extends HBox {
+    private static final int MAX_IMAGE_SIZE = 50;
+
     private final ImageView imageView = new ImageView();
     private final Label rootLabel = new Label();
     private final Label genderLabel = new Label();
@@ -694,14 +703,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       final Language language = PersonDetailsView.this.config.language();
       final Theme theme = PersonDetailsView.this.config.theme();
 
-      final int imageSize = 50;
       this.imageView.setPreserveRatio(true);
-      this.imageView.setFitHeight(imageSize);
-      this.imageView.setFitWidth(imageSize);
       final VBox imageBox = new VBox(this.imageView);
       imageBox.setAlignment(Pos.CENTER);
-      imageBox.setMinHeight(imageSize);
-      imageBox.setMinWidth(imageSize);
+      imageBox.setMinHeight(MAX_IMAGE_SIZE);
+      imageBox.setMinWidth(MAX_IMAGE_SIZE);
 
       this.rootLabel.setGraphic(theme.getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
       this.rootLabel.setTooltip(new Tooltip(language.translate("person_widget.root.tooltip")));
@@ -733,6 +739,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
       if (isNull) {
         this.imageView.setImage(PersonWidget.ADD_IMAGE);
+        this.imageView.setFitHeight(MAX_IMAGE_SIZE);
+        this.imageView.setFitWidth(MAX_IMAGE_SIZE);
         this.setOnMouseClicked(event -> {
           PersonDetailsView.this.fireNewParentClickEvent(childInfo);
           event.consume();
@@ -745,7 +753,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         event.consume();
       });
 
-      this.imageView.setImage(person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+      final Optional<Image> image = person.mainPicture()
+          .map(p -> p.image().orElse(PersonDetailsView.this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+      this.imageView.setImage(image.orElse(PersonWidget.DEFAULT_IMAGE));
+      this.imageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
+      this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
 
       final String name = person.toString();
       this.nameLabel.setText(name);
