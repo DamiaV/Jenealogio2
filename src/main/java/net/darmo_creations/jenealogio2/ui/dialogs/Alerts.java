@@ -94,7 +94,7 @@ public final class Alerts {
   }
 
   /**
-   * Open an alert dialog to prompt the use to input some text.
+   * Open an alert dialog to prompt the uses to input some text.
    *
    * @param config        The app’s config.
    * @param headerKey     Header text key.
