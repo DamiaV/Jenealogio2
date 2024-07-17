@@ -1,6 +1,5 @@
 package net.darmo_creations.jenealogio2;
 
-import javafx.application.*;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -161,6 +160,19 @@ public class AppController {
       else if (event.isForwardButtonDown())
         this.onNavigateSelectionHistory(1);
     });
+
+    stage.setOnCloseRequest(event -> {
+      if (this.unsavedChanges) {
+        final Optional<Boolean> save = Alerts.confirmationWithCancel(
+            this.config,
+            "alert.unsaved_changes.header",
+            "alert.unsaved_changes.content",
+            null
+        );
+        if (save.isEmpty() || save.get() && !this.saveFile())
+          event.consume();
+      }
+    });
   }
 
   private boolean isDragAndDropValid(final @NotNull Dragboard dragboard) {
@@ -228,7 +240,7 @@ public class AppController {
     quitMenuItem.setText(language.translate("menu.file.quit"));
     quitMenuItem.setGraphic(theme.getIcon(Icon.QUIT, Icon.Size.SMALL));
     quitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN));
-    quitMenuItem.setOnAction(event -> this.onQuitAction());
+    quitMenuItem.setOnAction(event -> this.stage.close());
     fileMenu.getItems().add(quitMenuItem);
 
     //
@@ -533,10 +545,6 @@ public class AppController {
    */
   public void show(String treeName) {
     this.stage.show();
-    this.stage.setOnCloseRequest(event -> {
-      event.consume();
-      this.onQuitAction();
-    });
 
     // Open the passed tree directory
     if (treeName != null && this.loadTree(treeName))
@@ -1170,18 +1178,5 @@ public class AppController {
    */
   private void onAboutAction() {
     this.aboutDialog.showAndWait();
-  }
-
-  /**
-   * Open alert dialog in there are any unsaved changes before closing the app.
-   */
-  private void onQuitAction() {
-    if (this.unsavedChanges) {
-      final boolean close = Alerts.confirmation(
-          this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-      if (!close)
-        return;
-    }
-    Platform.exit();
   }
 }
