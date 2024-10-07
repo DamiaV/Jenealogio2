@@ -171,13 +171,13 @@ public class App extends Application {
     }
     final String template = """
         --- %s (v%s) Crash Report ---
-                
+        
         Time: %s
         Description: %s
-                
+        
         -- Detailled Stack Trace --
         %s
-                
+        
         -- Technical Information --
         System properties:
         %s
