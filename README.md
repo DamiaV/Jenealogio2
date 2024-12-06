@@ -10,7 +10,7 @@ The name Jenealogio is a build from the Esperanto word for genealogy, “_geneal
 ## Why 2?
 
 The first version of this software was developed quite a while back but I was not satisfied with the direction it took.
-So in 2023 I archived its [repository](https://github.com/Darmo117/Jenealogio) and started again from scratch with this
+So in 2023 I archived its [repository](https://github.com/DamiaV/Jenealogio) and started again from scratch with this
 new version.
 
 ## Why yet another genealogical software?

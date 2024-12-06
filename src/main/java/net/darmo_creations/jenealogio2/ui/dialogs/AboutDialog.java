@@ -73,9 +73,9 @@ public class AboutDialog extends DialogBase<ButtonType> {
     final String text = """
         Version: *%s*
         
-        Developped by Damia Vergnet ([@Darmo117](https://github.com/Darmo117) on GitHub).
-        This application is available under [GPL-3.0 license](https://github.com/Darmo117/Jenealogio2/blob/master/LICENSE).
-        Check for updates at <https://github.com/Darmo117/Jenealogio2>.
+        Developped by Damia Vergnet ([@DamiaV](https://github.com/DamiaV) on GitHub).
+        This application is available under [GPL-3.0 license](https://github.com/DamiaV/Jenealogio2/blob/master/LICENSE).
+        Check for updates at <https://github.com/DamiaV/Jenealogio2>.
         
         Icons from [FatCow](https://github.com/gammasoft/fatcow).
         
