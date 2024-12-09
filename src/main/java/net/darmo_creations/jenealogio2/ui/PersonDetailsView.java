@@ -40,7 +40,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private final ClickableImageView imageView;
   private final Label fullNameLabel = new Label();
-  private final Label genderLabel = new Label();
+  private final GenderLabel agabLabel;
+  private final GenderLabel genderLabel;
   private final Label occupationLabel = new Label();
   private final Label publicLastNameLabel = new Label();
   private final Label publicFirstNamesLabel = new Label();
@@ -100,6 +101,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.parent1Card = new PersonCard(null);
     this.parent2Card = new PersonCard(null);
 
+    this.agabLabel = new GenderLabel(null, true, config);
+    this.genderLabel = new GenderLabel(null, true, config);
+
     this.profileTab.setText(language.translate("person_details_view.profile_tab.title"));
     this.profileTab.setGraphic(theme.getIcon(Icon.PROFILE_TAB, Icon.Size.SMALL));
     this.eventsTab.setText(language.translate("person_details_view.events_tab.title"));
@@ -138,10 +142,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView.setOnMouseClicked(e -> this.onMainImageClicked(this.person, this.documentsList));
     this.fullNameLabel.getStyleClass().add("person-details-title");
     this.fullNameLabel.setWrapText(true);
+    this.agabLabel.setWrapText(true);
     this.genderLabel.setWrapText(true);
     this.occupationLabel.getStyleClass().add("person-details-occupation");
     this.occupationLabel.setWrapText(true);
-    final VBox headerTexts = new VBox(5, this.fullNameLabel, this.genderLabel, this.occupationLabel);
+    final VBox headerTexts = new VBox(5, this.fullNameLabel, this.genderLabel, new HBox(
+        5,
+        new Label(language.translate("person_details_view.agab")),
+        this.agabLabel
+    ), this.occupationLabel);
     header.getChildren().addAll(this.imageView, headerTexts);
     vHeader.getChildren().add(header);
 
@@ -421,18 +430,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
     this.fullNameLabel.setText(this.person.toString());
     this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
-    final Optional<Gender> gender = this.person.gender();
-    String g = null;
-    if (gender.isPresent()) {
-      final RegistryEntryKey key = gender.get().key();
-      if (key.isBuiltin())
-        g = this.config.language().translate("genders." + key.name());
-      else
-        g = gender.get().userDefinedName();
-    }
-    this.genderLabel.setText(g);
-    this.genderLabel.setGraphic(gender.map(g_ -> new ImageView(g_.icon())).orElse(null));
-    this.genderLabel.setTooltip(g != null ? new Tooltip(g) : null);
+    this.agabLabel.setGender(this.person.assignedGenderAtBirth().orElse(null));
+    if (this.person.assignedGenderAtBirth().isEmpty())
+      this.agabLabel.setText("-");
+    this.genderLabel.setGender(this.person.gender().orElse(null));
     this.occupationLabel.setText(this.person.mainOccupation().orElse(null));
     this.occupationLabel.setTooltip(this.person.mainOccupation().map(Tooltip::new).orElse(null));
     this.publicLastNameLabel.setText(this.person.publicLastName().orElse("-"));
@@ -537,9 +538,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView.setFitWidth(MAX_IMAGE_SIZE);
     this.fullNameLabel.setText(null);
     this.fullNameLabel.setTooltip(null);
-    this.genderLabel.setText(null);
-    this.genderLabel.setGraphic(null);
-    this.genderLabel.setTooltip(null);
+    this.agabLabel.setGender(null);
+    this.agabLabel.setText("-");
+    this.genderLabel.setGender(null);
     this.occupationLabel.setText(null);
     this.occupationLabel.setTooltip(null);
     this.publicLastNameLabel.setText("-");

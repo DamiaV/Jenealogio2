@@ -60,6 +60,7 @@ public class Person extends GenealogyObject<Person> {
   private final List<String> publicFirstNames = new ArrayList<>();
   private String publicLastName;
   private final List<String> nicknames = new ArrayList<>();
+  private Gender assignedGenderAtBirth;
   private Gender gender;
   private String mainOccupation;
   /**
@@ -312,17 +313,35 @@ public class Person extends GenealogyObject<Person> {
     final String lcString = s.toLowerCase(locale);
     final Predicate<String> p = n -> n != null && n.toLowerCase(locale).contains(lcString);
     return p.test(this.legalLastName)
-           || p.test(this.publicLastName)
-           || this.legalFirstNames.stream().anyMatch(p)
-           || this.publicFirstNames.stream().anyMatch(p)
-           || this.nicknames.stream().anyMatch(p);
+        || p.test(this.publicLastName)
+        || this.legalFirstNames.stream().anyMatch(p)
+        || this.publicFirstNames.stream().anyMatch(p)
+        || this.nicknames.stream().anyMatch(p);
+  }
+
+  /**
+   * This person’s assigned gender at birth.
+   */
+  public Optional<Gender> assignedGenderAtBirth() {
+    return Optional.ofNullable(this.assignedGenderAtBirth);
+  }
+
+  /**
+   * Set this person’s assigned gender at birth (AGAB).
+   *
+   * @param assignedGenderAtBirth The AGAB.
+   * @return This object.
+   */
+  public Person setAssignedGenderAtBirth(Gender assignedGenderAtBirth) {
+    this.assignedGenderAtBirth = assignedGenderAtBirth;
+    return this;
   }
 
   /**
    * This person’s gender.
    */
   public Optional<Gender> gender() {
-    return Optional.ofNullable(this.gender);
+    return Optional.ofNullable(this.gender).or(this::assignedGenderAtBirth);
   }
 
   /**
@@ -376,7 +395,7 @@ public class Person extends GenealogyObject<Person> {
    */
   public boolean hasSameParents(final Person person) {
     return this.hasAnyParents() && person.hasAnyParents() &&
-           (this.parents[0] == person.parents[0] && this.parents[1] == person.parents[1]
+        (this.parents[0] == person.parents[0] && this.parents[1] == person.parents[1]
             || this.parents[1] == person.parents[0] && this.parents[0] == person.parents[1]);
   }
 

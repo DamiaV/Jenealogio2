@@ -228,7 +228,8 @@ public class TreeXMLReader extends TreeXMLManager {
       this.readNames(personElement, PUBLIC_FIRST_NAMES_TAG, person::setPublicFirstNames);
       // Nicknames
       this.readNames(personElement, NICKNAMES_TAG, person::setNicknames);
-      this.readGenderTag(personElement, person, familyTree);
+      this.readGenderTag(personElement, familyTree, AGAB_TAG, AGAB_KEY_ATTR, person::setAssignedGenderAtBirth);
+      this.readGenderTag(personElement, familyTree, GENDER_TAG, GENDER_KEY_ATTR, person::setGender);
       this.readMainOccupationTag(personElement, person);
       this.readParentsTag(personElement, person, parentIDS);
       this.readRelativesTag(personElement, person, relativesIDs);
@@ -311,25 +312,29 @@ public class TreeXMLReader extends TreeXMLManager {
   }
 
   /**
-   * Read the {@code <Gender>} tag for the given person.
+   * Read the given gender tag for the given person.
    *
-   * @param personElement {@code <Person>} element to extract the gender from.
-   * @param person        The person corresponding to the {@code <Person>} tag.
-   * @param familyTree    The tree to get the {@link Gender} object from.
+   * @param personElement  {@code <Person>} element to extract the gender from.
+   * @param familyTree     The tree to get the {@link Gender} object from.
+   * @param tagName        The name of the gender tag to read.
+   * @param attrName       The name of the attribute to read on the tag.
+   * @param genderConsumer A function that consumes the extracted {@link Gender} object.
    */
   private void readGenderTag(
       final @NotNull Element personElement,
-      @NotNull Person person,
-      final @NotNull FamilyTree familyTree
+      final @NotNull FamilyTree familyTree,
+      final @NotNull String tagName,
+      final @NotNull String attrName,
+      final @NotNull Consumer<Gender> genderConsumer
   ) throws IOException {
-    final Optional<Element> genderElement = XmlUtils.getChildElement(personElement, GENDER_TAG, true);
+    final Optional<Element> genderElement = XmlUtils.getChildElement(personElement, tagName, true);
     if (genderElement.isPresent()) {
       try {
-        final RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(genderElement.get(), GENDER_KEY_ATTR, s -> s, null, false));
+        final RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(genderElement.get(), attrName, s -> s, null, false));
         final Gender gender = familyTree.genderRegistry().getEntry(key);
         if (gender == null)
           throw new IOException("Undefined gender registry key: " + key.fullName());
-        person.setGender(gender);
+        genderConsumer.accept(gender);
       } catch (final IllegalArgumentException e) {
         throw new IOException(e);
       }

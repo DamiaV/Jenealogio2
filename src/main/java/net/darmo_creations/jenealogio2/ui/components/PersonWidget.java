@@ -104,18 +104,8 @@ public class PersonWidget extends AnchorPane {
       moreIcon.setTooltip(new Tooltip(config.language().translate("person_widget.more_icon.tooltip")));
       iconsRightBox.getChildren().add(moreIcon);
     }
-    if (person != null && person.gender().isPresent()) {
-      final Gender gender = person.gender().get();
-      final boolean builtin = gender.isBuiltin();
-      final String label;
-      if (builtin)
-        label = config.language().translate("genders." + gender.key().name());
-      else
-        label = Objects.requireNonNull(gender.userDefinedName());
-      final Label genderIcon = new Label(null, new ImageView(gender.icon()));
-      genderIcon.setTooltip(new Tooltip(label));
-      iconsRightBox.getChildren().add(genderIcon);
-    }
+    if (person != null && person.gender().isPresent())
+      iconsRightBox.getChildren().add(new GenderLabel(person.gender().get(), false, config));
     pane.getChildren().add(iconsBox);
 
     this.imageView.setPreserveRatio(true);

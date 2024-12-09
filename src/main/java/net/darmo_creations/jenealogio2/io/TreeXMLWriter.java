@@ -219,7 +219,9 @@ public class TreeXMLWriter extends TreeXMLManager {
       this.writeNames(document, personElement, PUBLIC_FIRST_NAMES_TAG, person.publicFirstNames());
       // Nicknames
       this.writeNames(document, personElement, NICKNAMES_TAG, person.nicknames());
-      this.writeGenderTag(document, personElement, person);
+      this.writeGenderTag(document, personElement, AGAB_TAG, AGAB_KEY_ATTR, person::assignedGenderAtBirth);
+      if (!person.assignedGenderAtBirth().equals(person.gender()))
+        this.writeGenderTag(document, personElement, GENDER_TAG, GENDER_KEY_ATTR, person::gender);
       this.writeMainOccupationTag(document, personElement, person);
       this.writeParentsTag(document, personElement, person, personIDs);
       this.writeRelativesTag(document, personElement, person, personIDs);
@@ -288,14 +290,25 @@ public class TreeXMLWriter extends TreeXMLManager {
     });
   }
 
+  /**
+   * Write a gender tag.
+   *
+   * @param document       The document to write to.
+   * @param personElement  The <Person> tag to write into.
+   * @param tagName        The name of the gender tag to write.
+   * @param attrName       The attribute to add to the gender tag.
+   * @param genderSupplier A function that returns an optional {@link Gender} object.
+   */
   private void writeGenderTag(
       @NotNull Document document,
       @NotNull Element personElement,
-      final @NotNull Person person
+      final @NotNull String tagName,
+      final @NotNull String attrName,
+      final @NotNull Supplier<Optional<Gender>> genderSupplier
   ) {
-    person.gender().ifPresent(gender -> {
-      final Element genderElement = (Element) personElement.appendChild(document.createElement(GENDER_TAG));
-      XmlUtils.setAttr(document, genderElement, GENDER_KEY_ATTR, gender.key().fullName());
+    genderSupplier.get().ifPresent(gender -> {
+      final Element genderElement = (Element) personElement.appendChild(document.createElement(tagName));
+      XmlUtils.setAttr(document, genderElement, attrName, gender.key().fullName());
     });
   }
 

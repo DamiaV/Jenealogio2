@@ -1,12 +1,13 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
+
+import java.util.*;
 
 /**
  * Wrapper class that holds data to be put in a {@link javafx.scene.control.ComboBox}.
  * <p>
- * The equals() method is overriden and compares items by testing identity between held data objects.
+ * The equals() and hashcode() methods are overriden and only use the {@code data} value.
  *
  * @param <T> Type of the wrapped data.
  */
@@ -52,7 +53,12 @@ public class ComboBoxItem<T> {
 
   @Override
   public boolean equals(Object obj) {
-    return obj instanceof ComboBoxItem<?> i && i.data == this.data;
+    return obj instanceof ComboBoxItem<?> i && Objects.equals(this.data(), i.data());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.data());
   }
 
   @Override

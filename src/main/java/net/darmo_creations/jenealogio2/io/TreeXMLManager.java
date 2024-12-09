@@ -40,6 +40,8 @@ public abstract class TreeXMLManager {
   protected static final String NAME_VALUE_ATTR = "value";
   protected static final String MAIN_OCCUPATION_TAG = "MainOccupation";
   protected static final String MAIN_OCCUPATION_VALUE_ATTR = "value";
+  protected static final String AGAB_TAG = "AssignedGenderAtBirth";
+  protected static final String AGAB_KEY_ATTR = "key";
   protected static final String GENDER_TAG = "Gender";
   protected static final String GENDER_KEY_ATTR = "key";
   protected static final String PARENTS_TAG = "Parents";

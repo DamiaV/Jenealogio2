@@ -47,6 +47,7 @@ public class EditPersonDialog extends DialogBase<Person>
   private final TextField publicLastNameField = new TextField();
   private final TextField publicFirstNamesField = new TextField();
   private final TextField nicknamesField = new TextField();
+  private final ComboBox<ComboBoxItem<Gender>> agabCombo = new ComboBox<>();
   private final ComboBox<ComboBoxItem<Gender>> genderCombo = new ComboBox<>();
   private final TextField mainOccupationField = new TextField();
   private final TextField disambiguationIDField = new TextField();
@@ -153,6 +154,7 @@ public class EditPersonDialog extends DialogBase<Person>
     final GridPane gridPane = new GridPane();
     gridPane.setHgap(5);
     gridPane.setVgap(5);
+    int row = 0;
 
     {
       this.lifeStatusCombo.getItems().addAll(Arrays.stream(LifeStatus.values())
@@ -165,7 +167,7 @@ public class EditPersonDialog extends DialogBase<Person>
         if (!this.internalLifeStatusChange)
           this.lifeStatusCache = newValue.data();
       });
-      this.addRow(gridPane, 0, "dialog.edit_person.profile.life_status", this.lifeStatusCombo);
+      this.addRow(gridPane, row++, "dialog.edit_person.profile.life_status", this.lifeStatusCombo);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
@@ -177,7 +179,7 @@ public class EditPersonDialog extends DialogBase<Person>
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_last_name.tooltip")));
       final HBox hBox = new HBox(5, label, helpLabel);
       hBox.setAlignment(Pos.CENTER_LEFT);
-      gridPane.addRow(1, hBox, this.legalLastNameField);
+      gridPane.addRow(row++, hBox, this.legalLastNameField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
@@ -189,7 +191,7 @@ public class EditPersonDialog extends DialogBase<Person>
       helpLable.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.legal_first_names.tooltip")));
       final HBox hBox = new HBox(5, label, helpLable);
       hBox.setAlignment(Pos.CENTER_LEFT);
-      gridPane.addRow(2, hBox, this.legalFirstNamesField);
+      gridPane.addRow(row++, hBox, this.legalFirstNamesField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
@@ -201,7 +203,7 @@ public class EditPersonDialog extends DialogBase<Person>
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_last_name.tooltip")));
       final HBox hBox = new HBox(5, label, helpLabel);
       hBox.setAlignment(Pos.CENTER_LEFT);
-      gridPane.addRow(3, hBox, this.publicLastNameField);
+      gridPane.addRow(row++, hBox, this.publicLastNameField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
@@ -213,28 +215,41 @@ public class EditPersonDialog extends DialogBase<Person>
       helpLabel.setTooltip(new Tooltip(language.translate("dialog.edit_person.profile.public_first_names.tooltip")));
       final HBox hBox = new HBox(5, label, helpLabel);
       hBox.setAlignment(Pos.CENTER_LEFT);
-      gridPane.addRow(4, hBox, this.publicFirstNamesField);
+      gridPane.addRow(row++, hBox, this.publicFirstNamesField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      this.addRow(gridPane, 5, "dialog.edit_person.profile.nicknames", this.nicknamesField);
+      this.addRow(gridPane, row++, "dialog.edit_person.profile.nicknames", this.nicknamesField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      this.addRow(gridPane, 6, "dialog.edit_person.profile.gender", this.genderCombo);
+      this.addRow(gridPane, row++, "dialog.edit_person.profile.agab", this.agabCombo);
+      // If AGAB and gender comboboxes were identical, report the AGAB change to the gender combobox
+      this.agabCombo.getSelectionModel().selectedItemProperty()
+          .addListener((observable, oldValue, newValue) -> {
+            if (Objects.equals(oldValue, this.genderCombo.getSelectionModel().getSelectedItem()))
+              this.genderCombo.getSelectionModel().select(newValue);
+          });
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
     }
 
     {
-      this.addRow(gridPane, 7, "dialog.edit_person.profile.main_occupation", this.mainOccupationField);
+      this.addRow(gridPane, row++, "dialog.edit_person.profile.gender", this.genderCombo);
+      final RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
+
+    {
+      this.addRow(gridPane, row++, "dialog.edit_person.profile.main_occupation", this.mainOccupationField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
@@ -253,7 +268,7 @@ public class EditPersonDialog extends DialogBase<Person>
           change -> change.getControlNewText().matches("^\\d*$") ? change : null
       ));
       this.disambiguationIDField.textProperty().addListener((observable, oldValue, newValue) -> this.updateButtons());
-      gridPane.addRow(8, hBox, this.disambiguationIDField);
+      gridPane.addRow(row++, hBox, this.disambiguationIDField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
       gridPane.getRowConstraints().add(rc);
@@ -263,7 +278,7 @@ public class EditPersonDialog extends DialogBase<Person>
       final Label notesLabel = new Label(language.translate("dialog.edit_person.profile.notes"));
       notesLabel.setPadding(new Insets(3, 0, 0, 0));
       GridPane.setValignment(notesLabel, VPos.TOP);
-      gridPane.addRow(9, notesLabel, this.notesField);
+      gridPane.addRow(row++, notesLabel, this.notesField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.ALWAYS);
       gridPane.getRowConstraints().add(rc);
@@ -273,7 +288,7 @@ public class EditPersonDialog extends DialogBase<Person>
       final Label sourcesLabel = new Label(language.translate("dialog.edit_person.profile.sources"));
       sourcesLabel.setPadding(new Insets(3, 0, 0, 0));
       GridPane.setValignment(sourcesLabel, VPos.TOP);
-      gridPane.addRow(10, sourcesLabel, this.sourcesField);
+      gridPane.addRow(row, sourcesLabel, this.sourcesField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.ALWAYS);
       gridPane.getRowConstraints().add(rc);
@@ -395,14 +410,14 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   /**
-   * Update the gender entries in the genders combobox.
+   * Update the gender entries in the given genders combobox.
    */
-  public void updateGendersList() {
+  public void updateGendersList(@NotNull ComboBox<ComboBoxItem<Gender>> cb) {
     final Language language = this.config.language();
     final Collator collator = Collator.getInstance(language.locale());
-    this.genderCombo.getItems().clear();
-    this.genderCombo.getItems().add(new ComboBoxItem<>(null, language.translate("genders.unknown")));
-    this.genderCombo.getItems().addAll(this.familyTree.genderRegistry().entries().stream()
+    cb.getItems().clear();
+    cb.getItems().add(new ComboBoxItem<>(null, language.translate("genders.unknown")));
+    cb.getItems().addAll(this.familyTree.genderRegistry().entries().stream()
         .map(gender -> {
           final String text = gender.isBuiltin()
               ? language.translate("genders." + gender.key().name())
@@ -435,7 +450,8 @@ public class EditPersonDialog extends DialogBase<Person>
       this.setTitle(language.translate("dialog.edit_person.title.create"));
     }
 
-    this.updateGendersList();
+    this.updateGendersList(this.agabCombo);
+    this.updateGendersList(this.genderCombo);
     this.setPersonProfileFields();
     this.setPersonLifeEventsFields();
     this.setPersonRelativesFields();
@@ -444,6 +460,7 @@ public class EditPersonDialog extends DialogBase<Person>
 
   private void setPersonProfileFields() {
     this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.person.lifeStatus()));
+    this.agabCombo.getSelectionModel().select(new ComboBoxItem<>(this.person.assignedGenderAtBirth().orElse(null)));
     this.genderCombo.getSelectionModel().select(new ComboBoxItem<>(this.person.gender().orElse(null)));
     this.legalLastNameField.setText(this.person.legalLastName().orElse(""));
     this.publicLastNameField.setText(this.person.publicLastName().orElse(""));
@@ -666,6 +683,7 @@ public class EditPersonDialog extends DialogBase<Person>
    */
   private void updatePerson(@NotNull Person person) {
     // Profile
+    person.setAssignedGenderAtBirth(this.agabCombo.getSelectionModel().getSelectedItem().data());
     person.setGender(this.genderCombo.getSelectionModel().getSelectedItem().data());
     person.setLegalLastName(this.getText(this.legalLastNameField));
     person.setPublicLastName(this.getText(this.publicLastNameField));

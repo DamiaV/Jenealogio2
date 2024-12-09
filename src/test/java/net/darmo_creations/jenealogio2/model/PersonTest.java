@@ -218,6 +218,14 @@ class PersonTest {
   }
 
   @Test
+  void setAssignedGenderAtBirth() {
+    final Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
+    this.person.setAssignedGenderAtBirth(gender);
+    //noinspection OptionalGetWithoutIsPresent
+    assertEquals(gender, this.person.assignedGenderAtBirth().get());
+  }
+
+  @Test
   void setGender() {
     final Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
     this.person.setGender(gender);

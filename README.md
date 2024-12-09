@@ -72,22 +72,11 @@ I tried to follow these suggestions in Jenealogio 2. Here’s how those points h
 4. The software makes no assumptions regarding DNA relations between the members of a tree. It is left to the
    interpretation of the users.
 5. The app uses neutral terminology such as _Parent 1_ and _Parent 2_ for parents, and _Partner_ instead of _Husband_ or
-   _Wife_. A single non-representative placeholder icon is used for all people, regardless of their gender. I tried
-   to steer away from the stereotypical colors for men and women. Men are represented in turquoise and women in orange
-   by default instead of the classical blue and pink. Other genders’ colors have been picked from their respective pride
-   flags when available. These default colors can be changed at will.
-6. I chose to only feature the _gender_ of people, completely getting rid of any _sex_ information for three reasons:
-    1. I consider this information not that relevant and I think we should stop with trying to classify people using
-       that criterion.
-    2. Sex is not that simple to define, there are
-       [at least three ways to do so in humans](https://en.wikipedia.org/wiki/Sexual_differentiation_in_humans)
-       (chromosomes, genitalia, secondary characteristics) that do not always align.
-    3. As a trans person myself, I wouldn’t want my birth sex to be featured in this context (or anywhere else for that
-       matter) as it is a very sensitive information that could trigger my gender dysphoria if brought up. I’m sure I’m
-       not the only one in that situation.
-
-   There are several builtin gender identities (agender, female, gender fluid, male, non-binary) and users can define
-   the ones they want if these are not sufficient. More builtin genders may be added in the future if needs be.
+   _Wife_. A single non-representative placeholder icon is used for all people, regardless of their gender. Gender is
+   represented by an icon instead of a color.
+6. Assigned gender at birth and gender are two separate fields. There are several builtin gender identities (agender,
+   female, gender fluid, male, non-binary) and users can define the ones they want if these are not sufficient. More
+   builtin genders may be added in the future if needs be.
 7. I’m trying to add the ability to import/export GEDCOM 5.5.5 files but I cannot guarantee that it will be supported
    one day. The specification is quite long (166 pages) and complex, and the format may not support every type of
    information that this app handles.

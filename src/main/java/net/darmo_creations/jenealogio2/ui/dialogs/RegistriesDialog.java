@@ -25,6 +25,7 @@ import org.jetbrains.annotations.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.function.*;
 import java.util.stream.*;
 
 /**
@@ -547,12 +548,19 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     public void refresh(final @NotNull FamilyTree familyTree) {
       super.refresh(familyTree);
       this.registry = familyTree.genderRegistry();
-      //noinspection OptionalGetWithoutIsPresent
-      final Map<Gender, List<Person>> gendersUsage = familyTree.persons().stream()
-          .filter(person -> person.gender().isPresent())
-          .collect(Collectors.groupingBy(person -> person.gender().get()));
+      final Map<Gender, Set<Person>> gendersUsage = new HashMap<>();
+      final BiConsumer<Person, Optional<Gender>> updateMap = (person, gender) ->
+          gender.ifPresent(g -> {
+            if (!gendersUsage.containsKey(g))
+              gendersUsage.put(g, new HashSet<>());
+            gendersUsage.get(g).add(person);
+          });
+      for (final Person person : familyTree.persons()) {
+        updateMap.accept(person, person.assignedGenderAtBirth());
+        updateMap.accept(person, person.gender());
+      }
       for (final Gender entry : this.registry.serializableEntries()) {
-        final int usage = gendersUsage.getOrDefault(entry, List.of()).size();
+        final int usage = gendersUsage.getOrDefault(entry, Set.of()).size();
         this.entriesTable.getItems().add(new GenderTableItem(entry, usage, false));
       }
     }
