@@ -54,7 +54,7 @@ class PersonTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = { 0, -1, -2, -3 })
+  @ValueSource(ints = {0, -1, -2, -3})
   void setDisambiguationIDThrowsIfNotPositive(int i) {
     assertThrows(IllegalArgumentException.class, () -> this.person.setDisambiguationID(i));
   }
@@ -229,6 +229,14 @@ class PersonTest {
   void setGender() {
     final Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
     this.person.setGender(gender);
+    //noinspection OptionalGetWithoutIsPresent
+    assertEquals(gender, this.person.gender().get());
+  }
+
+  @Test
+  void genderReturnsAgabIfNotSet() {
+    final Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
+    this.person.setAssignedGenderAtBirth(gender);
     //noinspection OptionalGetWithoutIsPresent
     assertEquals(gender, this.person.gender().get());
   }
