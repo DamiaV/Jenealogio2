@@ -146,11 +146,14 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.genderLabel.setWrapText(true);
     this.occupationLabel.getStyleClass().add("person-details-occupation");
     this.occupationLabel.setWrapText(true);
-    final VBox headerTexts = new VBox(5, this.fullNameLabel, this.genderLabel, new HBox(
+    final VBox headerTexts = new VBox(
         5,
+        this.fullNameLabel,
+        this.genderLabel,
         new Label(language.translate("person_details_view.agab")),
-        this.agabLabel
-    ), this.occupationLabel);
+        this.agabLabel,
+        this.occupationLabel
+    );
     header.getChildren().addAll(this.imageView, headerTexts);
     vHeader.getChildren().add(header);
 
