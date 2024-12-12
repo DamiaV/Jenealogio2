@@ -29,7 +29,8 @@ public class GenderLabel extends Label {
     }
     if (this.showText)
       this.setText(text);
-    this.setTooltip(text != null ? new Tooltip(text) : null);
+    else
+      this.setTooltip(text != null ? new Tooltip(text) : null);
     this.setGraphic(gender != null ? new ImageView(gender.icon()) : null);
   }
 }
