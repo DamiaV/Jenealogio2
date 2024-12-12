@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.stream.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -144,30 +145,40 @@ class FamilyTreeTest {
     assertThrows(IllegalArgumentException.class, () -> this.tree.removePerson(p));
   }
 
-  @Test
-  void removePersonUpdatesParents() {
+  @ParameterizedTest
+  @MethodSource("provideArgsFor_removePersonUpdatesParents")
+  void removePersonUpdatesParents(ParentalRelationType type1, ParentalRelationType type2) {
     final Person p = new Person();
     final Person p1 = new Person();
     final Person p2 = new Person();
-    p.setParent(0, p1);
-    p.setParent(1, p2);
+    p.addParent(p1, type1);
+    p.addParent(p2, type2);
     this.tree.addPerson(new Person()); // So that "p" is not root
     this.tree.addPerson(p);
     this.tree.removePerson(p);
-    assertTrue(p1.children().isEmpty());
-    assertTrue(p2.children().isEmpty());
+    assertTrue(p1.children(type1).isEmpty());
+    assertTrue(p2.children(type2).isEmpty());
   }
 
-  @Test
-  void removePersonUpdatesChildren() {
+  static Stream<Arguments> provideArgsFor_removePersonUpdatesParents() {
+    final List<Arguments> args = new ArrayList<>();
+    for (final ParentalRelationType type1 : ParentalRelationType.values())
+      for (final ParentalRelationType type2 : ParentalRelationType.values())
+        if (type1 != type2 || type1.maxParentsCount().orElse(Integer.MAX_VALUE) > 1) // Skip cases where only 1 parent of the type is allowed
+          args.add(Arguments.of(type1, type2));
+    return args.stream();
+  }
+
+  @ParameterizedTest
+  @EnumSource(ParentalRelationType.class)
+  void removePersonUpdatesChildren(ParentalRelationType type) {
     final Person p = new Person();
     final Person p1 = new Person();
-    p.setParent(0, p1);
+    p.addParent(p1, type);
     this.tree.addPerson(new Person()); // So that "p1" is not root
     this.tree.addPerson(p1);
     this.tree.removePerson(p1);
-    assertTrue(p.parents().parent1().isEmpty());
-    assertTrue(p.parents().parent2().isEmpty());
+    assertFalse(p.hasAnyParents());
   }
 
   @Test
@@ -198,19 +209,6 @@ class FamilyTreeTest {
     this.tree.addPerson(p1);
     this.tree.removePerson(p1);
     assertFalse(l.hasWitness(p1));
-  }
-
-  @ParameterizedTest
-  @EnumSource(Person.RelativeType.class)
-  void removePersonUpdatesRelatives(Person.RelativeType relativeType) {
-    final Person p = new Person();
-    final Person parent = new Person();
-    p.addRelative(parent, relativeType);
-    this.tree.addPerson(new Person()); // So that "p" is not root
-    this.tree.addPerson(p);
-    this.tree.removePerson(p);
-    assertTrue(p.getRelatives(relativeType).isEmpty());
-    assertTrue(parent.nonBiologicalChildren(relativeType).isEmpty());
   }
 
   @Test

@@ -64,7 +64,7 @@ public class AppController {
   // Tree components
   private FamilyTreeComponent focusedComponent;
   private final FamilyTreeView familyTreeView;
-  private final FamilyTreePane familyTreePane;
+  private final GeneticFamilyTreePane geneticFamilyTreePane;
 
   private final PersonDetailsView personDetailsView;
 
@@ -114,7 +114,7 @@ public class AppController {
 
     this.personDetailsView = new PersonDetailsView(config);
     this.familyTreeView = new FamilyTreeView(config);
-    this.familyTreePane = new FamilyTreePane(config);
+    this.geneticFamilyTreePane = new GeneticFamilyTreePane(config);
 
     this.treesManagerDialog = new TreesManagerDialog(config);
     this.editRegistriesDialog = new RegistriesDialog(config);
@@ -178,8 +178,8 @@ public class AppController {
   private boolean isDragAndDropValid(final @NotNull Dragboard dragboard) {
     final List<File> files = dragboard.getFiles();
     return dragboard.hasFiles()
-           && files.size() == 1
-           && files.get(0).getName().endsWith(".zip");
+        && files.size() == 1
+        && files.get(0).getName().endsWith(".zip");
   }
 
   private MenuBar createMenuBar() {
@@ -518,11 +518,11 @@ public class AppController {
         .add(event -> this.onPersonClick(event, this.familyTreeView));
     splitPane.getItems().add(this.familyTreeView);
 
-    this.familyTreePane.personClickListeners()
-        .add(event -> this.onPersonClick(event, this.familyTreePane));
-    this.familyTreePane.newParentClickListeners().add(this::onNewParentClick);
-    this.familyTreePane.setMaxHeight(this.config.maxTreeHeight());
-    splitPane.getItems().add(this.familyTreePane);
+    this.geneticFamilyTreePane.personClickListeners()
+        .add(event -> this.onPersonClick(event, this.geneticFamilyTreePane));
+    this.geneticFamilyTreePane.newParentClickListeners().add(this::onNewParentClick);
+    this.geneticFamilyTreePane.setMaxHeight(this.config.maxTreeHeight());
+    splitPane.getItems().add(this.geneticFamilyTreePane);
 
     this.personDetailsView.personClickListeners()
         .add(event -> this.onPersonClick(event, null));
@@ -582,8 +582,8 @@ public class AppController {
   }
 
   public void onConfigUpdate() {
-    this.familyTreePane.setMaxHeight(this.config.maxTreeHeight());
-    this.familyTreePane.refresh();
+    this.geneticFamilyTreePane.setMaxHeight(this.config.maxTreeHeight());
+    this.geneticFamilyTreePane.refresh();
     this.familyTreeView.refresh();
     this.personDetailsView.refresh();
   }
@@ -597,10 +597,10 @@ public class AppController {
   private void setFamilyTree(@NotNull FamilyTree tree, @NotNull Path directory) {
     this.familyTree = tree;
     this.familyTreeView.setFamilyTree(this.familyTree);
-    this.familyTreePane.setFamilyTree(this.familyTree);
+    this.geneticFamilyTreePane.setFamilyTree(this.familyTree);
     this.personDetailsView.setPerson(null, this.familyTree);
     this.familyTreeView.refresh();
-    this.familyTreePane.refresh();
+    this.geneticFamilyTreePane.refresh();
     this.selectionHistory.clear();
     this.selectionIndex = -1;
     this.loadedFile = directory;
@@ -834,7 +834,7 @@ public class AppController {
     this.selectionIndex += direction;
     final Person selection = this.selectionHistory.get(this.selectionIndex);
     final var event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
-    this.updateWidgetsSelection(event, this.familyTreePane);
+    this.updateWidgetsSelection(event, this.geneticFamilyTreePane);
     this.updateWidgetsSelection(event, this.familyTreeView);
     this.personDetailsView.setPerson(selection, this.familyTree);
     this.updateUI();
@@ -847,7 +847,7 @@ public class AppController {
     this.getSelectedPerson().ifPresent(root -> {
       this.familyTree.setRoot(root);
       this.unsavedChanges = true;
-      this.familyTreePane.refresh();
+      this.geneticFamilyTreePane.refresh();
       this.familyTreeView.refresh();
       this.personDetailsView.refresh();
       this.updateUI();
@@ -858,7 +858,7 @@ public class AppController {
    * Open person edit dialog to create a new person.
    */
   private void onAddPersonAction() {
-    this.openEditPersonDialog(null, List.of(), new Parents(), EditPersonDialog.TAB_PROFILE);
+    this.openEditPersonDialog(null, null, null, EditPersonDialog.TAB_PROFILE);
   }
 
   /**
@@ -887,7 +887,7 @@ public class AppController {
    */
   private void openEditPersonDialogOnTab(int tabIndex) {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, List.of(), new Parents(), tabIndex));
+        person -> this.openEditPersonDialog(person, null, null, tabIndex));
   }
 
   /**
@@ -930,7 +930,7 @@ public class AppController {
         this.familyTree.removePerson(person);
 
         // Update UI
-        this.familyTreePane.refresh();
+        this.geneticFamilyTreePane.refresh();
         this.familyTreeView.refresh();
         if (this.personDetailsView.person() == person)
           this.personDetailsView.setPerson(null, this.familyTree);
@@ -947,7 +947,7 @@ public class AppController {
    */
   private void onAddSiblingAction() {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(null, List.of(), person.parents(), EditPersonDialog.TAB_PROFILE));
+        person -> this.openEditPersonDialog(null, null, person.parents(), EditPersonDialog.TAB_PROFILE));
   }
 
   /**
@@ -955,7 +955,10 @@ public class AppController {
    */
   private void onAddChildAction() {
     this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(null, List.of(), new Parents(person, null), EditPersonDialog.TAB_PROFILE));
+        person -> {
+          final var parent = Map.of(ParentalRelationType.BIOLOGICAL_PARENT, Set.of(person));
+          this.openEditPersonDialog(null, null, parent, EditPersonDialog.TAB_PROFILE);
+        });
   }
 
   /**
@@ -964,7 +967,7 @@ public class AppController {
    * @param childInfo Information about the children of the parent to create.
    */
   private void onNewParentClick(@NotNull List<ChildInfo> childInfo) {
-    this.openEditPersonDialog(null, childInfo, new Parents(), EditPersonDialog.TAB_PROFILE);
+    this.openEditPersonDialog(null, childInfo, null, EditPersonDialog.TAB_PROFILE);
   }
 
   /**
@@ -987,13 +990,13 @@ public class AppController {
   ) {
     if (fromNode == null) {
       // Click occurred outside of tree pane and tree view, select person in tree pane
-      this.updateWidgetsSelection(event, this.familyTreePane);
-      fromNode = this.familyTreePane;
+      this.updateWidgetsSelection(event, this.geneticFamilyTreePane);
+      fromNode = this.geneticFamilyTreePane;
     }
     this.focusedComponent = fromNode;
     if (this.config.shouldSyncTreeWithMainPane()) {
       if (fromNode == this.familyTreeView)
-        this.updateWidgetsSelection(event, this.familyTreePane);
+        this.updateWidgetsSelection(event, this.geneticFamilyTreePane);
       else
         this.updateWidgetsSelection(event, this.familyTreeView);
     }
@@ -1008,7 +1011,7 @@ public class AppController {
     }
     this.personDetailsView.setPerson(person, this.familyTree);
     if (event instanceof PersonClickedEvent e && e.action() == PersonClickedEvent.Action.EDIT)
-      this.openEditPersonDialog(person, List.of(), new Parents(), EditPersonDialog.TAB_PROFILE);
+      this.openEditPersonDialog(person, null, null, EditPersonDialog.TAB_PROFILE);
     this.updateUI();
   }
 
@@ -1033,7 +1036,7 @@ public class AppController {
     final Optional<ButtonType> result = this.editRegistriesDialog.showAndWait();
     if (result.isPresent() && !result.get().getButtonData().isCancelButton()) {
       this.familyTreeView.refresh();
-      this.familyTreePane.refresh();
+      this.geneticFamilyTreePane.refresh();
       this.personDetailsView.refresh();
       this.unsavedChanges = true;
       this.updateUI();
@@ -1051,7 +1054,7 @@ public class AppController {
   private void onDocumentsUpdate(@NotNull ManageDocumentsDialog.Result result) {
     if (result.targetUpdated() || result.anyDocumentUpdated()) {
       this.familyTreeView.refresh();
-      this.familyTreePane.refresh();
+      this.geneticFamilyTreePane.refresh();
       this.personDetailsView.refresh();
       this.unsavedChanges = true;
       this.updateUI();
@@ -1067,19 +1070,19 @@ public class AppController {
    */
   private void openEditPersonDialog(
       Person person,
-      final @NotNull List<ChildInfo> childInfo,
-      @NotNull Parents parents,
+      final List<ChildInfo> childInfo,
+      final Map<ParentalRelationType, Set<Person>> parents,
       int tabIndex
   ) {
     this.editPersonDialog.setPerson(person, childInfo, this.familyTree);
-    if (parents.anyPresent())
+    if (parents != null && !parents.isEmpty())
       this.editPersonDialog.setParents(parents);
     this.editPersonDialog.selectTab(tabIndex);
     this.editPersonDialog.showAndWait().ifPresent(editedPerson -> {
       this.familyTreeView.refresh();
-      this.familyTreePane.refresh();
+      this.geneticFamilyTreePane.refresh();
       this.personDetailsView.refresh();
-      if (person == null && childInfo.isEmpty())
+      if (person == null && childInfo != null && childInfo.isEmpty())
         this.onPersonClick(new PersonClickedEvent(editedPerson, PersonClickedEvent.Action.SET_AS_TARGET), null);
       this.unsavedChanges = true;
       this.updateUI();
@@ -1105,7 +1108,7 @@ public class AppController {
 
     final Optional<Person> selectedPerson = this.getSelectedPerson();
     final boolean selection = selectedPerson.isPresent();
-    final boolean hasBothParents = selection && selectedPerson.get().hasBothParents();
+    final boolean hasAnyParents = selection && selectedPerson.get().hasAnyParents();
     final boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
 
     this.openTreeMenu.getItems().clear();
@@ -1129,7 +1132,7 @@ public class AppController {
     this.editPersonMenuItem.setDisable(!selection);
     this.removePersonMenuItem.setDisable(!selection || selectedIsRoot);
     this.addChildMenuItem.setDisable(!selection);
-    this.addSiblingMenuItem.setDisable(!hasBothParents);
+    this.addSiblingMenuItem.setDisable(!hasAnyParents);
     this.editParentsMenuItem.setDisable(!selection);
     this.editLifeEventsMenuItem.setDisable(!selection);
     this.editDocumentsMenuItem.setDisable(!selection);
@@ -1139,7 +1142,7 @@ public class AppController {
     this.nextSelectionToolbarButton.setDisable(this.selectionIndex == -1 || this.selectionIndex == this.selectionHistory.size() - 1);
     this.setAsRootToolbarButton.setDisable(!selection || selectedIsRoot);
     this.addChildToolbarButton.setDisable(!selection);
-    this.addSiblingToolbarButton.setDisable(!hasBothParents);
+    this.addSiblingToolbarButton.setDisable(!hasAnyParents);
     this.editParentsToolbarButton.setDisable(!selection);
     this.editLifeEventsToolbarButton.setDisable(!selection);
     this.editDocumentsToolbarButton.setDisable(!selection);

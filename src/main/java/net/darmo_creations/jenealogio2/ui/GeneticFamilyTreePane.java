@@ -16,9 +16,9 @@ import java.util.*;
 import java.util.stream.*;
 
 /**
- * JavaFX component displaying a part of a family tree’s graph.
+ * JavaFX component displaying a part of a genetic family tree’s graph.
  */
-public class FamilyTreePane extends FamilyTreeComponent {
+public class GeneticFamilyTreePane extends FamilyTreeComponent {
   public static final int MIN_ALLOWED_HEIGHT = 1;
   public static final int MAX_ALLOWED_HEIGHT = 7;
   public static final int DEFAULT_MAX_HEIGHT = 4;
@@ -36,11 +36,11 @@ public class FamilyTreePane extends FamilyTreeComponent {
   private int maxHeight;
 
   /**
-   * Create an empty family tree pane.
+   * Create an empty genetic family tree pane.
    *
    * @param config The app’s config.
    */
-  public FamilyTreePane(final @NotNull Config config) {
+  public GeneticFamilyTreePane(final @NotNull Config config) {
     this.config = Objects.requireNonNull(config);
     this.setOnMouseClicked(this::onBackgroundClicked);
     this.scrollPane.setPannable(true);
@@ -110,34 +110,29 @@ public class FamilyTreePane extends FamilyTreeComponent {
    * @return The widget for the tree’s root.
    */
   private PersonWidget buildParentsTree(@NotNull FamilyTree familyTree) {
-    final PersonWidget root = this.createWidget(this.targettedPerson, List.of(), false, true, familyTree);
+    final PersonWidget root = this.createWidget(this.targettedPerson, null, false, true, familyTree);
 
     final List<List<PersonWidget>> levels = new ArrayList<>();
     levels.add(List.of(root));
     // Build levels breadth-first
-    for (int i = 1; i <= this.maxHeight; i++) {
+    for (int treeLevel = 1; treeLevel <= this.maxHeight; treeLevel++) {
       final List<PersonWidget> widgets = new ArrayList<>();
       levels.add(widgets);
-      for (final PersonWidget childWidget : levels.get(i - 1)) {
+      for (final PersonWidget childWidget : levels.get(treeLevel - 1)) {
         if (childWidget != null) {
-          final Optional<Person> child = childWidget.person();
-          if (child.isPresent()) {
-            final Person c = child.get();
-            final var parents = c.parents();
-            final PersonWidget parent1Widget = this.createWidget(
-                parents.parent1().orElse(null),
-                List.of(new ChildInfo(c, 0)),
-                this.hasHiddenRelatives(parents.parent1(), i, c, 1),
-                false,
-                familyTree
-            );
-            final PersonWidget parent2Widget = this.createWidget(
-                parents.parent2().orElse(null),
-                List.of(new ChildInfo(c, 1)),
-                this.hasHiddenRelatives(parents.parent2(), i, c, 1),
-                false,
-                familyTree
-            );
+          final Optional<Person> childOpt = childWidget.person();
+          if (childOpt.isPresent()) {
+            final Person child = childOpt.get();
+            final List<Person> parents = child.getGeneticParents().stream()
+                .sorted(Person.birthDateThenNameComparator(false))
+                .toList();
+            final Person parent1 = !parents.isEmpty() ? parents.get(0) : null;
+            final Person parent2 = parents.size() > 1 ? parents.get(1) : null;
+            final Set<Person> children = new HashSet<>();
+            if (parent1 != null)
+              children.addAll(parent1.getPartnersAndGeneticChildren().get(Optional.ofNullable(parent2)));
+            final PersonWidget parent1Widget = this.createParentWidget(familyTree, parent1, children, treeLevel);
+            final PersonWidget parent2Widget = this.createParentWidget(familyTree, parent2, children, treeLevel);
             widgets.add(parent1Widget);
             widgets.add(parent2Widget);
             childWidget.setParentWidget1(parent1Widget);
@@ -149,7 +144,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
         widgets.add(null);
       }
       if (widgets.stream().allMatch(Objects::isNull)) {
-        levels.remove(i);
+        levels.remove(treeLevel);
         break;
       }
     }
@@ -173,17 +168,40 @@ public class FamilyTreePane extends FamilyTreeComponent {
     return root;
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private PersonWidget createParentWidget(
+      final @NotNull FamilyTree familyTree,
+      final Person parent,
+      final @NotNull Set<Person> children,
+      int treeLevel
+  ) {
+    final List<ChildInfo> childrenInfos = children.stream().map(child -> {
+      if (parent == null) return new ChildInfo(child, ParentalRelationType.BIOLOGICAL_PARENT);
+      return new ChildInfo(child, child.getParentType(parent).orElse(ParentalRelationType.BIOLOGICAL_PARENT));
+    }).toList();
+    return this.createWidget(
+        parent,
+        childrenInfos,
+        parent != null && this.hasHiddenRelatives(parent, treeLevel, children, 1),
+        false,
+        familyTree
+    );
+  }
+
   private boolean hasHiddenRelatives(
-      @NotNull Optional<Person> parent,
+      final @NotNull Person parent,
       int treeLevel,
-      final Person child,
+      final Set<Person> children,
       int minPartners
   ) {
-    final boolean hasHiddenParents = treeLevel == this.maxHeight && parent.map(Person::hasAnyParents).orElse(false);
-    final boolean hasHiddenChildren = treeLevel > 1 && parent.map(p -> p.children().stream().anyMatch(p_ -> p_ != child)).orElse(false);
-    final boolean hasHiddenPartners = parent.map(p -> p.getPartnersAndChildren().size() > minPartners).orElse(false);
-    return hasHiddenParents || hasHiddenChildren || hasHiddenPartners;
+    final var partnersAndGeneticChildren = parent.getPartnersAndGeneticChildren();
+    // Any hidden parents
+    return treeLevel == this.maxHeight && !parent.getGeneticParents().isEmpty() ||
+        // Any hidden partners
+        partnersAndGeneticChildren.keySet().stream()
+            .filter(Optional::isPresent)
+            .count() > minPartners ||
+        // Any hidden children
+        treeLevel > 1 && children != null && children.size() > 1;
   }
 
   /**
@@ -224,7 +242,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
     final double rootX = root.getLayoutX();
     final double rootY = root.getLayoutY();
 
-    final Set<Person> siblings = rootPerson.getSameParentsSiblings();
+    final Set<Person> siblings = rootPerson.getSameGeneticParentsSiblings();
     final List<Person> olderSiblings = siblings.stream()
         .filter(p -> Person.birthDateThenNameComparator(false).compare(p, rootPerson) < 0)
         .sorted(Person.birthDateThenNameComparator(false))
@@ -234,7 +252,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
         .sorted(Person.birthDateThenNameComparator(true))
         .toList();
 
-    final Map<Optional<Person>, List<Person>> childrenMap = rootPerson.getPartnersAndChildren()
+    final Map<Optional<Person>, List<Person>> childrenMap = rootPerson.getPartnersAndGeneticChildren()
         .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> {
           final List<Person> list = new ArrayList<>(e.getValue());
           list.sort(Person.birthDateThenNameComparator(false));
@@ -268,9 +286,12 @@ public class FamilyTreePane extends FamilyTreeComponent {
       final boolean hasHiddenParents = partnerOpt.map(Person::hasAnyParents).orElse(false);
       final List<ChildInfo> childInfo = new LinkedList<>();
       final Person partner = partnerOpt.orElse(null);
-      for (final Person child : children)
-        //noinspection OptionalGetWithoutIsPresent
-        childInfo.add(new ChildInfo(child, child.getParentIndex(partner).get())); // Will always exist in this context
+      for (final Person child : children) {
+        final var parentType = Optional.ofNullable(partner)
+            .flatMap(child::getParentType)
+            .orElse(ParentalRelationType.BIOLOGICAL_PARENT);
+        childInfo.add(new ChildInfo(child, parentType));
+      }
       final PersonWidget partnerWidget = this.createWidget(partner, childInfo, hasHiddenParents, false, familyTree);
       partnerWidget.setLayoutX(x);
       partnerWidget.setLayoutY(rootY);
@@ -295,8 +316,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
       if (childX < minX)
         minX = childX;
       for (final Person child : children) {
-        final boolean hasHiddenChildren = this.hasHiddenRelatives(Optional.ofNullable(child), 0, null, 0);
-        final PersonWidget childWidget = this.createWidget(child, List.of(), hasHiddenChildren, false, familyTree);
+        final boolean hasHiddenChildren = this.hasHiddenRelatives(child, 0, null, 0);
+        final PersonWidget childWidget = this.createWidget(child, null, hasHiddenChildren, false, familyTree);
         childWidget.setLayoutX(childX);
         childWidget.setLayoutY(childY);
         childWidget.setParentWidget1(root);
@@ -329,8 +350,8 @@ public class FamilyTreePane extends FamilyTreeComponent {
       double rootY
   ) {
     final double personW = PersonWidget.WIDTH;
-    final boolean hasHiddenChildren = this.hasHiddenRelatives(Optional.of(sibling), 0, null, 0);
-    final PersonWidget widget = this.createWidget(sibling, List.of(), hasHiddenChildren, false, familyTree);
+    final boolean hasHiddenChildren = this.hasHiddenRelatives(sibling, 0, null, 0);
+    final PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren, false, familyTree);
     widget.setLayoutX(x);
     widget.setLayoutY(rootY);
     widget.setParentWidget1(root.parentWidget1().orElse(null));
@@ -363,7 +384,7 @@ public class FamilyTreePane extends FamilyTreeComponent {
    */
   private PersonWidget createWidget(
       final Person person,
-      final @NotNull List<ChildInfo> childInfo,
+      final List<ChildInfo> childInfo,
       boolean showMoreIcon,
       boolean isTarget,
       final @NotNull FamilyTree familyTree

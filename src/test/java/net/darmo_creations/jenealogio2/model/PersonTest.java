@@ -3,11 +3,13 @@ package net.darmo_creations.jenealogio2.model;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.GregorianCalendar;
+import net.darmo_creations.jenealogio2.utils.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
 
 import java.util.*;
+import java.util.stream.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -248,306 +250,352 @@ class PersonTest {
     assertEquals("a", this.person.mainOccupation().get());
   }
 
-  @Test
-  void parentsBothDefined() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
-    assertEquals(new Parents(this.parent1, this.parent2), this.person.parents());
-  }
-
-  @Test
-  void parentsFirstDefined() {
-    this.person.setParent(0, this.parent1);
-    assertEquals(new Parents(this.parent1, null), this.person.parents());
-  }
-
-  @Test
-  void parentsSecondDefined() {
-    this.person.setParent(1, this.parent2);
-    assertEquals(new Parents(null, this.parent2), this.person.parents());
-  }
-
-  @Test
-  void parentsNoneDefined() {
-    assertEquals(new Parents(), this.person.parents());
-  }
-
-  @Test
-  void getParentIndex() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(0, this.person.getParentIndex(this.parent1).get());
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(1, this.person.getParentIndex(this.parent2).get());
-  }
-
-  @Test
-  void getParentIndexUndefined0() {
-    this.person.setParent(1, this.parent2);
-    assertTrue(this.person.getParentIndex(this.parent1).isEmpty());
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(1, this.person.getParentIndex(this.parent2).get());
-  }
-
-  @Test
-  void getParentIndexUndefined1() {
-    this.person.setParent(0, this.parent1);
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(0, this.person.getParentIndex(this.parent1).get());
-    assertTrue(this.person.getParentIndex(this.parent2).isEmpty());
-  }
-
-  @Test
-  void hasSameParentsSameIndices() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
-    final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
-    person2.setParent(1, this.parent2);
-    assertTrue(this.person.hasSameParents(person2));
-  }
-
-  @Test
-  void hasSameParentsSwappedIndices() {
-    this.person.setParent(1, this.parent1);
-    this.person.setParent(0, this.parent2);
-    final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
-    person2.setParent(1, this.parent2);
-    assertTrue(this.person.hasSameParents(person2));
-  }
-
-  @Test
-  void hasSameParentsFalseIfOnlyOneSame() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
-    final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
-    person2.setParent(1, new Person());
-    assertFalse(this.person.hasSameParents(person2));
-  }
-
-  @Test
-  void hasSameParentsFalseIfOnlyNoneSame() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
-    final Person person2 = new Person();
-    person2.setParent(0, new Person());
-    person2.setParent(1, new Person());
-    assertFalse(this.person.hasSameParents(person2));
-  }
-
-  @Test
-  void hasAnyParentsBothDefined() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
+  @ParameterizedTest
+  @EnumSource(ParentalRelationType.class)
+  void hasAnyParents(ParentalRelationType type) {
+    this.person.addParent(this.parent1, type);
     assertTrue(this.person.hasAnyParents());
   }
 
-  @Test
-  void hasAnyParentsFirstDefined() {
-    this.person.setParent(0, this.parent1);
-    assertTrue(this.person.hasAnyParents());
+  @ParameterizedTest
+  @EnumSource(ParentalRelationType.class)
+  void addParent(ParentalRelationType type) {
+    this.person.addParent(this.parent1, type);
+    assertEquals(Set.of(this.parent1), this.person.parents(type));
+  }
+
+  @ParameterizedTest
+  @EnumSource(ParentalRelationType.class)
+  void addParentFailsIfMoreThanAllowed(ParentalRelationType type) {
+    if (type.maxParentsCount().isPresent()) {
+      for (int i = 0; i < type.maxParentsCount().get(); i++)
+        this.person.addParent(new Person(), type);
+      assertThrows(IllegalArgumentException.class, () -> this.person.addParent(new Person(), type));
+    }
   }
 
   @Test
-  void hasAnyParentsSecondDefined() {
-    this.person.setParent(1, this.parent1);
-    assertTrue(this.person.hasAnyParents());
+  void addParentFailsIfParentAlreadyAdded_sameType() {
+    this.person.addParent(this.parent1, ParentalRelationType.NON_BIOLOGICAL_PARENT);
+    assertThrows(IllegalArgumentException.class,
+        () -> this.person.addParent(this.parent1, ParentalRelationType.NON_BIOLOGICAL_PARENT));
   }
 
   @Test
-  void hasBothParents() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
-    assertTrue(this.person.hasBothParents());
+  void addParentFailsIfParentAlreadyAdded_differentTypes() {
+    this.person.addParent(this.parent1, ParentalRelationType.NON_BIOLOGICAL_PARENT);
+    assertThrows(IllegalArgumentException.class,
+        () -> this.person.addParent(this.parent1, ParentalRelationType.ADOPTIVE_PARENT));
   }
 
-  @Test
-  void hasBothParentsFirstDefined() {
-    this.person.setParent(0, this.parent1);
-    assertFalse(this.person.hasBothParents());
+  @ParameterizedTest
+  @MethodSource("provideArgsFor_addParentFailsIfAlready2GeneticParents")
+  void addParentFailsIfAlready2GeneticParents(ParentalRelationType type1, ParentalRelationType type2, ParentalRelationType type3) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
+    assertThrows(IllegalArgumentException.class, () -> this.person.addParent(new Person(), type3));
   }
 
-  @Test
-  void hasBothParentsSecondDefined() {
-    this.person.setParent(1, this.parent1);
-    assertFalse(this.person.hasBothParents());
+  static Stream<Arguments> provideArgsFor_addParentFailsIfAlready2GeneticParents() {
+    return Stream.of(
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.EGG_DONOR),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.SPERM_DONOR),
+        Arguments.of(ParentalRelationType.EGG_DONOR, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.EGG_DONOR, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.SPERM_DONOR),
+        Arguments.of(ParentalRelationType.SPERM_DONOR, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.SPERM_DONOR, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.EGG_DONOR),
+
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.EGG_DONOR),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.SPERM_DONOR),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.EGG_DONOR, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.EGG_DONOR, ParentalRelationType.SPERM_DONOR),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.SPERM_DONOR, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.SPERM_DONOR, ParentalRelationType.EGG_DONOR)
+    );
   }
 
-  @Test
-  void setParentUpdatesPerson0() {
-    this.person.setParent(0, this.parent1);
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(this.parent1, this.person.parents().parent1().get());
+  @ParameterizedTest
+  @EnumSource(ParentalRelationType.class)
+  void addParentUpdatesParent(ParentalRelationType type) {
+    this.person.addParent(this.parent1, type);
+    assertSame(this.person, this.parent1.children(type).iterator().next());
   }
 
-  @Test
-  void setParentUpdatesPerson1() {
-    this.person.setParent(1, this.parent1);
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(this.parent1, this.person.parents().parent2().get());
-  }
-
-  @Test
-  void setParentUpdatesParent() {
-    this.person.setParent(0, this.parent1);
-    assertSame(this.person, this.parent1.children().iterator().next());
-  }
-
-  @Test
-  void setParentUpdatesPreviousParent() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(0, this.parent2);
-    assertTrue(this.parent1.children().isEmpty());
-  }
-
-  @Test
-  void removeParent0() {
-    this.person.setParent(0, this.parent1);
+  @ParameterizedTest
+  @EnumSource(ParentalRelationType.class)
+  void removeParentUpdatesParent(ParentalRelationType type) {
+    this.person.addParent(this.parent1, type);
     this.person.removeParent(this.parent1);
-    assertTrue(this.person.parents().parent1().isEmpty());
-    assertTrue(this.person.parents().parent2().isEmpty());
+    assertTrue(this.parent1.children(type).isEmpty());
   }
 
   @Test
-  void removeParent1() {
-    this.person.setParent(1, this.parent1);
-    this.person.removeParent(this.parent1);
-    assertTrue(this.person.parents().parent1().isEmpty());
-    assertTrue(this.person.parents().parent2().isEmpty());
+  void getGeneticParentsReturnsOnlyGeneticParents_0() {
+    assertEquals(Set.of(), this.person.getGeneticParents());
   }
 
-  @Test
-  void getPartnersAndChildrenExactSameParents() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
+  @ParameterizedTest
+  @MethodSource("provideArgs_oneGeneticType")
+  void getGeneticParentsReturnsOnlyGeneticParents_1(ParentalRelationType type) {
+    this.person.addParent(this.parent1, type);
+    assertEquals(Set.of(this.parent1), this.person.getGeneticParents());
+  }
+
+  static Stream<Arguments> provideArgs_oneGeneticType() {
+    return Arrays.stream(ParentalRelationType.GENETIC_RELATIONS).map(Arguments::of);
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoGeneticTypes")
+  void getGeneticParentsReturnsOnlyGeneticParents_2(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
+    assertEquals(Set.of(this.parent1, this.parent2), this.person.getGeneticParents());
+  }
+
+  static Stream<Arguments> provideArgs_twoGeneticTypes() {
+    return Stream.of(
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.EGG_DONOR, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.SPERM_DONOR, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.SPERM_DONOR, ParentalRelationType.EGG_DONOR)
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoTypes")
+  void getPartnersAndChildren_exactSameParents_sameType(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
     final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
-    person2.setParent(1, this.parent2);
+    person2.addParent(this.parent1, type1);
+    person2.addParent(this.parent2, type2);
+    person2.setDisambiguationID(4);
+    assertEquals(List.of(new Pair<>(
+        Set.of(this.parent2),
+        Set.of(person2, this.person)
+    )), this.parent1.getPartnersAndChildren());
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoTypes")
+  void getPartnersAndChildren_oneParent(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
+    final Person person2 = new Person();
+    person2.addParent(this.parent1, type2);
+    assertEquals(List.of(new Pair<>(
+        Set.of(),
+        Set.of(person2, this.person)
+    )), this.parent1.getPartnersAndChildren());
+  }
+
+  @Test
+  void getPartnersAndChildren_ignoresSurrogateAndDonors() {
+    this.person.addParent(this.parent1, ParentalRelationType.SPERM_DONOR);
+    this.person.addParent(this.parent2, ParentalRelationType.SURROGATE_PARENT);
+    final Person person2 = new Person();
+    person2.addParent(this.parent1, ParentalRelationType.EGG_DONOR);
+    person2.addParent(this.parent2, ParentalRelationType.BIOLOGICAL_PARENT);
+    person2.setDisambiguationID(4);
+    assertEquals(List.of(), this.parent1.getPartnersAndChildren());
+    assertEquals(List.of(new Pair<>(
+        Set.of(),
+        Set.of(person2)
+    )), this.parent2.getPartnersAndChildren());
+  }
+
+  static Stream<Arguments> provideArgs_twoTypes() {
+    return Stream.of(
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.FOSTER_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.GODPARENT),
+
+        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.FOSTER_PARENT),
+        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.GODPARENT),
+
+        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.FOSTER_PARENT),
+        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.GODPARENT),
+
+        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.FOSTER_PARENT),
+        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.GODPARENT),
+
+        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.FOSTER_PARENT),
+        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.GODPARENT)
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoGeneticTypes")
+  void getPartnersAndGeneticChildren_exactSameParents_sameType(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
+    final Person person2 = new Person();
+    person2.addParent(this.parent1, type1);
+    person2.addParent(this.parent2, type2);
     assertEquals(Map.of(
         Optional.of(this.parent2),
         Set.of(person2, this.person)
-    ), this.parent1.getPartnersAndChildren());
+    ), this.parent1.getPartnersAndGeneticChildren());
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoGeneticTypes")
+  void getPartnersAndGeneticChildren_exactSameParents_differentTypes(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
+    final Person person2 = new Person();
+    person2.addParent(this.parent1, type2);
+    person2.addParent(this.parent2, type1);
+    assertEquals(Map.of(
+        Optional.of(this.parent2),
+        Set.of(person2, this.person)
+    ), this.parent1.getPartnersAndGeneticChildren());
   }
 
   @Test
-  void getPartnersAndChildrenNoChildrenWithPartner() {
+  void getPartnersAndGeneticChildren_noChildrenNoPartner() {
+    assertEquals(Map.of(), this.person.getPartnersAndGeneticChildren());
+  }
+
+  @Test
+  void getPartnersAndGeneticChildren_noChildrenWithPartner() {
     final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
     l.setActors(Set.of(this.parent1, this.parent2));
-    assertEquals(Map.of(
-        Optional.of(this.parent2),
-        Set.of()
-    ), this.parent1.getPartnersAndChildren());
+    assertEquals(Map.of(), this.parent1.getPartnersAndGeneticChildren());
   }
 
   @Test
-  void getPartnersAndChildrenOneCommonParents() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
+  void getPartnersAndGeneticChildren_onlyNonGeneticChildrenWithPartner() {
+    this.person.addParent(this.parent1, ParentalRelationType.NON_BIOLOGICAL_PARENT);
+    this.person.addParent(this.parent2, ParentalRelationType.NON_BIOLOGICAL_PARENT);
+    assertEquals(Map.of(), this.parent1.getPartnersAndGeneticChildren());
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoGeneticTypes")
+  void getPartnersAndGeneticChildren_oneCommonParent(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
     final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
+    person2.addParent(this.parent1, type1);
     final Person parent3 = new Person();
-    person2.setParent(1, parent3);
+    person2.addParent(parent3, type2);
     assertEquals(Map.of(
         Optional.of(this.parent2),
         Set.of(this.person),
         Optional.of(parent3),
         Set.of(person2)
-    ), this.parent1.getPartnersAndChildren());
+    ), this.parent1.getPartnersAndGeneticChildren());
   }
 
-  @Test
-  void getPartnersAndChildrenNoPartner() {
-    this.person.setParent(0, this.parent1);
+  @ParameterizedTest
+  @MethodSource("provideArgs_oneGeneticType")
+  void getPartnersAndGeneticChildren_noPartner(ParentalRelationType type) {
+    this.person.addParent(this.parent1, type);
     final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
+    person2.addParent(this.parent1, type);
     assertEquals(Map.of(
         Optional.empty(),
         Set.of(person2, this.person)
-    ), this.parent1.getPartnersAndChildren());
+    ), this.parent1.getPartnersAndGeneticChildren());
   }
 
-  @Test
-  void getSameParentsSiblings() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoGeneticTypes")
+  void getSameGeneticParentsSiblings(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
     final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
-    person2.setParent(1, this.parent2);
-    assertEquals(Set.of(person2), this.person.getSameParentsSiblings());
-    assertEquals(Set.of(this.person), person2.getSameParentsSiblings());
+    person2.addParent(this.parent1, type1);
+    person2.addParent(this.parent2, type2);
+    assertEquals(Set.of(person2), this.person.getSameGeneticParentsSiblings());
+    assertEquals(Set.of(this.person), person2.getSameGeneticParentsSiblings());
   }
 
-  @Test
-  void getSameParentsSiblingsEmptyIfOnlyOneCommon() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoGeneticTypes")
+  void getSameGeneticParentsSiblings_emptyIfOnlyOneCommon(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
     final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
-    person2.setParent(1, new Person());
-    assertTrue(this.person.getSameParentsSiblings().isEmpty());
-    assertTrue(person2.getSameParentsSiblings().isEmpty());
+    person2.addParent(this.parent1, type1);
+    person2.addParent(new Person(), type2);
+    assertTrue(this.person.getSameGeneticParentsSiblings().isEmpty());
+    assertTrue(person2.getSameGeneticParentsSiblings().isEmpty());
   }
 
-  @Test
-  void getSameParentsSiblingsOneNull() {
-    this.person.setParent(0, this.parent1);
+  @ParameterizedTest
+  @MethodSource("provideArgs_twoGeneticTypes")
+  void getSameGeneticParentsSiblings_singleParent(ParentalRelationType type1, ParentalRelationType type2) {
+    this.person.addParent(this.parent1, type1);
     final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
-    assertEquals(Set.of(person2), this.person.getSameParentsSiblings());
-    assertEquals(Set.of(this.person), person2.getSameParentsSiblings());
+    person2.addParent(this.parent1, type2);
+    assertEquals(Set.of(person2), this.person.getSameGeneticParentsSiblings());
+    assertEquals(Set.of(this.person), person2.getSameGeneticParentsSiblings());
   }
 
-  @Test
-  void getAllSiblings() {
-    this.person.setParent(0, this.parent1);
-    this.person.setParent(1, this.parent2);
+  @ParameterizedTest
+  @MethodSource("provideArgsFor_getSiblings")
+  void getSiblings(ParentalRelationType type1, ParentalRelationType type2, ParentalRelationType type3, ParentalRelationType type4) {
+    this.person.addParent(this.parent1, type1);
+    this.person.addParent(this.parent2, type2);
     final Person person2 = new Person();
-    person2.setParent(0, this.parent1);
+    person2.setDisambiguationID(5);
+    person2.addParent(this.parent1, type3);
     final Person parent3 = new Person();
-    person2.setParent(1, parent3);
+    parent3.setDisambiguationID(6);
+    person2.addParent(parent3, type4);
     final Person person3 = new Person();
-    person3.setParent(0, parent3);
-    person3.setParent(1, this.parent2);
-    assertEquals(Map.of(
-        new Parents(this.parent1, parent3),
-        Set.of(person2),
-        new Parents(parent3, this.parent2),
-        Set.of(person3)
-    ), this.person.getAllSiblings());
+    person3.setDisambiguationID(7);
+    person3.addParent(parent3, type1);
+    person3.addParent(this.parent2, type3);
+    assertEquals(Set.of(
+        new Pair<>(Set.of(this.parent1, parent3), Set.of(person2)),
+        new Pair<>(Set.of(parent3, this.parent2), Set.of(person3))
+    ), new HashSet<>(this.person.getSiblings()));
+  }
+
+  static Stream<Arguments> provideArgsFor_getSiblings() {
+    return Stream.of( // Non-exhaustive permutations list
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.FOSTER_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.FOSTER_PARENT),
+        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.FOSTER_PARENT)
+    );
   }
 
   @ParameterizedTest
-  @EnumSource(Person.RelativeType.class)
-  void addRelativeUpdatesPerson(Person.RelativeType type) {
-    this.person.addRelative(this.parent1, type);
-    assertEquals(Set.of(this.parent1), this.person.getRelatives(type));
+  @MethodSource("provideArgsFor_getSiblings_ignoresDonorsSurrogatesAndGodparents")
+  void getSiblings_ignoresDonorsSurrogatesAndGodparents(ParentalRelationType type) {
+    this.person.addParent(this.parent1, ParentalRelationType.BIOLOGICAL_PARENT);
+    final Person person2 = new Person();
+    person2.addParent(this.parent1, type);
+    assertEquals(List.of(), this.person.getSiblings());
   }
 
-  @ParameterizedTest
-  @EnumSource(Person.RelativeType.class)
-  void addRelativeUpdatesRelative(Person.RelativeType type) {
-    this.person.addRelative(this.parent1, type);
-    assertEquals(Set.of(this.person), this.parent1.nonBiologicalChildren(type));
-  }
-
-  @ParameterizedTest
-  @EnumSource(Person.RelativeType.class)
-  void removeRelativeUpdatesPerson(Person.RelativeType type) {
-    this.person.addRelative(this.parent1, type);
-    this.person.removeRelative(this.parent1, type);
-    assertTrue(this.person.getRelatives(type).isEmpty());
-  }
-
-  @ParameterizedTest
-  @EnumSource(Person.RelativeType.class)
-  void removeRelativeUpdatesRelative(Person.RelativeType type) {
-    this.person.addRelative(this.parent1, type);
-    this.person.removeRelative(this.parent1, type);
-    assertTrue(this.parent1.nonBiologicalChildren(type).isEmpty());
+  static Stream<Arguments> provideArgsFor_getSiblings_ignoresDonorsSurrogatesAndGodparents() {
+    return Stream.of(
+        Arguments.of(ParentalRelationType.SURROGATE_PARENT),
+        Arguments.of(ParentalRelationType.SPERM_DONOR),
+        Arguments.of(ParentalRelationType.EGG_DONOR),
+        Arguments.of(ParentalRelationType.GODPARENT)
+    );
   }
 
   @Test

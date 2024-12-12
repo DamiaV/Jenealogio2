@@ -210,7 +210,7 @@ public class TreeXMLReader extends TreeXMLManager {
   ) throws IOException {
     final List<Person> persons = new LinkedList<>();
     final Map<Person, Pair<Integer, Integer>> parentIDS = new HashMap<>();
-    final Map<Person, Map<Person.RelativeType, List<Integer>>> relativesIDs = new HashMap<>();
+    final Map<Person, Map<ParentalRelationType, List<Integer>>> parentsIDs = new HashMap<>();
 
     for (final Element personElement : XmlUtils.getChildElements(peopleElement, PERSON_TAG)) {
       final Person person = new Person();
@@ -231,8 +231,7 @@ public class TreeXMLReader extends TreeXMLManager {
       this.readGenderTag(personElement, familyTree, AGAB_TAG, AGAB_KEY_ATTR, person::setAssignedGenderAtBirth);
       this.readGenderTag(personElement, familyTree, GENDER_TAG, GENDER_KEY_ATTR, person::setGender);
       this.readMainOccupationTag(personElement, person);
-      this.readParentsTag(personElement, person, parentIDS);
-      this.readRelativesTag(personElement, person, relativesIDs);
+      this.readParentsTag(personElement, person, parentsIDs);
       this.readNotesTag(personElement, person);
       this.readSourcesTag(personElement, person);
 
@@ -240,8 +239,7 @@ public class TreeXMLReader extends TreeXMLManager {
       persons.add(person);
     }
 
-    this.setParents(persons, parentIDS);
-    this.setRelatives(persons, relativesIDs);
+    this.setParents(persons, parentsIDs);
 
     return persons;
   }
@@ -361,55 +359,32 @@ public class TreeXMLReader extends TreeXMLManager {
   /**
    * Read the {@code <Parents>} tag for the given person and update the given map.
    *
-   * @param personElement {@code <Person>} element to extract parents from.
+   * @param personElement {@code <Person>} element to extract relatives from.
    * @param person        The person corresponding to the {@code <Person>} tag.
-   * @param parentIDS     Map into which to put all the parents of the given person.
+   * @param relativesIDs  Map into which to put all the parents of the given person.
    */
   private void readParentsTag(
       final @NotNull Element personElement,
       final @NotNull Person person,
-      @NotNull Map<Person, Pair<Integer, Integer>> parentIDS
+      @NotNull Map<Person, Map<ParentalRelationType, List<Integer>>> relativesIDs
   ) throws IOException {
-    final Optional<Element> parentsElement = XmlUtils.getChildElement(personElement, PARENTS_TAG, true);
-    if (parentsElement.isPresent()) {
-      final Integer id1 = XmlUtils.getAttr(parentsElement.get(), PARENT_ID_1_ATTR, Integer::parseInt, () -> null, false);
-      final Integer id2 = XmlUtils.getAttr(parentsElement.get(), PARENT_ID_2_ATTR, Integer::parseInt, () -> null, false);
-      if (id1 != null && id2 != null && id1.intValue() == id2.intValue())
-        throw new IOException("Parents cannot be identical");
-      // Defer setting parents to when all person objects have been deserialized
-      parentIDS.put(person, new Pair<>(id1, id2));
-    }
-  }
-
-  /**
-   * Read the {@code <Relatives>} tag for the given person and update the given map.
-   *
-   * @param personElement {@code <Person>} element to extract relatives from.
-   * @param person        The person corresponding to the {@code <Person>} tag.
-   * @param relativesIDs  Map into which to put all the relatives of the given person.
-   */
-  private void readRelativesTag(
-      final @NotNull Element personElement,
-      final @NotNull Person person,
-      @NotNull Map<Person, Map<Person.RelativeType, List<Integer>>> relativesIDs
-  ) throws IOException {
-    final Optional<Element> relativesElement = XmlUtils.getChildElement(personElement, RELATIVES_TAG, true);
+    final Optional<Element> relativesElement = XmlUtils.getChildElement(personElement, PARENTS_TAG, true);
     if (relativesElement.isPresent()) {
-      final HashMap<Person.RelativeType, List<Integer>> groupsMap = new HashMap<>();
+      final HashMap<ParentalRelationType, List<Integer>> groupsMap = new HashMap<>();
       relativesIDs.put(person, groupsMap);
-      for (final Element groupElement : XmlUtils.getChildElements(relativesElement.get(), GROUP_TAG)) {
-        final int ordinal = XmlUtils.getAttr(groupElement, GROUP_ORDINAL_ATTR, Integer::parseInt, null, false);
-        final Person.RelativeType relativeType;
+      for (final Element groupElement : XmlUtils.getChildElements(relativesElement.get(), PARENT_GROUP_TAG)) {
+        final int ordinal = XmlUtils.getAttr(groupElement, PARENT_GROUP_ORDINAL_ATTR, Integer::parseInt, null, false);
+        final ParentalRelationType parentType;
         try {
-          relativeType = Person.RelativeType.values()[ordinal];
+          parentType = ParentalRelationType.values()[ordinal];
         } catch (final IndexOutOfBoundsException e) {
           throw new IOException(e);
         }
-        final LinkedList<Integer> relativesList = new LinkedList<>();
-        groupsMap.put(relativeType, relativesList);
-        for (final Element relativeElement : XmlUtils.getChildElements(groupElement, RELATIVE_TAG)) {
+        final LinkedList<Integer> parentsList = new LinkedList<>();
+        groupsMap.put(parentType, parentsList);
+        for (final Element parentElement : XmlUtils.getChildElements(groupElement, PARENT_TAG)) {
           // Defer setting relatives to when all person objects have been deserialized
-          relativesList.add(XmlUtils.getAttr(relativeElement, RELATIVE_ID_ATTR, Integer::parseInt, null, false));
+          parentsList.add(XmlUtils.getAttr(parentElement, PARENT_ID_ATTR, Integer::parseInt, null, false));
         }
       }
     }
@@ -445,38 +420,15 @@ public class TreeXMLReader extends TreeXMLManager {
 
   private void setParents(
       final @NotNull List<Person> persons,
-      final @NotNull Map<Person, Pair<Integer, Integer>> parentIDS
+      final @NotNull Map<Person, Map<ParentalRelationType, List<Integer>>> parentsIDs
   ) throws IOException {
-    for (final var entry : parentIDS.entrySet()) {
-      final Person person = entry.getKey();
-      final Integer id1 = entry.getValue().left();
-      final Integer id2 = entry.getValue().right();
-      if (id1 != null)
-        try {
-          person.setParent(0, persons.get(id1));
-        } catch (final IndexOutOfBoundsException e) {
-          throw new IOException(e);
-        }
-      if (id2 != null)
-        try {
-          person.setParent(1, persons.get(id2));
-        } catch (final IndexOutOfBoundsException e) {
-          throw new IOException(e);
-        }
-    }
-  }
-
-  private void setRelatives(
-      final @NotNull List<Person> persons,
-      final @NotNull Map<Person, Map<Person.RelativeType, List<Integer>>> relativesIDs
-  ) throws IOException {
-    for (final var entry : relativesIDs.entrySet()) {
+    for (final var entry : parentsIDs.entrySet()) {
       final Person person = entry.getKey();
       for (final var group : entry.getValue().entrySet()) {
-        final Person.RelativeType type = group.getKey();
+        final ParentalRelationType type = group.getKey();
         for (final int personID : group.getValue())
           try {
-            person.addRelative(persons.get(personID), type);
+            person.addParent(persons.get(personID), type);
           } catch (final IndexOutOfBoundsException e) {
             throw new IOException(e);
           }

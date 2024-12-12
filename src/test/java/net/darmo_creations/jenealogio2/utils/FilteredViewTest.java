@@ -29,13 +29,13 @@ class FilteredViewTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = { 5, 6, 7, 8, 9 })
+  @ValueSource(ints = {5, 6, 7, 8, 9})
   void contains(int i) {
     assertTrue(this.view.contains(i));
   }
 
   @ParameterizedTest
-  @ValueSource(ints = { 0, 1, 2, 3, 4 })
+  @ValueSource(ints = {0, 1, 2, 3, 4})
   void containsNo(int i) {
     assertFalse(this.view.contains(i));
   }
@@ -43,26 +43,26 @@ class FilteredViewTest {
   @Test
   void iterator() {
     int j = 5;
-    for (Integer i : this.view)
+    for (final Integer i : this.view)
       assertEquals(j++, i);
     assertEquals(10, j);
   }
 
   @Test
   void toArray() {
-    assertArrayEquals(new Object[] { 5, 6, 7, 8, 9 }, this.view.toArray());
+    assertArrayEquals(new Object[] {5, 6, 7, 8, 9}, this.view.toArray());
   }
 
   @Test
   void toArray2() {
-    assertArrayEquals(new Integer[] { 5, 6, 7, 8, 9 }, this.view.toArray(new Integer[0]));
+    assertArrayEquals(new Integer[] {5, 6, 7, 8, 9}, this.view.toArray(new Integer[0]));
   }
 
   @Test
   void toArrayUpdatesArrayIfBigEnough() {
-    Integer[] array = new Integer[5];
+    final Integer[] array = new Integer[5];
     this.view.toArray(array);
-    assertArrayEquals(new Integer[] { 5, 6, 7, 8, 9 }, array);
+    assertArrayEquals(new Integer[] {5, 6, 7, 8, 9}, array);
   }
 
   @Test

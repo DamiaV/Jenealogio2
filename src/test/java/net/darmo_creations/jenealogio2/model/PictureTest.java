@@ -10,13 +10,13 @@ import java.nio.file.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings({ "OptionalGetWithoutIsPresent", "DataFlowIssue" })
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "DataFlowIssue"})
 class PictureTest {
   private Picture p;
 
   @BeforeEach
   void setUp() throws IOException {
-    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
+    final Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
     this.p = new Picture(
         image,
         Path.of("app_icon.png"),
@@ -27,8 +27,8 @@ class PictureTest {
 
   @Test
   void testNullNameThrowsError() throws IOException {
-    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
-    DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
+    final Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
+    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
     assertThrows(NullPointerException.class, () -> new Picture(image, null, "b", d));
   }
 
@@ -49,8 +49,8 @@ class PictureTest {
 
   @Test
   void testNormalizedFileExtensionDifferentCase() throws IOException {
-    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
-    Picture p = new Picture(
+    final Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
+    final Picture p = new Picture(
         image,
         Path.of("app_icon.PNG"),
         "description",
@@ -78,8 +78,8 @@ class PictureTest {
 
   @Test
   void testSetNameKeepsOriginalExtension() throws IOException {
-    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
-    Picture p = new Picture(
+    final Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
+    final Picture p = new Picture(
         image,
         Path.of("app_icon.PNG"),
         "description",
@@ -108,13 +108,13 @@ class PictureTest {
 
   @Test
   void testDate() {
-    DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
+    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
     assertEquals(d, this.p.date().get());
   }
 
   @Test
   void testSetDate() {
-    DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(8765, 4, 3, 2, 1), DateTimePrecision.EXACT);
+    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(8765, 4, 3, 2, 1), DateTimePrecision.EXACT);
     this.p.setDate(d);
     assertEquals(d, this.p.date().get());
   }
@@ -127,8 +127,8 @@ class PictureTest {
 
   @Test
   void testEqualsAllSame() throws IOException {
-    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
-    Picture pp = new Picture(
+    final Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
+    final Picture pp = new Picture(
         image,
         Path.of("app_icon.png"),
         "description",
@@ -139,8 +139,8 @@ class PictureTest {
 
   @Test
   void testEqualsAllDifferentButName() throws IOException {
-    Image image = getImage("/net/darmo_creations/jenealogio2/images/add_person_image.png");
-    Picture pp = new Picture(
+    final Image image = getImage("/net/darmo_creations/jenealogio2/images/add_person_image.png");
+    final Picture pp = new Picture(
         image,
         Path.of("app_icon.png"),
         "desc",
@@ -151,8 +151,8 @@ class PictureTest {
 
   @Test
   void testEqualsAllSameButName() throws IOException {
-    Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
-    Picture pp = new Picture(
+    final Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
+    final Picture pp = new Picture(
         image,
         Path.of("appicon.png"),
         "description",
@@ -162,8 +162,8 @@ class PictureTest {
   }
 
   public static Image getImage(String path) throws IOException {
-    Image image;
-    try (var stream = PictureTest.class.getResourceAsStream(path)) {
+    final Image image;
+    try (final var stream = PictureTest.class.getResourceAsStream(path)) {
       if (stream == null) {
         fail("Missing image: " + path);
       }

@@ -45,13 +45,10 @@ public abstract class TreeXMLManager {
   protected static final String GENDER_TAG = "Gender";
   protected static final String GENDER_KEY_ATTR = "key";
   protected static final String PARENTS_TAG = "Parents";
-  protected static final String PARENT_ID_1_ATTR = "id1";
-  protected static final String PARENT_ID_2_ATTR = "id2";
-  protected static final String RELATIVES_TAG = "Relatives";
-  protected static final String GROUP_TAG = "Group";
-  protected static final String GROUP_ORDINAL_ATTR = "ordinal";
-  protected static final String RELATIVE_TAG = "Relative";
-  protected static final String RELATIVE_ID_ATTR = "id";
+  protected static final String PARENT_GROUP_TAG = "Group";
+  protected static final String PARENT_GROUP_ORDINAL_ATTR = "ordinal";
+  protected static final String PARENT_TAG = "Parent";
+  protected static final String PARENT_ID_ATTR = "id";
   protected static final String NOTES_TAG = "Notes";
   protected static final String SOURCES_TAG = "Sources";
   protected static final String LIFE_EVENT_TAG = "LifeEvent";

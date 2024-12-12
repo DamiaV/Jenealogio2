@@ -65,7 +65,7 @@ public final class Config implements Cloneable {
     final boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
     Integer maxTreeHeight = ini.get(APP_SECTION, MAX_TREE_HEIGHT_OPTION, Integer.class);
     if (maxTreeHeight == null)
-      maxTreeHeight = FamilyTreePane.DEFAULT_MAX_HEIGHT;
+      maxTreeHeight = GeneticFamilyTreePane.DEFAULT_MAX_HEIGHT;
 
     final int dateFormatOrdinal = ini.get(APP_SECTION, DATE_FORMAT_OPTION, int.class);
     final int timeFormatOrdinal = ini.get(APP_SECTION, TIME_FORMAT_OPTION, int.class);
@@ -231,7 +231,7 @@ public final class Config implements Cloneable {
    * @param height The new maximum height.
    */
   public void setMaxTreeHeight(int height) {
-    if (height < FamilyTreePane.MIN_ALLOWED_HEIGHT || height > FamilyTreePane.MAX_ALLOWED_HEIGHT)
+    if (height < GeneticFamilyTreePane.MIN_ALLOWED_HEIGHT || height > GeneticFamilyTreePane.MAX_ALLOWED_HEIGHT)
       throw new IllegalArgumentException("invalid max tree height");
     this.maxTreeHeight = height;
   }
@@ -344,13 +344,13 @@ public final class Config implements Cloneable {
       return false;
     final Config config = (Config) o;
     return this.debug == config.debug
-           && this.syncTreeWithMainPane == config.syncTreeWithMainPane
-           && this.maxTreeHeight == config.maxTreeHeight
-           && Objects.equals(this.language, config.language)
-           && Objects.equals(this.theme, config.theme)
-           && this.dateFormat == config.dateFormat
-           && this.timeFormat == config.timeFormat
-           && this.showDeceasedPersonsBirthdays == config.showDeceasedPersonsBirthdays;
+        && this.syncTreeWithMainPane == config.syncTreeWithMainPane
+        && this.maxTreeHeight == config.maxTreeHeight
+        && Objects.equals(this.language, config.language)
+        && Objects.equals(this.theme, config.theme)
+        && this.dateFormat == config.dateFormat
+        && this.timeFormat == config.timeFormat
+        && this.showDeceasedPersonsBirthdays == config.showDeceasedPersonsBirthdays;
   }
 
   @Override

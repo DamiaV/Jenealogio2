@@ -66,10 +66,8 @@ public class Person extends GenealogyObject<Person> {
   /**
    * We assume exactly two parents per person.
    */
-  private final Person[] parents = new Person[2];
-  private final Set<Person> children = new HashSet<>();
-  private final Map<RelativeType, Set<Person>> relatives = new HashMap<>();
-  private final Map<RelativeType, Set<Person>> nonBiologicalChildren = new HashMap<>();
+  private final Map<ParentalRelationType, Set<Person>> parents = new HashMap<>();
+  private final Map<ParentalRelationType, Set<Person>> children = new HashMap<>();
   /**
    * Ordered list of all life events this person was an actor in.
    */
@@ -79,9 +77,9 @@ public class Person extends GenealogyObject<Person> {
    * Create a new alive person.
    */
   public Person() {
-    for (final var relativeType : RelativeType.values()) {
-      this.relatives.put(relativeType, new HashSet<>());
-      this.nonBiologicalChildren.put(relativeType, new HashSet<>());
+    for (final var relationType : ParentalRelationType.values()) {
+      this.parents.put(relationType, new HashSet<>());
+      this.children.put(relationType, new HashSet<>());
     }
   }
 
@@ -372,220 +370,275 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
-   * This person’s biological parents. We consider only two.
+   * The collelction of parents for this person.
    *
-   * @return A {@link Parents} object containg the parents.
+   * @return An unmodifiable view of this person’s parents.
    */
-  public Parents parents() {
-    return new Parents(this.parents[0], this.parents[1]);
-  }
-
-  public Optional<Integer> getParentIndex(final Person person) {
-    for (int i = 0; i < this.parents.length; i++)
-      if (this.parents[i] == person)
-        return Optional.of(i);
-    return Optional.empty();
+  @UnmodifiableView
+  public Map<ParentalRelationType, Set<Person>> parents() {
+    return Collections.unmodifiableMap(this.parents);
   }
 
   /**
-   * Check if two persons have the same parents, regardless of order.
+   * The set of parents of the given type for this person.
    *
-   * @param person Person to check parents againts this.
-   * @return True if this and the other person have the same parents, false otherwise.
+   * @param type The type of parents to return.
+   * @return An unmodifiable view of this person’s parents of the given type.
    */
-  public boolean hasSameParents(final Person person) {
-    return this.hasAnyParents() && person.hasAnyParents() &&
-        (this.parents[0] == person.parents[0] && this.parents[1] == person.parents[1]
-            || this.parents[1] == person.parents[0] && this.parents[0] == person.parents[1]);
+  @UnmodifiableView
+  public Set<Person> parents(@NotNull ParentalRelationType type) {
+    return Collections.unmodifiableSet(this.parents.get(type));
   }
 
   /**
-   * Indicate whether this person has any non-null parent.
-   */
-  public boolean hasAnyParents() {
-    return this.parents[0] != null || this.parents[1] != null;
-  }
-
-  /**
-   * Indicate whether both of this person’s parents are non-null.
-   */
-  public boolean hasBothParents() {
-    return this.parents[0] != null && this.parents[1] != null;
-  }
-
-  /**
-   * Set a parent of this person.
-   * This person is added to the passed person’s children list if not null
-   * and is removed from its previous parent’s list if applicable.
+   * Add a parent of the given type to this person.
+   * This person will be added to the parent’s children.
    *
-   * @param index  Parent’s index (either 0 or 1).
    * @param parent The parent.
+   * @param type   The parent’s type.
+   * @throws IllegalArgumentException If this person already has the maximum number of parents of the given type,
+   *                                  or the parent has already been added to this person,
+   *                                  or the relation is genetic and this person already has 2 genetic parents.
    */
-  public void setParent(int index, Person parent) {
-    final Person previousParent = this.parents[index];
-    if (previousParent == parent)
-      return;
-    this.parents[index] = parent;
-    if (parent != null)
-      parent.children.add(this);
-    if (previousParent != null)
-      previousParent.children.removeIf(person -> person == this);
+  public void addParent(@NotNull Person parent, @NotNull ParentalRelationType type) {
+    Objects.requireNonNull(parent);
+
+    final var maxCount = type.maxParentsCount();
+    if (maxCount.isPresent() && this.parents.get(type).size() == maxCount.get())
+      throw new IllegalArgumentException("cannot add more than %d parents of type %s".formatted(maxCount.get(), type));
+
+    for (final var entry : this.parents.entrySet())
+      if (entry.getValue().contains(parent))
+        throw new IllegalArgumentException("Person %s is already a parent of %s".formatted(parent, this));
+
+    if (type.geneticRelation()) {
+      int dnaRelationsCount = 0;
+      for (final var entry : this.parents.entrySet()) {
+        if (!entry.getKey().geneticRelation()) continue;
+        dnaRelationsCount += entry.getValue().size();
+      }
+      if (dnaRelationsCount == 2)
+        throw new IllegalArgumentException("Person %s already has 2 DNA parents".formatted(this));
+    }
+
+    this.parents.get(type).add(parent);
+    parent.children.get(type).add(this);
   }
 
   /**
-   * Remove the given parent from this person’s parents.
+   * Remove the given parent from this person.
+   * This person will be removed from the parent’s children.
    *
-   * @param parent Parent to remove.
+   * @param parent The parent to remove.
    */
   public void removeParent(@NotNull Person parent) {
-    int index = -1;
-    for (int i = 0; i < this.parents.length; i++)
-      if (this.parents[i] == parent) {
-        index = i;
+    Objects.requireNonNull(parent);
+    for (final var entry : this.parents.entrySet()) {
+      final var relationType = entry.getKey();
+      final var parents = entry.getValue();
+      if (parents.contains(parent)) {
+        parents.remove(parent);
+        parent.children.get(relationType).remove(this);
         break;
       }
-    if (index >= 0)
-      this.setParent(index, null);
+    }
+  }
+
+  public Optional<ParentalRelationType> getParentType(final @NotNull Person parent) {
+    return this.parents.entrySet().stream()
+        .filter(e -> e.getValue().contains(parent))
+        .findFirst()
+        .map(Map.Entry::getKey);
   }
 
   /**
-   * A copy of this person’s children set.
+   * Indicate whether this person has any non-null parent (includes surrogate, donor and godparents).
    */
-  public Set<Person> children() {
-    return new HashSet<>(this.children);
+  public boolean hasAnyParents() {
+    return this.parents.entrySet().stream().anyMatch(e -> !e.getValue().isEmpty());
+  }
+
+  /**
+   * The set of children of the given type for this person.
+   *
+   * @param type The type of children to return.
+   * @return An unmodifiable view of this person’s children of the given type.
+   */
+  @UnmodifiableView
+  public Set<Person> children(@NotNull ParentalRelationType type) {
+    return Collections.unmodifiableSet(this.children.get(type));
+  }
+
+  /**
+   * Return the genetic parents of this person.
+   * The returned set will always contain at most 2 parents.
+   *
+   * @return A {@link Set} containing the genetic parents.
+   */
+  public Set<Person> getGeneticParents() {
+    final Set<Person> geneticParents = new HashSet<>();
+    for (final var relationType : ParentalRelationType.GENETIC_RELATIONS)
+      geneticParents.addAll(this.parents.get(relationType));
+    return geneticParents;
   }
 
   /**
    * Return a map associating persons and the children they had with this person, if any.
    * <p>
-   * If a list is empty, the person has a union with this person but no children.
+   * If a children set is empty, the persons in the key set have a union with this person but no children.
+   * <p>
+   * Children this person was a surrogate parent or donor for are not returned.
    */
-  public Map<Optional<Person>, Set<Person>> getPartnersAndChildren() {
-    final Map<Person, Set<Person>> partnersChildren = new HashMap<>();
-    for (final Person child : this.children) {
-      final var childParents = child.parents();
-      final var parent1 = childParents.parent1();
-      final var parent2 = childParents.parent2();
-      Person parent = null;
-      if (parent1.isPresent() && parent1.get() != this)
-        parent = parent1.get();
-      else if (parent2.isPresent() && parent2.get() != this)
-        parent = parent2.get();
-      if (!partnersChildren.containsKey(parent))
-        partnersChildren.put(parent, new HashSet<>());
-      partnersChildren.get(parent).add(child);
+  public List<Pair<Set<Person>, Set<Person>>> getPartnersAndChildren() {
+    final List<Pair<Set<Person>, Set<Person>>> partnersChildren = new LinkedList<>();
+    final ParentalRelationType[] relationTypes = Arrays.stream(ParentalRelationType.values()).filter(
+        v -> v != ParentalRelationType.SPERM_DONOR &&
+            v != ParentalRelationType.EGG_DONOR &&
+            v != ParentalRelationType.SURROGATE_PARENT
+    ).toArray(ParentalRelationType[]::new);
+
+    final Function<Set<Person>, Optional<Set<Person>>> findSiblings = parents ->
+        partnersChildren.stream()
+            .filter(e -> e.left().equals(parents))
+            .findFirst()
+            .map(Pair::right);
+
+    for (final var childType : relationTypes) {
+      this.children.get(childType).forEach(child -> {
+        final Set<Person> childParents = new HashSet<>();
+        for (final var parentType : relationTypes)
+          childParents.addAll(this.filterOutThis(child.parents.get(parentType)));
+        final var siblings = findSiblings.apply(childParents);
+        if (siblings.isPresent()) {
+          siblings.get().add(child);
+        } else {
+          final Set<Person> children = new HashSet<>();
+          children.add(child);
+          partnersChildren.add(new Pair<>(childParents, children));
+        }
+      });
     }
+
     // Add all partners that did not have any children with this person
-    //noinspection OptionalGetWithoutIsPresent
     this.getActedInEventsStream()
-        .filter(e -> e.type().indicatesUnion())
-        // Partner always present in unions
-        .map(e -> e.actors().stream().filter(p -> p != this).findFirst().get())
-        .filter(person -> !partnersChildren.containsKey(person))
-        .forEach(person -> partnersChildren.put(person, new HashSet<>()));
-    return partnersChildren.entrySet().stream()
-        .collect(Collectors.toMap(e -> Optional.ofNullable(e.getKey()), Map.Entry::getValue));
+        .filter(event -> event.type().indicatesUnion())
+        .map(event -> this.filterOutThis(event.actors()))
+        .filter(partners -> findSiblings.apply(partners).isEmpty())
+        .forEach(partners -> partnersChildren.add(new Pair<>(partners, new HashSet<>())));
+
+    return partnersChildren;
   }
 
   /**
-   * Return the siblings of this person, i.e. the set of all persons with the exact same parents.
-   *
-   * @return The set of siblings.
+   * Return a map associating persons and the genetic children they had with this person, if any.
    */
-  public Set<Person> getSameParentsSiblings() {
-    final Set<Person> siblings = new HashSet<>();
-    final Person parent1 = this.parents[0];
-    final Person parent2 = this.parents[1];
-    if (parent1 != null)
-      this.addChildren(siblings, parent1);
-    else if (parent2 != null)
-      this.addChildren(siblings, parent2);
-    return siblings;
-  }
+  public Map<Optional<Person>, Set<Person>> getPartnersAndGeneticChildren() {
+    final Map<Optional<Person>, Set<Person>> partnersChildren = new HashMap<>();
 
-  private void addChildren(@NotNull Set<Person> siblings, final @NotNull Person parent) {
-    siblings.addAll(parent.children().stream()
-        .filter(c -> c != this && c.hasSameParents(this))
-        .collect(Collectors.toSet()));
-  }
-
-  /**
-   * Return all sibling of this person, i.e. all persons that share at least one parent with this one.
-   *
-   * @return A map associating a parents to their children.
-   * It is guaranted that at least one of the parents in each {@link Parents} object is a parent of this person.
-   */
-  public Map<Parents, Set<Person>> getAllSiblings() {
-    final Map<Parents, Set<Person>> siblings = new HashMap<>();
-    final Person parent1 = this.parents[0];
-    final Person parent2 = this.parents[1];
-    if (parent1 != null)
-      this.addChildren(siblings, parent1);
-    if (parent2 != null)
-      this.addChildren(siblings, parent2);
-    return siblings;
-  }
-
-  private void addChildren(@NotNull Map<Parents, Set<Person>> siblings, final @NotNull Person parent) {
-    for (final Person child : parent.children()) {
-      if (child == this)
-        continue;
-      final Person p1 = child.parents[0];
-      final Person p2 = child.parents[1];
-      final var key1 = new Parents(p1, p2);
-      final var key2 = new Parents(p2, p1);
-      // Ensure that there isn’t already any key with the same persons but in a different order
-      final var key = siblings.containsKey(key2) ? key2 : key1;
-      if (!siblings.containsKey(key))
-        siblings.put(key, new HashSet<>());
-      siblings.get(key).add(child);
+    for (final var childType : ParentalRelationType.GENETIC_RELATIONS) {
+      for (final Person child : this.children.get(childType)) {
+        final Set<Person> geneticParents = this.filterOutThis(child.getGeneticParents());
+        final Optional<Person> geneticParent = geneticParents.stream().findFirst();
+        if (partnersChildren.containsKey(geneticParent)) {
+          partnersChildren.get(geneticParent).add(child);
+        } else {
+          final Set<Person> children = new HashSet<>();
+          children.add(child);
+          partnersChildren.put(geneticParent, children);
+        }
+      }
     }
+
+    return partnersChildren;
   }
 
   /**
-   * A copy of this person’s relatives of the given type.
+   * Remove this object from the given set (the set is not modified).
    *
-   * @param type Type of the relatives to get.
-   * @return A copy of the relatives set.
+   * @param set The set to filter.
+   * @return A new set with this object not present in it.
    */
-  public Set<Person> getRelatives(@NotNull RelativeType type) {
-    return new HashSet<>(this.relatives.get(type));
+  private Set<Person> filterOutThis(final @NotNull Set<Person> set) {
+    return set.stream()
+        .filter(p -> p != this)
+        .collect(Collectors.toSet());
   }
 
   /**
-   * Add a relative of the given type.
-   * <p>
-   * This person will be add to the passed person’s non-biological children set.
+   * Return the genetic siblings of this person,
+   * i.e. the set of all persons that have the same genetic parents as this person.
    *
-   * @param person Relative to add.
-   * @param type   Relative’s type.
+   * @return The set of genetic siblings.
    */
-  public void addRelative(@NotNull Person person, @NotNull RelativeType type) {
-    this.relatives.get(type).add(Objects.requireNonNull(person));
-    person.nonBiologicalChildren.get(type).add(this);
+  public Set<Person> getSameGeneticParentsSiblings() {
+    final Set<Person> geneticParents = new HashSet<>();
+
+    for (final var parentType : ParentalRelationType.GENETIC_RELATIONS)
+      geneticParents.addAll(this.parents.get(parentType));
+
+    final var iterator = geneticParents.iterator();
+    if (iterator.hasNext()) {
+      final var parent1 = iterator.next();
+      // Get genetic children of the first genetic parent, excluding this person
+      final Set<Person> siblings = new HashSet<>();
+      for (final var childType : ParentalRelationType.GENETIC_RELATIONS)
+        siblings.addAll(parent1.children.get(childType));
+      if (iterator.hasNext()) {
+        final var parent2 = iterator.next();
+        final Set<Person> parent2Children = new HashSet<>();
+        // Keep only siblings that are also children of the second genetic parent, excluding this person
+        for (final var childType : ParentalRelationType.GENETIC_RELATIONS)
+          parent2Children.addAll(parent2.children.get(childType));
+        siblings.retainAll(parent2Children);
+      }
+      return this.filterOutThis(siblings);
+    }
+
+    return new HashSet<>();
   }
 
   /**
-   * Remove a relative of the given type.
-   * <p>
-   * This person will be removed from the passed person’s non-biological children set.
+   * Return all siblings of this person, i.e. all persons that share at least one parent with this one.
+   * Persons that only share a surrogate parent, donor, or godparents with this person are excluded.
    *
-   * @param person Relative to remove.
-   * @param type   Relative’s type.
+   * @return A list of pairs associating a set of parents to their children. The order of the list is not guaranteed.
+   * It is guaranted that at least one of the parents in each parent set is a parent of this person.
    */
-  public void removeRelative(@NotNull Person person, @NotNull RelativeType type) {
-    this.relatives.get(type).remove(person);
-    person.nonBiologicalChildren.get(type).remove(this);
-  }
+  public List<Pair<Set<Person>, Set<Person>>> getSiblings() {
+    final ParentalRelationType[] relationTypes = Arrays.stream(ParentalRelationType.values()).filter(
+        v -> v != ParentalRelationType.SPERM_DONOR &&
+            v != ParentalRelationType.EGG_DONOR &&
+            v != ParentalRelationType.SURROGATE_PARENT &&
+            v != ParentalRelationType.GODPARENT
+    ).toArray(ParentalRelationType[]::new);
+    final List<Pair<Set<Person>, Set<Person>>> parentsAndSiblings = new LinkedList<>();
+    final Function<Set<Person>, Optional<Set<Person>>> findSiblings = parents ->
+        parentsAndSiblings.stream()
+            .filter(e -> e.left().equals(parents))
+            .findFirst()
+            .map(Pair::right);
 
-  /**
-   * A copy of this person’s non-biological children of the given type.
-   *
-   * @param type Children type.
-   * @return A copy of the children set.
-   */
-  public Set<Person> nonBiologicalChildren(@NotNull Person.RelativeType type) {
-    return new HashSet<>(this.nonBiologicalChildren.get(type));
+    for (final var parentType : relationTypes) {
+      this.parents.get(parentType).forEach(parent -> {
+        for (final var childType : relationTypes) {
+          this.filterOutThis(parent.children.get(childType)).forEach(child -> {
+            final Set<Person> childParents = new HashSet<>();
+            for (final var childParentType : relationTypes)
+              childParents.addAll(child.parents.get(childParentType));
+            final var siblings = findSiblings.apply(childParents);
+            if (siblings.isPresent()) {
+              siblings.get().add(child);
+            } else {
+              final Set<Person> children = new HashSet<>();
+              children.add(child);
+              parentsAndSiblings.add(new Pair<>(childParents, children));
+            }
+          });
+        }
+      });
+    }
+
+    return parentsAndSiblings;
   }
 
   /**
@@ -756,23 +809,5 @@ public class Person extends GenealogyObject<Person> {
    */
   public static Comparator<Person> lastThenFirstNamesComparator() {
     return LAST_THEN_FIRST_NAMES_COMPARATOR;
-  }
-
-  /**
-   * Enumeration of non-biological relatives types.
-   */
-  public enum RelativeType {
-    /**
-     * Adoptive parents/children.
-     */
-    ADOPTIVE,
-    /**
-     * Godparents/godchildren.
-     */
-    GOD,
-    /**
-     * Foster parents/children.
-     */
-    FOSTER,
   }
 }

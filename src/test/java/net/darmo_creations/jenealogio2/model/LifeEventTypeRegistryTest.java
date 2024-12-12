@@ -19,9 +19,9 @@ class LifeEventTypeRegistryTest {
 
   @Test
   void serializableEntriesReturnsUserDefined() {
-    var key = new RegistryEntryKey(Registry.USER_NS, "test");
+    final var key = new RegistryEntryKey(Registry.USER_NS, "test");
     this.registry.registerEntry(key, "test", new LifeEventTypeRegistry.RegistryArgs(LifeEventType.Group.OTHER, false, false));
-    var genders = this.registry.serializableEntries();
+    final var genders = this.registry.serializableEntries();
     assertEquals(1, genders.size());
     assertEquals(key, genders.get(0).key());
   }

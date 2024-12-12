@@ -224,7 +224,6 @@ public class TreeXMLWriter extends TreeXMLManager {
         this.writeGenderTag(document, personElement, GENDER_TAG, GENDER_KEY_ATTR, person::gender);
       this.writeMainOccupationTag(document, personElement, person);
       this.writeParentsTag(document, personElement, person, personIDs);
-      this.writeRelativesTag(document, personElement, person, personIDs);
       this.writeNotesTag(document, personElement, person);
       this.writeSourcesTag(document, personElement, person);
     }
@@ -329,39 +328,20 @@ public class TreeXMLWriter extends TreeXMLManager {
       final @NotNull Person person,
       final @NotNull Map<Person, Integer> personIDs
   ) {
-    final var parents = person.parents();
     final Element parentsElement = document.createElement(PARENTS_TAG);
-    final Function<Integer, Consumer<Optional<Person>>> writeParent = index -> p ->
-        XmlUtils.setAttr(document, parentsElement, "id" + index, p.map(p_ -> String.valueOf(personIDs.get(p_))).orElse(""));
-    final Optional<Person> parent1 = parents.parent1();
-    final Optional<Person> parent2 = parents.parent2();
-    writeParent.apply(1).accept(parent1);
-    writeParent.apply(2).accept(parent2);
-    if (parent1.isPresent() || parent2.isPresent()) {
-      personElement.appendChild(parentsElement);
-    }
-  }
-
-  private void writeRelativesTag(
-      @NotNull Document document,
-      @NotNull Element personElement,
-      final @NotNull Person person,
-      final @NotNull Map<Person, Integer> personIDs
-  ) {
-    final Element relativesElement = document.createElement(RELATIVES_TAG);
-    for (final Person.RelativeType type : Person.RelativeType.values()) {
-      final Set<Person> relatives = person.getRelatives(type);
-      if (relatives.isEmpty())
+    for (final var type : ParentalRelationType.values()) {
+      final Set<Person> parents = person.parents(type);
+      if (parents.isEmpty())
         continue;
-      final Element groupElement = (Element) relativesElement.appendChild(document.createElement(GROUP_TAG));
-      XmlUtils.setAttr(document, groupElement, GROUP_ORDINAL_ATTR, String.valueOf(type.ordinal()));
-      for (final Person relative : relatives) {
-        final Element relativeElement = (Element) groupElement.appendChild(document.createElement(RELATIVE_TAG));
-        XmlUtils.setAttr(document, relativeElement, RELATIVE_ID_ATTR, String.valueOf(personIDs.get(relative)));
+      final Element groupElement = (Element) parentsElement.appendChild(document.createElement(PARENT_GROUP_TAG));
+      XmlUtils.setAttr(document, groupElement, PARENT_GROUP_ORDINAL_ATTR, String.valueOf(type.ordinal()));
+      for (final Person parent : parents) {
+        final Element parentElement = (Element) groupElement.appendChild(document.createElement(PARENT_TAG));
+        XmlUtils.setAttr(document, parentElement, PARENT_ID_ATTR, String.valueOf(personIDs.get(parent)));
       }
     }
-    if (relativesElement.hasChildNodes())
-      personElement.appendChild(relativesElement);
+    if (parentsElement.hasChildNodes())
+      personElement.appendChild(parentsElement);
   }
 
   private void writeNotesTag(

@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.stream.*;
 
 /**
- * A JavaFX component representing a single person in the {@link FamilyTreePane}.
+ * A JavaFX component representing a single person in the {@link GeneticFamilyTreePane}.
  */
 public class PersonWidget extends AnchorPane {
   private static final int MAX_IMAGE_SIZE = 50;
@@ -61,7 +61,7 @@ public class PersonWidget extends AnchorPane {
    */
   public PersonWidget(
       final Person person,
-      final @NotNull List<ChildInfo> childInfo,
+      final List<ChildInfo> childInfo,
       boolean showMoreIcon,
       boolean isTarget,
       boolean isRoot,
@@ -69,7 +69,8 @@ public class PersonWidget extends AnchorPane {
   ) {
     this.person = person;
     this.config = Objects.requireNonNull(config);
-    this.childInfo.addAll(childInfo);
+    if (childInfo != null && !childInfo.isEmpty())
+      this.childInfo.addAll(childInfo);
     this.getStyleClass().add("person-widget");
     if (isTarget) {
       this.getStyleClass().add("center");

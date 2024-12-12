@@ -35,8 +35,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private final Tab profileTab = new Tab();
   private final Tab eventsTab = new Tab();
-  private final Tab familyTab = new Tab();
-  private final Tab fosterParentsTab = new Tab();
+  private final Tab siblingsAndChildrenTab = new Tab();
+  private final Tab parentsTab = new Tab();
 
   private final ClickableImageView imageView;
   private final Label fullNameLabel = new Label();
@@ -64,14 +64,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final ListView<PersonCard> eventWitnessesList = new ListView<>();
   private final ListView<DocumentView> eventDocumentsList = new ListView<>();
 
-  private final PersonCard parent1Card;
-  private final PersonCard parent2Card;
   private final ListView<ChildrenItem> siblingsList = new ListView<>();
   private final ListView<ChildrenItem> childrenList = new ListView<>();
-
-  private final ListView<PersonCard> adoptiveParentsList = new ListView<>();
-  private final ListView<PersonCard> godparentsList = new ListView<>();
-  private final ListView<PersonCard> fosterParentsList = new ListView<>();
+  private final Map<ParentalRelationType, ListView<PersonCard>> parentsLists = new HashMap<>();
 
   private final List<PersonClickListener> personClickListeners = new LinkedList<>();
   private final List<NewParentClickListener> newParentClickListeners = new LinkedList<>();
@@ -98,8 +93,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView = new ClickableImageView(PersonWidget.DEFAULT_IMAGE);
     this.eventImageView = new ClickableImageView(DEFAULT_EVENT_IMAGE);
     this.eventDateLabel = new DateLabel(null, config);
-    this.parent1Card = new PersonCard(null);
-    this.parent2Card = new PersonCard(null);
 
     this.agabLabel = new GenderLabel(null, true, config);
     this.genderLabel = new GenderLabel(null, true, config);
@@ -108,15 +101,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.profileTab.setGraphic(theme.getIcon(Icon.PROFILE_TAB, Icon.Size.SMALL));
     this.eventsTab.setText(language.translate("person_details_view.events_tab.title"));
     this.eventsTab.setGraphic(theme.getIcon(Icon.LIFE_EVENTS_TAB, Icon.Size.SMALL));
-    this.familyTab.setText(language.translate("person_details_view.family_tab.title"));
-    this.familyTab.setGraphic(theme.getIcon(Icon.FAMILY_TAB, Icon.Size.SMALL));
-    this.fosterParentsTab.setText(language.translate("person_details_view.foster_parents_tab.title"));
-    this.fosterParentsTab.setGraphic(theme.getIcon(Icon.FOSTER_PARENTS_TAB, Icon.Size.SMALL));
+    this.siblingsAndChildrenTab.setText(language.translate("person_details_view.siblings_and_children_tab.title"));
+    this.siblingsAndChildrenTab.setGraphic(theme.getIcon(Icon.FAMILY_TAB, Icon.Size.SMALL));
+    this.parentsTab.setText(language.translate("person_details_view.parents_tab.title"));
+    this.parentsTab.setGraphic(theme.getIcon(Icon.FOSTER_PARENTS_TAB, Icon.Size.SMALL));
     this.getTabs().addAll(
         this.profileTab,
         this.eventsTab,
-        this.familyTab,
-        this.fosterParentsTab
+        this.siblingsAndChildrenTab,
+        this.parentsTab
     );
     this.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
@@ -124,8 +117,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.setupProfileTab();
     this.setupEventsTab();
-    this.setupFamilyTab();
-    this.setupFosterParentsTab();
+    this.setupSiblingsAndChildrenTab();
+    this.setupParentsTab();
   }
 
   private void setupProfileTab() {
@@ -283,52 +276,46 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventPane.setDividerPositions(0.25, 0.5, 0.75);
   }
 
-  private void setupFamilyTab() {
+  private void setupSiblingsAndChildrenTab() {
     final SplitPane tabPane = new SplitPane();
     tabPane.setOrientation(Orientation.VERTICAL);
-    this.familyTab.setContent(tabPane);
-
-    final VBox parentsVBox = new VBox(5, this.parent1Card, this.parent2Card);
-    parentsVBox.setMinHeight(0);
-    final VBox topBox = new VBox(new SectionLabel("parents"), parentsVBox);
-    topBox.getStyleClass().add("person-details");
+    this.siblingsAndChildrenTab.setContent(tabPane);
 
     this.siblingsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.siblingsList, Priority.ALWAYS);
-    final VBox middleBox = new VBox(new SectionLabel("siblings"), this.siblingsList);
-    middleBox.getStyleClass().add("person-details");
+    final VBox siblingsBox = new VBox(new SectionLabel("siblings"), this.siblingsList);
+    siblingsBox.getStyleClass().add("person-details");
 
     this.childrenList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.childrenList, Priority.ALWAYS);
-    final VBox bottomBox = new VBox(new SectionLabel("children"), this.childrenList);
-    bottomBox.getStyleClass().add("person-details");
+    final VBox childrenBox = new VBox(new SectionLabel("children"), this.childrenList);
+    childrenBox.getStyleClass().add("person-details");
 
-    tabPane.getItems().addAll(topBox, middleBox, bottomBox);
-    tabPane.setDividerPositions(0.33, 0.67);
+    tabPane.getItems().addAll(siblingsBox, childrenBox);
+    tabPane.setDividerPositions(0.5);
   }
 
-  private void setupFosterParentsTab() {
+  private void setupParentsTab() {
     final SplitPane tabPane = new SplitPane();
     tabPane.setOrientation(Orientation.VERTICAL);
-    this.fosterParentsTab.setContent(tabPane);
+    this.parentsTab.setContent(tabPane);
 
-    this.adoptiveParentsList.setSelectionModel(new NoSelectionModel<>());
-    VBox.setVgrow(this.adoptiveParentsList, Priority.ALWAYS);
-    final VBox topBox = new VBox(new SectionLabel("adoptive_parents"), this.adoptiveParentsList);
-    topBox.getStyleClass().add("person-details");
+    final List<VBox> boxes = new LinkedList<>();
+    for (final var parentType : ParentalRelationType.values()) {
+      final ListView<PersonCard> parentsList = new ListView<>();
+      this.parentsLists.put(parentType, parentsList);
+      parentsList.setSelectionModel(new NoSelectionModel<>());
+      VBox.setVgrow(parentsList, Priority.ALWAYS);
+      final String plural = parentType.maxParentsCount().orElse(Integer.MAX_VALUE) > 1 ? "s" : "";
+      final VBox box = new VBox(new SectionLabel(parentType.name().toLowerCase() + plural), parentsList);
+      box.getStyleClass().add("person-details");
+      boxes.add(box);
+    }
 
-    this.godparentsList.setSelectionModel(new NoSelectionModel<>());
-    VBox.setVgrow(this.godparentsList, Priority.ALWAYS);
-    final VBox middleBox = new VBox(new SectionLabel("godparents"), this.godparentsList);
-    middleBox.getStyleClass().add("person-details");
-
-    this.fosterParentsList.setSelectionModel(new NoSelectionModel<>());
-    VBox.setVgrow(this.fosterParentsList, Priority.ALWAYS);
-    final VBox bottomBox = new VBox(new SectionLabel("foster_parents"), this.fosterParentsList);
-    bottomBox.getStyleClass().add("person-details");
-
-    tabPane.getItems().addAll(topBox, middleBox, bottomBox);
-    tabPane.setDividerPositions(0.33, 0.67);
+    tabPane.getItems().addAll(boxes);
+    final double ratio = 1.0 / boxes.size();
+    for (int i = 0; i < boxes.size() - 1; i++)
+      tabPane.setDividerPosition(i, (1 + i) * ratio);
   }
 
   /**
@@ -415,14 +402,32 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.siblingsList.getItems().clear();
     this.childrenList.getItems().clear();
 
-    this.adoptiveParentsList.getItems().clear();
-    this.godparentsList.getItems().clear();
-    this.fosterParentsList.getItems().clear();
+    this.parentsLists.values()
+        .forEach(list -> list.getItems().clear());
 
     this.documentsList.getItems().clear();
 
     this.eventDocumentsList.getItems().clear();
     this.eventsTab.setContent(this.eventsTabPane);
+  }
+
+  private void resetFields() {
+    this.imageView.setImage(null);
+    this.imageView.setFitHeight(MAX_IMAGE_SIZE);
+    this.imageView.setFitWidth(MAX_IMAGE_SIZE);
+    this.fullNameLabel.setText(null);
+    this.fullNameLabel.setTooltip(null);
+    this.agabLabel.setGender(null);
+    this.agabLabel.setText("-");
+    this.genderLabel.setGender(null);
+    this.occupationLabel.setText(null);
+    this.occupationLabel.setTooltip(null);
+    this.publicLastNameLabel.setText("-");
+    this.publicLastNameLabel.setTooltip(null);
+    this.publicFirstNamesLabel.setText("-");
+    this.publicFirstNamesLabel.setTooltip(null);
+    this.nicknamesLabel.setText("-");
+    this.nicknamesLabel.setTooltip(null);
   }
 
   private void populateFields() {
@@ -455,108 +460,50 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted()
         .forEach(lifeEvent -> this.witnessedEventsList.getItems().add(new WitnessedEventItem(lifeEvent)));
 
-    this.populateParentCards();
+    final Comparator<Person> personComparator = Person.birthDateThenNameComparator(false);
+    final Comparator<Pair<List<Person>, List<Person>>> compareParentsAndChildren = (e1, e2) -> {
+      // Sort by parent count
+      final List<Person> parents1 = e1.left();
+      final List<Person> parents2 = e2.left();
+      if (parents1.size() != parents2.size())
+        return Integer.compare(parents1.size(), parents2.size());
+      // Sort by children count
+      final List<Person> children1 = e1.right();
+      final List<Person> children2 = e2.right();
+      if (children1.size() != children2.size())
+        return Integer.compare(children1.size(), children2.size());
+      // Sort by children birthday and name
+      for (int i = 0; i < children1.size(); i++) {
+        final int c = personComparator.compare(children1.get(i), children2.get(i));
+        if (c != 0) return c;
+      }
+      return 0;
+    };
 
-    this.person.getAllSiblings().entrySet().stream()
+    this.person.getSiblings().stream()
+        .map(e -> new Pair<>(
+            e.left().stream().sorted(personComparator).toList(),
+            e.right().stream().sorted(personComparator).toList()
+        ))
         // Sort according to first parent then second
-        .sorted((e1, e2) -> {
-          final var key1 = e1.getKey();
-          final var key2 = e2.getKey();
-          final Optional<Person> left1 = key1.parent1();
-          final Optional<Person> right1 = key1.parent2();
-          final Optional<Person> left2 = key2.parent1();
-          final Optional<Person> right2 = key2.parent2();
-          final Supplier<Integer> testRight = () -> {
-            if (right1.isEmpty())
-              return right2.isPresent() ? 1 : 0;
-            //noinspection OptionalIsPresent
-            if (right2.isEmpty())
-              return -1;
-            return Person.birthDateThenNameComparator(false).compare(right1.get(), right2.get());
-          };
-          if (left1.isEmpty()) {
-            if (left2.isPresent())
-              return 1;
-            return testRight.get();
-          }
-          if (left2.isEmpty())
-            return -1;
-          final int c = Person.birthDateThenNameComparator(false).compare(left1.get(), left2.get());
-          if (c != 0)
-            return c;
-          return testRight.get();
-        })
-        .forEach(e -> {
-          // Sort children
-          final List<Person> sortedChildren = e.getValue().stream()
-              .sorted(Person.birthDateThenNameComparator(false))
-              .toList();
-          final var parents = e.getKey();
-          this.siblingsList.getItems().add(new ChildrenItem(
-              parents.parent1().orElse(null),
-              parents.parent2().orElse(null),
-              sortedChildren
-          ));
-        });
+        .sorted(compareParentsAndChildren)
+        .forEach(e -> this.siblingsList.getItems().add(new ChildrenItem(e.left(), e.right())));
 
-    this.person.getPartnersAndChildren().entrySet().stream()
-        .sorted((e1, e2) -> Person.optionalBirthDateThenNameComparator().compare(e1.getKey(), e2.getKey()))
-        .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.getKey().orElse(null), null, new LinkedList<>(e.getValue()))));
+    this.person.getPartnersAndChildren().stream()
+        .map(e -> new Pair<>(
+            e.left().stream().sorted(personComparator).toList(),
+            e.right().stream().sorted(personComparator).toList()
+        ))
+        .sorted(compareParentsAndChildren)
+        .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.left(), e.right())));
 
-    this.person.getRelatives(Person.RelativeType.ADOPTIVE).stream()
-        .sorted(Person.birthDateThenNameComparator(false))
-        .forEach(parent -> this.adoptiveParentsList.getItems().add(new PersonCard(parent)));
-    this.person.getRelatives(Person.RelativeType.GOD).stream()
-        .sorted(Person.birthDateThenNameComparator(false))
-        .forEach(parent -> this.godparentsList.getItems().add(new PersonCard(parent)));
-    this.person.getRelatives(Person.RelativeType.FOSTER).stream()
-        .sorted(Person.birthDateThenNameComparator(false))
-        .forEach(parent -> this.fosterParentsList.getItems().add(new PersonCard(parent)));
+    for (final ParentalRelationType parentType : ParentalRelationType.values())
+      this.person.parents(parentType).stream()
+          .sorted(personComparator)
+          .forEach(parent -> this.parentsLists.get(parentType).getItems().add(new PersonCard(parent)));
 
     this.person.documents().forEach(p -> this.documentsList.getItems().add(new DocumentView(p, false, this.config)));
     this.documentsList.getItems().sort(null);
-  }
-
-  private void populateParentCards() {
-    final var parents = this.person.parents();
-    final Person parent1 = parents.parent1().orElse(null);
-    final Person parent2 = parents.parent2().orElse(null);
-    final Set<Person> sameParentsSiblings = this.person.getSameParentsSiblings();
-    sameParentsSiblings.add(this.person);
-    final List<ChildInfo> childInfo = new LinkedList<>();
-    for (final Person child : sameParentsSiblings)
-      childInfo.add(new ChildInfo(child, 0));
-    this.parent1Card.setPerson(parent1, childInfo);
-    this.parent1Card.setVisible(true);
-    childInfo.clear();
-    for (final Person child : sameParentsSiblings)
-      childInfo.add(new ChildInfo(child, 1));
-    this.parent2Card.setPerson(parent2, childInfo);
-    this.parent2Card.setVisible(true);
-  }
-
-  private void resetFields() {
-    this.imageView.setImage(null);
-    this.imageView.setFitHeight(MAX_IMAGE_SIZE);
-    this.imageView.setFitWidth(MAX_IMAGE_SIZE);
-    this.fullNameLabel.setText(null);
-    this.fullNameLabel.setTooltip(null);
-    this.agabLabel.setGender(null);
-    this.agabLabel.setText("-");
-    this.genderLabel.setGender(null);
-    this.occupationLabel.setText(null);
-    this.occupationLabel.setTooltip(null);
-    this.publicLastNameLabel.setText("-");
-    this.publicLastNameLabel.setTooltip(null);
-    this.publicFirstNamesLabel.setText("-");
-    this.publicFirstNamesLabel.setTooltip(null);
-    this.nicknamesLabel.setText("-");
-    this.nicknamesLabel.setTooltip(null);
-
-    this.parent1Card.setPerson(null, List.of());
-    this.parent1Card.setVisible(false);
-    this.parent2Card.setPerson(null, List.of());
-    this.parent2Card.setVisible(false);
   }
 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
@@ -680,8 +627,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     private final Label nameLabel = new Label();
     private final DateLabel birthDateLabel = new DateLabel("?", PersonDetailsView.this.config);
     private final DateLabel deathDateLabel = new DateLabel("?", PersonDetailsView.this.config);
-    private final HBox nameBox = new HBox(5);
-    private final HBox birthBox = new HBox(5);
     private final HBox deathBox = new HBox(5);
 
     /**
@@ -689,17 +634,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      *
      * @param person The person to show information of.
      */
-    public PersonCard(final Person person) {
-      this(person, List.of());
-    }
-
-    /**
-     * Create a person card.
-     *
-     * @param person    The person to show information of.
-     * @param childInfo Information about the visible children of this person.
-     */
-    public PersonCard(final Person person, final @NotNull List<ChildInfo> childInfo) {
+    public PersonCard(final @NotNull Person person) {
       super(5);
 
       this.getStyleClass().add("person-widget");
@@ -717,17 +652,19 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       this.rootLabel.setTooltip(new Tooltip(language.translate("person_widget.root.tooltip")));
       this.rootLabel.managedProperty().bind(this.rootLabel.visibleProperty());
       this.genderLabel.managedProperty().bind(this.genderLabel.visibleProperty());
-      this.nameBox.getChildren().addAll(this.rootLabel, this.genderLabel, this.nameLabel);
+      final HBox nameBox = new HBox(5);
+      nameBox.getChildren().addAll(this.rootLabel, this.genderLabel, this.nameLabel);
 
-      this.birthBox.getChildren().addAll(new Label(null, theme.getIcon(Icon.BIRTH, Icon.Size.SMALL)), this.birthDateLabel);
+      final HBox birthBox = new HBox(5);
+      birthBox.getChildren().addAll(new Label(null, theme.getIcon(Icon.BIRTH, Icon.Size.SMALL)), this.birthDateLabel);
       this.deathBox.getChildren().addAll(new Label(null, theme.getIcon(Icon.DEATH, Icon.Size.SMALL)), this.deathDateLabel);
 
       this.getChildren().addAll(
           imageBox,
-          new VBox(5, this.nameBox, this.birthBox, this.deathBox)
+          new VBox(5, nameBox, birthBox, this.deathBox)
       );
 
-      this.setPerson(person, childInfo);
+      this.setPerson(person);
     }
 
     /**
@@ -735,23 +672,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      *
      * @param person Person to display.
      */
-    public void setPerson(final Person person, final @NotNull List<ChildInfo> childInfo) {
-      final boolean isNull = person == null;
-      this.nameBox.setVisible(!isNull);
-      this.birthBox.setVisible(!isNull);
-      this.deathBox.setVisible(!isNull);
-
-      if (isNull) {
-        this.imageView.setImage(PersonWidget.ADD_IMAGE);
-        this.imageView.setFitHeight(MAX_IMAGE_SIZE);
-        this.imageView.setFitWidth(MAX_IMAGE_SIZE);
-        this.setOnMouseClicked(event -> {
-          PersonDetailsView.this.fireNewParentClickEvent(childInfo);
-          event.consume();
-        });
-        return;
-      }
-
+    public void setPerson(final @NotNull Person person) {
       this.setOnMouseClicked(event -> {
         PersonDetailsView.this.firePersonClickEvent(person, event.getButton());
         event.consume();
@@ -880,27 +801,15 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
    * Item for showing the children of a person in a {@link ListView}.
    */
   private class ChildrenItem extends VBox {
-    public ChildrenItem(final Person parent1, final Person parent2, final @NotNull List<Person> children) {
+    public ChildrenItem(final @NotNull List<Person> parents, final @NotNull List<Person> children) {
       super(5);
-      final List<ChildInfo> childInfo = new LinkedList<>();
-      for (final Person child : children)
-        //noinspection OptionalGetWithoutIsPresent
-        childInfo.add(new ChildInfo(child, child.getParentIndex(parent1).get())); // Will always exist in this context
       final Theme theme = PersonDetailsView.this.config.theme();
       final HBox parentsBox = new HBox(5);
-      final PersonCard parent1Card = new PersonCard(parent1, childInfo);
-      HBox.setHgrow(parent1Card, Priority.ALWAYS);
-      parentsBox.getChildren().add(parent1Card);
-      if (parent2 != null) {
-        final PersonCard parent2Card = new PersonCard(parent2);
-        HBox.setHgrow(parent2Card, Priority.ALWAYS);
-        final Label plus = new Label("", theme.getIcon(Icon.PLUS, Icon.Size.BIG));
-        parentsBox.setAlignment(Pos.CENTER);
-        parentsBox.getChildren().addAll(
-            plus,
-            parent2Card
-        );
-      }
+      parents.forEach(parent -> {
+        final PersonCard parent1Card = new PersonCard(parent);
+        HBox.setHgrow(parent1Card, Priority.ALWAYS);
+        parentsBox.getChildren().add(parent1Card);
+      });
       this.getChildren().add(parentsBox);
       children.stream()
           .sorted(Person.birthDateThenNameComparator(false))

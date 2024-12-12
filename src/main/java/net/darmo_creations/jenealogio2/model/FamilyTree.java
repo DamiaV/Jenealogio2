@@ -113,20 +113,16 @@ public class FamilyTree {
   public void removePerson(Person person) {
     if (person == this.root)
       throw new IllegalArgumentException("cannot delete root");
-    person.setParent(0, null);
-    person.setParent(1, null);
+    for (final var type : ParentalRelationType.values()) {
+      for (final Person parent : new HashSet<>(person.parents(type)))
+        person.removeParent(parent);
+      for (final Person child : new HashSet<>(person.children(type)))
+        child.removeParent(person);
+    }
     for (final LifeEvent lifeEvent : person.lifeEvents()) {
       this.removeActorFromLifeEvent(lifeEvent, person);
       lifeEvent.removeWitness(person);
       this.lifeEvents.remove(lifeEvent);
-    }
-    for (final Person child : person.children())
-      child.removeParent(person);
-    for (final var relativeType : Person.RelativeType.values()) {
-      for (final Person nonBiologicalChild : person.nonBiologicalChildren(relativeType))
-        nonBiologicalChild.removeRelative(person, relativeType);
-      for (final Person relative : person.getRelatives(relativeType))
-        person.removeRelative(relative, relativeType);
     }
     this.persons.remove(person);
   }
