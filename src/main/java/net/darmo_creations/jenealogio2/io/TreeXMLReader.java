@@ -208,7 +208,6 @@ public class TreeXMLReader extends TreeXMLManager {
       @NotNull FamilyTree familyTree
   ) throws IOException {
     final List<Person> persons = new LinkedList<>();
-    final Map<Person, Pair<Integer, Integer>> parentIDS = new HashMap<>();
     final Map<Person, Map<ParentalRelationType, List<Integer>>> parentsIDs = new HashMap<>();
 
     for (final Element personElement : XmlUtils.getChildElements(peopleElement, PERSON_TAG)) {
