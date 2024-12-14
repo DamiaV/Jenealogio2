@@ -221,9 +221,8 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       this.setAlignment(Pos.CENTER_LEFT);
       final Button button = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
       button.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
-      //noinspection OptionalGetWithoutIsPresent
       final Label birthYearLabel = new Label(
-          PersonWidget.formatDateYear(person.getBirthDate().get()),
+          PersonWidget.formatDateYear(person.getBirthDate().orElseThrow()),
           BirthdaysDialog.this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL)
       );
       this.getChildren().addAll(button, birthYearLabel);

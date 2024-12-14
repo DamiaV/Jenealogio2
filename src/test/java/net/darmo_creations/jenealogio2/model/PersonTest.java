@@ -45,8 +45,7 @@ class PersonTest {
   @Test
   void setDisambiguationID() {
     this.person.setDisambiguationID(1);
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(1, this.person.disambiguationID().get());
+    assertEquals(1, this.person.disambiguationID().orElseThrow());
   }
 
   @Test
@@ -96,8 +95,7 @@ class PersonTest {
   @Test
   void getJoinedLegalFirstNames() {
     this.person.setLegalFirstNames(List.of("Alice", "Bob"));
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Alice Bob", this.person.getJoinedLegalFirstNames().get());
+    assertEquals("Alice Bob", this.person.getJoinedLegalFirstNames().orElseThrow());
   }
 
   @Test
@@ -108,8 +106,7 @@ class PersonTest {
   @Test
   void legalLastName() {
     this.person.setLegalLastName("Charlie");
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Charlie", this.person.legalLastName().get());
+    assertEquals("Charlie", this.person.legalLastName().orElseThrow());
   }
 
   @Test
@@ -133,8 +130,7 @@ class PersonTest {
   @Test
   void getJoinedPublicFirstNames() {
     this.person.setPublicFirstNames(List.of("Alice", "Bob"));
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Alice Bob", this.person.getJoinedPublicFirstNames().get());
+    assertEquals("Alice Bob", this.person.getJoinedPublicFirstNames().orElseThrow());
   }
 
   @Test
@@ -145,8 +141,7 @@ class PersonTest {
   @Test
   void publicLastName() {
     this.person.setPublicLastName("Charlie");
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Charlie", this.person.publicLastName().get());
+    assertEquals("Charlie", this.person.publicLastName().orElseThrow());
   }
 
   @Test
@@ -170,8 +165,7 @@ class PersonTest {
   @Test
   void getJoinedNicknames() {
     this.person.setNicknames(List.of("Alice", "Bob"));
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Alice Bob", this.person.getJoinedNicknames().get());
+    assertEquals("Alice Bob", this.person.getJoinedNicknames().orElseThrow());
   }
 
   @Test
@@ -183,15 +177,13 @@ class PersonTest {
   void getLastNameReturnsLegalNameEvenIfPublicNameIsDefined() {
     this.person.setLegalLastName("Alice");
     this.person.setPublicLastName("Bob");
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Alice", this.person.getLastName().get());
+    assertEquals("Alice", this.person.getLastName().orElseThrow());
   }
 
   @Test
   void getLastNameReturnsPublicNameIfLegalNameIsUndefined() {
     this.person.setPublicLastName("Bob");
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Bob", this.person.getLastName().get());
+    assertEquals("Bob", this.person.getLastName().orElseThrow());
   }
 
   @Test
@@ -203,15 +195,13 @@ class PersonTest {
   void getFirstNamesReturnsLegalNameEvenIfPublicNameIsDefined() {
     this.person.setLegalFirstNames(List.of("Alice", "Bob"));
     this.person.setPublicFirstNames(List.of("Charlie", "Dick"));
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Alice Bob", this.person.getFirstNames().get());
+    assertEquals("Alice Bob", this.person.getFirstNames().orElseThrow());
   }
 
   @Test
   void getFirstNamesReturnsPublicNameIfLegalNameIsUndefined() {
     this.person.setPublicFirstNames(List.of("Charlie", "Dick"));
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("Charlie Dick", this.person.getFirstNames().get());
+    assertEquals("Charlie Dick", this.person.getFirstNames().orElseThrow());
   }
 
   @Test
@@ -223,31 +213,27 @@ class PersonTest {
   void setAssignedGenderAtBirth() {
     final Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
     this.person.setAssignedGenderAtBirth(gender);
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(gender, this.person.assignedGenderAtBirth().get());
+    assertEquals(gender, this.person.assignedGenderAtBirth().orElseThrow());
   }
 
   @Test
   void setGender() {
     final Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
     this.person.setGender(gender);
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(gender, this.person.gender().get());
+    assertEquals(gender, this.person.gender().orElseThrow());
   }
 
   @Test
   void genderReturnsAgabIfNotSet() {
     final Gender gender = this.person.familyTree().genderRegistry().getEntry(new RegistryEntryKey("builtin:female"));
     this.person.setAssignedGenderAtBirth(gender);
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(gender, this.person.gender().get());
+    assertEquals(gender, this.person.gender().orElseThrow());
   }
 
   @Test
   void setMainOccupation() {
     this.person.setMainOccupation("a");
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals("a", this.person.mainOccupation().get());
+    assertEquals("a", this.person.mainOccupation().orElseThrow());
   }
 
   @ParameterizedTest
@@ -268,7 +254,7 @@ class PersonTest {
   @EnumSource(ParentalRelationType.class)
   void addParentFailsIfMoreThanAllowed(ParentalRelationType type) {
     if (type.maxParentsCount().isPresent()) {
-      for (int i = 0; i < type.maxParentsCount().get(); i++)
+      for (int i = 0; i < type.maxParentsCount().orElseThrow(); i++)
         this.person.addParent(new Person(), type);
       assertThrows(IllegalArgumentException.class, () -> this.person.addParent(new Person(), type));
     }
@@ -616,8 +602,7 @@ class PersonTest {
     final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(date, this.person.getBirthDate().get());
+    assertEquals(date, this.person.getBirthDate().orElseThrow());
   }
 
   @Test
@@ -638,8 +623,7 @@ class PersonTest {
     final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
     l.setActors(Set.of(this.person));
-    //noinspection OptionalGetWithoutIsPresent
-    assertEquals(date, this.person.getDeathDate().get());
+    assertEquals(date, this.person.getDeathDate().orElseThrow());
   }
 
   @Test

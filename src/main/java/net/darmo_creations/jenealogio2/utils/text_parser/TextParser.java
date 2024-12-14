@@ -53,8 +53,7 @@ public class TextParser {
     this.codepoints = s.strip().replaceAll("\r\n?|\n", "\n").chars().toArray();
     this.index = 0;
     this.stack.clear();
-    //noinspection OptionalGetWithoutIsPresent
-    final SequenceNode sequenceNode = this.parse().get();
+    final SequenceNode sequenceNode = this.parse().orElseGet(() -> new SequenceNode(TextStyle.NONE));
     if (sequenceNode.children().isEmpty())
       return new PlainTextNode("");
     if (sequenceNode.style() == TextStyle.NONE && sequenceNode.children().size() == 1)

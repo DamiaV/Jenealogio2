@@ -258,10 +258,9 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
 
   private Collection<Place> onPlaceSuggestionRequest(@NotNull AutoCompletionBinding.ISuggestionRequest request) {
     final String userText = request.getUserText().toLowerCase();
-    //noinspection OptionalGetWithoutIsPresent
     return this.familyTree.lifeEvents().stream()
         .filter(e -> e.place().isPresent() && e.place().get().address().toLowerCase().contains(userText))
-        .map(e -> e.place().get())
+        .map(e -> e.place().orElseThrow())
         .distinct()
         .toList();
   }
@@ -333,7 +332,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     this.dateTimeSelector.pseudoClassStateChanged(PseudoClasses.INVALID, !datePresent);
     valid = datePresent;
     final boolean invalidPartner = this.eventTypeCombo.getSelectionModel().getSelectedItem().data().maxActors() > 1
-                                   && this.partner == null;
+        && this.partner == null;
     this.partnerLabel.pseudoClassStateChanged(PseudoClasses.INVALID, invalidPartner);
     valid &= !invalidPartner;
     this.pseudoClassStateChanged(PseudoClasses.INVALID, !valid);

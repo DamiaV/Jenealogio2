@@ -10,7 +10,7 @@ import java.nio.file.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings({"OptionalGetWithoutIsPresent", "DataFlowIssue"})
+@SuppressWarnings({"DataFlowIssue"})
 class PictureTest {
   private Picture p;
 
@@ -44,7 +44,7 @@ class PictureTest {
 
   @Test
   void testNormalizedFileExtension() {
-    assertEquals(".png", this.p.normalizedFileExtension().get());
+    assertEquals(".png", this.p.normalizedFileExtension().orElseThrow());
   }
 
   @Test
@@ -56,7 +56,7 @@ class PictureTest {
         "description",
         new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
-    assertEquals(".png", p.normalizedFileExtension().get());
+    assertEquals(".png", p.normalizedFileExtension().orElseThrow());
   }
 
   @Test
@@ -91,13 +91,13 @@ class PictureTest {
 
   @Test
   void testDescription() {
-    assertEquals("description", this.p.description().get());
+    assertEquals("description", this.p.description().orElseThrow());
   }
 
   @Test
   void testSetDescription() {
     this.p.setDescription("desc");
-    assertEquals("desc", this.p.description().get());
+    assertEquals("desc", this.p.description().orElseThrow());
   }
 
   @Test
@@ -109,14 +109,14 @@ class PictureTest {
   @Test
   void testDate() {
     final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
-    assertEquals(d, this.p.date().get());
+    assertEquals(d, this.p.date().orElseThrow());
   }
 
   @Test
   void testSetDate() {
     final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(8765, 4, 3, 2, 1), DateTimePrecision.EXACT);
     this.p.setDate(d);
-    assertEquals(d, this.p.date().get());
+    assertEquals(d, this.p.date().orElseThrow());
   }
 
   @Test

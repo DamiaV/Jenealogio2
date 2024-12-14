@@ -95,8 +95,7 @@ class FamilyTreeTest {
   void getDocument() {
     final AttachedDocument doc = new AttachedDocument(Path.of("doc.pdf"), null, null);
     this.tree.addDocument(doc);
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(doc, this.tree.getDocument("doc.pdf").get());
+    assertSame(doc, this.tree.getDocument("doc.pdf").orElseThrow());
   }
 
   @Test
@@ -115,16 +114,14 @@ class FamilyTreeTest {
   void addPersonSetsRootIfEmtpy() {
     final Person person = new Person();
     this.tree.addPerson(person);
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(person, this.tree.root().get());
+    assertSame(person, this.tree.root().orElseThrow());
   }
 
   @Test
   void addPersonSetsTree() {
     final Person person = new Person();
     this.tree.addPerson(person);
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(this.tree, this.tree.root().get().familyTree());
+    assertSame(this.tree, this.tree.root().orElseThrow().familyTree());
   }
 
   @Test
@@ -407,8 +404,7 @@ class FamilyTreeTest {
     final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("test.png"), null, null);
     this.tree.addDocument(pic);
     this.tree.renameDocument("test.png", "test1");
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(pic, this.tree.getDocument("test1.png").get());
+    assertSame(pic, this.tree.getDocument("test1.png").orElseThrow());
     assertTrue(this.tree.getDocument("test.png").isEmpty());
   }
 
@@ -472,8 +468,7 @@ class FamilyTreeTest {
     this.tree.addPerson(p);
     this.tree.addDocumentToObject("app_icon.png", p);
     this.tree.setMainPictureOfObject("app_icon.png", p);
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(pic, p.mainPicture().get());
+    assertSame(pic, p.mainPicture().orElseThrow());
   }
 
   @Test
@@ -501,8 +496,7 @@ class FamilyTreeTest {
     final Person p = new Person();
     this.tree.addPerson(p);
     this.tree.setRoot(p);
-    //noinspection OptionalGetWithoutIsPresent
-    assertSame(p, this.tree.root().get());
+    assertSame(p, this.tree.root().orElseThrow());
   }
 
   @Test

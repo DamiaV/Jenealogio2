@@ -41,8 +41,7 @@ public class TreeXMLReader extends TreeXMLManager {
     final String name = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_NAME_ATTR, s -> s, null, true);
     final int rootID = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, null, false);
 
-    //noinspection OptionalGetWithoutIsPresent
-    final Element peopleElement = XmlUtils.getChildElement(familyTreeElement, PEOPLE_TAG, false).get();
+    final Element peopleElement = XmlUtils.getChildElement(familyTreeElement, PEOPLE_TAG, false).orElseThrow();
     final FamilyTree familyTree = new FamilyTree(name);
 
     final Optional<Element> registriesElement = XmlUtils.getChildElement(familyTreeElement, REGISTRIES_TAG, true);
@@ -299,8 +298,7 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull Element personElement,
       @NotNull Person person
   ) throws IOException {
-    //noinspection OptionalGetWithoutIsPresent
-    final Element lifeStatusElement = XmlUtils.getChildElement(personElement, LIFE_STATUS_TAG, false).get();
+    final Element lifeStatusElement = XmlUtils.getChildElement(personElement, LIFE_STATUS_TAG, false).orElseThrow();
     try {
       final int ordinal = XmlUtils.getAttr(lifeStatusElement, LIFE_STATUS_ORDINAL_ATTR, Integer::parseInt, null, false);
       person.setLifeStatus(LifeStatus.values()[ordinal]);
@@ -596,8 +594,7 @@ public class TreeXMLReader extends TreeXMLManager {
       final @NotNull FamilyTree familyTree
   ) throws IOException {
     final LifeEventType type;
-    //noinspection OptionalGetWithoutIsPresent
-    final Element typeElement = XmlUtils.getChildElement(eventElement, TYPE_TAG, false).get();
+    final Element typeElement = XmlUtils.getChildElement(eventElement, TYPE_TAG, false).orElseThrow();
     try {
       final RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(typeElement, TYPE_KEY_ATTR, s -> s, null, false));
       type = familyTree.lifeEventTypeRegistry().getEntry(key);

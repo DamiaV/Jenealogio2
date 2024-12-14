@@ -11,7 +11,6 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 class StringUtilsTest {
   @Test
   void testStripNullableEmpty() {
@@ -19,29 +18,29 @@ class StringUtilsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = { " ", "\t", "\n", "\r", "\f", "\u000b" })
+  @ValueSource(strings = {" ", "\t", "\n", "\r", "\f", "\u000b"})
   void testStripNullableBlank(String s) {
     assertTrue(StringUtils.stripNullable(s).isEmpty());
   }
 
   @Test
   void testStripNullableBlankLeading() {
-    assertEquals("a", StringUtils.stripNullable(" a").get());
+    assertEquals("a", StringUtils.stripNullable(" a").orElseThrow());
   }
 
   @Test
   void testStripNullableBlankTrailing() {
-    assertEquals("a", StringUtils.stripNullable("a ").get());
+    assertEquals("a", StringUtils.stripNullable("a ").orElseThrow());
   }
 
   @Test
   void testStripNullableBlankLeadingTrailing() {
-    assertEquals("a", StringUtils.stripNullable(" a ").get());
+    assertEquals("a", StringUtils.stripNullable(" a ").orElseThrow());
   }
 
   @Test
   void testStripNullableNoBlank() {
-    assertEquals("a", StringUtils.stripNullable("a").get());
+    assertEquals("a", StringUtils.stripNullable("a").orElseThrow());
   }
 
   @Test

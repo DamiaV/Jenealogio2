@@ -171,9 +171,8 @@ public class MapDialog extends DialogBase<ButtonType> {
           if (compare != 0)
             return compare;
           // place() will always return a non-empty value because we filtered events above
-          //noinspection OptionalGetWithoutIsPresent
-          return events1.get(0).place().get().address()
-              .compareToIgnoreCase(events2.get(0).place().get().address());
+          return events1.get(0).place().orElseThrow().address()
+              .compareToIgnoreCase(events2.get(0).place().orElseThrow().address());
         })
         .forEach(e -> {
           final LatLon latLon = e.getKey();
@@ -190,8 +189,7 @@ public class MapDialog extends DialogBase<ButtonType> {
             color = MapMarkerColor.ORANGE;
           else
             color = MapMarkerColor.RED;
-          //noinspection OptionalGetWithoutIsPresent
-          final Place place = events.get(0).place().get();
+          final Place place = events.get(0).place().orElseThrow();
           final Map<LifeEventType, Integer> typeCounts = events.stream()
               .collect(Collectors.groupingBy(LifeEvent::type, Collectors.reducing(0, i -> 1, Integer::sum)));
           this.mapView.addMarker(latLon, color, new EventTypesTooltip(place.address(), typeCounts, this.config));
@@ -226,8 +224,7 @@ public class MapDialog extends DialogBase<ButtonType> {
 
     public PlaceView(@NotNull Place place, int nb) {
       final String address = place.address();
-      //noinspection OptionalGetWithoutIsPresent
-      this.latLon = place.latLon().get();
+      this.latLon = place.latLon().orElseThrow();
       this.text = MapDialog.this.config.language().translate(
           "dialog.map.place_count",
           nb,
