@@ -141,13 +141,8 @@ public class AppController {
     });
     scene.setOnDragDropped(event -> {
       final Dragboard db = event.getDragboard();
-      boolean success = this.isDragAndDropValid(db);
-      if (success && this.unsavedChanges) {
-        final boolean open = Alerts.confirmation(
-            config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-        if (!open)
-          success = false;
-      }
+      final boolean success = this.isDragAndDropValid(db) &&
+          (!this.unsavedChanges || this.canProceedAfterOptionalSave());
       if (success)
         this.loadTree(db.getFiles().get(0).getName());
       event.setDropCompleted(success);
@@ -162,16 +157,8 @@ public class AppController {
     });
 
     stage.setOnCloseRequest(event -> {
-      if (this.unsavedChanges) {
-        final Optional<Boolean> save = Alerts.confirmationWithCancel(
-            this.config,
-            "alert.unsaved_changes.header",
-            "alert.unsaved_changes.content",
-            null
-        );
-        if (save.isEmpty() || save.get() && !this.saveFile())
-          event.consume();
-      }
+      if (this.unsavedChanges && !this.canProceedAfterOptionalSave())
+        event.consume();
     });
   }
 
@@ -636,12 +623,8 @@ public class AppController {
    * @return True if a new tree was created as a result of this call; false otherwise.
    */
   private boolean onNewTreeAction() {
-    if (this.unsavedChanges) {
-      final boolean open = Alerts.confirmation(
-          this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-      if (!open)
-        return false;
-    }
+    if (this.unsavedChanges && !this.canProceedAfterOptionalSave()) return false;
+
     final String defaultName = this.config.language().translate("app_title.undefined_tree_name");
     boolean proceed = true;
     do {
@@ -674,13 +657,8 @@ public class AppController {
    * @param directoryName The name of the directory to open.
    */
   private void onOpenTreeAction(@NotNull String directoryName) {
-    if (this.unsavedChanges) {
-      final boolean proceed = Alerts.confirmation(
-          this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-      if (!proceed)
-        return;
-    }
-    this.loadTree(directoryName);
+    if (!this.unsavedChanges || this.canProceedAfterOptionalSave())
+      this.loadTree(directoryName);
   }
 
   /**
@@ -699,12 +677,8 @@ public class AppController {
    * Checks for any unsaved changes.
    */
   private void onImportTreeAction() {
-    if (this.unsavedChanges) {
-      final boolean proceed = Alerts.confirmation(
-          this.config, "alert.unsaved_changes.header", "alert.unsaved_changes.content", null);
-      if (!proceed)
-        return;
-    }
+    if (this.unsavedChanges && !this.canProceedAfterOptionalSave()) return;
+
     final Optional<Path> f = FileChoosers.showZippedTreeFileChooser(this.config, this.stage);
     if (f.isEmpty())
       return;
@@ -1181,5 +1155,22 @@ public class AppController {
    */
   private void onAboutAction() {
     this.aboutDialog.showAndWait();
+  }
+
+  /**
+   * Check if there are unsaved changes and, if so, warn the user.
+   * The user can choose to discard or save changes, or cancel the dialog.
+   *
+   * @return True if there are no unsaved changes, or the user chose to discard them,
+   * or they chose to save and the save was successful.
+   */
+  private boolean canProceedAfterOptionalSave() {
+    final Optional<Boolean> open = Alerts.confirmationWithCancel(
+        this.config,
+        "alert.unsaved_changes.header",
+        "alert.unsaved_changes.content",
+        null
+    );
+    return open.isPresent() && (!open.get() || this.saveFile());
   }
 }
