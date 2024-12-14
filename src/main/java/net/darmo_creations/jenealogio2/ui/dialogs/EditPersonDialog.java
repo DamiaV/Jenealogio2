@@ -613,14 +613,13 @@ public class EditPersonDialog extends DialogBase<Person>
     // Update life status after events to avoid assertion error
     person.setLifeStatus(this.lifeStatusCombo.getSelectionModel().getSelectedItem().data());
 
-    // Relatives
-    for (final var parentType : ParentalRelationType.values()) {
-      // Clear parents of the current type
-      for (final Person parent : this.person.parents(parentType))
+    // Clear parents of the current type
+    for (final var parentType : ParentalRelationType.values())
+      for (final Person parent : new HashSet<>(this.person.parents(parentType)))
         this.person.removeParent(parent);
-      // Add back the selected parents
+    // Add back the selected parents
+    for (final var parentType : ParentalRelationType.values())
       this.parentsLists.get(parentType).getPersons().forEach(p -> this.person.addParent(p, parentType));
-    }
   }
 
   /**
