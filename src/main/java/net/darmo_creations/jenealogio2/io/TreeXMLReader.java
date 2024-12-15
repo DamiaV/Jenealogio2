@@ -39,7 +39,7 @@ public class TreeXMLReader extends TreeXMLManager {
     final NodeList childNodes = document.getChildNodes();
     final Element familyTreeElement = this.getRootElement(childNodes, FAMILY_TREE_TAG, FAMILY_TREE_VERSION_ATTR);
     final String name = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_NAME_ATTR, s -> s, null, true);
-    final int rootID = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, null, false);
+    final int rootID = XmlUtils.getAttr(familyTreeElement, FAMILY_TREE_ROOT_ATTR, Integer::parseInt, () -> -1, false);
 
     final Element peopleElement = XmlUtils.getChildElement(familyTreeElement, PEOPLE_TAG, false).orElseThrow();
     final FamilyTree familyTree = new FamilyTree(name);
@@ -53,10 +53,15 @@ public class TreeXMLReader extends TreeXMLManager {
       this.loadDocuments(documentsElement.get(), familyTree, documentBuilder);
 
     final List<Person> persons = this.readPersons(peopleElement, familyTree);
-    try {
-      familyTree.setRoot(persons.get(rootID));
-    } catch (final IndexOutOfBoundsException e) {
-      throw new IOException(e);
+    if (rootID == -1) {
+      if (!persons.isEmpty())
+        throw new IOException("Missing root attribute");
+    } else {
+      try {
+        familyTree.setRoot(persons.get(rootID));
+      } catch (final IndexOutOfBoundsException e) {
+        throw new IOException(e);
+      }
     }
     final Optional<Element> eventsElement = XmlUtils.getChildElement(familyTreeElement, LIFE_EVENTS_TAG, true);
     if (eventsElement.isPresent())
