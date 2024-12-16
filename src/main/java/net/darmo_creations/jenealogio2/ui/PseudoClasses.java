@@ -1,8 +1,8 @@
 package net.darmo_creations.jenealogio2.ui;
 
-import javafx.css.PseudoClass;
-import javafx.scene.control.TableCell;
-import net.darmo_creations.jenealogio2.ui.components.PersonWidget;
+import javafx.css.*;
+import javafx.scene.control.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
 
 /**
  * This class declares CSS pseudo-classes used throughout the app.
@@ -13,7 +13,7 @@ public final class PseudoClasses {
    */
   public static final PseudoClass INVALID = PseudoClass.getPseudoClass("invalid");
   /**
-   * Marks an item within the {@link FamilyTreeView} as matching the search filter.
+   * Marks an item within the {@link FamilyMembersTreeView} as matching the search filter.
    */
   public static final PseudoClass SEARCH_MATCH = PseudoClass.getPseudoClass("search-match");
   /**

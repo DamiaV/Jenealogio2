@@ -121,6 +121,7 @@ public class Person extends GenealogyObject<Person> {
    * @param disambiguationID The ID. May be null.
    * @return This object.
    */
+  @Contract("_ -> this")
   public Person setDisambiguationID(Integer disambiguationID) {
     if (disambiguationID != null && disambiguationID < 1)
       throw new IllegalArgumentException("Disambiguation ID must be > 0");
@@ -143,6 +144,7 @@ public class Person extends GenealogyObject<Person> {
    * @throws IllegalArgumentException If the person is an actor of any event that indicates their death
    *                                  but the argument is not {@link LifeStatus#DECEASED}.
    */
+  @Contract("_ -> this")
   public Person setLifeStatus(@NotNull LifeStatus lifeStatus) {
     final boolean isDead = this.getLifeEventsAsActor().stream().anyMatch(e -> e.type().indicatesDeath());
     if (isDead && lifeStatus != LifeStatus.DECEASED)
@@ -156,6 +158,7 @@ public class Person extends GenealogyObject<Person> {
    *
    * @see #setLegalFirstNames(List)
    */
+  @Contract("-> new")
   public List<String> legalFirstNames() {
     return new ArrayList<>(this.legalFirstNames);
   }
@@ -177,6 +180,7 @@ public class Person extends GenealogyObject<Person> {
    * @param legalFirstNames List of names.
    * @return This object.
    */
+  @Contract("_ -> this")
   public Person setLegalFirstNames(final @NotNull List<String> legalFirstNames) {
     this.legalFirstNames.clear();
     this.legalFirstNames.addAll(this.filterOutEmptyStrings(legalFirstNames));
@@ -200,6 +204,7 @@ public class Person extends GenealogyObject<Person> {
    * @param legalLastName The name.
    * @return This object.
    */
+  @Contract("_ -> this")
   public Person setLegalLastName(String legalLastName) {
     this.legalLastName = StringUtils.stripNullable(legalLastName).orElse(null);
     return this;
@@ -210,6 +215,7 @@ public class Person extends GenealogyObject<Person> {
    *
    * @see #setPublicFirstNames(List)
    */
+  @Contract("-> new")
   public List<String> publicFirstNames() {
     return new ArrayList<>(this.publicFirstNames);
   }
@@ -231,6 +237,7 @@ public class Person extends GenealogyObject<Person> {
    * @param publicFirstNames List of names.
    * @return This object.
    */
+  @Contract("_ -> this")
   public Person setPublicFirstNames(final @NotNull List<String> publicFirstNames) {
     this.publicFirstNames.clear();
     this.publicFirstNames.addAll(this.filterOutEmptyStrings(publicFirstNames));
@@ -254,6 +261,7 @@ public class Person extends GenealogyObject<Person> {
    * @param publicLastName The name.
    * @return This object.
    */
+  @Contract("_ -> this")
   public Person setPublicLastName(String publicLastName) {
     this.publicLastName = StringUtils.stripNullable(publicLastName).orElse(null);
     return this;
@@ -262,6 +270,7 @@ public class Person extends GenealogyObject<Person> {
   /**
    * This person’s nicknames.
    */
+  @Contract("-> new")
   public List<String> nicknames() {
     return new ArrayList<>(this.nicknames);
   }
@@ -278,9 +287,11 @@ public class Person extends GenealogyObject<Person> {
    *
    * @param nicknames The names.
    */
-  public void setNicknames(final @NotNull List<String> nicknames) {
+  @Contract("_ -> this")
+  public Person setNicknames(final @NotNull List<String> nicknames) {
     this.nicknames.clear();
     this.nicknames.addAll(this.filterOutEmptyStrings(nicknames));
+    return this;
   }
 
   /**
@@ -330,6 +341,7 @@ public class Person extends GenealogyObject<Person> {
    * @param assignedGenderAtBirth The AGAB.
    * @return This object.
    */
+  @Contract("_ -> this")
   public Person setAssignedGenderAtBirth(Gender assignedGenderAtBirth) {
     this.assignedGenderAtBirth = assignedGenderAtBirth;
     return this;
@@ -348,6 +360,7 @@ public class Person extends GenealogyObject<Person> {
    * @param gender The gender.
    * @return This object.
    */
+  @Contract("_ -> this")
   public Person setGender(Gender gender) {
     this.gender = gender;
     return this;
@@ -365,18 +378,21 @@ public class Person extends GenealogyObject<Person> {
    *
    * @param mainOccupation The occupation.
    */
-  public void setMainOccupation(String mainOccupation) {
+  @Contract("_ -> this")
+  public Person setMainOccupation(String mainOccupation) {
     this.mainOccupation = mainOccupation;
+    return this;
   }
 
   /**
-   * The collelction of parents for this person.
+   * The collection of parents for this person.
    *
-   * @return An unmodifiable view of this person’s parents.
+   * @return A map of this person’s parents.
    */
-  @UnmodifiableView
+  @Contract("-> new")
   public Map<ParentalRelationType, Set<Person>> parents() {
-    return Collections.unmodifiableMap(this.parents);
+    return this.parents.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
   }
 
   /**
@@ -385,6 +401,7 @@ public class Person extends GenealogyObject<Person> {
    * @param type The type of parents to return.
    * @return An unmodifiable view of this person’s parents of the given type.
    */
+  @Contract("_ -> new")
   @UnmodifiableView
   public Set<Person> parents(@NotNull ParentalRelationType type) {
     return Collections.unmodifiableSet(this.parents.get(type));
@@ -444,6 +461,13 @@ public class Person extends GenealogyObject<Person> {
     }
   }
 
+  /**
+   * Return the type of the given parent for this person.
+   *
+   * @param parent The parent to check.
+   * @return An {@link Optional} containing the type of the given parent
+   * or an empty {@link Optional} if it is not a parent of this person.
+   */
   public Optional<ParentalRelationType> getParentType(final @NotNull Person parent) {
     return this.parents.entrySet().stream()
         .filter(e -> e.getValue().contains(parent))
@@ -459,11 +483,23 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
+   * The collection of children for this person.
+   *
+   * @return A map of this person’s children.
+   */
+  @Contract("-> new")
+  public Map<ParentalRelationType, Set<Person>> children() {
+    return this.children.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
+  }
+
+  /**
    * The set of children of the given type for this person.
    *
    * @param type The type of children to return.
    * @return An unmodifiable view of this person’s children of the given type.
    */
+  @Contract("_ -> new")
   @UnmodifiableView
   public Set<Person> children(@NotNull ParentalRelationType type) {
     return Collections.unmodifiableSet(this.children.get(type));
@@ -475,6 +511,7 @@ public class Person extends GenealogyObject<Person> {
    *
    * @return A {@link Set} containing the genetic parents.
    */
+  @Contract("-> new")
   public Set<Person> getGeneticParents() {
     final Set<Person> geneticParents = new HashSet<>();
     for (final var relationType : ParentalRelationType.GENETIC_RELATIONS)
@@ -489,6 +526,8 @@ public class Person extends GenealogyObject<Person> {
    * <p>
    * Children this person was a surrogate parent or donor for are not returned.
    */
+  // TODO better filter partners (e.g.: adoptive parents should not appear with (non-)biological parents)
+  @Contract("-> new")
   public List<Pair<Set<Person>, Set<Person>>> getPartnersAndChildren() {
     final List<Pair<Set<Person>, Set<Person>>> partnersChildren = new LinkedList<>();
     final ParentalRelationType[] relationTypes = Arrays.stream(ParentalRelationType.values()).filter(
@@ -532,6 +571,7 @@ public class Person extends GenealogyObject<Person> {
   /**
    * Return a map associating persons and the genetic children they had with this person, if any.
    */
+  @Contract("-> new")
   public Map<Optional<Person>, Set<Person>> getPartnersAndGeneticChildren() {
     final Map<Optional<Person>, Set<Person>> partnersChildren = new HashMap<>();
 
@@ -558,6 +598,7 @@ public class Person extends GenealogyObject<Person> {
    * @param set The set to filter.
    * @return A new set with this object not present in it.
    */
+  @Contract("_ -> new")
   private Set<Person> filterOutThis(final @NotNull Set<Person> set) {
     return set.stream()
         .filter(p -> p != this)
@@ -570,6 +611,7 @@ public class Person extends GenealogyObject<Person> {
    *
    * @return The set of genetic siblings.
    */
+  @Contract("-> new")
   public Set<Person> getSameGeneticParentsSiblings() {
     final Set<Person> geneticParents = new HashSet<>();
 
@@ -604,6 +646,7 @@ public class Person extends GenealogyObject<Person> {
    * @return A list of pairs associating a set of parents to their children. The order of the list is not guaranteed.
    * It is guaranted that at least one of the parents in each parent set is a parent of this person.
    */
+  @Contract("-> new")
   public List<Pair<Set<Person>, Set<Person>>> getSiblings() {
     final ParentalRelationType[] relationTypes = Arrays.stream(ParentalRelationType.values()).filter(
         v -> v != ParentalRelationType.SPERM_DONOR &&
@@ -678,6 +721,7 @@ public class Person extends GenealogyObject<Person> {
    * <p>
    * Events are sorted according to their natural ordering.
    */
+  @Contract("-> new")
   public List<LifeEvent> lifeEvents() {
     return new ArrayList<>(this.lifeEvents);
   }
@@ -687,6 +731,8 @@ public class Person extends GenealogyObject<Person> {
    * <p>
    * Events are sorted according to their natural ordering.
    */
+  @Contract("-> new")
+  @Unmodifiable
   public List<LifeEvent> getLifeEventsAsActor() {
     return this.getActedInEventsStream().toList();
   }
@@ -696,6 +742,8 @@ public class Person extends GenealogyObject<Person> {
    * <p>
    * Events are sorted according to their natural ordering.
    */
+  @Contract("-> new")
+  @Unmodifiable
   public List<LifeEvent> getLifeEventsAsWitness() {
     return this.getWitnessedEventsStream().toList();
   }
@@ -738,6 +786,8 @@ public class Person extends GenealogyObject<Person> {
    * @param values List of strings to clean.
    * @return New list containing the transformed and filtered strings.
    */
+  @Contract("_ -> new")
+  @Unmodifiable
   private List<String> filterOutEmptyStrings(final @NotNull List<String> values) {
     return values.stream().map(String::strip).filter(s -> !s.isEmpty()).toList();
   }
@@ -745,6 +795,7 @@ public class Person extends GenealogyObject<Person> {
   /**
    * Return a stream of life events this person acted in.
    */
+  @Contract("-> new")
   private Stream<LifeEvent> getActedInEventsStream() {
     return this.lifeEvents.stream().filter(e -> e.hasActor(this));
   }
@@ -752,6 +803,7 @@ public class Person extends GenealogyObject<Person> {
   /**
    * Return a stream of life events this person witnessed.
    */
+  @Contract("-> new")
   private Stream<LifeEvent> getWitnessedEventsStream() {
     return this.lifeEvents.stream().filter(e -> e.hasWitness(this));
   }

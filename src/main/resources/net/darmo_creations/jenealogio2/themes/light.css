@@ -1,5 +1,15 @@
 .root {
   -fx-control-inner-background-alt: derive(-fx-control-inner-background, -10%);
+
+  -j2-target-widget: lightgreen;
+  -j2-biological-parent: #8383b6;
+  -j2-non-biological-parent: #7c7c7c;
+  -j2-egg-donor: #a86ca8;
+  -j2-sperm-donor: #b673ea;
+  -j2-surrogate-parent: violet;
+  -j2-adoptive-parent: #da7373;
+  -j2-foster-parent: #ffbb54;
+  -j2-godparent: #e7ea4d;
 }
 
 Text {
@@ -16,6 +26,11 @@ Text.hyperlink {
 }
 
 /* Custom components */
+
+.tree-line {
+  -fx-stroke: derive(-fx-base, -20%);
+}
+
 .person-widget {
   -fx-padding: 0.5em;
   -fx-border-radius: 3px;
@@ -26,17 +41,113 @@ Text.hyperlink {
   -fx-cursor: hand;
 }
 
-.person-widget.center {
-  -fx-background-color: lightgreen;
-}
-
 .person-widget:hover {
   -fx-background-color: derive(-fx-base, -15%);
   -fx-border-color: derive(-fx-base, -25%);
 }
 
+.person-widget.biological-parent {
+  -fx-background-color: -j2-biological-parent;
+}
+
+.person-widget.biological-parent:hover {
+  -fx-background-color: derive(-j2-biological-parent, 15%);
+}
+
+.tree-line.biological-parent {
+  -fx-stroke: -j2-biological-parent;
+}
+
+.person-widget.non-biological-parent {
+  -fx-background-color: -j2-non-biological-parent;
+}
+
+.person-widget.non-biological-parent:hover {
+  -fx-background-color: derive(-j2-non-biological-parent, 15%);
+}
+
+.tree-line.non-biological-parent {
+  -fx-stroke: -j2-non-biological-parent;
+}
+
+.person-widget.egg-donor {
+  -fx-background-color: -j2-egg-donor;
+}
+
+.person-widget.egg-donor:hover {
+  -fx-background-color: derive(-j2-egg-donor, 15%);
+}
+
+.tree-line.egg-donor {
+  -fx-stroke: -j2-egg-donor;
+}
+
+.person-widget.sperm-donor {
+  -fx-background-color: -j2-sperm-donor;
+}
+
+.person-widget.sperm-donor:hover {
+  -fx-background-color: derive(-j2-sperm-donor, 15%);
+}
+
+.tree-line.sperm-donor {
+  -fx-stroke: -j2-sperm-donor;
+}
+
+.person-widget.surrogate-parent {
+  -fx-background-color: -j2-surrogate-parent;
+}
+
+.person-widget.surrogate-parent:hover {
+  -fx-background-color: derive(-j2-surrogate-parent, 15%);
+}
+
+.tree-line.surrogate-parent {
+  -fx-stroke: -j2-surrogate-parent;
+}
+
+.person-widget.adoptive-parent {
+  -fx-background-color: -j2-adoptive-parent;
+}
+
+.person-widget.adoptive-parent:hover {
+  -fx-background-color: derive(-j2-adoptive-parent, 15%);
+}
+
+.tree-line.adoptive-parent {
+  -fx-stroke: -j2-adoptive-parent;
+}
+
+.person-widget.foster-parent {
+  -fx-background-color: -j2-foster-parent;
+}
+
+.person-widget.foster-parent:hover {
+  -fx-background-color: derive(-j2-foster-parent, 15%);
+}
+
+.tree-line.foster-parent {
+  -fx-stroke: -j2-foster-parent;
+}
+
+.person-widget.godparent {
+  -fx-background-color: -j2-godparent;
+}
+
+.person-widget.godparent:hover {
+  -fx-background-color: derive(-j2-godparent, 15%);
+}
+
+.tree-line.godparent {
+  -fx-stroke: -j2-godparent;
+}
+
+.person-widget.center {
+  -fx-background-color: -j2-target-widget;
+}
+
 .person-widget.center:hover {
-  -fx-background-color: derive(lightgreen, -15%);
+  -fx-background-color: derive(-j2-target-widget, 15%);
 }
 
 .person-widget:selected {
@@ -51,12 +162,9 @@ Text.hyperlink {
   -fx-background-color: derive(-fx-base, -10%);
 }
 
+/*noinspection CssInvalidPseudoSelector*/
 .tree-cell:search-match {
   -fx-background: #ffcc80;
-}
-
-.tree-line {
-  -fx-stroke: derive(-fx-base, -20%);
 }
 
 .person-details .person-details-header {
@@ -67,6 +175,7 @@ Text.hyperlink {
   -fx-text-fill: rgb(100, 100, 100);
 }
 
+/*noinspection CssInvalidPseudoSelector*/
 *:invalid {
   -fx-border-color: red;
 }

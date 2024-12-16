@@ -1,15 +1,8 @@
 package net.darmo_creations.jenealogio2.ui;
 
-import javafx.collections.*;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
-import javafx.scene.shape.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
-import net.darmo_creations.jenealogio2.ui.events.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -18,21 +11,11 @@ import java.util.stream.*;
 /**
  * JavaFX component displaying a part of a genetic family tree’s graph.
  */
-public class GeneticFamilyTreePane extends FamilyTreeComponent {
+public class GeneticFamilyTreePane extends PersonTreeView {
   public static final int MIN_ALLOWED_HEIGHT = 1;
   public static final int MAX_ALLOWED_HEIGHT = 7;
   public static final int DEFAULT_MAX_HEIGHT = 4;
 
-  private static final int HGAP = 10;
-  private static final int VGAP = 20;
-
-  private final Config config;
-  private final ObservableList<PersonWidget> personWidgets = FXCollections.observableList(new ArrayList<>());
-  private final Pane pane = new Pane();
-  private final ScrollPane scrollPane = new ScrollPane(this.pane);
-
-  private Person targettedPerson;
-  private boolean internalClick;
   private int maxHeight;
 
   /**
@@ -41,22 +24,7 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
    * @param config The app’s config.
    */
   public GeneticFamilyTreePane(final @NotNull Config config) {
-    this.config = Objects.requireNonNull(config);
-    this.setOnMouseClicked(this::onBackgroundClicked);
-    this.scrollPane.setPannable(true);
-    this.scrollPane.getStyleClass().add("no-focus-scroll-pane");
-    AnchorPane.setTopAnchor(this.scrollPane, 0.0);
-    AnchorPane.setBottomAnchor(this.scrollPane, 0.0);
-    AnchorPane.setLeftAnchor(this.scrollPane, 0.0);
-    AnchorPane.setRightAnchor(this.scrollPane, 0.0);
-    this.getChildren().add(this.scrollPane);
-  }
-
-  @Override
-  public void setFamilyTree(FamilyTree familyTree) {
-    if (familyTree != null)
-      this.targettedPerson = familyTree.root().orElse(null);
-    super.setFamilyTree(familyTree);
+    super(config);
   }
 
   /**
@@ -71,36 +39,11 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
   }
 
   @Override
-  public void refresh() {
-    final Optional<Person> selectedPerson = this.getSelectedPerson();
-    this.pane.getChildren().clear();
-    this.personWidgets.clear();
-    if (this.familyTree().isEmpty())
-      return;
-    final FamilyTree familyTree = this.familyTree().get();
-    if (!familyTree.persons().contains(this.targettedPerson)) {
-      final Optional<Person> root = familyTree.root();
-      if (root.isEmpty())
-        return;
-      this.targettedPerson = root.get();
-    }
-
-    final PersonWidget root = this.buildParentsTree(familyTree);
+  protected PersonWidget buildTree(final @NotNull FamilyTree familyTree, final @NotNull Person targettedPerson) {
+    final PersonWidget root = this.buildParentsTree(familyTree, targettedPerson);
     this.drawChildToParentsLines();
-    final double xOffset = this.buildChildrenAndSiblingsAndPartnersTree(root, familyTree);
-    if (xOffset <= 0)
-      this.pane.getChildren().stream()
-          .filter(w -> !w.layoutXProperty().isBound())
-          .forEach(w -> w.setLayoutX(w.getLayoutX() - xOffset + HGAP));
-
-    this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
-    if (selectedPerson.isPresent() && familyTree.persons().contains(selectedPerson.get())) { // Keep current selection
-      this.internalClick = true;
-      this.select(selectedPerson.get(), false);
-      this.internalClick = false;
-    }
-
-    this.centerNodeInScrollPane(root);
+    this.buildChildrenAndSiblingsAndPartnersTree(root, familyTree);
+    return root;
   }
 
   /**
@@ -109,8 +52,8 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
    * @param familyTree Tree to draw.
    * @return The widget for the tree’s root.
    */
-  private PersonWidget buildParentsTree(@NotNull FamilyTree familyTree) {
-    final PersonWidget root = this.createWidget(this.targettedPerson, null, false, true, familyTree);
+  private PersonWidget buildParentsTree(final @NotNull FamilyTree familyTree, final @NotNull Person targettedPerson) {
+    final PersonWidget root = this.createPersonWidget(targettedPerson, null, false, true, familyTree);
 
     final List<List<PersonWidget>> levels = new ArrayList<>();
     levels.add(List.of(root));
@@ -131,8 +74,8 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
             final Set<Person> children = new HashSet<>();
             if (parent1 != null)
               children.addAll(parent1.getPartnersAndGeneticChildren().get(Optional.ofNullable(parent2)));
-            final PersonWidget parent1Widget = this.createParentWidget(familyTree, parent1, children, treeLevel);
-            final PersonWidget parent2Widget = this.createParentWidget(familyTree, parent2, children, treeLevel);
+            final PersonWidget parent1Widget = this.createParentWidget(familyTree, parent1, child, children, treeLevel);
+            final PersonWidget parent2Widget = this.createParentWidget(familyTree, parent2, child, children, treeLevel);
             widgets.add(parent1Widget);
             widgets.add(parent2Widget);
             childWidget.setParentWidget1(parent1Widget);
@@ -171,6 +114,7 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
   private PersonWidget createParentWidget(
       final @NotNull FamilyTree familyTree,
       final Person parent,
+      final Person displayedChild,
       final @NotNull Set<Person> children,
       int treeLevel
   ) {
@@ -178,13 +122,16 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
       if (parent == null) return new ChildInfo(child, ParentalRelationType.BIOLOGICAL_PARENT);
       return new ChildInfo(child, child.getParentType(parent).orElse(ParentalRelationType.BIOLOGICAL_PARENT));
     }).toList();
-    return this.createWidget(
+    final PersonWidget personWidget = this.createPersonWidget(
         parent,
         childrenInfos,
         parent != null && this.hasHiddenRelatives(parent, treeLevel, children, 1),
         false,
         familyTree
     );
+    if (parent != null)
+      personWidget.getStyleClass().add(CSS_CLASSES.get(displayedChild.getParentType(parent).orElseThrow()));
+    return personWidget;
   }
 
   private boolean hasHiddenRelatives(
@@ -208,7 +155,7 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
    * Draw lines from each person to their respective parents.
    */
   private void drawChildToParentsLines() {
-    this.personWidgets.forEach(personWidget -> {
+    this.personWidgets().forEach(personWidget -> {
       final Optional<PersonWidget> parent1 = personWidget.parentWidget1();
       final Optional<PersonWidget> parent2 = personWidget.parentWidget2();
       if (parent1.isPresent() && parent2.isPresent()) {
@@ -230,12 +177,13 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
    *
    * @param root       Tree’s root.
    * @param familyTree Tree being drawn.
-   * @return X amount to move every widgets by.
    */
-  private double buildChildrenAndSiblingsAndPartnersTree(@NotNull PersonWidget root, @NotNull FamilyTree familyTree) {
+  private void buildChildrenAndSiblingsAndPartnersTree(
+      final @NotNull PersonWidget root,
+      final @NotNull FamilyTree familyTree
+  ) {
     // Get root’s partners sorted by birth date and name
-    //noinspection OptionalGetWithoutIsPresent
-    final Person rootPerson = root.person().get(); // Always present
+    final Person rootPerson = root.person().orElseThrow();
 
     final double personW = PersonWidget.WIDTH;
     final int personH = PersonWidget.HEIGHT;
@@ -263,16 +211,11 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
         .sorted(Person.optionalBirthDateThenNameComparator())
         .toList();
 
-    // Used to detect whether any widget have a negative x coordinate
-    double minX = rootX;
-
     // Render older siblings to the left of root
     double x = rootX;
     for (int i = olderSiblings.size() - 1; i >= 0; i--) {
       x -= personW + HGAP;
       this.drawSibling(familyTree, root, olderSiblings.get(i), x, rootX, rootY);
-      if (x < minX)
-        minX = x;
     }
 
     x = rootX;
@@ -292,12 +235,12 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
             .orElse(ParentalRelationType.BIOLOGICAL_PARENT);
         childInfo.add(new ChildInfo(child, parentType));
       }
-      final PersonWidget partnerWidget = this.createWidget(partner, childInfo, hasHiddenParents, false, familyTree);
+      final PersonWidget partnerWidget = this.createPersonWidget(partner, childInfo, hasHiddenParents, false, familyTree);
       partnerWidget.setLayoutX(x);
       partnerWidget.setLayoutY(rootY);
 
       // Draw line from root to partner
-      final double lineY = rootY + personH / 2.0 + (partnersNb - i * 8);
+      final double lineY = rootY + personH / 2.0 + (partnersNb - i * LINE_GAP);
       this.drawLine(rootX + personW, lineY, x, lineY);
 
       final int childrenNb = children.size();
@@ -313,11 +256,10 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
       final double rightParentX = partnerWidget.getLayoutX() - HGAP / 2.0;
       double childX = x - halfChildrenWidth - HGAP / 2.0;
       final double childY = rootY + VGAP + personH;
-      if (childX < minX)
-        minX = childX;
       for (final Person child : children) {
         final boolean hasHiddenChildren = this.hasHiddenRelatives(child, 0, null, 0);
-        final PersonWidget childWidget = this.createWidget(child, null, hasHiddenChildren, false, familyTree);
+        final PersonWidget childWidget = this.createPersonWidget(child, null, hasHiddenChildren, false, familyTree);
+        childWidget.getStyleClass().add(CSS_CLASSES.get(child.getParentType(rootPerson).orElseThrow()));
         childWidget.setLayoutX(childX);
         childWidget.setLayoutY(childY);
         childWidget.setParentWidget1(root);
@@ -337,21 +279,19 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
       x += HGAP + personW;
       this.drawSibling(familyTree, root, youngerSiblings.get(i), x, rootX, rootY);
     }
-
-    return minX;
   }
 
   private void drawSibling(
-      @NotNull FamilyTree familyTree,
-      @NotNull PersonWidget root,
-      @NotNull Person sibling,
+      final @NotNull FamilyTree familyTree,
+      final @NotNull PersonWidget root,
+      final @NotNull Person sibling,
       double x,
       double rootX,
       double rootY
   ) {
     final double personW = PersonWidget.WIDTH;
     final boolean hasHiddenChildren = this.hasHiddenRelatives(sibling, 0, null, 0);
-    final PersonWidget widget = this.createWidget(sibling, null, hasHiddenChildren, false, familyTree);
+    final PersonWidget widget = this.createPersonWidget(sibling, null, hasHiddenChildren, false, familyTree);
     widget.setLayoutX(x);
     widget.setLayoutY(rootY);
     widget.setParentWidget1(root.parentWidget1().orElse(null));
@@ -360,119 +300,5 @@ public class GeneticFamilyTreePane extends FamilyTreeComponent {
     final double lineY = rootY - VGAP / 2.0;
     this.drawLine(lineX, rootY, lineX, lineY);
     this.drawLine(lineX, lineY, rootX + personW / 2.0, lineY);
-  }
-
-  /**
-   * Create a {@link Line} object with the given coordinates, with the {@code .tree-line} CSS class.
-   */
-  private void drawLine(double x1, double y1, double x2, double y2) {
-    final Line line = new Line(x1, y1, x2, y2);
-    line.getStyleClass().add("tree-line");
-    line.setStrokeWidth(2);
-    this.pane.getChildren().add(0, line);
-  }
-
-  /**
-   * Create a new {@link PersonWidget}.
-   *
-   * @param person       Person to create a widget for.
-   * @param childInfo    Information about the relation to its visible child.
-   * @param showMoreIcon Whether to show the “plus” icon.
-   * @param isTarget     Whether the widget is targetted.
-   * @param familyTree   Tree the person belongs to.
-   * @return The new component.
-   */
-  private PersonWidget createWidget(
-      final Person person,
-      final List<ChildInfo> childInfo,
-      boolean showMoreIcon,
-      boolean isTarget,
-      final @NotNull FamilyTree familyTree
-  ) {
-    final PersonWidget w = new PersonWidget(person, childInfo, showMoreIcon, isTarget, familyTree.isRoot(person), this.config);
-    this.pane.getChildren().add(w);
-    this.personWidgets.add(w);
-    w.clickListeners().add(this::onPersonWidgetClick);
-    return w;
-  }
-
-  @Override
-  public Optional<Person> getSelectedPerson() {
-    return this.personWidgets.stream()
-        .filter(PersonWidget::isSelected)
-        .findFirst()
-        .flatMap(PersonWidget::person);
-  }
-
-  @Override
-  public void deselectAll() {
-    this.personWidgets.forEach(w -> w.setSelected(false));
-  }
-
-  @Override
-  public void select(@NotNull Person person, boolean updateTarget) {
-    Objects.requireNonNull(person);
-    if (updateTarget
-        // Update target if the person is not currently visible
-        || this.personWidgets.stream().noneMatch(w -> w.person().map(p -> p.equals(person)).orElse(false))) {
-      this.targettedPerson = person;
-      this.refresh();
-    }
-    this.personWidgets.forEach(w -> {
-      final Optional<Person> p = w.person();
-      w.setSelected(p.isPresent() && person == p.get());
-    });
-    if (!this.internalClick)
-      this.personWidgets.stream()
-          .filter(w -> w.person().orElse(null) == person)
-          .findFirst()
-          .ifPresent(this::centerNodeInScrollPane);
-  }
-
-  /**
-   * Called when a {@link PersonWidget} is clicked.
-   * <p>
-   * Calls upon {@link #firePersonClickEvent(PersonClickEvent)} if the widget contains a person object,
-   * calls upon {@link #fireNewParentClickEvent(List)} otherwise.
-   *
-   * @param personWidget The clicked widget.
-   * @param clickCount   Number of clicks.
-   * @param button       Clicked mouse button.
-   */
-  private void onPersonWidgetClick(@NotNull PersonWidget personWidget, int clickCount, MouseButton button) {
-    final Optional<Person> person = personWidget.person();
-    if (person.isPresent()) {
-      this.internalClick = true;
-      final var clickType = PersonClickedEvent.getClickType(clickCount, button);
-      final Person p = person.get();
-      this.select(p, clickType.shouldUpdateTarget());
-      this.firePersonClickEvent(new PersonClickedEvent(p, clickType));
-      this.internalClick = false;
-    } else if (!personWidget.childInfo().isEmpty())
-      this.fireNewParentClickEvent(personWidget.childInfo());
-    this.pane.requestFocus();
-  }
-
-  /**
-   * Called when the pane’s background is clicked.
-   *
-   * @param event The mouse event.
-   */
-  private void onBackgroundClicked(MouseEvent event) {
-    this.pane.requestFocus();
-  }
-
-  /**
-   * Scroll the scrollpane to make the given node visible.
-   *
-   * @param node Node to make visible.
-   */
-  private void centerNodeInScrollPane(@NotNull Node node) {
-    final double w = this.pane.getWidth();
-    final double h = this.pane.getHeight();
-    final double x = node.getBoundsInParent().getMaxX();
-    final double y = node.getBoundsInParent().getMaxY();
-    this.scrollPane.setHvalue(x / w);
-    this.scrollPane.setVvalue(y / h);
   }
 }

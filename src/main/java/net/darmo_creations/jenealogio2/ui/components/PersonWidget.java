@@ -151,7 +151,7 @@ public class PersonWidget extends AnchorPane {
    *
    * @param parentWidget1 The widget.
    */
-  public void setParentWidget1(PersonWidget parentWidget1) {
+  public void setParentWidget1(final PersonWidget parentWidget1) {
     this.parentWidget1 = parentWidget1;
   }
 
@@ -167,7 +167,7 @@ public class PersonWidget extends AnchorPane {
    *
    * @param parentWidget2 The widget.
    */
-  public void setParentWidget2(PersonWidget parentWidget2) {
+  public void setParentWidget2(final PersonWidget parentWidget2) {
     this.parentWidget2 = parentWidget2;
   }
 

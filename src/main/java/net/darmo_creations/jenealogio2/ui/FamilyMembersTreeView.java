@@ -19,7 +19,7 @@ import java.util.*;
 /**
  * JavaFX component displaying the list of all persons in a family tree.
  */
-public class FamilyTreeView extends FamilyTreeComponent {
+public class FamilyMembersTreeView extends FamilyTreeComponent {
   private final Config config;
   private final ErasableTextField searchField;
   private final ObservableSet<TreeItem<Object>> searchMatches = FXCollections.observableSet(new HashSet<>());
@@ -34,7 +34,7 @@ public class FamilyTreeView extends FamilyTreeComponent {
    *
    * @param config The app’s config.
    */
-  public FamilyTreeView(final @NotNull Config config) {
+  public FamilyMembersTreeView(final @NotNull Config config) {
     this.config = config;
     final Language language = this.config.language();
     final Theme theme = this.config.theme();
@@ -195,9 +195,9 @@ public class FamilyTreeView extends FamilyTreeComponent {
 
     public SearchHighlightingTreeCell() {
       this.matchesSearch = Bindings.createBooleanBinding(
-          () -> FamilyTreeView.this.searchMatches.contains(this.getTreeItem()),
+          () -> FamilyMembersTreeView.this.searchMatches.contains(this.getTreeItem()),
           this.treeItemProperty(),
-          FamilyTreeView.this.searchMatches
+          FamilyMembersTreeView.this.searchMatches
       );
       this.matchesSearch.addListener((obs, didMatchSearch, nowMatchesSearch) ->
           this.pseudoClassStateChanged(PseudoClasses.SEARCH_MATCH, nowMatchesSearch));
@@ -208,9 +208,9 @@ public class FamilyTreeView extends FamilyTreeComponent {
       // Update the text when the displayed item changes
       super.updateItem(item, empty);
       this.setText(empty ? null : item.toString());
-      final Optional<FamilyTree> familyTree = FamilyTreeView.this.familyTree();
+      final Optional<FamilyTree> familyTree = FamilyMembersTreeView.this.familyTree();
       if (familyTree.isPresent() && item instanceof Person p && familyTree.get().isRoot(p))
-        this.setGraphic(FamilyTreeView.this.config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
+        this.setGraphic(FamilyMembersTreeView.this.config.theme().getIcon(Icon.TREE_ROOT, Icon.Size.SMALL));
       else
         this.setGraphic(null);
     }

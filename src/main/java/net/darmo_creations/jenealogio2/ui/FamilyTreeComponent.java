@@ -36,7 +36,7 @@ public abstract class FamilyTreeComponent extends AnchorPane implements PersonCl
   /**
    * Refresh the displayed data.
    */
-  protected abstract void refresh();
+  public abstract void refresh();
 
   /**
    * Get the currently selected person.

@@ -63,8 +63,9 @@ public class AppController {
 
   // Tree components
   private FamilyTreeComponent focusedComponent;
-  private final FamilyTreeView familyTreeView;
+  private final FamilyMembersTreeView familyMembersTreeView;
   private final GeneticFamilyTreePane geneticFamilyTreePane;
+  private final FamilyMemberFullViewPane familyMemberFullViewPane;
 
   private final PersonDetailsView personDetailsView;
 
@@ -113,8 +114,9 @@ public class AppController {
     stage.setMaximized(true);
 
     this.personDetailsView = new PersonDetailsView(config);
-    this.familyTreeView = new FamilyTreeView(config);
+    this.familyMembersTreeView = new FamilyMembersTreeView(config);
     this.geneticFamilyTreePane = new GeneticFamilyTreePane(config);
+    this.familyMemberFullViewPane = new FamilyMemberFullViewPane(config);
 
     this.treesManagerDialog = new TreesManagerDialog(config);
     this.editRegistriesDialog = new RegistriesDialog(config);
@@ -124,7 +126,7 @@ public class AppController {
     this.settingsDialog = new SettingsDialog(config);
     this.aboutDialog = new AboutDialog(config);
 
-    final Scene scene = new Scene(new VBox(this.createMenuBar(), this.createToolBar(), this.createContent()));
+    final Scene scene = new Scene(new VBox(this.createMenuBar(), this.createToolBar(), this.createContent(config)));
     stage.setScene(scene);
     theme.getStyleSheets().forEach(path -> scene.getStylesheets().add(path.toExternalForm()));
 
@@ -498,18 +500,28 @@ public class AppController {
     return toolbar;
   }
 
-  private SplitPane createContent() {
+  private SplitPane createContent(final @NotNull Config config) {
+    final Language language = config.language();
     final SplitPane splitPane = new SplitPane();
 
-    this.familyTreeView.personClickListeners()
-        .add(event -> this.onPersonClick(event, this.familyTreeView));
-    splitPane.getItems().add(this.familyTreeView);
+    this.familyMembersTreeView.personClickListeners()
+        .add(event -> this.onPersonClick(event, this.familyMembersTreeView));
+    splitPane.getItems().add(this.familyMembersTreeView);
+
+    final TabPane tabPane = new TabPane();
+    tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+    splitPane.getItems().add(tabPane);
 
     this.geneticFamilyTreePane.personClickListeners()
         .add(event -> this.onPersonClick(event, this.geneticFamilyTreePane));
     this.geneticFamilyTreePane.newParentClickListeners().add(this::onNewParentClick);
     this.geneticFamilyTreePane.setMaxHeight(this.config.maxTreeHeight());
-    splitPane.getItems().add(this.geneticFamilyTreePane);
+    tabPane.getTabs().add(new Tab(language.translate("main_view.tab.genetic_tree"), this.geneticFamilyTreePane));
+
+    this.familyMemberFullViewPane.personClickListeners()
+        .add(event -> this.onPersonClick(event, this.familyMemberFullViewPane));
+    this.familyMemberFullViewPane.newParentClickListeners().add(this::onNewParentClick);
+    tabPane.getTabs().add(new Tab(language.translate("main_view.tab.person_relatives"), this.familyMemberFullViewPane));
 
     this.personDetailsView.personClickListeners()
         .add(event -> this.onPersonClick(event, null));
@@ -571,7 +583,8 @@ public class AppController {
   public void onConfigUpdate() {
     this.geneticFamilyTreePane.setMaxHeight(this.config.maxTreeHeight());
     this.geneticFamilyTreePane.refresh();
-    this.familyTreeView.refresh();
+    this.familyMemberFullViewPane.refresh();
+    this.familyMembersTreeView.refresh();
     this.personDetailsView.refresh();
   }
 
@@ -583,11 +596,13 @@ public class AppController {
    */
   private void setFamilyTree(@NotNull FamilyTree tree, @NotNull Path directory) {
     this.familyTree = tree;
-    this.familyTreeView.setFamilyTree(this.familyTree);
+    this.familyMembersTreeView.setFamilyTree(this.familyTree);
     this.geneticFamilyTreePane.setFamilyTree(this.familyTree);
+    this.familyMemberFullViewPane.setFamilyTree(this.familyTree);
     this.personDetailsView.setPerson(null, this.familyTree);
-    this.familyTreeView.refresh();
+    this.familyMembersTreeView.refresh();
     this.geneticFamilyTreePane.refresh();
+    this.familyMemberFullViewPane.refresh();
     this.selectionHistory.clear();
     this.selectionIndex = -1;
     this.loadedFile = directory;
@@ -809,7 +824,8 @@ public class AppController {
     final Person selection = this.selectionHistory.get(this.selectionIndex);
     final var event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
     this.updateWidgetsSelection(event, this.geneticFamilyTreePane);
-    this.updateWidgetsSelection(event, this.familyTreeView);
+    this.updateWidgetsSelection(event, this.familyMembersTreeView);
+    this.updateWidgetsSelection(event, this.familyMemberFullViewPane);
     this.personDetailsView.setPerson(selection, this.familyTree);
     this.updateUI();
   }
@@ -822,7 +838,8 @@ public class AppController {
       this.familyTree.setRoot(root);
       this.unsavedChanges = true;
       this.geneticFamilyTreePane.refresh();
-      this.familyTreeView.refresh();
+      this.familyMemberFullViewPane.refresh();
+      this.familyMembersTreeView.refresh();
       this.personDetailsView.refresh();
       this.updateUI();
     });
@@ -905,7 +922,8 @@ public class AppController {
 
         // Update UI
         this.geneticFamilyTreePane.refresh();
-        this.familyTreeView.refresh();
+        this.familyMemberFullViewPane.refresh();
+        this.familyMembersTreeView.refresh();
         if (this.personDetailsView.person() == person)
           this.personDetailsView.setPerson(null, this.familyTree);
         else
@@ -963,16 +981,22 @@ public class AppController {
       FamilyTreeComponent fromNode
   ) {
     if (fromNode == null) {
-      // Click occurred outside of tree pane and tree view, select person in tree pane
+      // Click occurred outside of any FamilyTreeComponent, select person in the genetic tree pane
       this.updateWidgetsSelection(event, this.geneticFamilyTreePane);
       fromNode = this.geneticFamilyTreePane;
     }
     this.focusedComponent = fromNode;
     if (this.config.shouldSyncTreeWithMainPane()) {
-      if (fromNode == this.familyTreeView)
+      if (fromNode == this.familyMembersTreeView) {
         this.updateWidgetsSelection(event, this.geneticFamilyTreePane);
-      else
-        this.updateWidgetsSelection(event, this.familyTreeView);
+        this.updateWidgetsSelection(event, this.familyMemberFullViewPane);
+      } else if (fromNode == this.geneticFamilyTreePane) {
+        this.updateWidgetsSelection(event, this.familyMemberFullViewPane);
+        this.updateWidgetsSelection(event, this.familyMembersTreeView);
+      } else {
+        this.updateWidgetsSelection(event, this.geneticFamilyTreePane);
+        this.updateWidgetsSelection(event, this.familyMembersTreeView);
+      }
     }
     Person person = null;
     if (event instanceof PersonClickedEvent e) {
@@ -1009,8 +1033,9 @@ public class AppController {
     this.editRegistriesDialog.refresh(this.familyTree);
     final Optional<ButtonType> result = this.editRegistriesDialog.showAndWait();
     if (result.isPresent() && !result.get().getButtonData().isCancelButton()) {
-      this.familyTreeView.refresh();
+      this.familyMembersTreeView.refresh();
       this.geneticFamilyTreePane.refresh();
+      this.familyMemberFullViewPane.refresh();
       this.personDetailsView.refresh();
       this.unsavedChanges = true;
       this.updateUI();
@@ -1027,8 +1052,9 @@ public class AppController {
 
   private void onDocumentsUpdate(@NotNull ManageDocumentsDialog.Result result) {
     if (result.targetUpdated() || result.anyDocumentUpdated()) {
-      this.familyTreeView.refresh();
+      this.familyMembersTreeView.refresh();
       this.geneticFamilyTreePane.refresh();
+      this.familyMemberFullViewPane.refresh();
       this.personDetailsView.refresh();
       this.unsavedChanges = true;
       this.updateUI();
@@ -1053,8 +1079,9 @@ public class AppController {
       this.editPersonDialog.setParents(parents);
     this.editPersonDialog.selectTab(tabIndex);
     this.editPersonDialog.showAndWait().ifPresent(editedPerson -> {
-      this.familyTreeView.refresh();
+      this.familyMembersTreeView.refresh();
       this.geneticFamilyTreePane.refresh();
+      this.familyMemberFullViewPane.refresh();
       this.personDetailsView.refresh();
       if (person == null && childInfo != null && childInfo.isEmpty())
         this.onPersonClick(new PersonClickedEvent(editedPerson, PersonClickedEvent.Action.SET_AS_TARGET), null);
