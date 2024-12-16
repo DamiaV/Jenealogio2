@@ -7,6 +7,7 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.function.*;
 
 import static net.darmo_creations.jenealogio2.model.ParentalRelationType.*;
 
@@ -411,9 +412,16 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
     final double lineXStart = rootX + PersonWidget.WIDTH;
     double lineY = rootY + PersonWidget.HEIGHT / 2.0;
 
+    final Function<Person.FamilyUnit, Optional<Person>> getYoungestPartner =
+        familyUnit -> familyUnit.parents()
+            .stream()
+            .min(Person.birthDateThenNameComparator(false));
     final var allPartnersAndChildren = targettedPerson.getPartnersAndChildren().stream()
-//        .sorted() // TODO sort
+        // Sort by birth date and name of the youngest partner in each family unit
+        .sorted((fu1, fu2) -> Person.optionalBirthDateThenNameComparator()
+            .compare(getYoungestPartner.apply(fu1), getYoungestPartner.apply(fu2)))
         .toList();
+
     for (final var partnersAndChildren : allPartnersAndChildren) {
       final List<Person> partners = partnersAndChildren.parents()
           .stream()

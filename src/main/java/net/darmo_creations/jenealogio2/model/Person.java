@@ -852,6 +852,7 @@ public class Person extends GenealogyObject<Person> {
    * Return a comparator of {@link Optional}-wrapped {@link Person} objects.
    * <p>
    * {@link Optional}s are sorted according to whether they are empty or not.
+   * Empty {@link Optional}s are always sorted after non-empty {@link Optional}s.
    * If both optionals are present, comparison is delegate to {@link #birthDateThenNameComparator(boolean)}.
    *
    * @return A comparator object.
