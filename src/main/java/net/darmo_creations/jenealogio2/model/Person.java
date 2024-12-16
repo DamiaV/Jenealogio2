@@ -523,49 +523,67 @@ public class Person extends GenealogyObject<Person> {
    * Return a map associating persons and the children they had with this person, if any.
    * <p>
    * If a children set is empty, the persons in the key set have a union with this person but no children.
+   * If a partners set is empty, this person had children with unspecified persons.
    * <p>
    * Children this person was a surrogate parent or donor for are not returned.
+   * <p>
+   * Partners and children are grouped based on the relation type between this person and each of their children:
+   * <li>If this person is a (non-)biological parent of a child, only return partners who are (non-)biological parents of that child.
+   * <li>If this person is an adoptive parent of a child, only return partners who are adoptive parents of that child.
+   * <li>If this person is a foster parent of a child, only return partners who are foster parents of that child.
+   * <li>If this person is a godparent of a child, only return partners who are godparents of that child.
+   *
+   * @return An unordered list of {@link Pair}s, each containing a set of parents and their children.
+   * Either sets can be empty but not both at the same time.
    */
-  // TODO better filter partners (e.g.: adoptive parents should not appear with (non-)biological parents)
   @Contract("-> new")
   public List<Pair<Set<Person>, Set<Person>>> getPartnersAndChildren() {
     final List<Pair<Set<Person>, Set<Person>>> partnersChildren = new LinkedList<>();
-    final ParentalRelationType[] relationTypes = Arrays.stream(ParentalRelationType.values()).filter(
-        v -> v != ParentalRelationType.SPERM_DONOR &&
-            v != ParentalRelationType.EGG_DONOR &&
-            v != ParentalRelationType.SURROGATE_PARENT
-    ).toArray(ParentalRelationType[]::new);
 
-    final Function<Set<Person>, Optional<Set<Person>>> findSiblings = parents ->
+    final Function<Set<Person>, Optional<Set<Person>>> findChildren = parents ->
         partnersChildren.stream()
             .filter(e -> e.left().equals(parents))
             .findFirst()
             .map(Pair::right);
 
-    for (final var childType : relationTypes) {
-      this.children.get(childType).forEach(child -> {
-        final Set<Person> childParents = new HashSet<>();
-        for (final var parentType : relationTypes)
-          childParents.addAll(this.filterOutThis(child.parents.get(parentType)));
-        final var siblings = findSiblings.apply(childParents);
-        if (siblings.isPresent()) {
-          siblings.get().add(child);
-        } else {
-          final Set<Person> children = new HashSet<>();
-          children.add(child);
-          partnersChildren.add(new Pair<>(childParents, children));
-        }
-      });
-    }
+    this.findPartnersAndChildrenOfType(Set.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT), findChildren, partnersChildren);
+    this.findPartnersAndChildrenOfType(Set.of(ParentalRelationType.ADOPTIVE_PARENT), findChildren, partnersChildren);
+    this.findPartnersAndChildrenOfType(Set.of(ParentalRelationType.FOSTER_PARENT), findChildren, partnersChildren);
+    this.findPartnersAndChildrenOfType(Set.of(ParentalRelationType.GODPARENT), findChildren, partnersChildren);
 
     // Add all partners that did not have any children with this person
     this.getActedInEventsStream()
         .filter(event -> event.type().indicatesUnion())
         .map(event -> this.filterOutThis(event.actors()))
-        .filter(partners -> findSiblings.apply(partners).isEmpty())
+        .filter(partners -> findChildren.apply(partners).isEmpty())
         .forEach(partners -> partnersChildren.add(new Pair<>(partners, new HashSet<>())));
 
     return partnersChildren;
+  }
+
+  private void findPartnersAndChildrenOfType(
+      final @NotNull Set<ParentalRelationType> types,
+      @NotNull Function<Set<Person>, Optional<Set<Person>>> findChildren,
+      @NotNull List<Pair<Set<Person>, Set<Person>>> partnersChildren
+  ) {
+    final Set<Person> children = new HashSet<>();
+    for (final ParentalRelationType type : types)
+      children.addAll(this.children.get(type));
+
+    for (final Person child : children) {
+      final Set<Person> parentsOfChild = new HashSet<>();
+      for (final ParentalRelationType type : types)
+        parentsOfChild.addAll(child.parents.get(type));
+      final Set<Person> parentsWithoutThis = Sets.difference(parentsOfChild, Set.of(this));
+      final var siblingsForParents = findChildren.apply(parentsWithoutThis);
+      if (siblingsForParents.isPresent()) {
+        siblingsForParents.get().add(child);
+      } else {
+        final Set<Person> childrenSet = new HashSet<>();
+        childrenSet.add(child);
+        partnersChildren.add(new Pair<>(parentsWithoutThis, childrenSet));
+      }
+    }
   }
 
   /**

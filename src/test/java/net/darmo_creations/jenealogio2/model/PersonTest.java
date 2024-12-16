@@ -349,23 +349,29 @@ class PersonTest {
   }
 
   @ParameterizedTest
-  @MethodSource("provideArgs_twoTypes")
-  void getPartnersAndChildren_exactSameParents_sameType(ParentalRelationType type1, ParentalRelationType type2) {
+  @MethodSource("provideArgsfor_getPartnersAndChildren")
+  void getPartnersAndChildren_groupsByType(ParentalRelationType type1, ParentalRelationType type2, ParentalRelationType type3) {
     this.person.addParent(this.parent1, type1);
     this.person.addParent(this.parent2, type2);
     final Person person2 = new Person();
     person2.addParent(this.parent1, type1);
     person2.addParent(this.parent2, type2);
     person2.setDisambiguationID(4);
-    assertEquals(List.of(new Pair<>(
+    final Person person3 = new Person();
+    person3.addParent(this.parent1, type3);
+    person3.setDisambiguationID(5);
+    assertEquals(Set.of(new Pair<>(
         Set.of(this.parent2),
         Set.of(person2, this.person)
-    )), this.parent1.getPartnersAndChildren());
+    ), new Pair<>(
+        Set.of(),
+        Set.of(person3)
+    )), new HashSet<>(this.parent1.getPartnersAndChildren()));
   }
 
   @ParameterizedTest
-  @MethodSource("provideArgs_twoTypes")
-  void getPartnersAndChildren_oneParent(ParentalRelationType type1, ParentalRelationType type2) {
+  @MethodSource("provideArgsfor_getPartnersAndChildren")
+  void getPartnersAndChildren_oneParent(ParentalRelationType type1, ParentalRelationType type2, ParentalRelationType ignored) {
     this.person.addParent(this.parent1, type1);
     final Person person2 = new Person();
     person2.addParent(this.parent1, type2);
@@ -375,52 +381,15 @@ class PersonTest {
     )), this.parent1.getPartnersAndChildren());
   }
 
-  @Test
-  void getPartnersAndChildren_ignoresSurrogateAndDonors() {
-    this.person.addParent(this.parent1, ParentalRelationType.SPERM_DONOR);
-    this.person.addParent(this.parent2, ParentalRelationType.SURROGATE_PARENT);
-    final Person person2 = new Person();
-    person2.addParent(this.parent1, ParentalRelationType.EGG_DONOR);
-    person2.addParent(this.parent2, ParentalRelationType.BIOLOGICAL_PARENT);
-    person2.setDisambiguationID(4);
-    assertEquals(List.of(), this.parent1.getPartnersAndChildren());
-    assertEquals(List.of(new Pair<>(
-        Set.of(),
-        Set.of(person2)
-    )), this.parent2.getPartnersAndChildren());
-  }
-
-  static Stream<Arguments> provideArgs_twoTypes() {
+  static Stream<Arguments> provideArgsfor_getPartnersAndChildren() {
     return Stream.of(
-        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
-        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.FOSTER_PARENT),
-        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.GODPARENT),
-
-        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
-        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.FOSTER_PARENT),
-        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.GODPARENT),
-
-        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
-        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.FOSTER_PARENT),
-        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.GODPARENT),
-
-        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
-        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.FOSTER_PARENT),
-        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.GODPARENT),
-
-        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
-        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.ADOPTIVE_PARENT),
-        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.FOSTER_PARENT),
-        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.GODPARENT)
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.FOSTER_PARENT),
+        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.GODPARENT),
+        Arguments.of(ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT, ParentalRelationType.ADOPTIVE_PARENT),
+        Arguments.of(ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.ADOPTIVE_PARENT, ParentalRelationType.BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.FOSTER_PARENT, ParentalRelationType.FOSTER_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT),
+        Arguments.of(ParentalRelationType.GODPARENT, ParentalRelationType.GODPARENT, ParentalRelationType.BIOLOGICAL_PARENT)
     );
   }
 
