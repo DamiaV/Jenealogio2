@@ -482,8 +482,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.person.getSiblings().stream()
         .map(e -> new Pair<>(
-            e.left().stream().sorted(personComparator).toList(),
-            e.right().stream().sorted(personComparator).toList()
+            e.parents().stream().sorted(personComparator).toList(),
+            e.children().stream().sorted(personComparator).toList()
         ))
         // Sort according to first parent then second
         .sorted(compareParentsAndChildren)
@@ -491,8 +491,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.person.getPartnersAndChildren().stream()
         .map(e -> new Pair<>(
-            e.left().stream().sorted(personComparator).toList(),
-            e.right().stream().sorted(personComparator).toList()
+            e.parents().stream().sorted(personComparator).toList(),
+            e.children().stream().sorted(personComparator).toList()
         ))
         .sorted(compareParentsAndChildren)
         .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.left(), e.right())));

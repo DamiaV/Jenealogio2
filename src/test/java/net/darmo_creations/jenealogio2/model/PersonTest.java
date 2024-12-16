@@ -3,7 +3,6 @@ package net.darmo_creations.jenealogio2.model;
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.GregorianCalendar;
-import net.darmo_creations.jenealogio2.utils.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -360,10 +359,10 @@ class PersonTest {
     final Person person3 = new Person();
     person3.addParent(this.parent1, type3);
     person3.setDisambiguationID(5);
-    assertEquals(Set.of(new Pair<>(
+    assertEquals(Set.of(new Person.FamilyUnit(
         Set.of(this.parent2),
         Set.of(person2, this.person)
-    ), new Pair<>(
+    ), new Person.FamilyUnit(
         Set.of(),
         Set.of(person3)
     )), new HashSet<>(this.parent1.getPartnersAndChildren()));
@@ -375,7 +374,7 @@ class PersonTest {
     this.person.addParent(this.parent1, type1);
     final Person person2 = new Person();
     person2.addParent(this.parent1, type2);
-    assertEquals(List.of(new Pair<>(
+    assertEquals(List.of(new Person.FamilyUnit(
         Set.of(),
         Set.of(person2, this.person)
     )), this.parent1.getPartnersAndChildren());
@@ -520,8 +519,8 @@ class PersonTest {
     person3.addParent(parent3, type1);
     person3.addParent(this.parent2, type3);
     assertEquals(Set.of(
-        new Pair<>(Set.of(this.parent1, parent3), Set.of(person2)),
-        new Pair<>(Set.of(parent3, this.parent2), Set.of(person3))
+        new Person.FamilyUnit(Set.of(this.parent1, parent3), Set.of(person2)),
+        new Person.FamilyUnit(Set.of(parent3, this.parent2), Set.of(person3))
     ), new HashSet<>(this.person.getSiblings()));
   }
 

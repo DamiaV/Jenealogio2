@@ -533,18 +533,18 @@ public class Person extends GenealogyObject<Person> {
    * <li>If this person is a foster parent of a child, only return partners who are foster parents of that child.
    * <li>If this person is a godparent of a child, only return partners who are godparents of that child.
    *
-   * @return An unordered list of {@link Pair}s, each containing a set of parents and their children.
-   * Either sets can be empty but not both at the same time.
+   * @return An list of {@link FamilyUnit}s in no particular order,
+   * each representing a set of partners and the children they got with this person.
    */
   @Contract("-> new")
-  public List<Pair<Set<Person>, Set<Person>>> getPartnersAndChildren() {
-    final List<Pair<Set<Person>, Set<Person>>> partnersChildren = new LinkedList<>();
+  public List<FamilyUnit> getPartnersAndChildren() {
+    final List<FamilyUnit> partnersChildren = new LinkedList<>();
 
     final Function<Set<Person>, Optional<Set<Person>>> findChildren = parents ->
         partnersChildren.stream()
-            .filter(e -> e.left().equals(parents))
+            .filter(e -> e.parents().equals(parents))
             .findFirst()
-            .map(Pair::right);
+            .map(FamilyUnit::children);
 
     this.findPartnersAndChildrenOfType(Set.of(ParentalRelationType.BIOLOGICAL_PARENT, ParentalRelationType.NON_BIOLOGICAL_PARENT), findChildren, partnersChildren);
     this.findPartnersAndChildrenOfType(Set.of(ParentalRelationType.ADOPTIVE_PARENT), findChildren, partnersChildren);
@@ -556,7 +556,7 @@ public class Person extends GenealogyObject<Person> {
         .filter(event -> event.type().indicatesUnion())
         .map(event -> this.filterOutThis(event.actors()))
         .filter(partners -> findChildren.apply(partners).isEmpty())
-        .forEach(partners -> partnersChildren.add(new Pair<>(partners, new HashSet<>())));
+        .forEach(partners -> partnersChildren.add(new FamilyUnit(partners, new HashSet<>())));
 
     return partnersChildren;
   }
@@ -564,7 +564,7 @@ public class Person extends GenealogyObject<Person> {
   private void findPartnersAndChildrenOfType(
       final @NotNull Set<ParentalRelationType> types,
       @NotNull Function<Set<Person>, Optional<Set<Person>>> findChildren,
-      @NotNull List<Pair<Set<Person>, Set<Person>>> partnersChildren
+      @NotNull List<FamilyUnit> partnersChildren
   ) {
     final Set<Person> children = new HashSet<>();
     for (final ParentalRelationType type : types)
@@ -581,7 +581,7 @@ public class Person extends GenealogyObject<Person> {
       } else {
         final Set<Person> childrenSet = new HashSet<>();
         childrenSet.add(child);
-        partnersChildren.add(new Pair<>(parentsWithoutThis, childrenSet));
+        partnersChildren.add(new FamilyUnit(parentsWithoutThis, childrenSet));
       }
     }
   }
@@ -661,23 +661,23 @@ public class Person extends GenealogyObject<Person> {
    * Return all siblings of this person, i.e. all persons that share at least one parent with this one.
    * Persons that only share a surrogate parent, donor, or godparents with this person are excluded.
    *
-   * @return A list of pairs associating a set of parents to their children. The order of the list is not guaranteed.
-   * It is guaranted that at least one of the parents in each parent set is a parent of this person.
+   * @return A list of {@link FamilyUnit}s in no particular order,
+   * each representing a set of parents and the siblings this person has.
    */
   @Contract("-> new")
-  public List<Pair<Set<Person>, Set<Person>>> getSiblings() {
+  public List<FamilyUnit> getSiblings() {
     final ParentalRelationType[] relationTypes = Arrays.stream(ParentalRelationType.values()).filter(
         v -> v != ParentalRelationType.SPERM_DONOR &&
             v != ParentalRelationType.EGG_DONOR &&
             v != ParentalRelationType.SURROGATE_PARENT &&
             v != ParentalRelationType.GODPARENT
     ).toArray(ParentalRelationType[]::new);
-    final List<Pair<Set<Person>, Set<Person>>> parentsAndSiblings = new LinkedList<>();
+    final List<FamilyUnit> parentsAndSiblings = new LinkedList<>();
     final Function<Set<Person>, Optional<Set<Person>>> findSiblings = parents ->
         parentsAndSiblings.stream()
-            .filter(e -> e.left().equals(parents))
+            .filter(e -> e.parents().equals(parents))
             .findFirst()
-            .map(Pair::right);
+            .map(FamilyUnit::children);
 
     for (final var parentType : relationTypes) {
       this.parents.get(parentType).forEach(parent -> {
@@ -692,7 +692,7 @@ public class Person extends GenealogyObject<Person> {
             } else {
               final Set<Person> children = new HashSet<>();
               children.add(child);
-              parentsAndSiblings.add(new Pair<>(childParents, children));
+              parentsAndSiblings.add(new FamilyUnit(childParents, children));
             }
           });
         }
@@ -879,5 +879,24 @@ public class Person extends GenealogyObject<Person> {
    */
   public static Comparator<Person> lastThenFirstNamesComparator() {
     return LAST_THEN_FIRST_NAMES_COMPARATOR;
+  }
+
+  /**
+   * Wrapper class that associates a set of parents to a set of their children.
+   * Either sets can be empty but not both at the same time.
+   *
+   * @param parents  The set of parents.
+   * @param children The set of children for these parents.
+   */
+  public record FamilyUnit(@NotNull Set<Person> parents, @NotNull Set<Person> children) {
+    /**
+     * @throws IllegalArgumentException If both sets are empty.
+     */
+    public FamilyUnit {
+      Objects.requireNonNull(parents);
+      Objects.requireNonNull(children);
+      if (parents.isEmpty() && children.isEmpty())
+        throw new IllegalArgumentException("Both sets cannot be empty at the same time");
+    }
   }
 }

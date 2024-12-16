@@ -279,11 +279,11 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
     final var allSiblings = targettedPerson.getSiblings().stream()
         // Sort by descending number of shared parents with targettedPerson
         .sorted(Comparator.comparing(p -> {
-          final Set<Person> s = new HashSet<>(p.left());
+          final Set<Person> s = new HashSet<>(p.parents());
           s.retainAll(parents);
           return -s.size();
         }))
-        .map(p -> new Pair<>(p.left(), p.right().stream()
+        .map(p -> new Pair<>(p.parents(), p.children().stream()
             .sorted(Person.birthDateThenNameComparator(true))
             .toList()))
         .toList();
@@ -415,11 +415,11 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
 //        .sorted() // TODO sort
         .toList();
     for (final var partnersAndChildren : allPartnersAndChildren) {
-      final List<Person> partners = partnersAndChildren.left()
+      final List<Person> partners = partnersAndChildren.parents()
           .stream()
           .sorted(Person.birthDateThenNameComparator(false))
           .toList();
-      final List<Person> children = partnersAndChildren.right()
+      final List<Person> children = partnersAndChildren.children()
           .stream()
           .sorted(Person.birthDateThenNameComparator(false))
           .toList();
@@ -452,7 +452,7 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
           final boolean showMoreIcon = partner.hasAnyParents() ||
               !partner.getSiblings().isEmpty() ||
               // Any children that are not shown?
-              !Sets.difference(Sets.merge(partner.parents()), partnersAndChildren.right()).isEmpty();
+              !Sets.difference(Sets.merge(partner.parents()), partnersAndChildren.children()).isEmpty();
           final PersonWidget widget = this.createPersonWidget(partner, null, showMoreIcon, false, familyTree);
           widget.setLayoutX(x);
           widget.setLayoutY(rootY);
