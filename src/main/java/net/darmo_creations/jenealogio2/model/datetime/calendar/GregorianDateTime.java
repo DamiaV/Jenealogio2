@@ -7,14 +7,14 @@ import java.time.*;
 /**
  * This class represents a date-time in the gregorian calendar system.
  *
- * @see GregorianCalendar
+ * @see GregorianCalendarSystem
  */
 public final class GregorianDateTime extends CalendarSpecificDateTime {
   GregorianDateTime(
       @NotNull LocalDate date,
       Integer hour,
       Integer minute,
-      @NotNull Calendar<GregorianDateTime> calendar
+      @NotNull GregorianCalendarSystem calendar
   ) {
     super(
         date.getYear(),

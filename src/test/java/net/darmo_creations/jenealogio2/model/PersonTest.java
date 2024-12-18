@@ -2,7 +2,7 @@ package net.darmo_creations.jenealogio2.model;
 
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.GregorianCalendar;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -72,7 +72,7 @@ class PersonTest {
 
   @Test
   void setLifeStatusThrowsIfHasDeathEvent() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
     l.setActors(Set.of(this.person));
     assertThrows(IllegalArgumentException.class, () -> this.person.setLifeStatus(LifeStatus.LIVING));
@@ -427,7 +427,7 @@ class PersonTest {
 
   @Test
   void getPartnersAndGeneticChildren_noChildrenWithPartner() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
     l.setActors(Set.of(this.parent1, this.parent2));
     assertEquals(Map.of(), this.parent1.getPartnersAndGeneticChildren());
@@ -559,7 +559,7 @@ class PersonTest {
 
   @Test
   void getBirthDateNonBirthEvent() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:diploma")));
     l.setActors(Set.of(this.person));
     assertTrue(this.person.getBirthDate().isEmpty());
@@ -567,7 +567,7 @@ class PersonTest {
 
   @Test
   void getBirthDateBirthEvent() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
     assertEquals(date, this.person.getBirthDate().orElseThrow());
@@ -580,7 +580,7 @@ class PersonTest {
 
   @Test
   void getDeathDateNonDeathEvent() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:diploma")));
     l.setActors(Set.of(this.person));
     assertTrue(this.person.getDeathDate().isEmpty());
@@ -588,7 +588,7 @@ class PersonTest {
 
   @Test
   void getDeathDateDeathEvent() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
     l.setActors(Set.of(this.person));
     assertEquals(date, this.person.getDeathDate().orElseThrow());
@@ -596,10 +596,10 @@ class PersonTest {
 
   @Test
   void lifeEventsAreSortedByDates() {
-    final DateTime date2 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2084, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date2 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2084, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l2 = new LifeEvent(date2, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:death")));
     l2.setActors(Set.of(this.person));
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
     assertEquals(List.of(l, l2), this.person.lifeEvents());
@@ -607,7 +607,7 @@ class PersonTest {
 
   @Test
   void getLifeEventsAsActor() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
     assertEquals(List.of(l), this.person.getLifeEventsAsActor());
@@ -615,7 +615,7 @@ class PersonTest {
 
   @Test
   void getLifeEventsAsActorIgnoresWitnessed() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.addWitness(this.person);
     assertTrue(this.person.getLifeEventsAsActor().isEmpty());
@@ -623,7 +623,7 @@ class PersonTest {
 
   @Test
   void getLifeEventsAsWitness() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.addWitness(this.person);
     assertEquals(List.of(l), this.person.getLifeEventsAsWitness());
@@ -631,7 +631,7 @@ class PersonTest {
 
   @Test
   void getLifeEventsAsWitnessIgnoresActed() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(this.person));
     assertTrue(this.person.getLifeEventsAsWitness().isEmpty());
@@ -639,7 +639,7 @@ class PersonTest {
 
   @Test
   void addLifeEvent() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     this.person.addLifeEvent(l);
     assertSame(l, this.person.lifeEvents().get(0));

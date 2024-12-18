@@ -13,9 +13,9 @@ module net.darmo_creations.jenealogio2 {
   requires ini4j;
   requires commons.cli;
   requires com.google.gson;
-  requires org.threeten.extra;
   requires lib.french.revolutionary.calendar;
   requires com.gluonhq.maps;
+  requires net.time4j.base;
 
   // Make App accessible to JavaFX, other classes accessible from App’s public interface
   // are not exported because it’s not necessary

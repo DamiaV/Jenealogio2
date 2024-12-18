@@ -1,27 +1,28 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
+import net.time4j.*;
+import net.time4j.calendar.*;
 import org.jetbrains.annotations.*;
-import org.threeten.extra.chrono.*;
 
 import java.time.*;
-import java.time.temporal.*;
 
 /**
- * This class represents a date-time in the ethiopian calendar system.
+ * This class represents a date-time in the Ethiopian calendar system.
  *
- * @see EthiopianCalendar
+ * @see EthiopianCalendarSystem
  */
 public final class EthiopianDateTime extends CalendarSpecificDateTime {
   EthiopianDateTime(
-      @NotNull EthiopicDate date,
+      @NotNull EthiopianCalendar date,
       Integer hours,
       Integer minutes,
-      @NotNull Calendar<EthiopianDateTime> calendar
+      @NotNull EthiopianCalendarSystem calendar
   ) {
     super(
-        date.get(ChronoField.YEAR),
-        date.get(ChronoField.MONTH_OF_YEAR),
-        date.get(ChronoField.DAY_OF_MONTH),
+        date.get(EthiopianCalendar.ERA),
+        date.get(EthiopianCalendar.YEAR_OF_ERA),
+        date.get(EthiopianCalendar.MONTH_OF_YEAR).getValue(),
+        date.get(EthiopianCalendar.DAY_OF_MONTH),
         hours,
         minutes,
         calendar
@@ -30,7 +31,9 @@ public final class EthiopianDateTime extends CalendarSpecificDateTime {
 
   @Override
   public LocalDateTime toISO8601Date() {
-    return LocalDate.ofEpochDay(EthiopicDate.of(this.year(), this.month(), this.dayOfMonth()).toEpochDay())
+    final PlainDate date = EthiopianCalendar.of((EthiopianEra) this.era().orElseThrow(), this.year(), this.month(), this.dayOfMonth())
+        .transform(PlainDate.axis());
+    return LocalDate.of(date.getYear(), date.getMonth(), date.getDayOfMonth())
         .atTime(LocalTime.of(this.hour().orElse(0), this.minute().orElse(0)));
   }
 }

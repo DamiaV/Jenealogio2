@@ -77,30 +77,36 @@ I tried to follow these suggestions in Jenealogio 2. Here’s how those points h
 6. Assigned gender at birth and gender are two separate fields. There are several builtin gender identities (agender,
    female, gender fluid, male, non-binary) and users can define the ones they want if these are not sufficient. More
    builtin genders may be added in the future if needs be.
-7. I’m trying to add the ability to import/export GEDCOM 5.5.5 files but I cannot guarantee that it will be supported
-   one day. The specification is quite long (166 pages) and complex, and the format may not support every type of
-   information that this app handles.
+7. I’m _trying_ to add the ability to import/export GEDCOM 5.5.5 files but I _cannot_ guarantee that it will be
+   supported one day. The specification is quite long (166 pages) and complex, and the format may not support every type
+   of information that this app handles when exporting trees.
 
 ## Date and time representation
 
-The app offers six different calendar systems for event dates:
+The app offers 11 different calendar systems for dates:
 
-* Gregorian
-* Julian
-* French Republican with decimal time (10h in a day, 100 minutes in 1h, etc.)
-* French Republican with classical time (24h in a day, 60 minutes in 1h, etc.)
-* Ethiopian
 * Coptic
-
-Hebrew and Arabic calendar systems are not supported as they are very complex and I don’t understand them enough to
-confidently integrate them in the app.
+* Ethiopian
+* French Republican
+* French Republican with decimal time (10 hours in a day, 100 minutes in 1 hour, etc.)
+* Gregorian
+* Hebrew
+* Indian
+* Julian
+* Minguo
+* Solar Hijri
+* Thai Solar (Buddhist Era only)
 
 You can choose how dates and times are displayed in the app among several formats: D M Y, M D Y, 12h clock, 24h clock,
 and many more.
 
+**Notice:** All dates and times are expressed as local time, this means that there may be some sorting inconsistencies
+if events occur in different time zones. Conversions from French Republican calendars to Gregorian use the modern
+Europe/Paris timezone.
+
 # Languages
 
-The app is available in three languages:
+The app is available in 3 languages:
 
 * English
 * Esperanto

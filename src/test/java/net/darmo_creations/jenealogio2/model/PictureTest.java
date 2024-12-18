@@ -21,14 +21,14 @@ class PictureTest {
         image,
         Path.of("app_icon.png"),
         "description",
-        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
+        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
   }
 
   @Test
   void testNullNameThrowsError() throws IOException {
     final Image image = getImage("/net/darmo_creations/jenealogio2/images/app_icon.png");
-    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
+    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
     assertThrows(NullPointerException.class, () -> new Picture(image, null, "b", d));
   }
 
@@ -54,7 +54,7 @@ class PictureTest {
         image,
         Path.of("app_icon.PNG"),
         "description",
-        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
+        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
     assertEquals(".png", p.normalizedFileExtension().orElseThrow());
   }
@@ -83,7 +83,7 @@ class PictureTest {
         image,
         Path.of("app_icon.PNG"),
         "description",
-        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
+        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
     p.setName("test");
     assertEquals("test.PNG", p.fileName());
@@ -108,13 +108,13 @@ class PictureTest {
 
   @Test
   void testDate() {
-    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
+    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 1234, 5, 6, 7, 8), DateTimePrecision.EXACT);
     assertEquals(d, this.p.date().orElseThrow());
   }
 
   @Test
   void testSetDate() {
-    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(8765, 4, 3, 2, 1), DateTimePrecision.EXACT);
+    final DateTimeWithPrecision d = new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 8765, 4, 3, 2, 1), DateTimePrecision.EXACT);
     this.p.setDate(d);
     assertEquals(d, this.p.date().orElseThrow());
   }
@@ -132,7 +132,7 @@ class PictureTest {
         image,
         Path.of("app_icon.png"),
         "description",
-        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
+        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
     assertEquals(this.p, pp);
   }
@@ -144,7 +144,7 @@ class PictureTest {
         image,
         Path.of("app_icon.png"),
         "desc",
-        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(8765, 4, 3, 2, 1), DateTimePrecision.EXACT)
+        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 8765, 4, 3, 2, 1), DateTimePrecision.EXACT)
     );
     assertEquals(this.p, pp);
   }
@@ -156,7 +156,7 @@ class PictureTest {
         image,
         Path.of("appicon.png"),
         "description",
-        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
+        new DateTimeWithPrecision(Calendars.GREGORIAN.getDate(null, 1234, 5, 6, 7, 8), DateTimePrecision.EXACT)
     );
     assertNotEquals(this.p, pp);
   }

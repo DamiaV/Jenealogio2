@@ -223,7 +223,7 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
       case ALTERNATIVE -> {
         final int size = this.dateTimeFieldList.getItems().size();
         invalid = size < 2 || size > DateTimeAlternative.MAX_DATES
-                  || this.dateTimeFieldList.getItems().stream().anyMatch(d -> d.getDate() == null);
+            || this.dateTimeFieldList.getItems().stream().anyMatch(d -> d.getDate() == null);
         if (invalid) {
           this.dateTimeFieldList.pseudoClassStateChanged(PseudoClasses.INVALID, true);
           this.errorLabel.setText(this.config.language().translate("dialog.select_date.error.invalid_date_list"));

@@ -11,6 +11,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Stay on version 20.0.2 as version 21 introduced a bug that messes up
+    the maximized state of the main dialog when a modal dialog is opened. -->
     <javafx.version>20.0.2</javafx.version>
     <gluonhq.attach.version>4.0.11</gluonhq.attach.version>
     <junit.version>5.10.1</junit.version>
@@ -18,8 +20,6 @@
   </properties>
 
   <dependencies>
-    <!-- Stay on version 20.0.2 as version 21 introduced a bug that messes up
-    the maximized state of the main dialog when a modal dialog is opened. -->
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-base</artifactId>
@@ -72,23 +72,38 @@
       <artifactId>bootstrapfx-core</artifactId>
       <version>0.4.0</version>
     </dependency>
+
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
-      <version>RELEASE</version>
+      <version>26.0.1</version>
       <scope>compile</scope>
     </dependency>
-    <dependency>
-      <groupId>org.threeten</groupId>
-      <artifactId>threeten-extra</artifactId>
-      <version>1.7.2</version>
-    </dependency>
+
+    <!-- Calendars -->
     <!-- https://mvnrepository.com/artifact/ca.rmen/lib-french-revolutionary-calendar -->
     <dependency>
       <groupId>ca.rmen</groupId>
       <artifactId>lib-french-revolutionary-calendar</artifactId>
       <version>1.8.2</version>
     </dependency>
+    <dependency>
+      <groupId>net.time4j</groupId>
+      <artifactId>time4j-base</artifactId>
+      <version>5.9.4</version>
+    </dependency>
+    <dependency>
+      <groupId>net.time4j</groupId>
+      <artifactId>time4j-calendar</artifactId>
+      <version>4.38</version>
+    </dependency>
+    <dependency>
+      <groupId>net.time4j</groupId>
+      <artifactId>time4j-tzdata</artifactId>
+      <version>5.0-2024a</version>
+    </dependency>
+
+    <!-- Map -->
     <!-- https://blog.ronanlefichant.fr/2021/07/afficher-carte-javafx.html -->
     <dependency>
       <groupId>com.gluonhq.attach</groupId>
@@ -108,6 +123,8 @@
       <artifactId>maps</artifactId>
       <version>2.0.0-ea+6</version>
     </dependency>
+
+    <!-- Utils -->
     <!-- https://mvnrepository.com/artifact/org.ini4j/ini4j -->
     <dependency>
       <groupId>org.ini4j</groupId>

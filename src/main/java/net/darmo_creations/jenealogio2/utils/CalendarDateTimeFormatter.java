@@ -3,6 +3,7 @@ package net.darmo_creations.jenealogio2.utils;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
+import net.time4j.engine.*;
 import org.jetbrains.annotations.*;
 
 import java.time.*;
@@ -19,6 +20,7 @@ import java.util.*;
  * <li>{@code %n}: Month as a non-padded decimal number.</li>
  * <li>{@code %m}: Month as a zero-padded decimal number.</li>
  * <li>{@code %y}: Year as a 4-digit zero-padded decimal number.</li>
+ * <li>{@code %E}: Era. If defined, a single space (U+0020) is inserted before.</li>
  * <li>{@code %H}: Hour (24-hour clock) as a zero-padded decimal number.</li>
  * <li>{@code %h}: Hour (12-hour clock) as a zero-padded decimal number.</li>
  * <li>{@code %I}: Hour (24-hour clock) as a non-padded decimal number.</li>
@@ -70,6 +72,7 @@ public class CalendarDateTimeFormatter {
    */
   public String format(@NotNull LocalDateTime dateTime) {
     return this.format(
+        null,
         dateTime.getYear(),
         dateTime.getMonthValue(),
         dateTime.getDayOfMonth(),
@@ -87,6 +90,7 @@ public class CalendarDateTimeFormatter {
    */
   public String format(@NotNull CalendarSpecificDateTime dateTime) {
     return this.format(
+        dateTime.era().orElse(null),
         dateTime.year(),
         dateTime.month(),
         dateTime.dayOfMonth(),
@@ -96,15 +100,15 @@ public class CalendarDateTimeFormatter {
     );
   }
 
-  private String format(int y, int m, int d, int h, int min, Calendar<?> calendar) {
+  private String format(CalendarEra era, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar) {
     final StringBuilder sb = new StringBuilder();
     for (final Token token : this.tokens)
-      token.apply(sb, y, m, d, h, min, calendar);
+      token.apply(sb, era, y, m, d, h, min, calendar);
     return sb.toString();
   }
 
   private interface Token {
-    void apply(@NotNull StringBuilder sb, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar);
+    void apply(@NotNull StringBuilder sb, CalendarEra era, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar);
   }
 
   private record LiteraToken(@NotNull String text) implements Token {
@@ -113,7 +117,7 @@ public class CalendarDateTimeFormatter {
     }
 
     @Override
-    public void apply(@NotNull StringBuilder sb, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar) {
+    public void apply(@NotNull StringBuilder sb, CalendarEra era, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar) {
       sb.append(this.text);
     }
   }
@@ -126,7 +130,7 @@ public class CalendarDateTimeFormatter {
     }
 
     @Override
-    public void apply(@NotNull StringBuilder sb, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar) {
+    public void apply(@NotNull StringBuilder sb, CalendarEra era, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar) {
       final Language lang = CalendarDateTimeFormatter.this.language;
       switch (this.type) {
         case DAY -> sb.append(d);
@@ -136,6 +140,10 @@ public class CalendarDateTimeFormatter {
         case MONTH -> sb.append(m);
         case MONTH_PADDED -> sb.append("%02d".formatted(m));
         case YEAR -> sb.append(y);
+        case ERA -> {
+          if (era != null)
+            sb.append(' ').append(calendar.getEraName(lang, era, true));
+        }
         case HOUR_24 -> sb.append(h);
         case HOUR_12 -> {
           if (calendar.hoursInDay() == 24)
@@ -175,6 +183,7 @@ public class CalendarDateTimeFormatter {
     MONTH('n'),
     MONTH_PADDED('m'),
     YEAR('y'),
+    ERA('E'),
     HOUR_24_PADDED('H'),
     HOUR_12_PADDED('h'),
     HOUR_24('I'),

@@ -7,6 +7,7 @@ import javafx.util.converter.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
+import net.time4j.engine.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -21,8 +22,13 @@ public class DateTimeField extends VBox {
   private static final Calendar<?>[] CALENDARS = {
       Calendars.GREGORIAN,
       Calendars.JULIAN,
-      Calendars.FRENCH_REPUBLICAN_DECIMAL_CALENDAR,
       Calendars.FRENCH_REPUBLICAN_CALENDAR,
+      Calendars.FRENCH_REPUBLICAN_DECIMAL_CALENDAR,
+      Calendars.HEBREW,
+      Calendars.SOLAR_HIJRI,
+      Calendars.INDIAN,
+      Calendars.MINGUO,
+      Calendars.THAI_SOLAR,
       Calendars.COPTIC,
       Calendars.ETHIOPIAN,
   };
@@ -33,6 +39,7 @@ public class DateTimeField extends VBox {
   private final TextField dayField = new TextField();
   private final TextField hourField = new TextField();
   private final TextField minuteField = new TextField();
+  private final ComboBox<NotNullComboBoxItem<CalendarEra>> calendarEraField = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<Calendar<?>>> calendarField = new ComboBox<>();
 
   private final List<UpdateListener> updateListeners = new LinkedList<>();
@@ -52,13 +59,15 @@ public class DateTimeField extends VBox {
     this.setupField(this.dayField, 40, "day", false);
     this.setupField(this.hourField, 40, "hour", false);
     this.setupField(this.minuteField, 40, "minute", false);
+    this.calendarEraField.getSelectionModel().selectedItemProperty()
+        .addListener((observable, oldValue, newValue) -> this.notifyListeners());
 
     final Language language = this.config.language();
     for (final Calendar<?> calendar : CALENDARS)
       this.calendarField.getItems()
           .add(new NotNullComboBoxItem<>(calendar, language.translate("calendar.%s.name".formatted(calendar.name()))));
     this.calendarField.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.updateMonths(newValue.data()));
+        .addListener((observable, oldValue, newValue) -> this.onCalendarChange(newValue.data()));
     this.calendarField.getSelectionModel().select(0);
 
     final Label colonLabel = new Label(":");
@@ -73,7 +82,8 @@ public class DateTimeField extends VBox {
         spacer,
         this.hourField,
         colonLabel,
-        this.minuteField
+        this.minuteField,
+        this.calendarEraField
     );
 
     final HBox calendarBox = new HBox(
@@ -114,8 +124,11 @@ public class DateTimeField extends VBox {
       final int d = Integer.parseInt(this.dayField.getText());
       final Integer h = this.getFieldValue(this.hourField);
       final Integer mi = this.getFieldValue(this.minuteField);
-      final Calendar<?> calendar = this.calendarField.getSelectionModel().getSelectedItem().data();
-      return calendar.getDate(y, m, d, h, mi);
+      final Calendar<?> calendar = this.getSelectedCalendar();
+      CalendarEra era = null;
+      if (this.calendarEraField.isVisible())
+        era = this.calendarEraField.getSelectionModel().getSelectedItem().data();
+      return calendar.getDate(era, y, m, d, h, mi);
     } catch (final RuntimeException e) {
       return null;
     }
@@ -133,33 +146,54 @@ public class DateTimeField extends VBox {
    */
   public void setDate(CalendarSpecificDateTime dateTime) {
     if (dateTime != null) {
-      this.calendarField.getSelectionModel().select(new NotNullComboBoxItem<>(dateTime.calendar()));
+      final Calendar<?> calendar = dateTime.calendar();
+      this.calendarField.getSelectionModel().select(new NotNullComboBoxItem<>(calendar));
       this.yearField.setText(String.valueOf(dateTime.year()));
       this.monthField.getSelectionModel().select(dateTime.month() - 1);
       this.dayField.setText(String.valueOf(dateTime.dayOfMonth()));
       this.hourField.setText(dateTime.hour().map(String::valueOf).orElse(null));
       this.minuteField.setText(dateTime.minute().map(String::valueOf).orElse(null));
+      dateTime.era().ifPresent(era ->
+          this.calendarEraField.getSelectionModel().select(new NotNullComboBoxItem<>(era)));
     } else {
       this.yearField.setText(null);
       this.monthField.getSelectionModel().select(0);
       this.dayField.setText(null);
       this.hourField.setText(null);
       this.minuteField.setText(null);
+      if (!this.getSelectedCalendar().eras().isEmpty())
+        this.calendarEraField.getSelectionModel().select(0);
     }
   }
 
+  private Calendar<?> getSelectedCalendar() {
+    return this.calendarField.getSelectionModel().getSelectedItem().data();
+  }
+
   /**
-   * Update {@link #monthField}’s items using the given calendar.
+   * Update the items of {@link #monthField} and {@link #calendarEraField} using the given calendar.
    *
    * @param calendar Calendar to get months from.
    */
-  private void updateMonths(@NotNull Calendar<?> calendar) {
+  private void onCalendarChange(@NotNull Calendar<?> calendar) {
     this.monthField.getItems().clear();
     final Language language = this.config.language();
     final String name = calendar.name();
     for (int i = 1; i <= calendar.lengthOfYearInMonths(); i++)
       this.monthField.getItems().add(language.translate("calendar.%s.month.%d".formatted(name, i)));
     this.monthField.getSelectionModel().select(0);
+
+    this.calendarEraField.getItems().clear();
+    if (!calendar.eras().isEmpty()) {
+      this.calendarEraField.setVisible(true);
+      calendar.eras().forEach(era -> {
+        final String text = language.translate("calendar.%s.era.%s".formatted(calendar.name(), era.name().toLowerCase()));
+        this.calendarEraField.getItems().add(new NotNullComboBoxItem<>(era, text));
+      });
+      this.calendarEraField.getSelectionModel().select(0);
+    } else
+      this.calendarEraField.setVisible(false);
+    this.notifyListeners();
   }
 
   /**

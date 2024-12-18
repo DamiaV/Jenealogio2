@@ -7,21 +7,21 @@ import org.jetbrains.annotations.*;
 import java.time.*;
 
 /**
- * This class represents a date-time in the Coptic calendar system.
+ * This class represents a date-time in the indian calendar system.
  *
- * @see CopticCalendarSystem
+ * @see IndianCalendarSystem
  */
-public final class CopticDateTime extends CalendarSpecificDateTime {
-  CopticDateTime(
-      @NotNull CopticCalendar date,
+public final class IndianDateTime extends CalendarSpecificDateTime {
+  IndianDateTime(
+      @NotNull IndianCalendar date,
       Integer hours,
       Integer minutes,
-      @NotNull CopticCalendarSystem calendar
+      @NotNull IndianCalendarSystem calendar
   ) {
     super(
-        date.get(CopticCalendar.YEAR_OF_ERA),
-        date.get(CopticCalendar.MONTH_OF_YEAR).getValue(),
-        date.get(CopticCalendar.DAY_OF_MONTH),
+        date.get(IndianCalendar.YEAR_OF_ERA),
+        date.get(IndianCalendar.MONTH_OF_YEAR).getValue(),
+        date.get(IndianCalendar.DAY_OF_MONTH),
         hours,
         minutes,
         calendar
@@ -30,7 +30,7 @@ public final class CopticDateTime extends CalendarSpecificDateTime {
 
   @Override
   public LocalDateTime toISO8601Date() {
-    final PlainDate date = CopticCalendar.of(this.year(), this.month(), this.dayOfMonth())
+    final PlainDate date = IndianCalendar.of(this.year(), this.month(), this.dayOfMonth())
         .transform(PlainDate.axis());
     return LocalDate.of(date.getYear(), date.getMonth(), date.getDayOfMonth())
         .atTime(LocalTime.of(this.hour().orElse(0), this.minute().orElse(0)));

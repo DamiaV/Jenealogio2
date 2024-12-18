@@ -1,27 +1,29 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
+import net.time4j.*;
+import net.time4j.calendar.*;
+import net.time4j.history.*;
 import org.jetbrains.annotations.*;
-import org.threeten.extra.chrono.*;
 
 import java.time.*;
-import java.time.temporal.*;
 
 /**
- * This class represents a date-time in the julian calendar system.
+ * This class represents a date-time in the Julian calendar system.
  *
- * @see JulianCalendar
+ * @see JulianCalendarSystem
  */
 public final class JulianDateTime extends CalendarSpecificDateTime {
   JulianDateTime(
-      @NotNull JulianDate date,
+      @NotNull JulianCalendar date,
       Integer hours,
       Integer minutes,
-      @NotNull Calendar<JulianDateTime> calendar
+      @NotNull JulianCalendarSystem calendar
   ) {
     super(
-        date.get(ChronoField.YEAR),
-        date.get(ChronoField.MONTH_OF_YEAR),
-        date.get(ChronoField.DAY_OF_MONTH),
+        date.get(JulianCalendar.ERA),
+        date.get(JulianCalendar.YEAR_OF_ERA),
+        date.get(JulianCalendar.MONTH_OF_YEAR),
+        date.get(JulianCalendar.DAY_OF_MONTH),
         hours,
         minutes,
         calendar
@@ -30,7 +32,9 @@ public final class JulianDateTime extends CalendarSpecificDateTime {
 
   @Override
   public LocalDateTime toISO8601Date() {
-    return LocalDate.ofEpochDay(JulianDate.of(this.year(), this.month(), this.dayOfMonth()).toEpochDay())
+    final PlainDate date = JulianCalendar.of((HistoricEra) this.era().orElseThrow(), this.year(), this.month(), this.dayOfMonth())
+        .transform(PlainDate.axis());
+    return LocalDate.of(date.getYear(), date.getMonth(), date.getDayOfMonth())
         .atTime(LocalTime.of(this.hour().orElse(0), this.minute().orElse(0)));
   }
 }

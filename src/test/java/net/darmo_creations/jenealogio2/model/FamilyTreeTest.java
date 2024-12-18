@@ -2,7 +2,7 @@ package net.darmo_creations.jenealogio2.model;
 
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.GregorianCalendar;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -66,7 +66,7 @@ class FamilyTreeTest {
   @Test
   void getLifeEventsNotEmptyOnePerson() {
     final Person person = new Person();
-    final LifeEvent event = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian").getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT), typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
+    final LifeEvent event = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian").getDate(null, 1970, 1, 1, 1, 0), DateTimePrecision.EXACT), typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
     this.tree.setLifeEventActors(event, Set.of(person));
     assertEquals(1, this.tree.lifeEvents().size());
   }
@@ -75,12 +75,12 @@ class FamilyTreeTest {
   void getLifeEventsNotEmptyTwoPersons() {
     final Person person1 = new Person();
     final LifeEvent event1 = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian")
-        .getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT),
+        .getDate(null, 1970, 1, 1, 1, 0), DateTimePrecision.EXACT),
         typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
     this.tree.setLifeEventActors(event1, Set.of(person1));
     final Person person2 = new Person();
     final LifeEvent event2 = new LifeEvent(new DateTimeWithPrecision(Calendar.forName("gregorian")
-        .getDate(1970, 1, 1, 1, 0), DateTimePrecision.EXACT),
+        .getDate(null, 1970, 1, 1, 1, 0), DateTimePrecision.EXACT),
         typeReg.getEntry(new RegistryEntryKey("builtin:birth")));
     this.tree.setLifeEventActors(event2, Set.of(person2));
     assertEquals(2, this.tree.lifeEvents().size());
@@ -180,7 +180,7 @@ class FamilyTreeTest {
 
   @Test
   void removePersonUpdatesLifeEventActors() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEventTypeRegistry reg = new LifeEventTypeRegistry();
     reg.registerEntry(new RegistryEntryKey("user:test"), "Test", new LifeEventTypeRegistry.RegistryArgs(LifeEventType.Group.ADMIN, false, false, 1, 2, false));
     final LifeEvent l = new LifeEvent(date, reg.getEntry(new RegistryEntryKey("user:test")));
@@ -196,7 +196,7 @@ class FamilyTreeTest {
 
   @Test
   void removePersonUpdatesLifeEventWitnesses() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     final Person p1 = new Person();
     final Person p2 = new Person();
@@ -210,7 +210,7 @@ class FamilyTreeTest {
 
   @Test
   void setLifeEventActorsAddsEventToTree() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     final Person p = new Person();
     this.tree.setLifeEventActors(l, Set.of(p));
@@ -219,7 +219,7 @@ class FamilyTreeTest {
 
   @Test
   void setLifeEventActorsAddsEventToActors() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     final Person p = new Person();
     this.tree.setLifeEventActors(l, Set.of(p));
@@ -228,7 +228,7 @@ class FamilyTreeTest {
 
   @Test
   void setLifeEventActorsRemovesEventFromPreviousActors() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     final Person p = new Person();
     this.tree.setLifeEventActors(l, Set.of(p));
@@ -238,7 +238,7 @@ class FamilyTreeTest {
 
   @Test
   void setLifeEventActorsThrowsIfActorIsWitness() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     final Person p1 = new Person();
     l.addWitness(p1);
@@ -247,7 +247,7 @@ class FamilyTreeTest {
 
   @Test
   void setLifeEventActorsThrowsIfInvalidActorsNumber() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     assertThrows(IllegalArgumentException.class, () -> this.tree.setLifeEventActors(l, Set.of()));
     assertThrows(IllegalArgumentException.class, () -> this.tree.setLifeEventActors(l, Set.of(new Person(), new Person())));
@@ -259,7 +259,7 @@ class FamilyTreeTest {
     final var key = new RegistryEntryKey(Registry.USER_NS, "test");
     registry.registerEntry(key, "test", new LifeEventTypeRegistry.RegistryArgs(LifeEventType.Group.OTHER, false, false, 1, 2, false));
     final LifeEventType type = registry.getEntry(key);
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, type);
     final Person p1 = new Person();
     final Person p2 = new Person();
@@ -271,7 +271,7 @@ class FamilyTreeTest {
 
   @Test
   void removeActorFromLifeEventRemovesEventIfNotEnoughActors() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     final Person p1 = new Person();
     this.tree.setLifeEventActors(l, Set.of(p1));
@@ -281,7 +281,7 @@ class FamilyTreeTest {
 
   @Test
   void removeActorFromLifeEventDissociatesActorsIfNotEnoughActors() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
     final Person p1 = new Person();
     final Person p2 = new Person();
@@ -293,7 +293,7 @@ class FamilyTreeTest {
 
   @Test
   void removeActorFromLifeEventDissociatesWitnessesIfNotEnoughActors() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
     final Person p1 = new Person();
     final Person p2 = new Person();
@@ -306,7 +306,7 @@ class FamilyTreeTest {
 
   @Test
   void addWitnessToLifeEventAddsWitness() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(new Person()));
     final Person w = new Person();
@@ -316,7 +316,7 @@ class FamilyTreeTest {
 
   @Test
   void addWitnessToLifeEventAddsEventToWitness() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(new Person()));
     final Person w = new Person();
@@ -326,7 +326,7 @@ class FamilyTreeTest {
 
   @Test
   void removeWitnessFromLifeEventRemovesWitness() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(new Person()));
     final Person w = new Person();
@@ -337,7 +337,7 @@ class FamilyTreeTest {
 
   @Test
   void removeWitnessFromLifeEventRemovesEventFromWitness() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.setActors(Set.of(new Person()));
     final Person w = new Person();
@@ -381,7 +381,7 @@ class FamilyTreeTest {
     this.tree.addDocument(pic);
     final Person p = new Person();
     p.addDocument(pic);
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     l.addDocument(pic);
     this.tree.addPerson(p);

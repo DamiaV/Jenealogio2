@@ -21,7 +21,7 @@ public final class FrenchRepublicanDecimalDateTime extends CalendarSpecificDateT
   FrenchRepublicanDecimalDateTime(
       @NotNull FrenchRevolutionaryCalendarDate date,
       boolean isTimeSet,
-      @NotNull Calendar<FrenchRepublicanDecimalDateTime> calendar
+      @NotNull FrenchRepublicanDecimalCalendar calendar
   ) {
     super(
         date.year,
@@ -36,10 +36,10 @@ public final class FrenchRepublicanDecimalDateTime extends CalendarSpecificDateT
 
   @Override
   public LocalDateTime toISO8601Date() {
-    var date = new FrenchRevolutionaryCalendarDate(
+    final var date = new FrenchRevolutionaryCalendarDate(
         Locale.getDefault(), this.year(), this.month(), this.dayOfMonth(),
         this.hour().orElse(0), this.minute().orElse(0), this.seconds);
-    GregorianCalendar gd = FrenchRepublicanCalendar.CAL.getDate(date);
+    final GregorianCalendar gd = FrenchRepublicanCalendar.CAL.getDate(date);
     // Converted gregorian date is in UTC, convert it to France’s timezone
     return LocalDateTime.ofInstant(gd.toInstant(), ZoneId.of("Europe/Paris"));
   }

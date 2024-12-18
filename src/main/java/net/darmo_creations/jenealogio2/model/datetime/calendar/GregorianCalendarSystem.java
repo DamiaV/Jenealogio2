@@ -1,5 +1,6 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
+import net.time4j.engine.*;
 import org.jetbrains.annotations.*;
 
 import java.time.*;
@@ -7,11 +8,15 @@ import java.time.*;
 /**
  * The gregorian calendar system.
  */
-public final class GregorianCalendar extends Calendar<GregorianDateTime> {
+public final class GregorianCalendarSystem extends Calendar<GregorianDateTime> {
   public static final String NAME = "gregorian";
 
+  GregorianCalendarSystem() {
+    super(NAME, 12, 24, 60);
+  }
+
   @Override
-  public GregorianDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
+  public GregorianDateTime getDate(CalendarEra era, int year, int month, int day, Integer hour, Integer minute) {
     return new GregorianDateTime(
         LocalDate.of(year, month, day),
         hour,
@@ -28,18 +33,5 @@ public final class GregorianCalendar extends Calendar<GregorianDateTime> {
         isTimeSet ? date.getMinute() : null,
         this
     );
-  }
-
-  @Override
-  public String name() {
-    return NAME;
-  }
-
-  @Override
-  public int lengthOfYearInMonths() {
-    return 12;
-  }
-
-  GregorianCalendar() {
   }
 }

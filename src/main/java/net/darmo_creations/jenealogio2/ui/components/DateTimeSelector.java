@@ -41,7 +41,7 @@ public class DateTimeSelector extends HBox {
     final DateLabel label = new DateLabel("-", config);
 
     this.dateTimeProperty.addListener((observable, oldValue, newValue) -> {
-      label.setDateTime(this.getDateTime());
+      label.setDateTime(newValue);
       clearButton.setDisable(newValue == null);
     });
     clearButton.setDisable(true);

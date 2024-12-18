@@ -2,7 +2,7 @@ package net.darmo_creations.jenealogio2.model;
 
 import net.darmo_creations.jenealogio2.model.datetime.*;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.GregorianCalendar;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
 import org.junit.jupiter.api.*;
 
 import java.util.*;
@@ -16,7 +16,7 @@ class LifeEventTest {
 
   @BeforeEach
   void setUp() {
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     this.lifeEvent = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:marriage")));
     this.p1 = new Person();
     this.p1.setLegalFirstNames(List.of("Alice")).setPublicLastName("Yo");
@@ -57,9 +57,9 @@ class LifeEventTest {
 
   @Test
   void setActorsThrowsIfDuplicateUniqueEvents() {
-    final DateTime date1 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date1 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final var birth1 = new LifeEvent(date1, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    final DateTime date2 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 2, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date2 = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 2, 1, 0, 0), DateTimePrecision.EXACT);
     final var birth2 = new LifeEvent(date2, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
     birth1.setActors(Set.of(this.p1));
     assertThrows(IllegalArgumentException.class, () -> birth2.setActors(Set.of(this.p1)));
@@ -77,7 +77,7 @@ class LifeEventTest {
     final var key = new RegistryEntryKey(Registry.USER_NS, "test");
     registry.registerEntry(key, "test", new LifeEventTypeRegistry.RegistryArgs(LifeEventType.Group.OTHER, false, false, 1, 2, false));
     final LifeEventType type = registry.getEntry(key);
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, type);
     l.setActors(Set.of(this.p1, this.p2));
     l.removeActor(this.p1);
@@ -90,7 +90,7 @@ class LifeEventTest {
     final var key = new RegistryEntryKey(Registry.USER_NS, "test");
     registry.registerEntry(key, "test", new LifeEventTypeRegistry.RegistryArgs(LifeEventType.Group.OTHER, false, false, 1, 2, false));
     final LifeEventType type = registry.getEntry(key);
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, type);
     l.setActors(Set.of(this.p1, this.p2));
     l.removeActor(this.p1);
@@ -103,7 +103,7 @@ class LifeEventTest {
     final var key = new RegistryEntryKey(Registry.USER_NS, "test");
     registry.registerEntry(key, "test", new LifeEventTypeRegistry.RegistryArgs(LifeEventType.Group.OTHER, false, false, 1, 2, false));
     final LifeEventType type = registry.getEntry(key);
-    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendar.NAME).getDate(2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
+    final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, type);
     l.setActors(Set.of(this.p1));
     assertThrows(IllegalStateException.class, () -> l.removeActor(this.p1));

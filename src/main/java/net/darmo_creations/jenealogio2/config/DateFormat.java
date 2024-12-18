@@ -9,18 +9,14 @@ import java.util.*;
  * Enumeration of all available date formats.
  */
 public enum DateFormat {
-  DMY_SHORT_NAME("%d %b %y"),
-  MDY_SHORT_NAME("%b %d %y"),
-  DMY_FULL_NAME("%d %B %y"),
-  MDY_FULL_NAME("%B %d %y"),
-  DMY_SHORT_NAME_SUFFIX("%d%s %b %y"),
-  MDY_SHORT_NAME_SUFFIX("%b %d%s %y"),
-  DMY_FULL_NAME_SUFFIX("%d%s %B %y"),
-  MDY_FULL_NAME_SUFFIX("%B %d%s %y"),
-//  DMY_PAD("%D/%m/%y"),
-//  MDY_PAD("%m/%D/%y"),
-//  DMY("%d/%m/%y"),
-//  MDY("%n/%D/%y"),
+  DMY_SHORT_NAME("%d %b %y%E"),
+  MDY_SHORT_NAME("%b %d %y%E"),
+  DMY_FULL_NAME("%d %B %y%E"),
+  MDY_FULL_NAME("%B %d %y%E"),
+  DMY_SHORT_NAME_SUFFIX("%d%s %b %y%E"),
+  MDY_SHORT_NAME_SUFFIX("%b %d%s %y%E"),
+  DMY_FULL_NAME_SUFFIX("%d%s %B %y%E"),
+  MDY_FULL_NAME_SUFFIX("%B %d%s %y%E"),
   ;
 
   private final String format;

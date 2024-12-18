@@ -1,10 +1,10 @@
 package net.darmo_creations.jenealogio2.model.datetime.calendar;
 
 import ca.rmen.lfrc.*;
+import net.time4j.engine.*;
 import org.jetbrains.annotations.*;
 
 import java.time.*;
-import java.util.GregorianCalendar;
 import java.util.*;
 
 /**
@@ -15,6 +15,10 @@ import java.util.*;
 public final class FrenchRepublicanCalendar extends Calendar<FrenchRepublicanDateTime> {
   public static final String NAME = "french_republican";
 
+  FrenchRepublicanCalendar() {
+    super(NAME, 13, 24, 60);
+  }
+
   /**
    * Internal calendar instance for conversions.
    * <p>
@@ -24,7 +28,7 @@ public final class FrenchRepublicanCalendar extends Calendar<FrenchRepublicanDat
       new FrenchRevolutionaryCalendar(Locale.getDefault(), FrenchRevolutionaryCalendar.CalculationMethod.ROMME);
 
   @Override
-  public FrenchRepublicanDateTime getDate(int year, int month, int day, Integer hour, Integer minute) {
+  public FrenchRepublicanDateTime getDate(CalendarEra era, int year, int month, int day, Integer hour, Integer minute) {
     return new FrenchRepublicanDateTime(
         new FrenchRevolutionaryCalendarDate(Locale.getDefault(), year, month, day, 0, 0, 0),
         hour,
@@ -44,18 +48,5 @@ public final class FrenchRepublicanCalendar extends Calendar<FrenchRepublicanDat
         isTimeSet ? date.getMinute() : null,
         this
     );
-  }
-
-  @Override
-  public String name() {
-    return NAME;
-  }
-
-  @Override
-  public int lengthOfYearInMonths() {
-    return 13;
-  }
-
-  FrenchRepublicanCalendar() {
   }
 }
