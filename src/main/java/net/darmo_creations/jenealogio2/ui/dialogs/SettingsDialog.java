@@ -66,7 +66,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.themeCombo.getSelectionModel().selectedItemProperty()
         .addListener((observable, oldValue, newValue) -> this.onThemeSelect(newValue));
 
-    final LocalDateTime sampleDate = LocalDateTime.of(1970, 9, 1, 1, 2);
+    final LocalDateTime sampleDate = LocalDateTime.of(2017, 9, 4, 13, 3);
     for (final DateFormat dateFormat : DateFormat.values())
       this.dateFormatCombo.getItems().add(new NotNullComboBoxItem<>(dateFormat,
           new CalendarDateTimeFormatter(language, dateFormat.getFormat()).format(sampleDate)));
