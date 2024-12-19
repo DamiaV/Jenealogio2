@@ -142,7 +142,6 @@ public class StatisticsPanel extends GridPane {
       final ScrollPane scrollPane = new ScrollPane(this.content);
       scrollPane.setFitToHeight(true);
       scrollPane.setFitToWidth(true);
-      scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
       AnchorPane.setLeftAnchor(scrollPane, 0.0);
       AnchorPane.setTopAnchor(scrollPane, 0.0);
       AnchorPane.setRightAnchor(scrollPane, 0.0);
