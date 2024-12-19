@@ -9,6 +9,7 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.*;
 
 /**
  * Class providing methods to handle strings.
@@ -89,6 +90,21 @@ public final class StringUtils {
         return null;
       return change;
     });
+  }
+
+  /**
+   * Counts the number of occurrences of each item of the given collection.
+   *
+   * @param words         A collection of strings to count.
+   * @param caseSensitive Whether the check should be case-sensitive or not.
+   * @return A map association each distinct string to its number of occurences.
+   */
+  public static Map<String, Long> computeWordStatistics(
+      final @NotNull Collection<String> words,
+      boolean caseSensitive
+  ) {
+    final Function<String, String> classifier = caseSensitive ? Function.identity() : String::toLowerCase;
+    return words.stream().collect(Collectors.groupingBy(classifier, Collectors.counting()));
   }
 
   private StringUtils() {

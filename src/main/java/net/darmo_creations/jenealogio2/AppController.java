@@ -12,6 +12,7 @@ import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.ui.dialogs.*;
 import net.darmo_creations.jenealogio2.ui.events.*;
 import net.darmo_creations.jenealogio2.utils.*;
@@ -67,6 +68,8 @@ public class AppController {
   private final GeneticFamilyTreePane geneticFamilyTreePane;
   private final FamilyMemberFullViewPane familyMemberFullViewPane;
 
+  private final StatisticsPanel statisticsPanel;
+
   private final PersonDetailsView personDetailsView;
 
   private final List<Person> selectionHistory = new ArrayList<>();
@@ -113,6 +116,7 @@ public class AppController {
     stage.setTitle(App.NAME);
     stage.setMaximized(true);
 
+    this.statisticsPanel = new StatisticsPanel(config);
     this.personDetailsView = new PersonDetailsView(config);
     this.familyMembersTreeView = new FamilyMembersTreeView(config);
     this.geneticFamilyTreePane = new GeneticFamilyTreePane(config);
@@ -523,6 +527,8 @@ public class AppController {
     this.familyMemberFullViewPane.newParentClickListeners().add(this::onNewParentClick);
     tabPane.getTabs().add(new Tab(language.translate("main_view.tab.person_relatives"), this.familyMemberFullViewPane));
 
+    tabPane.getTabs().add(new Tab(language.translate("main_view.tab.statistics"), this.statisticsPanel));
+
     this.personDetailsView.personClickListeners()
         .add(event -> this.onPersonClick(event, null));
     this.personDetailsView.newParentClickListeners()
@@ -586,6 +592,7 @@ public class AppController {
     this.familyMemberFullViewPane.refresh();
     this.familyMembersTreeView.refresh();
     this.personDetailsView.refresh();
+    this.statisticsPanel.refresh();
   }
 
   /**
@@ -599,6 +606,7 @@ public class AppController {
     this.familyMembersTreeView.setFamilyTree(this.familyTree);
     this.geneticFamilyTreePane.setFamilyTree(this.familyTree);
     this.familyMemberFullViewPane.setFamilyTree(this.familyTree);
+    this.statisticsPanel.setFamilyTree(this.familyTree);
     this.personDetailsView.setPerson(null, this.familyTree);
     this.familyMembersTreeView.refresh();
     this.geneticFamilyTreePane.refresh();
@@ -924,6 +932,7 @@ public class AppController {
         this.geneticFamilyTreePane.refresh();
         this.familyMemberFullViewPane.refresh();
         this.familyMembersTreeView.refresh();
+        this.statisticsPanel.refresh();
         if (this.personDetailsView.person() == person)
           this.personDetailsView.setPerson(null, this.familyTree);
         else
@@ -1036,6 +1045,7 @@ public class AppController {
       this.familyMembersTreeView.refresh();
       this.geneticFamilyTreePane.refresh();
       this.familyMemberFullViewPane.refresh();
+      this.statisticsPanel.refresh();
       this.personDetailsView.refresh();
       this.unsavedChanges = true;
       this.updateUI();
@@ -1055,6 +1065,7 @@ public class AppController {
       this.familyMembersTreeView.refresh();
       this.geneticFamilyTreePane.refresh();
       this.familyMemberFullViewPane.refresh();
+      this.statisticsPanel.refresh();
       this.personDetailsView.refresh();
       this.unsavedChanges = true;
       this.updateUI();
@@ -1082,6 +1093,7 @@ public class AppController {
       this.familyMembersTreeView.refresh();
       this.geneticFamilyTreePane.refresh();
       this.familyMemberFullViewPane.refresh();
+      this.statisticsPanel.refresh();
       this.personDetailsView.refresh();
       if (person == null && childInfo != null && childInfo.isEmpty())
         this.onPersonClick(new PersonClickedEvent(editedPerson, PersonClickedEvent.Action.SET_AS_TARGET), null);

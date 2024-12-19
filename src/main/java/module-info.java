@@ -3,8 +3,6 @@
  */
 module net.darmo_creations.jenealogio2 {
   requires java.net.http;
-  requires javafx.controls;
-  requires javafx.fxml;
   requires javafx.web;
   requires javafx.swing;
   requires java.desktop;
@@ -20,6 +18,9 @@ module net.darmo_creations.jenealogio2 {
   // Make App accessible to JavaFX, other classes accessible from App’s public interface
   // are not exported because it’s not necessary
   exports net.darmo_creations.jenealogio2 to javafx.graphics;
+
+  // Open for TableView data fetching
+  opens net.darmo_creations.jenealogio2.ui.components to javafx.base;
 
   // Open to JUnit tests
   opens net.darmo_creations.jenealogio2.model;

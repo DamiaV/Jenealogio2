@@ -262,7 +262,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
 
       // Table
       VBox.setVgrow(this.entriesTable, Priority.ALWAYS);
-      this.entriesTable.setPlaceholder(new Text(language.translate("dialog.edit_registries.entries_table.empty")));
+      this.entriesTable.setPlaceholder(new Text(language.translate("table.empty")));
       this.entriesTable.setPrefHeight(0);
       this.entriesTable.setEditable(true);
 

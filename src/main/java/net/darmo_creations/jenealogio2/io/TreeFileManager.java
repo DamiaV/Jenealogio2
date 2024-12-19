@@ -18,10 +18,11 @@ public abstract class TreeFileManager {
   public static final String TREE_FILE_NAME = "tree.xml";
   public static final String FILES_DIR = "files";
 
-  public static final @Unmodifiable List<Character> INVALID_PATH_CHARS;
+  @Unmodifiable
+  public static final List<Character> INVALID_PATH_CHARS;
 
   static {
-    List<Character> invalidChars = new LinkedList<>();
+    final List<Character> invalidChars = new LinkedList<>();
     "<>:\"/\\|?*".chars().forEach(c -> invalidChars.add((char) c));
     for (int i = 0; i < 32; i++)
       invalidChars.add((char) i);

@@ -28,7 +28,7 @@ public abstract class FamilyTreeComponent extends AnchorPane implements PersonCl
    *
    * @param familyTree A family tree.
    */
-  public void setFamilyTree(FamilyTree familyTree) {
+  public void setFamilyTree(final FamilyTree familyTree) {
     this.familyTree = familyTree;
     this.refresh();
   }
