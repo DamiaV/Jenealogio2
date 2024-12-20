@@ -1106,13 +1106,17 @@ public class AppController {
    * Update the UI, i.e. menu items, toolbar buttons and stage’s title.
    */
   private void updateUI() {
-    this.stage.setTitle("%s%s – %s%s (%s)".formatted(
+    final String fileName = this.loadedFile.getFileName().toString();
+    final String treeName = this.familyTree.name();
+    String title = "%s%s – %s%s".formatted(
         App.NAME,
         this.config.isDebug() ? " [Debug]" : "",
-        this.familyTree.name(),
-        this.unsavedChanges ? "*" : "",
-        this.loadedFile.getFileName()
-    ));
+        treeName,
+        this.unsavedChanges ? "*" : ""
+    );
+    if (!treeName.equals(fileName))
+      title += " (%s)".formatted(fileName);
+    this.stage.setTitle(title);
 
     if (this.birthdaysDialog.isShowing())
       this.birthdaysDialog.refresh(this.familyTree);
@@ -1128,7 +1132,7 @@ public class AppController {
     final Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
     if (!treesMetadata.isEmpty()) {
       treesMetadata.values().stream()
-          .filter(m -> !m.directoryName().equals(this.loadedFile.getFileName().toString()))
+          .filter(m -> !m.directoryName().equals(fileName))
           .sorted()
           .forEach(m -> {
             final MenuItem item = new MenuItem("%s (%s)".formatted(m.name(), App.USER_DATA_DIR.resolve(m.directoryName())));
