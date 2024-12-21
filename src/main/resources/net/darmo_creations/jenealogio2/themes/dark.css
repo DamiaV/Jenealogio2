@@ -86,6 +86,38 @@ Text.hyperlink {
 
 /* Custom components */
 
+.tree-legend .legend-item.biological-parent .item-color-patch {
+  -fx-background-color: -j2-biological-parent;
+}
+
+.tree-legend .legend-item.non-biological-parent .item-color-patch {
+  -fx-background-color: -j2-non-biological-parent;
+}
+
+.tree-legend .legend-item.egg-donor .item-color-patch {
+  -fx-background-color: -j2-egg-donor;
+}
+
+.tree-legend .legend-item.sperm-donor .item-color-patch {
+  -fx-background-color: -j2-sperm-donor;
+}
+
+.tree-legend .legend-item.surrogate-parent .item-color-patch {
+  -fx-background-color: -j2-surrogate-parent;
+}
+
+.tree-legend .legend-item.adoptive-parent .item-color-patch {
+  -fx-background-color: -j2-adoptive-parent;
+}
+
+.tree-legend .legend-item.foster-parent .item-color-patch {
+  -fx-background-color: -j2-foster-parent;
+}
+
+.tree-legend .legend-item.godparent .item-color-patch {
+  -fx-background-color: -j2-godparent;
+}
+
 .tree-line {
   -fx-stroke: derive(-fx-base, 20%);
 }

@@ -13,7 +13,7 @@ import static net.darmo_creations.jenealogio2.model.ParentalRelationType.*;
 
 public class FamilyMemberFullViewPane extends PersonTreeView {
   public FamilyMemberFullViewPane(final @NotNull Config config) {
-    super(config);
+    super(config, ParentalRelationType.values());
   }
 
   @Override

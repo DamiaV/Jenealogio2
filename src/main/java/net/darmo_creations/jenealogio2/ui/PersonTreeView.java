@@ -17,6 +17,10 @@ import java.util.*;
 
 import static net.darmo_creations.jenealogio2.model.ParentalRelationType.*;
 
+/**
+ * Base class for components that show a partial view of a {@link FamilyTree}
+ * relative to specific {@link Person}.
+ */
 public abstract class PersonTreeView extends FamilyTreeComponent {
   protected static final Map<ParentalRelationType, String> CSS_CLASSES = new EnumMap<>(ParentalRelationType.class);
 
@@ -34,20 +38,40 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
   private final ObservableList<PersonWidget> personWidgets = FXCollections.observableList(new ArrayList<>());
   private final Pane pane = new Pane();
   private final ScrollPane scrollPane = new ScrollPane(this.pane);
+  private final Legend legend;
 
   private Person targettedPerson;
   private boolean internalClick;
 
-  public PersonTreeView(final @NotNull Config config) {
+  /**
+   * Create a new tree view.
+   *
+   * @param config                The current config.
+   * @param possibleRelationTypes The {@link ParentalRelationType}s that may be shown in this view.
+   *                              This is displayed in the legend.
+   */
+  protected PersonTreeView(final @NotNull Config config, @NotNull ParentalRelationType... possibleRelationTypes) {
     this.config = Objects.requireNonNull(config);
     this.setOnMouseClicked(this::onBackgroundClicked);
+    this.setMinSize(300, 300);
+
+    final StackPane stackPane = new StackPane();
+    AnchorPane.setTopAnchor(stackPane, 0.0);
+    AnchorPane.setBottomAnchor(stackPane, 0.0);
+    AnchorPane.setLeftAnchor(stackPane, 0.0);
+    AnchorPane.setRightAnchor(stackPane, 0.0);
+
     this.scrollPane.setPannable(true);
     this.scrollPane.getStyleClass().add("no-focus-scroll-pane");
-    AnchorPane.setTopAnchor(this.scrollPane, 0.0);
-    AnchorPane.setBottomAnchor(this.scrollPane, 0.0);
-    AnchorPane.setLeftAnchor(this.scrollPane, 0.0);
-    AnchorPane.setRightAnchor(this.scrollPane, 0.0);
-    this.getChildren().add(this.scrollPane);
+    stackPane.getChildren().add(this.scrollPane);
+
+    this.legend = new Legend(possibleRelationTypes);
+    StackPane.setAlignment(this.legend, Pos.BOTTOM_RIGHT);
+    // Leave some space for scroll bars
+    StackPane.setMargin(this.legend, new Insets(20));
+    stackPane.getChildren().add(this.legend);
+
+    this.getChildren().add(stackPane);
   }
 
   protected ObservableList<PersonWidget> personWidgets() {
@@ -90,6 +114,15 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
     }
 
     this.centerNodeInScrollPane(root);
+  }
+
+  /**
+   * Set the visibility of the legend.
+   *
+   * @param visible True to set visible, false to hide.
+   */
+  public void setLegendVisible(boolean visible) {
+    this.legend.setVisible(visible);
   }
 
   /**
@@ -271,5 +304,41 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
       w.setLayoutX(w.getLayoutX() - xOffset + gap);
       w.setLayoutY(w.getLayoutY() - yOffset + gap);
     });
+  }
+
+  private class Legend extends VBox {
+    /**
+     * Create a new legend for the given {@link ParentalRelationType}s.
+     *
+     * @param relationTypes The relation types to show, in that order.
+     */
+    public Legend(final @NotNull ParentalRelationType[] relationTypes) {
+      super(2);
+      this.setMaxWidth(Region.USE_PREF_SIZE);
+      this.setMaxHeight(Region.USE_PREF_SIZE);
+      this.setPadding(new Insets(5));
+      this.getStyleClass().add("tree-legend");
+      this.setMouseTransparent(true);
+
+      final Language language = PersonTreeView.this.config.language();
+
+      final Label title = new Label(language.translate("person_tree_view.legend.title"));
+      title.getStyleClass().add("legend-title");
+      final HBox titleBox = new HBox(title);
+      titleBox.setPadding(new Insets(0, 0, 3, 0));
+      titleBox.setAlignment(Pos.CENTER);
+
+      this.getChildren().add(titleBox);
+      for (final var relationType : relationTypes) {
+        final Label colorPatch = new Label("    ");
+        colorPatch.getStyleClass().add("item-color-patch");
+        final Label text = new Label(
+            language.translate("person_tree_view.legend.item." + relationType.name().toLowerCase()));
+        text.getStyleClass().add("item-text");
+        final HBox itemBox = new HBox(5, colorPatch, text);
+        itemBox.getStyleClass().addAll("legend-item", CSS_CLASSES.get(relationType));
+        this.getChildren().add(itemBox);
+      }
+    }
   }
 }

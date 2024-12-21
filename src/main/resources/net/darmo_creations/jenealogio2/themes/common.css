@@ -3,66 +3,75 @@
  */
 
 .table-row-cell > .table-cell:disabled {
-    -fx-opacity: 0.4;
+  -fx-opacity: 0.4;
 }
 
 .no-focus-scroll-pane {
-    /* Disable focus border in main scroll pane by making the background invisible */
-    -fx-background-color: rgba(0, 0, 0, 0);
+  /* Disable focus border in main scroll pane by making the background invisible */
+  -fx-background-color: rgba(0, 0, 0, 0);
 }
 
 .person-details > * {
-    -fx-padding: 4px;
+  -fx-padding: 4px;
 }
 
 .person-details .person-details-header .person-details-title {
-    -fx-font-weight: bold;
-    -fx-font-size: 1.2em;
+  -fx-font-weight: bold;
+  -fx-font-size: 1.2em;
 }
 
 .person-details .person-details-header .person-details-occupation {
-    -fx-font-style: italic;
+  -fx-font-style: italic;
 }
 
 .person-details .life-events-list-item, .clickable-image {
-    -fx-cursor: hand;
+  -fx-cursor: hand;
 }
 
 .person-details .life-events-list-item-header > Label {
-    -fx-font-weight: bold;
+  -fx-font-weight: bold;
 }
 
 .unknown {
-    -fx-font-style: italic;
+  -fx-font-style: italic;
 }
 
 .birth-day {
-    -fx-font-weight: bold;
-    -fx-font-size: 1.2em;
+  -fx-font-weight: bold;
+  -fx-font-size: 1.2em;
 }
 
 .map-pin.has-tooltip {
-    -fx-cursor: hand;
+  -fx-cursor: hand;
 }
 
 .map-attributions Text {
-    -fx-fill: black;
+  -fx-fill: black;
 }
 
 .map-attributions .hyperlink:hover {
-    -fx-underline: false;
+  -fx-underline: false;
 }
 
 .map-attributions .hyperlink:visited, .map-attributions .hyperlink:armed {
-    -fx-text-fill: -fx-accent;
-    -fx-underline: false;
+  -fx-text-fill: -fx-accent;
+  -fx-underline: false;
 }
 
 .events-map-tooltip > .title {
-    -fx-font-weight: bold;
+  -fx-font-weight: bold;
 }
 
 .events-map-tooltip > .subtitle {
-    -fx-font-style: italic;
-    -fx-font-size: 90%;
+  -fx-font-style: italic;
+  -fx-font-size: 90%;
+}
+
+.tree-legend {
+  -fx-background-color: rgb(0, 0, 0, 0.25);
+  -fx-background-radius: 5px;
+}
+
+.tree-legend .legend-title {
+  -fx-font-weight: bold;
 }

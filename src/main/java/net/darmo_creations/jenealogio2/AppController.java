@@ -337,6 +337,16 @@ public class AppController {
 
     //
 
+    final Menu viewMenu = new Menu(language.translate("menu.view"));
+
+    final CheckMenuItem showLegendsMenuItem = new CheckMenuItem(language.translate("menu.view.show_legends"));
+    showLegendsMenuItem.setSelected(this.config.shouldShowLegends());
+    showLegendsMenuItem.selectedProperty()
+        .addListener((observable, oldValue, newValue) -> this.onShowLegendsChange(newValue));
+    viewMenu.getItems().add(showLegendsMenuItem);
+
+    //
+
     final Menu toolsMenu = new Menu(language.translate("menu.tools"));
 
     final MenuItem calculateRelationshipsMenuItem = new MenuItem();
@@ -379,7 +389,7 @@ public class AppController {
     aboutMenuItem.setOnAction(event -> this.onAboutAction());
     helpMenu.getItems().add(aboutMenuItem);
 
-    return new MenuBar(fileMenu, editMenu, toolsMenu, helpMenu);
+    return new MenuBar(fileMenu, editMenu, viewMenu, toolsMenu, helpMenu);
   }
 
   private ToolBar createToolBar() {
@@ -521,11 +531,13 @@ public class AppController {
     this.geneticFamilyTreePane.newParentClickListeners().add(this::onNewParentClick);
     this.geneticFamilyTreePane.setMaxHeight(this.config.maxTreeHeight());
     tabPane.getTabs().add(new Tab(language.translate("main_view.tab.genetic_tree"), this.geneticFamilyTreePane));
+    this.geneticFamilyTreePane.setLegendVisible(config.shouldShowLegends());
 
     this.familyMemberFullViewPane.personClickListeners()
         .add(event -> this.onPersonClick(event, this.familyMemberFullViewPane));
     this.familyMemberFullViewPane.newParentClickListeners().add(this::onNewParentClick);
     tabPane.getTabs().add(new Tab(language.translate("main_view.tab.person_relatives"), this.familyMemberFullViewPane));
+    this.familyMemberFullViewPane.setLegendVisible(config.shouldShowLegends());
 
     tabPane.getTabs().add(new Tab(language.translate("main_view.tab.statistics"), this.statisticsPanel));
 
@@ -1163,6 +1175,17 @@ public class AppController {
     this.editParentsToolbarButton.setDisable(!selection);
     this.editLifeEventsToolbarButton.setDisable(!selection);
     this.editDocumentsToolbarButton.setDisable(!selection);
+  }
+
+  private void onShowLegendsChange(boolean show) {
+    this.config.setShouldShowLegends(show);
+    try {
+      this.config.save();
+    } catch (final IOException e) {
+      App.LOGGER.exception(e);
+    }
+    this.geneticFamilyTreePane.setLegendVisible(show);
+    this.familyMemberFullViewPane.setLegendVisible(show);
   }
 
   /**

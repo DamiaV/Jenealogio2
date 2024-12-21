@@ -24,7 +24,7 @@ public class GeneticFamilyTreePane extends PersonTreeView {
    * @param config The app’s config.
    */
   public GeneticFamilyTreePane(final @NotNull Config config) {
-    super(config);
+    super(config, ParentalRelationType.GENETIC_RELATIONS);
   }
 
   /**
