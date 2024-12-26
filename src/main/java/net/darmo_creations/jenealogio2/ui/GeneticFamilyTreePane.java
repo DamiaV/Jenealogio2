@@ -72,6 +72,7 @@ public class GeneticFamilyTreePane extends PersonTreeView {
             final Person parent1 = !parents.isEmpty() ? parents.get(0) : null;
             final Person parent2 = parents.size() > 1 ? parents.get(1) : null;
             final Set<Person> children = new HashSet<>();
+            children.add(child);
             if (parent1 != null)
               children.addAll(parent1.getPartnersAndGeneticChildren().get(Optional.ofNullable(parent2)));
             final PersonWidget parent1Widget = this.createParentWidget(familyTree, parent1, child, children, treeLevel);
