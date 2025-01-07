@@ -54,8 +54,7 @@ public class TextParser {
     this.index = 0;
     this.stack.clear();
     final SequenceNode sequenceNode = this.parse().orElseGet(() -> new SequenceNode(TextStyle.NONE));
-    if (sequenceNode.children().isEmpty())
-      return new PlainTextNode("");
+    if (sequenceNode.children().isEmpty()) return new PlainTextNode("");
     if (sequenceNode.style() == TextStyle.NONE && sequenceNode.children().size() == 1)
       return sequenceNode.children().get(0);
     return sequenceNode;
@@ -79,8 +78,7 @@ public class TextParser {
         if (escaping) {
           textBuffer.append(Character.toString(codepoint));
           escaping = false;
-        } else
-          escaping = true;
+        } else escaping = true;
 
       } else if (!escaping && codepoint == '<') {
         if (!textBuffer.isEmpty()) {
@@ -90,8 +88,7 @@ public class TextParser {
         final int i = this.index;
         this.index++;
         final Optional<Node> node = this.parseUrl();
-        if (node.isPresent())
-          sequence.addChild(node.get());
+        if (node.isPresent()) sequence.addChild(node.get());
         else { // Could not parse URL, rollback to the initial position
           this.index = i;
           textBuffer.append(Character.toString(codepoint));
@@ -105,8 +102,7 @@ public class TextParser {
         final int i = this.index;
         this.index++;
         final Optional<Node> node = this.parseUrlWithText();
-        if (node.isPresent())
-          sequence.addChild(node.get());
+        if (node.isPresent()) sequence.addChild(node.get());
         else { // Could not parse URL, rollback to the initial position
           this.index = i;
           textBuffer.append(Character.toString(codepoint));
@@ -115,8 +111,7 @@ public class TextParser {
       } else if (!escaping && codepoint < 255 && TAGS.contains((char) codepoint)) {
         try {
           final var node = this.handleTag((char) codepoint, textBuffer, sequence);
-          if (node.isPresent())
-            return node;
+          if (node.isPresent()) return node;
         } catch (final ParseException e) {
           return Optional.empty();
         }
@@ -127,8 +122,8 @@ public class TextParser {
           escaping = false;
         }
         textBuffer.append(Character.toString(codepoint));
-        if (!this.stack.isEmpty()) // Unclosed tag, abort
-          break;
+        // Unclosed tag, abort
+        if (!this.stack.isEmpty()) break;
 
       } else {
         if (escaping) {
@@ -180,8 +175,8 @@ public class TextParser {
       final int i = this.index;
       this.index++; // Skip current one
       final Optional<SequenceNode> node = this.parse();
-      if (node.isPresent()) // Ok, add sub-tag to current sequence
-        sequence.addChild(node.get());
+      // Ok, add sub-tag to current sequence
+      if (node.isPresent()) sequence.addChild(node.get());
       else { // Could not parse, rollback to the initial position and add character to buffer
         this.index = i;
         textBuffer.append(tag);
@@ -202,10 +197,8 @@ public class TextParser {
           return Optional.of(new LinkNode(urlCandidate, null));
         else
           return Optional.empty();
-      } else if (Character.isWhitespace(codepoint))
-        return Optional.empty();
-      else
-        buffer.append(Character.toString(codepoint));
+      } else if (Character.isWhitespace(codepoint)) return Optional.empty();
+      else buffer.append(Character.toString(codepoint));
     }
 
     return Optional.empty();
@@ -220,10 +213,8 @@ public class TextParser {
     for (; this.index < this.codepoints.length; this.index++) {
       final int codepoint = this.codepoints[this.index];
       if (inText) {
-        if (codepoint == ']')
-          inText = false;
-        else
-          textBuffer.append(Character.toString(codepoint));
+        if (codepoint == ']') inText = false;
+        else textBuffer.append(Character.toString(codepoint));
       } else if (inUrl) {
         if (codepoint == ')') {
           final String urlCandidate = urlBuffer.toString();
@@ -233,10 +224,8 @@ public class TextParser {
             return Optional.empty();
         } else
           urlBuffer.append(Character.toString(codepoint));
-      } else if (codepoint == '(')
-        inUrl = true;
-      else
-        return Optional.empty();
+      } else if (codepoint == '(') inUrl = true;
+      else return Optional.empty();
     }
 
     return Optional.empty();

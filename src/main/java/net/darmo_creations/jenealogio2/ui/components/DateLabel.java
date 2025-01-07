@@ -47,7 +47,11 @@ public class DateLabel extends Label {
   }
 
   private void updateText() {
-    this.setText(this.dateTime != null ? DateTimeUtils.formatDateTime(this.dateTime, false, this.config) : this.emptyValue);
-    this.setTooltip(this.dateTime != null ? new Tooltip(DateTimeUtils.formatDateTime(this.dateTime, true, this.config)) : null);
+    this.setText(this.dateTime != null
+        ? DateTimeUtils.formatDateTime(this.dateTime, false, this.config)
+        : this.emptyValue);
+    this.setTooltip(this.dateTime != null
+        ? new Tooltip(DateTimeUtils.formatDateTime(this.dateTime, true, this.config))
+        : null);
   }
 }

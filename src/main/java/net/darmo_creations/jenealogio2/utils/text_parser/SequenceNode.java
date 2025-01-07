@@ -52,11 +52,11 @@ class SequenceNode implements Node {
    */
   public void addChild(@NotNull Node child) {
     Objects.requireNonNull(child);
-    if (child instanceof SequenceNode seq && seq.style == this.style)
+    if (child instanceof SequenceNode seq && seq.style == this.style) {
       seq.children.forEach(this::addChild); // Flatten unstyled sequences
-    else if (!this.children.isEmpty()
-             && this.children.get(this.children.size() - 1) instanceof PlainTextNode t1
-             && child instanceof PlainTextNode t2) { // Merge consecutive plain text nodes
+    } else if (!this.children.isEmpty()
+        && this.children.get(this.children.size() - 1) instanceof PlainTextNode t1
+        && child instanceof PlainTextNode t2) { // Merge consecutive plain text nodes
       this.children.remove(t1);
       this.children.add(new PlainTextNode(t1.text() + t2.text()));
     } else if (!(child instanceof PlainTextNode t) || !t.text().isEmpty()) // Ignore empty plain text nodes
@@ -88,14 +88,16 @@ class SequenceNode implements Node {
 
   @Override
   public String toString() {
-    final String s = switch (this.style) {
+    final String delimiter = switch (this.style) {
       case NONE -> "|";
       case BOLD -> "*";
       case ITALIC -> "/";
       case UNDERLINE -> "_";
       case STRIKETHROUGH -> "~";
     };
-    return s + this.children.stream().map(Node::toString).collect(Collectors.joining(" + ")) + s;
+    return this.children.stream()
+        .map(Node::toString)
+        .collect(Collectors.joining(" + ", delimiter, delimiter));
   }
 
   @Override

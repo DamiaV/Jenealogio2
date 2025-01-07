@@ -43,13 +43,20 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
    * @param config The app’s config.
    */
   public DateSelectionDialog(final @NotNull Config config) {
-    super(config, "select_date", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+    super(
+        config,
+        "select_date",
+        true,
+        ButtonTypes.OK,
+        ButtonTypes.CANCEL
+    );
 
     final Language language = config.language();
     final Theme theme = config.theme();
 
     this.datePrecisionCombo.getSelectionModel().selectedItemProperty().addListener(
-        (observable, oldValue, newValue) -> this.onDateTypeUpdate(newValue.data()));
+        (observable, oldValue, newValue) ->
+            this.onDateTypeUpdate(newValue.data()));
     this.populateDatePrecisionCombo();
 
     this.dateTimeField1 = new DateTimeField(config);
@@ -97,7 +104,10 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
         5,
         this.addDateButton,
         this.removeDateButton,
-        new Label(language.translate("dialog.select_date.list_description", new FormatArg("nb", DateTimeAlternative.MAX_DATES)))
+        new Label(language.translate(
+            "dialog.select_date.list_description",
+            new FormatArg("nb", DateTimeAlternative.MAX_DATES)
+        ))
     );
     buttonsBox.setAlignment(Pos.CENTER_LEFT);
     this.listBox = new VBox(5, buttonsBox, this.dateTimeFieldList);
@@ -137,7 +147,8 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
    */
   public void setDateTime(DateTime dateTime) {
     if (dateTime != null) {
-      this.datePrecisionCombo.getSelectionModel().select(new NotNullComboBoxItem<>(DateType.fromDate(dateTime)));
+      this.datePrecisionCombo.getSelectionModel()
+          .select(new NotNullComboBoxItem<>(DateType.fromDate(dateTime)));
       this.resetFields(); // Must be called after select() so that this.dateType is correctly updated.
       if (dateTime instanceof DateTimeWithPrecision d)
         this.dateTimeField1.setDate(d.date());
@@ -181,8 +192,8 @@ public class DateSelectionDialog extends DialogBase<DateTime> {
       case EXACT, ABOUT, POSSIBLY, BEFORE, AFTER ->
           new DateTimeWithPrecision(this.dateTimeField1.getDate(), this.dateType.precision());
       case RANGE -> new DateTimeRange(this.dateTimeField1.getDate(), this.dateTimeField2.getDate());
-      case ALTERNATIVE ->
-          new DateTimeAlternative(this.dateTimeFieldList.getItems().stream().map(DateTimeField::getDate).toList());
+      case ALTERNATIVE -> new DateTimeAlternative(this.dateTimeFieldList.getItems().stream()
+          .map(DateTimeField::getDate).toList());
     };
   }
 

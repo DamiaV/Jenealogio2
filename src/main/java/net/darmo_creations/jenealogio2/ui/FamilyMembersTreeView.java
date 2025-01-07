@@ -83,14 +83,15 @@ public class FamilyMembersTreeView extends FamilyTreeComponent {
     this.personsItem = new TreeItem<>(language.translate("treeview.persons"));
     root.getChildren().add(this.personsItem);
     this.treeView.setRoot(root);
-    this.treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-      if (!this.internalSelectionChange) {
-        if (newValue != null && newValue.getValue() instanceof Person person)
-          this.firePersonClickEvent(new PersonClickedEvent(person, PersonClickedEvent.Action.SELECT));
-        else
-          this.firePersonClickEvent(new DeselectPersonsEvent());
-      }
-    });
+    this.treeView.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) -> {
+          if (!this.internalSelectionChange) {
+            if (newValue != null && newValue.getValue() instanceof Person person)
+              this.firePersonClickEvent(new PersonClickedEvent(person, PersonClickedEvent.Action.SELECT));
+            else
+              this.firePersonClickEvent(new DeselectPersonsEvent());
+          }
+        });
     this.treeView.setOnMouseClicked(event -> {
       final TreeItem<Object> selectedItem = this.treeView.getSelectionModel().getSelectedItem();
       if (selectedItem != null && selectedItem.getValue() instanceof Person person)
@@ -199,8 +200,9 @@ public class FamilyMembersTreeView extends FamilyTreeComponent {
           this.treeItemProperty(),
           FamilyMembersTreeView.this.searchMatches
       );
-      this.matchesSearch.addListener((obs, didMatchSearch, nowMatchesSearch) ->
-          this.pseudoClassStateChanged(PseudoClasses.SEARCH_MATCH, nowMatchesSearch));
+      this.matchesSearch.addListener(
+          (obs, didMatchSearch, nowMatchesSearch) ->
+              this.pseudoClassStateChanged(PseudoClasses.SEARCH_MATCH, nowMatchesSearch));
     }
 
     @Override

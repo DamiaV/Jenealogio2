@@ -23,7 +23,7 @@ public class ComboBoxItem<T> {
    */
   public ComboBoxItem(T data, @NotNull String text) {
     this.data = data;
-    this.text = text;
+    this.text = Objects.requireNonNull(text);
   }
 
   /**

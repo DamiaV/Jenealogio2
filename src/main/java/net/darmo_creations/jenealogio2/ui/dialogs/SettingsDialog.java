@@ -32,7 +32,13 @@ public class SettingsDialog extends DialogBase<ButtonType> {
    * @param config The app’s config.
    */
   public SettingsDialog(final @NotNull Config config) {
-    super(config, "settings", false, ButtonTypes.OK, ButtonTypes.CANCEL);
+    super(
+        config,
+        "settings",
+        false,
+        ButtonTypes.OK,
+        ButtonTypes.CANCEL
+    );
 
     final VBox content = new VBox(this.createInterfaceForm(), new Separator(), this.createTreeForm());
     content.setPrefWidth(500);
@@ -46,10 +52,20 @@ public class SettingsDialog extends DialogBase<ButtonType> {
             App.updateConfig(this.localConfig);
             this.localConfig.save();
             if (changeType.needsRestart())
-              Alerts.info(config, "dialog.settings.alert.needs_restart.header", null, null);
+              Alerts.info(
+                  config,
+                  "dialog.settings.alert.needs_restart.header",
+                  null,
+                  null
+              );
           } catch (final IOException e) {
             App.LOGGER.exception(e);
-            Alerts.error(config, "dialog.settings.alert.save_error.header", null, null);
+            Alerts.error(
+                config,
+                "dialog.settings.alert.save_error.header",
+                null,
+                null
+            );
           }
         }
       }
@@ -60,24 +76,26 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   private BorderPane createInterfaceForm() {
     final Language language = this.config.language();
     this.languageCombo.getItems().addAll(Config.languages());
-    this.languageCombo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
+    this.languageCombo.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
     this.themeCombo.getItems().addAll(Theme.themes());
-    this.themeCombo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.onThemeSelect(newValue));
+    this.themeCombo.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) -> this.onThemeSelect(newValue));
 
     final LocalDateTime sampleDate = LocalDateTime.of(2017, 9, 4, 13, 3);
     for (final DateFormat dateFormat : DateFormat.values())
       this.dateFormatCombo.getItems().add(new NotNullComboBoxItem<>(dateFormat,
           new CalendarDateTimeFormatter(language, dateFormat.getFormat()).format(sampleDate)));
-    this.dateFormatCombo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.onDateFormatSelect(newValue));
+    this.dateFormatCombo.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.onDateFormatSelect(newValue));
 
     for (final TimeFormat timeFormat : TimeFormat.values())
       this.timeFormatCombo.getItems().add(new NotNullComboBoxItem<>(timeFormat,
           new CalendarDateTimeFormatter(language, timeFormat.getFormat()).format(sampleDate)));
-    this.timeFormatCombo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.onTimeFormatSelect(newValue));
+    this.timeFormatCombo.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.onTimeFormatSelect(newValue));
 
     //noinspection unchecked
     return this.getBorderPane(
@@ -90,8 +108,8 @@ public class SettingsDialog extends DialogBase<ButtonType> {
   }
 
   private BorderPane createTreeForm() {
-    this.maxTreeHeightField.valueProperty()
-        .addListener((observable, oldValue, newValue) -> this.onMaxTreeHeightUpdate(newValue));
+    this.maxTreeHeightField.valueProperty().addListener(
+        (observable, oldValue, newValue) -> this.onMaxTreeHeightUpdate(newValue));
 
     //noinspection unchecked,SuspiciousNameCombination
     return this.getBorderPane(

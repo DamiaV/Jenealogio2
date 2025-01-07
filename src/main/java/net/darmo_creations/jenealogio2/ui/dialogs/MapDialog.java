@@ -38,7 +38,13 @@ public class MapDialog extends DialogBase<ButtonType> {
    * @param config The app’s config.
    */
   public MapDialog(final @NotNull Config config) {
-    super(config, "map", true, false, ButtonTypes.CLOSE);
+    super(
+        config,
+        "map",
+        true,
+        false,
+        ButtonTypes.CLOSE
+    );
     final Language language = config.language();
     final Theme theme = config.theme();
 
@@ -51,7 +57,8 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.searchField = new ErasableTextField(config);
     HBox.setHgrow(this.searchField, Priority.ALWAYS);
     this.searchField.textField().setPromptText(language.translate("dialog.map.search.input"));
-    this.searchField.textField().textProperty().addListener((observableValue, oldValue, newValue) -> this.updateButtons());
+    this.searchField.textField().textProperty().addListener(
+        (observableValue, oldValue, newValue) -> this.updateButtons());
     this.searchField.textField().setOnAction(e -> this.onSearchAddress());
     this.searchField.addEraseListener(this::removeResultMarker);
     this.searchButton.setGraphic(theme.getIcon(Icon.SEARCH, Icon.Size.SMALL));
@@ -61,7 +68,11 @@ public class MapDialog extends DialogBase<ButtonType> {
     this.placesList.setOnMouseClicked(e -> this.onPlaceClick());
 
     this.mapView = new MapView(config);
-    final HBox filterBox = new HBox(5, new Label(language.translate("dialog.map.event_type")), this.eventTypeCombo);
+    final HBox filterBox = new HBox(
+        5,
+        new Label(language.translate("dialog.map.event_type")),
+        this.eventTypeCombo
+    );
     filterBox.setAlignment(Pos.CENTER_LEFT);
     final SplitPane content = new SplitPane(
         new VBox(
@@ -191,7 +202,10 @@ public class MapDialog extends DialogBase<ButtonType> {
             color = MapMarkerColor.RED;
           final Place place = events.get(0).place().orElseThrow();
           final Map<LifeEventType, Integer> typeCounts = events.stream()
-              .collect(Collectors.groupingBy(LifeEvent::type, Collectors.reducing(0, i -> 1, Integer::sum)));
+              .collect(Collectors.groupingBy(
+                  LifeEvent::type,
+                  Collectors.reducing(0, i -> 1, Integer::sum)
+              ));
           this.mapView.addMarker(latLon, color, new EventTypesTooltip(place.address(), typeCounts, this.config));
           this.placesList.getItems().add(new PlaceView(place, nb));
         });
@@ -207,7 +221,8 @@ public class MapDialog extends DialogBase<ButtonType> {
     final Language language = this.config.language();
 
     this.eventTypeCombo.getItems().clear();
-    this.eventTypeCombo.getItems().add(new ComboBoxItem<>(null, language.translate("dialog.map.event_type.all")));
+    this.eventTypeCombo.getItems().add(
+        new ComboBoxItem<>(null, language.translate("dialog.map.event_type.all")));
 
     LifeEventView.populateEventTypeCombo(this.familyTree, this.eventTypeCombo, this.config);
 

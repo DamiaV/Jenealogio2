@@ -64,7 +64,8 @@ public class ParentsListView extends VBox implements PersonRequester {
 
   private void onListChange() {
     final var maxCount = this.relationType.maxParentsCount();
-    this.addWitnessButton.setDisable(maxCount.isPresent() && this.personsListView.getItems().size() >= maxCount.get());
+    this.addWitnessButton.setDisable(
+        maxCount.isPresent() && this.personsListView.getItems().size() >= maxCount.get());
     this.updateListeners.forEach(UpdateListener::onUpdate);
   }
 
@@ -72,7 +73,8 @@ public class ParentsListView extends VBox implements PersonRequester {
    * Called when the selection in {@link #personsListView} changes.
    */
   private void onSelection() {
-    this.removeRelativeButton.setDisable(this.personsListView.getSelectionModel().getSelectedItems().isEmpty());
+    this.removeRelativeButton.setDisable(
+        this.personsListView.getSelectionModel().getSelectedItems().isEmpty());
   }
 
   /**
@@ -111,9 +113,12 @@ public class ParentsListView extends VBox implements PersonRequester {
   public void setPersons(final @NotNull Set<Person> persons) {
     final var maxCount = this.relationType.maxParentsCount();
     if (maxCount.isPresent() && persons.size() > maxCount.get())
-      throw new IllegalArgumentException("Too many persons, expected %d, got %d".formatted(maxCount.get(), persons.size()));
+      throw new IllegalArgumentException("Too many persons, expected %d, got %d"
+          .formatted(maxCount.get(), persons.size()));
     this.personsListView.getItems().clear();
-    this.personsListView.getItems().addAll(persons.stream().sorted(Person.birthDateThenNameComparator(false)).toList());
+    this.personsListView.getItems().addAll(persons.stream()
+        .sorted(Person.birthDateThenNameComparator(false))
+        .toList());
   }
 
   @Override

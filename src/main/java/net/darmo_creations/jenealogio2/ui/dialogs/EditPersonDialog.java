@@ -96,7 +96,13 @@ public class EditPersonDialog extends DialogBase<Person>
    * @param config The app’s config.
    */
   public EditPersonDialog(final @NotNull Config config) {
-    super(config, "edit_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+    super(
+        config,
+        "edit_person",
+        true,
+        ButtonTypes.OK,
+        ButtonTypes.CANCEL
+    );
     this.selectPersonDialog = new SelectPersonDialog(config);
     this.selectCoordinatesDialog = new SelectCoordinatesDialog(config);
 
@@ -151,10 +157,11 @@ public class EditPersonDialog extends DialogBase<Person>
               language.translate("life_status." + lifeStatus.name().toLowerCase())
           ))
           .toList());
-      this.lifeStatusCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-        if (!this.internalLifeStatusChange)
-          this.lifeStatusCache = newValue.data();
-      });
+      this.lifeStatusCombo.getSelectionModel().selectedItemProperty().addListener(
+          (observable, oldValue, newValue) -> {
+            if (!this.internalLifeStatusChange)
+              this.lifeStatusCache = newValue.data();
+          });
       this.addRow(gridPane, row++, "dialog.edit_person.profile.life_status", this.lifeStatusCombo);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -219,8 +226,8 @@ public class EditPersonDialog extends DialogBase<Person>
     {
       this.addRow(gridPane, row++, "dialog.edit_person.profile.agab", this.agabCombo);
       // If AGAB and gender comboboxes were identical, report the AGAB change to the gender combobox
-      this.agabCombo.getSelectionModel().selectedItemProperty()
-          .addListener((observable, oldValue, newValue) -> {
+      this.agabCombo.getSelectionModel().selectedItemProperty().addListener(
+          (observable, oldValue, newValue) -> {
             if (Objects.equals(oldValue, this.genderCombo.getSelectionModel().getSelectedItem()))
               this.genderCombo.getSelectionModel().select(newValue);
           });
@@ -255,7 +262,8 @@ public class EditPersonDialog extends DialogBase<Person>
           null,
           change -> change.getControlNewText().matches("^\\d*$") ? change : null
       ));
-      this.disambiguationIDField.textProperty().addListener((observable, oldValue, newValue) -> this.updateButtons());
+      this.disambiguationIDField.textProperty().addListener(
+          (observable, oldValue, newValue) -> this.updateButtons());
       gridPane.addRow(row++, hBox, this.disambiguationIDField);
       final RowConstraints rc = new RowConstraints();
       rc.setVgrow(Priority.SOMETIMES);
@@ -379,7 +387,8 @@ public class EditPersonDialog extends DialogBase<Person>
               : Objects.requireNonNull(gender.userDefinedName());
           return new ComboBoxItem<>(gender, text);
         })
-        .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
+        // Perform locale-dependent comparison
+        .sorted((i1, i2) -> collator.compare(i1.text(), i2.text()))
         .toList());
   }
 
@@ -513,7 +522,11 @@ public class EditPersonDialog extends DialogBase<Person>
   private void onEventDelete(@NotNull LifeEventView lifeEventView) {
     final String prefix = "alert.delete_life_event.";
     final boolean delete = Alerts.confirmation(
-        this.config, prefix + "header", prefix + "content", prefix + "title");
+        this.config,
+        prefix + "header",
+        prefix + "content",
+        prefix + "title"
+    );
     if (delete) {
       this.eventsToDelete.add(lifeEventView);
       this.lifeEventsList.getItems().remove(lifeEventView);

@@ -53,10 +53,8 @@ public class CalendarDateTimeFormatter {
         }
         this.tokens.add(new FormatTagToken(FormatTag.fromChar(c)));
         percent = false;
-      } else if (c == '%')
-        percent = true;
-      else
-        sb.append(c);
+      } else if (c == '%') percent = true;
+      else sb.append(c);
     }
     if (percent)
       throw new IllegalArgumentException("Incomplete format tag in pattern \"%s\"".formatted(pattern));
@@ -108,7 +106,16 @@ public class CalendarDateTimeFormatter {
   }
 
   private interface Token {
-    void apply(@NotNull StringBuilder sb, CalendarEra era, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar);
+    void apply(
+        @NotNull StringBuilder sb,
+        CalendarEra era,
+        int year,
+        int month,
+        int dayOfMonth,
+        int hours,
+        int minutes,
+        @NotNull Calendar<?> calendar
+    );
   }
 
   private record LiteraToken(@NotNull String text) implements Token {
@@ -117,7 +124,16 @@ public class CalendarDateTimeFormatter {
     }
 
     @Override
-    public void apply(@NotNull StringBuilder sb, CalendarEra era, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar) {
+    public void apply(
+        @NotNull StringBuilder sb,
+        CalendarEra era,
+        int year,
+        int month,
+        int dayOfMonth,
+        int hours,
+        int minutes,
+        @NotNull Calendar<?> calendar
+    ) {
       sb.append(this.text);
     }
   }
@@ -130,46 +146,55 @@ public class CalendarDateTimeFormatter {
     }
 
     @Override
-    public void apply(@NotNull StringBuilder sb, CalendarEra era, int y, int m, int d, int h, int min, @NotNull Calendar<?> calendar) {
+    public void apply(
+        @NotNull StringBuilder sb,
+        CalendarEra era,
+        int year,
+        int month,
+        int dayOfMonth,
+        int hours,
+        int minutes,
+        @NotNull Calendar<?> calendar
+    ) {
       final Language lang = CalendarDateTimeFormatter.this.language;
       switch (this.type) {
-        case DAY -> sb.append(d);
-        case DAY_PADDED -> sb.append("%02d".formatted(d));
-        case MONTH_NAME_ABBR -> sb.append(calendar.getMonthName(lang, m, true));
-        case MONTH_NAME -> sb.append(calendar.getMonthName(lang, m, false));
-        case MONTH -> sb.append(m);
-        case MONTH_PADDED -> sb.append("%02d".formatted(m));
-        case YEAR -> sb.append(y);
+        case DAY -> sb.append(dayOfMonth);
+        case DAY_PADDED -> sb.append("%02d".formatted(dayOfMonth));
+        case MONTH_NAME_ABBR -> sb.append(calendar.getMonthName(lang, month, true));
+        case MONTH_NAME -> sb.append(calendar.getMonthName(lang, month, false));
+        case MONTH -> sb.append(month);
+        case MONTH_PADDED -> sb.append("%02d".formatted(month));
+        case YEAR -> sb.append(year);
         case ERA -> {
           if (era != null)
             sb.append(' ').append(calendar.getEraName(lang, era, true));
         }
-        case HOUR_24 -> sb.append(h);
+        case HOUR_24 -> sb.append(hours);
         case HOUR_12 -> {
           if (calendar.hoursInDay() == 24)
-            sb.append(h % 12 == 0 ? 12 : h % 12);
+            sb.append(hours % 12 == 0 ? 12 : hours % 12);
           else
-            throw new IllegalArgumentException(
-                "Cannot use %s tag with non-24h calendar: %s".formatted(FormatTag.HOUR_12, calendar.name()));
+            throw new IllegalArgumentException("Cannot use %s tag with non-24h calendar: %s"
+                .formatted(FormatTag.HOUR_12, calendar.name()));
         }
-        case HOUR_24_PADDED -> sb.append("%02d".formatted(h));
+        case HOUR_24_PADDED -> sb.append("%02d".formatted(hours));
         case HOUR_12_PADDED -> {
           if (calendar.hoursInDay() == 24)
-            sb.append("%02d".formatted(h % 12 == 0 ? 12 : h % 12));
+            sb.append("%02d".formatted(hours % 12 == 0 ? 12 : hours % 12));
           else
-            throw new IllegalArgumentException(
-                "Cannot use %s tag with non-24h calendar: %s".formatted(FormatTag.HOUR_12_PADDED, calendar.name()));
+            throw new IllegalArgumentException("Cannot use %s tag with non-24h calendar: %s"
+                .formatted(FormatTag.HOUR_12_PADDED, calendar.name()));
         }
-        case MINUTE -> sb.append("%02d".formatted(min));
+        case MINUTE -> sb.append("%02d".formatted(minutes));
         case AMPM -> {
           if (calendar.hoursInDay() == 24) {
             final int noon = calendar.hoursInDay() / 2;
-            sb.append(lang.translate(h < noon ? "calendar.am" : "calendar.pm"));
+            sb.append(lang.translate(hours < noon ? "calendar.am" : "calendar.pm"));
           } else
-            throw new IllegalArgumentException(
-                "Cannot use %s tag with non-24h calendar: %s".formatted(FormatTag.AMPM, calendar.name()));
+            throw new IllegalArgumentException("Cannot use %s tag with non-24h calendar: %s"
+                .formatted(FormatTag.AMPM, calendar.name()));
         }
-        case SUFFIX -> lang.getDaySuffix(d).ifPresent(sb::append);
+        case SUFFIX -> lang.getDaySuffix(dayOfMonth).ifPresent(sb::append);
         case PERCENT -> sb.append('%');
       }
     }

@@ -18,7 +18,13 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
 
   @Override
   protected PersonWidget buildTree(final @NotNull FamilyTree familyTree, final @NotNull Person targettedPerson) {
-    final PersonWidget root = this.createPersonWidget(targettedPerson, null, false, true, familyTree);
+    final PersonWidget root = this.createPersonWidget(
+        targettedPerson,
+        null,
+        false,
+        true,
+        familyTree
+    );
     this.drawParents(root, familyTree);
     this.drawSiblings(root, familyTree);
     this.drawDonatedChildren(root, familyTree);
@@ -31,14 +37,14 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
       final @NotNull FamilyTree familyTree
   ) {
     final Person targettedPerson = root.person().orElseThrow();
-    final List<PersonWidget> biologicalParents = this.createParentWidgetsForType(targettedPerson, BIOLOGICAL_PARENT, familyTree);
-    final List<PersonWidget> nonBiologicalParents = this.createParentWidgetsForType(targettedPerson, NON_BIOLOGICAL_PARENT, familyTree);
-    final Optional<PersonWidget> eggDonor = this.createParentWidgetForType(targettedPerson, EGG_DONOR, familyTree);
-    final Optional<PersonWidget> spermDonor = this.createParentWidgetForType(targettedPerson, SPERM_DONOR, familyTree);
-    final Optional<PersonWidget> surrogateParent = this.createParentWidgetForType(targettedPerson, SURROGATE_PARENT, familyTree);
-    final List<PersonWidget> adoptiveParents = this.createParentWidgetsForType(targettedPerson, ADOPTIVE_PARENT, familyTree);
-    final List<PersonWidget> fosterParents = this.createParentWidgetsForType(targettedPerson, FOSTER_PARENT, familyTree);
-    final List<PersonWidget> godparents = this.createParentWidgetsForType(targettedPerson, GODPARENT, familyTree);
+    final var biologicalParents = this.createParentWidgetsForType(targettedPerson, BIOLOGICAL_PARENT, familyTree);
+    final var nonBiologicalParents = this.createParentWidgetsForType(targettedPerson, NON_BIOLOGICAL_PARENT, familyTree);
+    final var eggDonor = this.createParentWidgetForType(targettedPerson, EGG_DONOR, familyTree);
+    final var spermDonor = this.createParentWidgetForType(targettedPerson, SPERM_DONOR, familyTree);
+    final var surrogateParent = this.createParentWidgetForType(targettedPerson, SURROGATE_PARENT, familyTree);
+    final var adoptiveParents = this.createParentWidgetsForType(targettedPerson, ADOPTIVE_PARENT, familyTree);
+    final var fosterParents = this.createParentWidgetsForType(targettedPerson, FOSTER_PARENT, familyTree);
+    final var godparents = this.createParentWidgetsForType(targettedPerson, GODPARENT, familyTree);
 
     final double rootX = root.getLayoutX();
     final double rootY = root.getLayoutY();
@@ -260,7 +266,13 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
         !Sets.difference(Sets.merge(person.children()), Set.of(targettedPerson)).isEmpty() ||
         !person.getPartnersAndChildren().isEmpty() ||
         !person.getSiblings().isEmpty();
-    final PersonWidget widget = this.createPersonWidget(person, null, showMoreIcon, false, familyTree);
+    final PersonWidget widget = this.createPersonWidget(
+        person,
+        null,
+        showMoreIcon,
+        false,
+        familyTree
+    );
     widget.getStyleClass().add(cssClass);
     return widget;
   }
@@ -297,7 +309,13 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
     for (final var siblings : allSiblings) {
       for (final Person sibling : siblings.right()) {
         x -= HGAP + PersonWidget.WIDTH;
-        final PersonWidget widget = this.createPersonWidget(sibling, null, true, false, familyTree);
+        final PersonWidget widget = this.createPersonWidget(
+            sibling,
+            null,
+            true,
+            false,
+            familyTree
+        );
         widget.setLayoutX(x);
         widget.setLayoutY(rootY);
         final double lineX = x + PersonWidget.WIDTH / 2.0;
@@ -372,7 +390,13 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
           !Sets.difference(Sets.merge(child.parents()), Set.of(targettedPerson)).isEmpty() ||
               !child.getPartnersAndChildren().isEmpty() ||
               !child.getSiblings().isEmpty();
-      final PersonWidget widget = this.createPersonWidget(child, null, showMoreIcon, false, familyTree);
+      final PersonWidget widget = this.createPersonWidget(
+          child,
+          null,
+          showMoreIcon,
+          false,
+          familyTree
+      );
       widget.getStyleClass().add(cssClass);
       widget.setLayoutX(x);
       final double widgetY = y + i * (VGAP + PersonWidget.HEIGHT);
@@ -450,7 +474,13 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
         final List<ChildInfo> childInfo = children.stream()
             .map(c -> new ChildInfo(c, BIOLOGICAL_PARENT))
             .toList();
-        final PersonWidget widget = this.createPersonWidget(null, childInfo, false, false, familyTree);
+        final PersonWidget widget = this.createPersonWidget(
+            null,
+            childInfo,
+            false,
+            false,
+            familyTree
+        );
         widget.setLayoutX(x);
         widget.setLayoutY(rootY);
       } else {
@@ -461,7 +491,13 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
               !partner.getSiblings().isEmpty() ||
               // Any children that are not shown?
               !Sets.difference(Sets.merge(partner.parents()), partnersAndChildren.children()).isEmpty();
-          final PersonWidget widget = this.createPersonWidget(partner, null, showMoreIcon, false, familyTree);
+          final PersonWidget widget = this.createPersonWidget(
+              partner,
+              null,
+              showMoreIcon,
+              false,
+              familyTree
+          );
           widget.setLayoutX(x);
           widget.setLayoutY(rootY);
           if (i < partnersCount - 1)
@@ -493,7 +529,13 @@ public class FamilyMemberFullViewPane extends PersonTreeView {
       final boolean showMoreIcon = !Sets.difference(Sets.merge(child.parents()), visibleParents).isEmpty() ||
           !child.getSiblings().isEmpty() ||
           !child.getPartnersAndChildren().isEmpty();
-      final PersonWidget widget = this.createPersonWidget(child, null, showMoreIcon, false, familyTree);
+      final PersonWidget widget = this.createPersonWidget(
+          child,
+          null,
+          showMoreIcon,
+          false,
+          familyTree
+      );
       widget.setLayoutX(x);
       widget.setLayoutY(widgetY);
       widget.getStyleClass().add(CSS_CLASSES.get(child.getParentType(targettedPerson).orElseThrow()));

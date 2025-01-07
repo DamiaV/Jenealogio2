@@ -116,7 +116,13 @@ public class PersonWidget extends AnchorPane {
     imageBox.setMinWidth(MAX_IMAGE_SIZE);
     pane.getChildren().add(imageBox);
 
-    final VBox infoPane = new VBox(5, this.firstNameLabel, this.lastNameLabel, this.birthDateLabel, this.deathDateLabel);
+    final VBox infoPane = new VBox(
+        5,
+        this.firstNameLabel,
+        this.lastNameLabel,
+        this.birthDateLabel,
+        this.deathDateLabel
+    );
     infoPane.getStyleClass().add("person-data");
     pane.getChildren().add(infoPane);
 
@@ -199,8 +205,8 @@ public class PersonWidget extends AnchorPane {
    * @param mouseEvent The mouse event.
    */
   private void onClick(@NotNull MouseEvent mouseEvent) {
-    this.clickListeners.forEach(
-        clickListener -> clickListener.onClick(this, mouseEvent.getClickCount(), mouseEvent.getButton()));
+    this.clickListeners.forEach(clickListener -> clickListener.onClick(
+        this, mouseEvent.getClickCount(), mouseEvent.getButton()));
     mouseEvent.consume();
   }
 
@@ -219,8 +225,10 @@ public class PersonWidget extends AnchorPane {
     final Optional<Image> image = this.person.mainPicture()
         .map(p -> p.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
     this.imageView.setImage(image.orElse(DEFAULT_IMAGE));
-    this.imageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
-    this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
+    this.imageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight)
+        .orElse(Double.MAX_VALUE)));
+    this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth)
+        .orElse(Double.MAX_VALUE)));
 
     final String firstNames = this.person.getFirstNames().orElse(EMPTY_LABEL_VALUE);
     this.firstNameLabel.setText(firstNames);
@@ -230,13 +238,17 @@ public class PersonWidget extends AnchorPane {
     this.lastNameLabel.setText(lastName);
     this.lastNameLabel.setTooltip(new Tooltip(lastName));
 
-    final String birthYear = this.person.getBirthDate().map(PersonWidget::formatDateYear).orElse(EMPTY_LABEL_VALUE);
+    final String birthYear = this.person.getBirthDate()
+        .map(PersonWidget::formatDateYear)
+        .orElse(EMPTY_LABEL_VALUE);
     this.birthDateLabel.setText(birthYear);
     this.birthDateLabel.setGraphic(this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
     this.birthDateLabel.setTooltip(new Tooltip(birthYear));
 
     if (this.person.lifeStatus().isConsideredDeceased()) {
-      final String deathYear = this.person.getDeathDate().map(PersonWidget::formatDateYear).orElse(EMPTY_LABEL_VALUE);
+      final String deathYear = this.person.getDeathDate()
+          .map(PersonWidget::formatDateYear)
+          .orElse(EMPTY_LABEL_VALUE);
       this.deathDateLabel.setText(deathYear);
       this.deathDateLabel.setGraphic(this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.deathDateLabel.setTooltip(new Tooltip(deathYear));

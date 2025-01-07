@@ -23,7 +23,6 @@ import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
-import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
@@ -54,7 +53,14 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
    * @param config The app’s config.
    */
   public RegistriesDialog(final @NotNull Config config) {
-    super(config, "edit_registries", true, ButtonTypes.CANCEL, ButtonTypes.OK, ButtonTypes.APPLY);
+    super(
+        config,
+        "edit_registries",
+        true,
+        ButtonTypes.CANCEL,
+        ButtonTypes.OK,
+        ButtonTypes.APPLY
+    );
     final Language language = config.language();
     final Theme theme = config.theme();
 
@@ -112,7 +118,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
   }
 
   private void onImport() {
-    final Optional<Path> file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
+    final var file = FileChoosers.showRegistriesFileChooser(this.config, this.getOwner(), null);
     if (file.isEmpty())
       return;
     final RegistriesValues registries;
@@ -152,10 +158,10 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     if (!this.checkNotEmpty(eventTypes, genders, true))
       return;
     this.exportDialog.setItems(eventTypes, genders);
-    final Optional<ButtonType> buttonType = this.exportDialog.showAndWait();
+    final var buttonType = this.exportDialog.showAndWait();
     if (buttonType.isEmpty() || buttonType.get().getButtonData() != ButtonBar.ButtonData.OK_DONE)
       return;
-    final Optional<Path> file = FileChoosers.showRegistriesFileSaver(this.config, this.getOwner(), "registries");
+    final var file = FileChoosers.showRegistriesFileSaver(this.config, this.getOwner(), "registries");
     if (file.isEmpty())
       return;
     try {
@@ -177,7 +183,11 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
   }
 
-  private boolean checkNotEmpty(@NotNull List<LifeEventType> eventTypes, @NotNull List<Gender> genders, boolean exporting) {
+  private boolean checkNotEmpty(
+      @NotNull List<LifeEventType> eventTypes,
+      @NotNull List<Gender> genders,
+      boolean exporting
+  ) {
     if (eventTypes.isEmpty() && genders.isEmpty()) {
       final String key = exporting ? "export" : "import";
       Alerts.warning(
@@ -195,7 +205,8 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     final Language language = this.config.language();
     final Tab tab = new Tab(language.translate("dialog.edit_registries.tab.%s.title".formatted(name)));
 
-    final Label description = new Label(language.translate("dialog.edit_registries.tab.%s.description".formatted(name)));
+    final Label description = new Label(
+        language.translate("dialog.edit_registries.tab.%s.description".formatted(name)));
     description.setWrapText(true);
 
     VBox.setVgrow(registryView, Priority.ALWAYS);
@@ -528,11 +539,23 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
           language.translate("dialog.edit_registries.tab.genders.icon"));
       iconCol.setEditable(true);
       iconCol.setCellFactory(param -> new ImagePickerTableCell<>(() -> {
-        final Optional<Path> path = FileChoosers.showFileChooser(config, RegistriesDialog.this.stage(), "image_file", ".png", ".jpg", ".jpeg");
+        final var path = FileChoosers.showFileChooser(
+            config,
+            RegistriesDialog.this.stage(),
+            "image_file",
+            ".png",
+            ".jpg",
+            ".jpeg"
+        );
         if (path.isPresent()) {
           final Image image = new Image("file://" + path.get());
           if (image.getWidth() > 16 || image.getHeight() > 16) {
-            Alerts.warning(config, "alert.invalid_icon_image.header", null, null);
+            Alerts.warning(
+                config,
+                "alert.invalid_icon_image.header",
+                null,
+                null
+            );
             return Optional.empty();
           }
           return Optional.of(image);
@@ -572,7 +595,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
 
     @Override
     public void importEntry(@NotNull Gender entry) {
-      if (entry.isBuiltin()) {
+      if (entry.isBuiltin())
         for (int i = 0; i < this.entriesTable.getItems().size(); i++) {
           final GenderTableItem item = this.entriesTable.getItems().get(i);
           if (item.entry().key().equals(entry.key())) {
@@ -580,8 +603,7 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
             break;
           }
         }
-      } else
-        super.importEntry(entry);
+      else super.importEntry(entry);
     }
   }
 
@@ -768,7 +790,10 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
     }
   }
 
-  private static <S extends TableItem<?, ?>> void updateTableCell(@NotNull TableCell<S, ?> cell, boolean disableIfInUse) {
+  private static <S extends TableItem<?, ?>> void updateTableCell(
+      @NotNull TableCell<S, ?> cell,
+      boolean disableIfInUse
+  ) {
     final TableRow<S> row = cell.getTableRow();
     if (row == null)
       return;

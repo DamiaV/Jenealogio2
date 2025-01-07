@@ -39,7 +39,10 @@ public class GeneticFamilyTreePane extends PersonTreeView {
   }
 
   @Override
-  protected PersonWidget buildTree(final @NotNull FamilyTree familyTree, final @NotNull Person targettedPerson) {
+  protected PersonWidget buildTree(
+      final @NotNull FamilyTree familyTree,
+      final @NotNull Person targettedPerson
+  ) {
     final PersonWidget root = this.buildParentsTree(familyTree, targettedPerson);
     this.drawChildToParentsLines();
     this.buildChildrenAndSiblingsAndPartnersTree(root, familyTree);
@@ -52,8 +55,17 @@ public class GeneticFamilyTreePane extends PersonTreeView {
    * @param familyTree Tree to draw.
    * @return The widget for the tree’s root.
    */
-  private PersonWidget buildParentsTree(final @NotNull FamilyTree familyTree, final @NotNull Person targettedPerson) {
-    final PersonWidget root = this.createPersonWidget(targettedPerson, null, false, true, familyTree);
+  private PersonWidget buildParentsTree(
+      final @NotNull FamilyTree familyTree,
+      final @NotNull Person targettedPerson
+  ) {
+    final PersonWidget root = this.createPersonWidget(
+        targettedPerson,
+        null,
+        false,
+        true,
+        familyTree
+    );
 
     final List<List<PersonWidget>> levels = new ArrayList<>();
     levels.add(List.of(root));
@@ -236,7 +248,13 @@ public class GeneticFamilyTreePane extends PersonTreeView {
             .orElse(ParentalRelationType.BIOLOGICAL_PARENT);
         childInfo.add(new ChildInfo(child, parentType));
       }
-      final PersonWidget partnerWidget = this.createPersonWidget(partner, childInfo, hasHiddenParents, false, familyTree);
+      final PersonWidget partnerWidget = this.createPersonWidget(
+          partner,
+          childInfo,
+          hasHiddenParents,
+          false,
+          familyTree
+      );
       partnerWidget.setLayoutX(x);
       partnerWidget.setLayoutY(rootY);
 
@@ -259,7 +277,13 @@ public class GeneticFamilyTreePane extends PersonTreeView {
       final double childY = rootY + VGAP + personH;
       for (final Person child : children) {
         final boolean hasHiddenChildren = this.hasHiddenRelatives(child, 0, null, 0);
-        final PersonWidget childWidget = this.createPersonWidget(child, null, hasHiddenChildren, false, familyTree);
+        final PersonWidget childWidget = this.createPersonWidget(
+            child,
+            null,
+            hasHiddenChildren,
+            false,
+            familyTree
+        );
         childWidget.getStyleClass().add(CSS_CLASSES.get(child.getParentType(rootPerson).orElseThrow()));
         childWidget.setLayoutX(childX);
         childWidget.setLayoutY(childY);
@@ -292,7 +316,13 @@ public class GeneticFamilyTreePane extends PersonTreeView {
   ) {
     final double personW = PersonWidget.WIDTH;
     final boolean hasHiddenChildren = this.hasHiddenRelatives(sibling, 0, null, 0);
-    final PersonWidget widget = this.createPersonWidget(sibling, null, hasHiddenChildren, false, familyTree);
+    final PersonWidget widget = this.createPersonWidget(
+        sibling,
+        null,
+        hasHiddenChildren,
+        false,
+        familyTree
+    );
     widget.setLayoutX(x);
     widget.setLayoutY(rootY);
     widget.setParentWidget1(root.parentWidget1().orElse(null));

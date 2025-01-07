@@ -61,20 +61,21 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
     this.filterTextInput.textField().setPromptText(language.translate("dialog.select_documents.filter"));
     final FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
     this.documentsList.setItems(filteredList);
-    this.filterTextInput.textField().textProperty().addListener(((observable, oldValue, newValue) ->
-        filteredList.setPredicate(documentView -> {
-          if (newValue == null || newValue.isEmpty())
-            return true;
-          final String filter = newValue.toLowerCase();
-          final AttachedDocument document = documentView.document();
-          return document.fileName().toLowerCase().contains(filter)
-                 || document.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
-        })
-    ));
+    this.filterTextInput.textField().textProperty().addListener(
+        ((observable, oldValue, newValue) ->
+            filteredList.setPredicate(documentView -> {
+              if (newValue == null || newValue.isEmpty())
+                return true;
+              final String filter = newValue.toLowerCase();
+              final AttachedDocument document = documentView.document();
+              return document.fileName().toLowerCase().contains(filter)
+                  || document.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
+            })
+        ));
 
     this.documentsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    this.documentsList.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.updateButtons());
+    this.documentsList.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) -> this.updateButtons());
     this.documentsList.setOnMouseClicked(this::onListClicked);
     VBox.setVgrow(this.documentsList, Priority.ALWAYS);
 
@@ -137,7 +138,10 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
    * @param tree          Tree to pull documents from.
    * @param exclusionList List of documents to NOT add to the list view.
    */
-  public void updateDocumentsList(@NotNull FamilyTree tree, final @NotNull Collection<AttachedDocument> exclusionList) {
+  public void updateDocumentsList(
+      @NotNull FamilyTree tree,
+      final @NotNull Collection<AttachedDocument> exclusionList
+  ) {
     this.tree = Objects.requireNonNull(tree);
     this.filterTextInput.textField().setText(null);
     this.documentsList_.clear();
@@ -213,7 +217,12 @@ public class SelectDocumentDialog extends DialogBase<Collection<AttachedDocument
           new FormatArg("nb", errorsNb)
       );
     if (someAlreadyImported)
-      Alerts.warning(this.config, "alert.documents_already_imported.header", null, null);
+      Alerts.warning(
+          this.config,
+          "alert.documents_already_imported.header",
+          null,
+          null
+      );
   }
 
   /**

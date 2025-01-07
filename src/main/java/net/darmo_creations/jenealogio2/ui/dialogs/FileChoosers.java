@@ -69,7 +69,10 @@ public final class FileChoosers {
    * @return The selected file.
    */
   public static Optional<Path> showRegistriesFileSaver(
-      final @NotNull Config config, final @NotNull Window stage, String defaultName) {
+      final @NotNull Config config,
+      final @NotNull Window stage,
+      String defaultName
+  ) {
     return showFileChooser(
         config,
         stage,
@@ -90,7 +93,10 @@ public final class FileChoosers {
    * @return The selected file.
    */
   public static Optional<Path> showRegistriesFileChooser(
-      final @NotNull Config config, final @NotNull Window stage, String defaultName) {
+      final @NotNull Config config,
+      final @NotNull Window stage,
+      String defaultName
+  ) {
     return showFileChooser(
         config,
         stage,

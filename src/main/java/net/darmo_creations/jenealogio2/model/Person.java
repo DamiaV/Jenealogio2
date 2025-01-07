@@ -18,14 +18,10 @@ public class Person extends GenealogyObject<Person> {
   private static final Comparator<Person> LAST_THEN_FIRST_NAMES_COMPARATOR = (p1, p2) -> {
     int c1 = p1.getLastName().orElse("")
         .compareTo(p2.getLastName().orElse(""));
-    if (c1 != 0) {
-      return c1;
-    }
+    if (c1 != 0) return c1;
     int c2 = p1.getFirstNames().orElse("")
         .compareTo(p2.getFirstNames().orElse(""));
-    if (c2 != 0) {
-      return c2;
-    }
+    if (c2 != 0) return c2;
     return p1.disambiguationID().orElse(-1)
         .compareTo(p2.disambiguationID().orElse(-1));
   };
@@ -34,17 +30,11 @@ public class Person extends GenealogyObject<Person> {
     Optional<DateTime> birthDate2 = p2.getBirthDate();
     if (birthDate1.isPresent() && birthDate2.isPresent()) {
       int c = birthDate1.get().compareTo(birthDate2.get());
-      if (reversed) {
-        c = -c;
-      }
-      if (c != 0) {
-        return c;
-      }
+      if (reversed) c = -c;
+      if (c != 0) return c;
     }
     int c = lastThenFirstNamesComparator().compare(p1, p2);
-    if (reversed) {
-      c = -c;
-    }
+    if (reversed) c = -c;
     return c;
   };
   private static final Comparator<Person> BIRTH_DATE_THEN_NAME_COMPARATOR =

@@ -38,9 +38,9 @@ public final class FileUtils {
         if (ze != null) {
           final Path newFile = destDir.resolve(ze.getName());
           App.LOGGER.info("Unzipping to " + newFile.toAbsolutePath());
-          if (ze.isDirectory())
+          if (ze.isDirectory()) {
             Files.createDirectories(newFile);
-          else {
+          } else {
             Files.createDirectories(newFile.getParent());
             try (final FileOutputStream fos = new FileOutputStream(newFile.toFile())) {
               int len;
@@ -129,13 +129,13 @@ public final class FileUtils {
     final String osName = System.getProperty("os.name").toLowerCase();
     final String[] command;
     if (osName.contains("linux"))
-      command = new String[] { "dbus-send", "--dest=org.freedesktop.FileManager1", "--type=method_call",
+      command = new String[] {"dbus-send", "--dest=org.freedesktop.FileManager1", "--type=method_call",
           "/org/freedesktop/FileManager1", "org.freedesktop.FileManager1.ShowItems",
-          "array:string:file:%s".formatted(path), "string:\"\"" };
+          "array:string:file:%s".formatted(path), "string:\"\""};
     else if (osName.contains("win"))
-      command = new String[] { "explorer /select,\"{path}\"" };
+      command = new String[] {"explorer /select,\"{path}\""};
     else if (osName.contains("mac"))
-      command = new String[] { "open", "-R", path.toString() };
+      command = new String[] {"open", "-R", path.toString()};
     else {
       App.LOGGER.error("Unable to open file system explorer: unsupported operating system %s".formatted(osName));
       return;

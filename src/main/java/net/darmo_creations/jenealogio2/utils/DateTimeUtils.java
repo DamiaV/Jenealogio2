@@ -46,7 +46,11 @@ public final class DateTimeUtils {
    * @param config     The app’s config.
    * @return The formatted date.
    */
-  public static String formatDateTime(@NotNull DateTime date, boolean useIsoDate, final @NotNull Config config) {
+  public static String formatDateTime(
+      @NotNull DateTime date,
+      boolean useIsoDate,
+      final @NotNull Config config
+  ) {
     Objects.requireNonNull(date);
     final Language language = config.language();
     final var formatter = getCalendarDateTimeFormatter(config, language, useIsoDate);
@@ -75,7 +79,11 @@ public final class DateTimeUtils {
     throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
   }
 
-  private static Function<CalendarSpecificDateTime, String> getCalendarDateTimeFormatter(final @NotNull Config config, @NotNull Language language, boolean useIsoDate) {
+  private static Function<CalendarSpecificDateTime, String> getCalendarDateTimeFormatter(
+      final @NotNull Config config,
+      @NotNull Language language,
+      boolean useIsoDate
+  ) {
     final String dateFormat = config.dateFormat().getFormat();
     final TimeFormat tf = config.timeFormat();
     final String timeFormat = tf.getFormat();

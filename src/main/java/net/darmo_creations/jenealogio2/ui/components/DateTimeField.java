@@ -60,14 +60,18 @@ public class DateTimeField extends VBox {
     this.setupField(this.hourField, 40, "hour", false);
     this.setupField(this.minuteField, 40, "minute", false);
     this.calendarEraField.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.notifyListeners());
+        .addListener((observable, oldValue, newValue) ->
+            this.notifyListeners());
 
     final Language language = this.config.language();
     for (final Calendar<?> calendar : CALENDARS)
-      this.calendarField.getItems()
-          .add(new NotNullComboBoxItem<>(calendar, language.translate("calendar.%s.name".formatted(calendar.name()))));
+      this.calendarField.getItems().add(new NotNullComboBoxItem<>(
+          calendar,
+          language.translate("calendar.%s.name".formatted(calendar.name()))
+      ));
     this.calendarField.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.onCalendarChange(newValue.data()));
+        .addListener((observable, oldValue, newValue) ->
+            this.onCalendarChange(newValue.data()));
     this.calendarField.getSelectionModel().select(0);
 
     final Label colonLabel = new Label(":");
@@ -111,7 +115,8 @@ public class DateTimeField extends VBox {
     ));
     textField.setPrefWidth(width);
     textField.setPromptText(this.config.language().translate("date_time_field.%s.prompt".formatted(name)));
-    textField.textProperty().addListener((observable, oldValue, newValue) -> this.notifyListeners());
+    textField.textProperty()
+        .addListener((observable, oldValue, newValue) -> this.notifyListeners());
   }
 
   /**
@@ -187,7 +192,8 @@ public class DateTimeField extends VBox {
     if (!calendar.eras().isEmpty()) {
       this.calendarEraField.setVisible(true);
       calendar.eras().forEach(era -> {
-        final String text = language.translate("calendar.%s.era.%s".formatted(calendar.name(), era.name().toLowerCase()));
+        final String text = language.translate("calendar.%s.era.%s"
+            .formatted(calendar.name(), era.name().toLowerCase()));
         this.calendarEraField.getItems().add(new NotNullComboBoxItem<>(era, text));
       });
       this.calendarEraField.getSelectionModel().select(0);

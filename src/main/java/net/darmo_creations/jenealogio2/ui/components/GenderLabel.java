@@ -27,10 +27,8 @@ public class GenderLabel extends Label {
       else
         text = gender.userDefinedName();
     }
-    if (this.showText)
-      this.setText(text);
-    else
-      this.setTooltip(text != null ? new Tooltip(text) : null);
+    if (this.showText) this.setText(text);
+    else this.setTooltip(text != null ? new Tooltip(text) : null);
     this.setGraphic(gender != null ? new ImageView(gender.icon()) : null);
   }
 }

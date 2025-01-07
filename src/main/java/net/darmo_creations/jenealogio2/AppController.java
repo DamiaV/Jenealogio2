@@ -109,8 +109,7 @@ public class AppController {
     this.config = Objects.requireNonNull(config);
     final Theme theme = config.theme();
     final Image icon = theme.getAppIcon();
-    if (icon != null)
-      stage.getIcons().add(icon);
+    if (icon != null) stage.getIcons().add(icon);
     stage.setMinWidth(300);
     stage.setMinHeight(200);
     stage.setTitle(App.NAME);
@@ -643,8 +642,8 @@ public class AppController {
         this.familyTree.name(),
         StringUtils.filePathTextFormatter()
     );
-    if (name.isEmpty())
-      return;
+    if (name.isEmpty()) return;
+
     this.familyTree.setName(name.get());
     this.unsavedChanges = true;
     this.updateUI();
@@ -673,11 +672,17 @@ public class AppController {
       );
       if (name.isEmpty())
         return false;
-      if (App.treesMetadataManager().treesMetadata().keySet().stream().noneMatch(Predicate.isEqual(name.get()))) {
+      final var treesMetadata = App.treesMetadataManager().treesMetadata().keySet().stream();
+      if (treesMetadata.noneMatch(Predicate.isEqual(name.get()))) {
         this.setFamilyTree(new FamilyTree(name.get()), App.USER_DATA_DIR.resolve(name.get()));
         this.onSaveAction();
       } else {
-        Alerts.warning(this.config, "alert.tree_already_exists.header", null, null);
+        Alerts.warning(
+            this.config,
+            "alert.tree_already_exists.header",
+            null,
+            null
+        );
         proceed = false;
       }
     } while (!proceed);
@@ -714,13 +719,13 @@ public class AppController {
   private void onImportTreeAction() {
     if (this.unsavedChanges && !this.canProceedAfterOptionalSave()) return;
 
-    final Optional<Path> f = FileChoosers.showZippedTreeFileChooser(this.config, this.stage);
-    if (f.isEmpty())
-      return;
+    final var file = FileChoosers.showZippedTreeFileChooser(this.config, this.stage);
+    if (file.isEmpty()) return;
+
     final String targetDir;
     try {
       FileUtils.deleteRecursively(App.TEMP_DIR);
-      targetDir = FileUtils.unzip(f.get(), App.TEMP_DIR);
+      targetDir = FileUtils.unzip(file.get(), App.TEMP_DIR);
       Files.move(App.TEMP_DIR.resolve(targetDir), App.USER_DATA_DIR.resolve(targetDir));
       FileUtils.deleteRecursively(App.TEMP_DIR);
     } catch (final IOException e) {
@@ -741,9 +746,10 @@ public class AppController {
    * Open a file chooser dialog to export this tree as a ZIP file.
    */
   private void onExportTreeAction() {
-    final Optional<Path> file = FileChoosers.showZippedTreeFileSaver(this.config, this.stage, this.familyTree.name());
+    final var file = FileChoosers.showZippedTreeFileSaver(this.config, this.stage, this.familyTree.name());
     if (file.isEmpty())
       return;
+
     try {
       FileUtils.zip(this.loadedFile, file.get());
     } catch (final IOException e) {
@@ -840,6 +846,7 @@ public class AppController {
         || direction < 0 && this.selectionIndex == 0
         || direction > 0 && this.selectionIndex == this.selectionHistory.size() - 1)
       return;
+
     this.selectionIndex += direction;
     final Person selection = this.selectionHistory.get(this.selectionIndex);
     final var event = new PersonClickedEvent(selection, PersonClickedEvent.Action.SELECT);
@@ -869,7 +876,12 @@ public class AppController {
    * Open person edit dialog to create a new person.
    */
   private void onAddPersonAction() {
-    this.openEditPersonDialog(null, null, null, EditPersonDialog.TAB_PROFILE);
+    this.openEditPersonDialog(
+        null,
+        null,
+        null,
+        EditPersonDialog.TAB_PROFILE
+    );
   }
 
   /**
@@ -897,8 +909,12 @@ public class AppController {
    * Open person edit dialog to edit the specified tab.
    */
   private void openEditPersonDialogOnTab(int tabIndex) {
-    this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(person, null, null, tabIndex));
+    this.getSelectedPerson().ifPresent(person -> this.openEditPersonDialog(
+        person,
+        null,
+        null,
+        tabIndex
+    ));
   }
 
   /**
@@ -936,7 +952,11 @@ public class AppController {
       }
 
       final boolean delete = Alerts.confirmation(
-          this.config, "alert.delete_person.header", null, "alert.delete_person.title");
+          this.config,
+          "alert.delete_person.header",
+          null,
+          "alert.delete_person.title"
+      );
       if (delete) {
         this.familyTree.removePerson(person);
 
@@ -959,19 +979,24 @@ public class AppController {
    * Open person edit dialog to create a new sibling of the selected person.
    */
   private void onAddSiblingAction() {
-    this.getSelectedPerson().ifPresent(
-        person -> this.openEditPersonDialog(null, null, person.parents(), EditPersonDialog.TAB_PROFILE));
+    this.getSelectedPerson().ifPresent(person -> this.openEditPersonDialog(
+        null,
+        null,
+        person.parents(),
+        EditPersonDialog.TAB_PROFILE
+    ));
   }
 
   /**
    * Open person edit dialog to create a new child of the selected person.
    */
   private void onAddChildAction() {
-    this.getSelectedPerson().ifPresent(
-        person -> {
-          final var parent = Map.of(ParentalRelationType.BIOLOGICAL_PARENT, Set.of(person));
-          this.openEditPersonDialog(null, null, parent, EditPersonDialog.TAB_PROFILE);
-        });
+    this.getSelectedPerson().ifPresent(person -> this.openEditPersonDialog(
+        null,
+        null,
+        Map.of(ParentalRelationType.BIOLOGICAL_PARENT, Set.of(person)),
+        EditPersonDialog.TAB_PROFILE
+    ));
   }
 
   /**
@@ -980,7 +1005,12 @@ public class AppController {
    * @param childInfo Information about the children of the parent to create.
    */
   private void onNewParentClick(@NotNull List<ChildInfo> childInfo) {
-    this.openEditPersonDialog(null, childInfo, null, EditPersonDialog.TAB_PROFILE);
+    this.openEditPersonDialog(
+        null,
+        childInfo,
+        null,
+        EditPersonDialog.TAB_PROFILE
+    );
   }
 
   /**
@@ -1030,7 +1060,12 @@ public class AppController {
     }
     this.personDetailsView.setPerson(person, this.familyTree);
     if (event instanceof PersonClickedEvent e && e.action() == PersonClickedEvent.Action.EDIT)
-      this.openEditPersonDialog(person, null, null, EditPersonDialog.TAB_PROFILE);
+      this.openEditPersonDialog(
+          person,
+          null,
+          null,
+          EditPersonDialog.TAB_PROFILE
+      );
     this.updateUI();
   }
 
@@ -1108,7 +1143,10 @@ public class AppController {
       this.statisticsPanel.refresh();
       this.personDetailsView.refresh();
       if (person == null && childInfo != null && childInfo.isEmpty())
-        this.onPersonClick(new PersonClickedEvent(editedPerson, PersonClickedEvent.Action.SET_AS_TARGET), null);
+        this.onPersonClick(
+            new PersonClickedEvent(editedPerson, PersonClickedEvent.Action.SET_AS_TARGET),
+            null
+        );
       this.unsavedChanges = true;
       this.updateUI();
     });
@@ -1135,10 +1173,10 @@ public class AppController {
     if (this.mapDialog.isShowing())
       this.mapDialog.refresh(this.familyTree);
 
-    final Optional<Person> selectedPerson = this.getSelectedPerson();
+    final var selectedPerson = this.getSelectedPerson();
     final boolean selection = selectedPerson.isPresent();
     final boolean hasAnyParents = selection && selectedPerson.get().hasAnyParents();
-    final boolean selectedIsRoot = selection && selectedPerson.map(this.familyTree::isRoot).orElse(false);
+    final boolean selectedIsRoot = selection && this.familyTree.isRoot(selectedPerson.get());
 
     this.openTreeMenu.getItems().clear();
     final Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
@@ -1147,7 +1185,8 @@ public class AppController {
           .filter(m -> !m.directoryName().equals(fileName))
           .sorted()
           .forEach(m -> {
-            final MenuItem item = new MenuItem("%s (%s)".formatted(m.name(), App.USER_DATA_DIR.resolve(m.directoryName())));
+            final Path treeDirectory = App.USER_DATA_DIR.resolve(m.directoryName());
+            final MenuItem item = new MenuItem("%s (%s)".formatted(m.name(), treeDirectory));
             item.setOnAction(event -> this.onOpenTreeAction(m.directoryName()));
             this.openTreeMenu.getItems().add(item);
           });
@@ -1168,7 +1207,8 @@ public class AppController {
 
     this.saveToolbarButton.setDisable(!this.unsavedChanges);
     this.previousSelectionToolbarButton.setDisable(this.selectionIndex <= 0);
-    this.nextSelectionToolbarButton.setDisable(this.selectionIndex == -1 || this.selectionIndex == this.selectionHistory.size() - 1);
+    this.nextSelectionToolbarButton.setDisable(
+        this.selectionIndex == -1 || this.selectionIndex == this.selectionHistory.size() - 1);
     this.setAsRootToolbarButton.setDisable(!selection || selectedIsRoot);
     this.addChildToolbarButton.setDisable(!selection);
     this.addSiblingToolbarButton.setDisable(!hasAnyParents);

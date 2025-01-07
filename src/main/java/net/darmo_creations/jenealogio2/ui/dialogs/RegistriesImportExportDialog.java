@@ -28,7 +28,13 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
    * @param importing If true, setup as an import dialog, otherwise setup as an export dialog.
    */
   public RegistriesImportExportDialog(final @NotNull Config config, boolean importing) {
-    super(config, importing ? "registries_import" : "registries_export", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+    super(
+        config,
+        importing ? "registries_import" : "registries_export",
+        true,
+        ButtonTypes.OK,
+        ButtonTypes.CANCEL
+    );
     final Language language = config.language();
 
     final Label descLabel = new Label(
@@ -61,7 +67,7 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
 
   private void updateButtons() {
     final boolean noSelection = !this.eventTypesTab.getSelectedItems().isEmpty()
-                                && !this.gendersTab.getSelectedItems().isEmpty();
+        && !this.gendersTab.getSelectedItems().isEmpty();
     this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(noSelection);
   }
 
@@ -69,13 +75,17 @@ public class RegistriesImportExportDialog extends DialogBase<ButtonType> {
     private final TreeView<T> treeView = new TreeView<>();
 
     public EntriesTab(String registryName) {
-      super(RegistriesImportExportDialog.this.config.language().translate("dialog.registries_import_export.tab." + registryName));
+      super(RegistriesImportExportDialog.this.config.language()
+          .translate("dialog.registries_import_export.tab." + registryName));
       final Language language = RegistriesImportExportDialog.this.config.language();
-      final Button selectAllButton = new Button(language.translate("dialog.registries_import_export.select_all"));
+      final Button selectAllButton = new Button(
+          language.translate("dialog.registries_import_export.select_all"));
       selectAllButton.setOnAction(event -> this.select(SelectionMode.ALL));
-      final Button deselectAllButton = new Button(language.translate("dialog.registries_import_export.deselect_all"));
+      final Button deselectAllButton = new Button(
+          language.translate("dialog.registries_import_export.deselect_all"));
       deselectAllButton.setOnAction(event -> this.select(SelectionMode.NONE));
-      final Button invertSelectionButton = new Button(language.translate("dialog.registries_import_export.invert_selection"));
+      final Button invertSelectionButton = new Button(
+          language.translate("dialog.registries_import_export.invert_selection"));
       invertSelectionButton.setOnAction(event -> this.select(SelectionMode.INVERT));
       final HBox buttonsBox = new HBox(5, selectAllButton, deselectAllButton, invertSelectionButton);
       this.treeView.setShowRoot(false);

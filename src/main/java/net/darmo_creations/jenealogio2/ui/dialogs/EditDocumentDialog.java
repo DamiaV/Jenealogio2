@@ -36,20 +36,31 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
    * @param config The app’s config.
    */
   public EditDocumentDialog(final @NotNull Config config) {
-    super(config, "edit_document", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+    super(
+        config,
+        "edit_document",
+        true,
+        ButtonTypes.OK,
+        ButtonTypes.CANCEL
+    );
 
     final Language language = config.language();
 
     this.imageViewBox = new HBox(this.imageView);
     this.imageViewBox.setAlignment(Pos.CENTER);
     this.imageViewBox.setMinHeight(200);
-    this.imageViewBox.heightProperty().addListener((observable, oldValue, newValue) -> this.updateImageViewSize());
-    this.stage().widthProperty().addListener((observable, oldValue, newValue) -> this.updateImageViewSize());
+    this.imageViewBox.heightProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.updateImageViewSize());
+    this.stage().widthProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.updateImageViewSize());
     this.imageView.setPreserveRatio(true);
     this.imageView.managedProperty().bind(this.imageView.visibleProperty());
 
     HBox.setHgrow(this.documentNameField, Priority.ALWAYS);
-    this.documentNameField.textProperty().addListener((observableValue, oldValue, newValue) -> this.updateUI());
+    this.documentNameField.textProperty().addListener(
+        (observableValue, oldValue, newValue) -> this.updateUI());
     this.documentNameField.setTextFormatter(StringUtils.filePathTextFormatter());
     final HBox documentNameBox = new HBox(
         5,
@@ -60,7 +71,8 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
     documentNameBox.setAlignment(Pos.CENTER_LEFT);
 
     this.dateTimeSelector = new DateTimeSelector(config);
-    this.dateTimeSelector.dateTimeProperty().addListener((observable, oldValue, newValue) -> this.updateUI());
+    this.dateTimeSelector.dateTimeProperty().addListener(
+        (observable, oldValue, newValue) -> this.updateUI());
 
     VBox.setVgrow(this.documentDescTextInput, Priority.ALWAYS);
 
@@ -90,7 +102,8 @@ public class EditDocumentDialog extends DialogBase<ButtonType> {
             .orElseThrow(() -> new RuntimeException("Document name cannot be empty"));
         if (!this.document.name().equals(newName))
           this.familyTree.renameDocument(this.document.fileName(), newName);
-        this.document.setDescription(StringUtils.stripNullable(this.documentDescTextInput.getText()).orElse(null));
+        this.document.setDescription(
+            StringUtils.stripNullable(this.documentDescTextInput.getText()).orElse(null));
         this.document.setDate(this.dateTimeSelector.getDateTime());
       }
       return buttonType;

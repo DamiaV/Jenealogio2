@@ -226,14 +226,19 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     // Event pane, hidden by default
 
     this.eventImageView.setPreserveRatio(true);
-    this.eventImageView.setOnMouseClicked(e -> this.onMainImageClicked(this.displayedLifeEvent, this.eventDocumentsList));
+    this.eventImageView.setOnMouseClicked(
+        e -> this.onMainImageClicked(this.displayedLifeEvent, this.eventDocumentsList));
 
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
     final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
-    final Button closeButton = new Button(null, this.config.theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL));
-    closeButton.setTooltip(new Tooltip(this.config.language().translate("person_details_view.close_life_event")));
+    final Button closeButton = new Button(
+        null,
+        this.config.theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL)
+    );
+    closeButton.setTooltip(new Tooltip(
+        this.config.language().translate("person_details_view.close_life_event")));
     closeButton.setOnAction(event -> this.eventsTab.setContent(this.eventsTabPane));
     final HBox hBox = new HBox(
         5,
@@ -432,7 +437,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private void populateFields() {
     final Optional<Image> image = this.person.mainPicture()
-        .map(picture -> picture.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+        .map(picture -> picture.image()
+            .orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
     this.imageView.setImage(image.orElse(null));
     this.imageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
     this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
@@ -450,8 +456,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.publicFirstNamesLabel.setTooltip(this.person.getJoinedPublicFirstNames().map(Tooltip::new).orElse(null));
     this.nicknamesLabel.setText(this.person.getJoinedNicknames().orElse("-"));
     this.nicknamesLabel.setTooltip(this.person.getJoinedNicknames().map(Tooltip::new).orElse(null));
-    this.person.notes().ifPresent(s -> this.notesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
-    this.person.sources().ifPresent(s -> this.sourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+    this.person.notes().ifPresent(
+        s -> this.notesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+    this.person.sources().ifPresent(
+        s -> this.sourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
 
     this.person.getLifeEventsAsActor().stream()
         .sorted()
@@ -502,7 +510,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
           .sorted(personComparator)
           .forEach(parent -> this.parentsLists.get(parentType).getItems().add(new PersonCard(parent)));
 
-    this.person.documents().forEach(p -> this.documentsList.getItems().add(new DocumentView(p, false, this.config)));
+    this.person.documents().forEach(
+        p -> this.documentsList.getItems().add(new DocumentView(p, false, this.config)));
     this.documentsList.getItems().sort(null);
   }
 
@@ -544,9 +553,11 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventImageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
 
     this.eventNotesTextFlow.getChildren().clear();
-    lifeEvent.notes().ifPresent(s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+    lifeEvent.notes().ifPresent(
+        s -> this.eventNotesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
     this.eventSourcesTextFlow.getChildren().clear();
-    lifeEvent.sources().ifPresent(s -> this.eventSourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
+    lifeEvent.sources().ifPresent(
+        s -> this.eventSourcesTextFlow.getChildren().addAll(StringUtils.parseText(s, App::openURL)));
 
     this.eventWitnessesList.getItems().clear();
     lifeEvent.witnesses().stream()
@@ -554,7 +565,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .forEach(w -> this.eventWitnessesList.getItems().add(new PersonCard(w)));
 
     this.eventDocumentsList.getItems().clear();
-    lifeEvent.documents().forEach(p -> this.eventDocumentsList.getItems().add(new DocumentView(p, false, this.config)));
+    lifeEvent.documents().forEach(
+        p -> this.eventDocumentsList.getItems().add(new DocumentView(p, false, this.config)));
     this.eventDocumentsList.getItems().sort(null);
 
     this.eventsTab.setContent(this.eventPane);
@@ -605,7 +617,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
      */
     public SectionLabel(@NotNull String key) {
       this.getStyleClass().add("person-details-header");
-      final Label label = new Label(PersonDetailsView.this.config.language().translate("person_details_view." + key));
+      final Label label = new Label(
+          PersonDetailsView.this.config.language().translate("person_details_view." + key));
       label.getStyleClass().add("person-details-title");
       AnchorPane.setTopAnchor(label, 0.0);
       AnchorPane.setBottomAnchor(label, 0.0);
@@ -656,8 +669,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       nameBox.getChildren().addAll(this.rootLabel, this.genderLabel, this.nameLabel);
 
       final HBox birthBox = new HBox(5);
-      birthBox.getChildren().addAll(new Label(null, theme.getIcon(Icon.BIRTH, Icon.Size.SMALL)), this.birthDateLabel);
-      this.deathBox.getChildren().addAll(new Label(null, theme.getIcon(Icon.DEATH, Icon.Size.SMALL)), this.deathDateLabel);
+      birthBox.getChildren()
+          .addAll(new Label(null, theme.getIcon(Icon.BIRTH, Icon.Size.SMALL)), this.birthDateLabel);
+      this.deathBox.getChildren()
+          .addAll(new Label(null, theme.getIcon(Icon.DEATH, Icon.Size.SMALL)), this.deathDateLabel);
 
       this.getChildren().addAll(
           imageBox,
@@ -679,7 +694,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       });
 
       final Optional<Image> image = person.mainPicture()
-          .map(p -> p.image().orElse(PersonDetailsView.this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+          .map(p -> p.image()
+              .orElse(PersonDetailsView.this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
       this.imageView.setImage(image.orElse(PersonWidget.DEFAULT_IMAGE));
       this.imageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
       this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
@@ -756,8 +772,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       if (lifeEvent.type().maxActors() > 1) {
         final Optional<Person> partner = lifeEvent.actors().stream().filter(p -> p != mainActor).findFirst();
         if (partner.isPresent()) {
-          final Label partnerLabel = new Label(config.language().translate("person_details_view.life_events.with"));
-          final Button b = new Button(partner.get().toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+          final Label partnerLabel = new Label(
+              config.language().translate("person_details_view.life_events.with"));
+          final Button b = new Button(
+              partner.get().toString(),
+              config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL)
+          );
           b.setUserData(partner.get());
           b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
           final HBox hBox = new HBox(5, partnerLabel, b);
@@ -784,8 +804,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
           .sorted(Person.birthDateThenNameComparator(false)).toList();
       boolean first = true;
       for (final Person actor : actors) {
-        final Label label = new Label(config.language().translate("person_details_view.life_events." + (first ? "of" : "and")));
-        final Button b = new Button(actor.toString(), config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+        final Label label = new Label(
+            config.language().translate("person_details_view.life_events." + (first ? "of" : "and")));
+        final Button b = new Button(
+            actor.toString(),
+            config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL)
+        );
         b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
         b.setUserData(actor);
         final HBox hBox = new HBox(5, label, b);
@@ -828,7 +852,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     private boolean internalUpdate = false;
 
     public ClickableImageView(final @NotNull Image defaultImage) {
-      final Tooltip tooltip = new Tooltip(PersonDetailsView.this.config.language().translate("person_details_view.main_image.tooltip"));
+      final Tooltip tooltip = new Tooltip(
+          PersonDetailsView.this.config.language().translate("person_details_view.main_image.tooltip"));
       this.setImage(defaultImage);
       this.imageProperty().addListener((observable, oldValue, newValue) -> {
         if (this.internalUpdate)

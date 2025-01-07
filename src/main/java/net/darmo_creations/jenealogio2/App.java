@@ -63,9 +63,8 @@ public class App extends Application {
    * Return the resource bundle of the currently selected language.
    */
   public static ResourceBundle getResourceBundle() {
-    if (resourceBundle == null) {
+    if (resourceBundle == null)
       resourceBundle = config.language().resources();
-    }
     return resourceBundle;
   }
 

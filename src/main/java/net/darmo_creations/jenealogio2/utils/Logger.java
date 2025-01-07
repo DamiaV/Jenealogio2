@@ -189,12 +189,11 @@ public final class Logger {
    */
   private void log(String message, @NotNull Level level) {
     if (level.isAboveOrSame(this.level)) {
-      final String s = this.format
+      this.output.println(this.format
           .replace("${date}", DateTimeUtils.format(LocalDateTime.now()))
           .replace("${level}", level.name())
           .replace("${name}", this.name)
-          .replace("${message}", message);
-      this.output.println(s);
+          .replace("${message}", message));
     }
   }
 

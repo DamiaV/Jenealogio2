@@ -1,8 +1,8 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Subclass of {@link ComboBoxItem} that prevents held data from being null.
@@ -16,7 +16,7 @@ public class NotNullComboBoxItem<T> extends ComboBoxItem<T> {
    * @param data Data to wrap.
    * @param text Text to show.
    */
-  public NotNullComboBoxItem(@NotNull T data, @NotNull String text) {
+  public NotNullComboBoxItem(final @NotNull T data, @NotNull String text) {
     super(Objects.requireNonNull(data), text);
   }
 
@@ -27,7 +27,7 @@ public class NotNullComboBoxItem<T> extends ComboBoxItem<T> {
    *
    * @param data Data to wrap.
    */
-  public NotNullComboBoxItem(@NotNull T data) {
+  public NotNullComboBoxItem(final @NotNull T data) {
     super(Objects.requireNonNull(data));
   }
 

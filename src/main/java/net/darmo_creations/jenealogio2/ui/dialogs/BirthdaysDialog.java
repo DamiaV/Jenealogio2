@@ -39,13 +39,20 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
    * @param config The app’s config.
    */
   public BirthdaysDialog(final @NotNull Config config) {
-    super(config, "birthdays", true, false, ButtonTypes.CLOSE);
+    super(
+        config,
+        "birthdays",
+        true,
+        false,
+        ButtonTypes.CLOSE
+    );
     final Language language = this.config.language();
 
     this.showDeceasedCheckBox.setText(language.translate("dialog.birthdays.show_deceased_birthdays"));
     this.showDeceasedCheckBox.setSelected(this.config.shouldShowDeceasedPersonsBirthdays());
     this.showDeceasedCheckBox.selectedProperty()
-        .addListener((observable, oldValue, newValue) -> this.onCheckBoxSelection(newValue));
+        .addListener((observable, oldValue, newValue) ->
+            this.onCheckBoxSelection(newValue));
     HBox.setMargin(this.showDeceasedCheckBox, new Insets(5));
 
     final HBox hBox = new HBox(this.showDeceasedCheckBox);
@@ -153,7 +160,9 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     this.updateList(this.afterTomorrowList, perMonth, afterTomorrow);
 
     final String baseTitle = this.config.language().translate("dialog.birthdays.tab.upcoming");
-    final int nb = this.todayList.getItems().size() + this.tomorrowList.getItems().size() + this.afterTomorrowList.getItems().size();
+    final int nb = this.todayList.getItems().size() +
+        this.tomorrowList.getItems().size() +
+        this.afterTomorrowList.getItems().size();
     if (nb != 0) {
       final String title = this.config.language().translate(
           "dialog.birthdays.tab.title_amount_format",
@@ -171,8 +180,11 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       @NotNull LocalDate date
   ) {
     list.getItems().clear();
-    birthdays.getOrDefault(date.getMonthValue(), Map.of()).getOrDefault(date.getDayOfMonth(), Set.of()).stream()
-        .sorted((e1, e2) -> Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
+    birthdays.getOrDefault(date.getMonthValue(), Map.of())
+        .getOrDefault(date.getDayOfMonth(), Set.of())
+        .stream()
+        .sorted((e1, e2) ->
+            Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
         .forEach(list.getItems()::add);
   }
 
@@ -219,7 +231,10 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
       super(5);
       this.person = person;
       this.setAlignment(Pos.CENTER_LEFT);
-      final Button button = new Button(person.toString(), BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
+      final Button button = new Button(
+          person.toString(),
+          BirthdaysDialog.this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL)
+      );
       button.setOnAction(event -> BirthdaysDialog.this.firePersonClickEvent(person));
       final Label birthYearLabel = new Label(
           PersonWidget.formatDateYear(person.getBirthDate().orElseThrow()),
@@ -254,7 +269,8 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     public BirthdayTab(int month) {
       if (month < 1 || month > 12)
         throw new IllegalArgumentException("invalid month value: " + month);
-      this.baseTitle = BirthdaysDialog.this.config.language().translate("calendar.gregorian.month." + month);
+      this.baseTitle = BirthdaysDialog.this.config.language()
+          .translate("calendar.gregorian.month." + month);
       this.setText(this.baseTitle);
 
       this.entriesList.setSelectionModel(new NoSelectionModel<>());
@@ -295,11 +311,13 @@ public class BirthdaysDialog extends DialogBase<ButtonType> implements PersonCli
     private class DayItem extends VBox {
       public DayItem(int day, final @NotNull Set<PersonItem> entries) {
         super(5);
-        final Label dayLabel = new Label(day + BirthdaysDialog.this.config.language().getDaySuffix(day).orElse(""));
+        final Label dayLabel = new Label(day + BirthdaysDialog.this.config.language()
+            .getDaySuffix(day).orElse(""));
         dayLabel.getStyleClass().add("birth-day");
         this.getChildren().add(dayLabel);
         entries.stream()
-            .sorted((e1, e2) -> Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
+            .sorted((e1, e2) ->
+                Person.lastThenFirstNamesComparator().compare(e1.person(), e2.person()))
             .forEach(this.getChildren()::add);
       }
     }

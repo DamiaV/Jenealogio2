@@ -25,8 +25,8 @@ public class ErasableTextField extends HBox {
   public ErasableTextField(@NotNull Config config) {
     super(5);
     HBox.setHgrow(this.textField, Priority.ALWAYS);
-    this.textField.textProperty().addListener(
-        (observable, oldValue, newValue) -> this.eraseButton.setDisable(newValue == null || newValue.isEmpty()));
+    this.textField.textProperty().addListener((observable, oldValue, newValue) ->
+        this.eraseButton.setDisable(newValue == null || newValue.isEmpty()));
     this.eraseButton.setGraphic(config.theme().getIcon(Icon.CLEAR_TEXT, Icon.Size.SMALL));
     this.eraseButton.setTooltip(new Tooltip(config.language().translate("erasable_text_field.erase_button.tooltip")));
     this.eraseButton.setOnAction(event -> {

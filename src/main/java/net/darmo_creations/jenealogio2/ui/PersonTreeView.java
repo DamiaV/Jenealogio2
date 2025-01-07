@@ -130,7 +130,10 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
    *
    * @return The targetted {@link PersonWidget}.
    */
-  protected abstract PersonWidget buildTree(final @NotNull FamilyTree familyTree, final @NotNull Person targettedPerson);
+  protected abstract PersonWidget buildTree(
+      final @NotNull FamilyTree familyTree,
+      final @NotNull Person targettedPerson
+  );
 
   @Override
   public Optional<Person> getSelectedPerson() {
@@ -150,7 +153,8 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
     Objects.requireNonNull(person);
     if (updateTarget
         // Update target if the person is not currently visible
-        || this.personWidgets.stream().noneMatch(w -> w.person().map(p -> p.equals(person)).orElse(false))) {
+        || this.personWidgets.stream().noneMatch(w -> w.person().map(p -> p.equals(person))
+        .orElse(false))) {
       this.targettedPerson = person;
       this.refresh();
     }

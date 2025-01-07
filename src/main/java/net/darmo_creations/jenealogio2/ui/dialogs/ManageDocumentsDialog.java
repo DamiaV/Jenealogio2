@@ -79,7 +79,14 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
    * @param config The app’s config.
    */
   public ManageDocumentsDialog(final @NotNull Config config) {
-    super(config, "manage_object_documents", true, ButtonTypes.OK, ButtonTypes.APPLY, ButtonTypes.CANCEL);
+    super(
+        config,
+        "manage_object_documents",
+        true,
+        ButtonTypes.OK,
+        ButtonTypes.APPLY,
+        ButtonTypes.CANCEL
+    );
 
     final Language language = config.language();
     final Theme theme = config.theme();
@@ -106,40 +113,58 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     this.removeMainImageButton.setText(language.translate("dialog.manage_object_documents.remove_main_image"));
     this.removeMainImageButton.setGraphic(theme.getIcon(Icon.REMOVE_MAIN_IMAGE, Icon.Size.SMALL));
     this.removeMainImageButton.setOnAction(e -> this.onRemoveMainImage());
-    this.removeMainImageButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_main_image"));
+    this.removeMainImageButton.hoverProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_main_image"));
     this.removeMainImageButton.managedProperty().bind(this.removeMainImageButton.visibleProperty());
 
     this.addDocumentButton.setGraphic(theme.getIcon(Icon.ADD_DOCUMENT, Icon.Size.SMALL));
     this.addDocumentButton.setOnAction(e -> this.onAddDocument());
-    this.addDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_%s_documents.add_document".formatted(this.genealogyObject != null ? "object" : "tree")));
+    this.addDocumentButton.hoverProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.showButtonDescription(
+                newValue,
+                "dialog.manage_%s_documents.add_document"
+                    .formatted(this.genealogyObject != null ? "object" : "tree")
+            ));
 
     this.setAsMainImageButton.setText(language.translate("dialog.manage_object_documents.set_as_main_image"));
     this.setAsMainImageButton.setGraphic(theme.getIcon(Icon.SET_AS_MAIN_IMAGE, Icon.Size.SMALL));
     this.setAsMainImageButton.setOnAction(e -> this.onSetAsMainImage());
-    this.setAsMainImageButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_object_documents.set_as_main_image"));
+    this.setAsMainImageButton.hoverProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.showButtonDescription(newValue, "dialog.manage_object_documents.set_as_main_image"));
     this.setAsMainImageButton.managedProperty().bind(this.setAsMainImageButton.visibleProperty());
 
     this.removeDocumentButton.setText(language.translate("dialog.manage_object_documents.remove_document"));
     this.removeDocumentButton.setGraphic(theme.getIcon(Icon.REMOVE_DOCUMENT, Icon.Size.SMALL));
     this.removeDocumentButton.setOnAction(e -> this.onRemoveDocuments());
     this.stage().getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE), this::onRemoveDocuments);
-    this.removeDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_document"));
+    this.removeDocumentButton.hoverProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_document"));
     this.removeDocumentButton.managedProperty().bind(this.removeDocumentButton.visibleProperty());
 
     this.editDocumentDescButton.setGraphic(theme.getIcon(Icon.EDIT_DOCUMENT_DESC, Icon.Size.SMALL));
     this.editDocumentDescButton.setOnAction(e -> this.onEditDocumentDesc());
-    this.editDocumentDescButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_%s_documents.edit_document_desc".formatted(this.genealogyObject != null ? "object" : "tree")));
+    this.editDocumentDescButton.hoverProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.showButtonDescription(
+                newValue,
+                "dialog.manage_%s_documents.edit_document_desc"
+                    .formatted(this.genealogyObject != null ? "object" : "tree")
+            ));
 
     this.deleteDocumentButton.setGraphic(theme.getIcon(Icon.DELETE_DOCUMENT, Icon.Size.SMALL));
     this.deleteDocumentButton.setOnAction(e -> this.onDeleteDocuments());
     this.stage().getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.SHIFT_DOWN), this::onDeleteDocuments);
-    this.deleteDocumentButton.hoverProperty().addListener((observable, oldValue, newValue)
-        -> this.showButtonDescription(newValue, "dialog.manage_%s_documents.delete_document".formatted(this.genealogyObject != null ? "object" : "tree")));
+    this.deleteDocumentButton.hoverProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.showButtonDescription(
+                newValue,
+                "dialog.manage_%s_documents.delete_document"
+                    .formatted(this.genealogyObject != null ? "object" : "tree")
+            ));
 
     final HBox title = new HBox(
         5,
@@ -159,21 +184,23 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     this.filterTextInput.textField().setPromptText(language.translate("dialog.select_documents.filter"));
     final FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
     this.documentsList.setItems(filteredList);
-    this.filterTextInput.textField().textProperty().addListener(((observable, oldValue, newValue) ->
-        filteredList.setPredicate(documentView -> {
-          if (newValue == null || newValue.isEmpty())
-            return true;
-          final String filter = newValue.toLowerCase();
-          final AttachedDocument document = documentView.document();
-          return document.fileName().toLowerCase().contains(filter)
-                 || document.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
-        })
-    ));
+    this.filterTextInput.textField().textProperty().addListener(
+        ((observable, oldValue, newValue) ->
+            filteredList.setPredicate(documentView -> {
+              if (newValue == null || newValue.isEmpty())
+                return true;
+              final String filter = newValue.toLowerCase();
+              final AttachedDocument document = documentView.document();
+              return document.fileName().toLowerCase().contains(filter)
+                  || document.description().map(d -> d.toLowerCase().contains(filter)).orElse(false);
+            })
+        ));
     content.getChildren().add(this.filterTextInput);
 
     this.documentsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    this.documentsList.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.updateButtons());
+    this.documentsList.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.updateButtons());
     this.documentsList.setOnMouseClicked(this::onListClicked);
     VBox.setVgrow(this.documentsList, Priority.ALWAYS);
     content.getChildren().add(this.documentsList);
@@ -221,8 +248,11 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
           new FormatArg("name", object.name(language))));
       final Optional<Picture> picture = this.genealogyObject.mainPicture();
       this.mainPicture = picture.orElse(null);
-      final Image defaultImage = object instanceof Person ? PersonWidget.DEFAULT_IMAGE : PersonDetailsView.DEFAULT_EVENT_IMAGE;
-      final Optional<Image> image = picture.map(p -> p.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+      final Image defaultImage = object instanceof Person
+          ? PersonWidget.DEFAULT_IMAGE
+          : PersonDetailsView.DEFAULT_EVENT_IMAGE;
+      final Optional<Image> image = picture.map(
+          p -> p.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
       this.mainImageView.setImage(image.orElse(defaultImage));
       this.mainImageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
       this.mainImageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
@@ -271,7 +301,8 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     if (!(dv.document() instanceof Picture pic))
       return;
     this.mainPicture = pic;
-    final Image image = this.mainPicture.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG));
+    final Image image = this.mainPicture.image()
+        .orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG));
     this.mainImageView.setImage(image);
     //noinspection DataFlowIssue
     this.mainImageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.getHeight()));
@@ -323,11 +354,13 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
 
   private void onDeleteDocuments() {
     final List<DocumentView> selection = this.getSelectedDocuments();
-    if (selection.isEmpty())
-      return;
+    if (selection.isEmpty()) return;
     if (!Alerts.confirmation(
-        this.config, "alert.delete_documents.header", null, "alert.delete_documents.title"))
-      return;
+        this.config,
+        "alert.delete_documents.header",
+        null,
+        "alert.delete_documents.title"
+    )) return;
     selection.forEach(dv -> {
       final AttachedDocument document = dv.document();
       if (document instanceof Picture pic && pic.equals(this.mainPicture))
@@ -381,9 +414,9 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     final boolean not1Selected = selectedItems.size() != 1;
     this.setAsMainImageButton.setDisable(
         not1Selected ||
-        selectedItems.get(0) != null // Selection list sometimes contains null
-        && (selectedItems.get(0).document().equals(this.mainPicture)
-            || !(selectedItems.get(0).document() instanceof Picture))
+            selectedItems.get(0) != null // Selection list sometimes contains null
+                && (selectedItems.get(0).document().equals(this.mainPicture)
+                || !(selectedItems.get(0).document() instanceof Picture))
     );
     this.editDocumentDescButton.setDisable(not1Selected);
     this.applyButton.setDisable(!this.pendingUpdates);
@@ -391,13 +424,13 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
 
   private void updateObject() {
     if (this.genealogyObject != null) {
-      this.documentsToRemove
-          .forEach(document -> this.familyTree.removeDocumentFromObject(document.fileName(), this.genealogyObject));
+      this.documentsToRemove.forEach(document ->
+          this.familyTree.removeDocumentFromObject(document.fileName(), this.genealogyObject));
       this.documentsToRemove.clear();
     }
 
-    this.documentsToDelete
-        .forEach(document -> this.familyTree.removeDocument(document.fileName()));
+    this.documentsToDelete.forEach(document ->
+        this.familyTree.removeDocument(document.fileName()));
     this.documentsToDelete.clear();
 
     this.documentsToAdd.forEach(p -> {

@@ -89,7 +89,7 @@ public final class Alerts {
       String titleKey,
       final @NotNull FormatArg... contentArgs
   ) {
-    final Optional<ButtonType> result = alert(config, AlertType.CONFIRMATION, headerKey, contentKey, titleKey, contentArgs);
+    final var result = alert(config, AlertType.CONFIRMATION, headerKey, contentKey, titleKey, contentArgs);
     return result.isPresent() && !result.get().getButtonData().isCancelButton();
   }
 

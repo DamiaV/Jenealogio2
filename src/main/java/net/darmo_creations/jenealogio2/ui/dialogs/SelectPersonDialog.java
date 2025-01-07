@@ -29,29 +29,40 @@ public class SelectPersonDialog extends DialogBase<Person> {
    * @param config The app’s config.
    */
   public SelectPersonDialog(final @NotNull Config config) {
-    super(config, "select_person", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+    super(
+        config,
+        "select_person",
+        true,
+        ButtonTypes.OK,
+        ButtonTypes.CANCEL
+    );
     final Language language = config.language();
 
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
     this.filterTextInput.setPromptText(language.translate("dialog.select_person.filter"));
     final FilteredList<PersonView> filteredList = new FilteredList<>(this.personList, data -> true);
     this.personListView.setItems(filteredList);
-    this.filterTextInput.textProperty().addListener((observable, oldValue, newValue) ->
-        filteredList.setPredicate(pictureView -> {
-          if (newValue == null || newValue.isEmpty())
-            return true;
-          return pictureView.person().matchesName(newValue.toLowerCase(), language);
-        })
+    this.filterTextInput.textProperty().addListener(
+        (observable, oldValue, newValue) ->
+            filteredList.setPredicate(pictureView -> {
+              if (newValue == null || newValue.isEmpty())
+                return true;
+              return pictureView.person().matchesName(newValue.toLowerCase(), language);
+            })
     );
 
-    this.personListView.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.updateButtons());
+    this.personListView.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) -> this.updateButtons());
     this.personListView.setOnMouseClicked(this::onListClicked);
     VBox.setVgrow(this.personListView, Priority.ALWAYS);
 
     final VBox content = new VBox(
         5,
-        new HBox(5, new Label(language.translate("dialog.select_person.persons_list")), this.filterTextInput),
+        new HBox(
+            5,
+            new Label(language.translate("dialog.select_person.persons_list")),
+            this.filterTextInput
+        ),
         this.personListView
     );
     content.setPrefWidth(400);
@@ -87,7 +98,8 @@ public class SelectPersonDialog extends DialogBase<Person> {
     tree.persons().stream()
         .filter(p -> !exclusionList.contains(p))
         .forEach(p -> this.personList.add(new PersonView(p)));
-    this.personList.sort((p1, p2) -> Person.lastThenFirstNamesComparator().compare(p1.person(), p2.person()));
+    this.personList.sort(
+        (p1, p2) -> Person.lastThenFirstNamesComparator().compare(p1.person(), p2.person()));
   }
 
   /**
@@ -114,15 +126,17 @@ public class SelectPersonDialog extends DialogBase<Person> {
     public PersonView(final @NotNull Person person) {
       super(5);
       this.person = person;
-      final ImageView imageView = new ImageView(person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
+      final ImageView imageView = new ImageView(
+          person.mainPicture().flatMap(Picture::image).orElse(PersonWidget.DEFAULT_IMAGE));
       imageView.setPreserveRatio(true);
       imageView.setFitWidth(IMAGE_SIZE);
       imageView.setFitHeight(IMAGE_SIZE);
       final Label nameLabel = new Label(person.toString());
-      final DateLabel birthLabel = new DateLabel(person.getBirthDate().orElse(null), "?", SelectPersonDialog.this.config);
-      birthLabel.setGraphic(SelectPersonDialog.this.config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
-      final DateLabel deathLabel = new DateLabel(person.getDeathDate().orElse(null), "?", SelectPersonDialog.this.config);
-      deathLabel.setGraphic(SelectPersonDialog.this.config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
+      final Config config = SelectPersonDialog.this.config;
+      final DateLabel birthLabel = new DateLabel(person.getBirthDate().orElse(null), "?", config);
+      birthLabel.setGraphic(config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
+      final DateLabel deathLabel = new DateLabel(person.getDeathDate().orElse(null), "?", config);
+      deathLabel.setGraphic(config.theme().getIcon(Icon.DEATH, Icon.Size.SMALL));
       this.getChildren().addAll(imageView, new VBox(5, nameLabel, birthLabel, deathLabel));
     }
 

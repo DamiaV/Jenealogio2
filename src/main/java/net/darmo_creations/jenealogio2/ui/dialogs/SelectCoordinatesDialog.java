@@ -30,7 +30,13 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
    * @param config The app’s config.
    */
   public SelectCoordinatesDialog(final @NotNull Config config) {
-    super(config, "select_coordinates", true, ButtonTypes.OK, ButtonTypes.CANCEL);
+    super(
+        config,
+        "select_coordinates",
+        true,
+        ButtonTypes.OK,
+        ButtonTypes.CANCEL
+    );
 
     final Language language = config.language();
     final Theme theme = config.theme();
@@ -38,7 +44,8 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
     this.searchField = new ErasableTextField(config);
     HBox.setHgrow(this.searchField, Priority.ALWAYS);
     this.searchField.textField().setPromptText(language.translate("dialog.select_coordinates.search.input"));
-    this.searchField.textField().textProperty().addListener((observableValue, oldValue, newValue) -> this.updateButtons());
+    this.searchField.textField().textProperty().addListener(
+        (observableValue, oldValue, newValue) -> this.updateButtons());
     this.searchField.textField().setOnAction(e -> this.onSearchAddress());
     this.searchButton.setGraphic(theme.getIcon(Icon.SEARCH, Icon.Size.SMALL));
     this.searchButton.setTooltip(new Tooltip(language.translate("dialog.select_coordinates.search.button")));
@@ -113,7 +120,9 @@ public class SelectCoordinatesDialog extends DialogBase<LatLon> {
   }
 
   private void updateButtons() {
-    this.searchButton.setDisable(StringUtils.stripNullable(this.searchField.textField().getText()).isEmpty());
-    this.getDialogPane().lookupButton(ButtonTypes.OK).setDisable(this.selectedPointProperty.get() == null);
+    this.searchButton.setDisable(
+        StringUtils.stripNullable(this.searchField.textField().getText()).isEmpty());
+    this.getDialogPane().lookupButton(ButtonTypes.OK)
+        .setDisable(this.selectedPointProperty.get() == null);
   }
 }

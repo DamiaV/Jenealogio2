@@ -26,7 +26,12 @@ public class AboutDialog extends DialogBase<ButtonType> {
    * @param config The app’s config.
    */
   public AboutDialog(final @NotNull Config config) {
-    super(config, "about", true, ButtonTypes.CLOSE);
+    super(
+        config,
+        "about",
+        true,
+        ButtonTypes.CLOSE
+    );
     final Label titleLabel = new Label();
     titleLabel.setText(App.NAME);
     titleLabel.setStyle("-fx-font-size: 1.5em; -fx-font-weight: bold");

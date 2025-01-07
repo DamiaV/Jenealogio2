@@ -44,9 +44,7 @@ class PlaceAutoCompletionBinding extends AutoCompletionBinding<Place> {
         this.setUserInput(newText);
     };
     this.focusChangedListener = (obs, oldFocused, newFocused) -> {
-      if (!newFocused) {
-        this.hidePopup();
-      }
+      if (!newFocused) this.hidePopup();
     };
     this.getCompletionTarget().textProperty().addListener(this.textChangeListener);
     this.getCompletionTarget().focusedProperty().addListener(this.focusChangedListener);

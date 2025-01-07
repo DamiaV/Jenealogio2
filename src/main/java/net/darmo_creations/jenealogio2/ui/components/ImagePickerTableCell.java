@@ -41,8 +41,7 @@ public class ImagePickerTableCell<S> extends TableCell<S, Image> {
   public void updateItem(Image item, boolean empty) {
     super.updateItem(item, empty);
     this.setText(null);
-    if (this.isEmpty())
-      this.setGraphic(null);
+    if (this.isEmpty()) this.setGraphic(null);
     else {
       this.imageView.setImage(item);
       this.setGraphic(this.hBox);

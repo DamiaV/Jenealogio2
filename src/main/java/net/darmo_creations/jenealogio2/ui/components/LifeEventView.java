@@ -104,7 +104,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
 
     populateEventTypeCombo(familyTree, this.eventTypeCombo, config);
     this.eventTypeCombo.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.onEventTypeChange(newValue));
+        .addListener((observable, oldValue, newValue) ->
+            this.onEventTypeChange(newValue));
     gridPane.addRow(0, new Label(language.translate("life_event_view.type")), this.eventTypeCombo);
 
     this.dateTimeSelector = new DateTimeSelector(config);
@@ -331,8 +332,9 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     final boolean datePresent = this.dateTimeSelector.getDateTime() != null;
     this.dateTimeSelector.pseudoClassStateChanged(PseudoClasses.INVALID, !datePresent);
     valid = datePresent;
-    final boolean invalidPartner = this.eventTypeCombo.getSelectionModel().getSelectedItem().data().maxActors() > 1
-        && this.partner == null;
+    final boolean invalidPartner =
+        this.eventTypeCombo.getSelectionModel().getSelectedItem().data().maxActors() > 1 &&
+            this.partner == null;
     this.partnerLabel.pseudoClassStateChanged(PseudoClasses.INVALID, invalidPartner);
     valid &= !invalidPartner;
     this.pseudoClassStateChanged(PseudoClasses.INVALID, !valid);
@@ -454,7 +456,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
     final Collator collator = Collator.getInstance(language.locale());
     for (final LifeEventType.Group group : LifeEventType.Group.values()) {
       final List<LifeEventType> types = groups.get(group);
-      final String prefix = "[%s] ".formatted(language.translate("life_event_type_group." + group.name().toLowerCase()));
+      final String prefix = "[%s] ".formatted(
+          language.translate("life_event_type_group." + group.name().toLowerCase()));
       types.stream()
           .map(type -> {
             final String name = type.isBuiltin()
@@ -462,7 +465,8 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
                 : Objects.requireNonNull(type.userDefinedName());
             return new NotNullComboBoxItem<>(type, prefix + name);
           })
-          .sorted((i1, i2) -> collator.compare(i1.text(), i2.text())) // Perform locale-dependent comparison
+          // Perform locale-dependent comparison
+          .sorted((i1, i2) -> collator.compare(i1.text(), i2.text()))
           .forEach(item -> eventTypeCombo.getItems().add(item));
     }
   }
@@ -484,7 +488,9 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
       this.placeLatField.setText(null);
       this.placeLonField.setText(null);
     }
-    final Optional<Person> otherActor = this.lifeEvent.actors().stream().filter(p -> p != this.person).findFirst();
+    final Optional<Person> otherActor = this.lifeEvent.actors().stream()
+        .filter(p -> p != this.person)
+        .findFirst();
     this.setPartner(otherActor.orElse(null));
     this.lifeEvent.witnesses().forEach(p -> this.witnessesList.getItems().add(p));
     this.notesField.setText(this.lifeEvent.notes().orElse(""));
@@ -492,7 +498,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   }
 
   private void setPartner(final Person partner) {
-    final NotNullComboBoxItem<LifeEventType> selectedItem = this.eventTypeCombo.getSelectionModel().getSelectedItem();
+    final var selectedItem = this.eventTypeCombo.getSelectionModel().getSelectedItem();
     final boolean oneActor = selectedItem.data().maxActors() == 1;
     this.partnerButton.setDisable(oneActor);
     this.partner = partner;

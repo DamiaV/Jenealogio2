@@ -73,9 +73,7 @@ public final class StringUtils {
     final int r = (int) Math.round(color.getRed() * 255);
     final int g = (int) Math.round(color.getGreen() * 255);
     final int b = (int) Math.round(color.getBlue() * 255);
-    if (color.isOpaque()) {
-      return String.format("#%02x%02x%02x", r, g, b);
-    }
+    if (color.isOpaque()) return String.format("#%02x%02x%02x", r, g, b);
     final int a = (int) Math.round(color.getOpacity() * 255);
     return String.format("#%02x%02x%02x%02x", r, g, b, a);
   }
@@ -86,7 +84,8 @@ public final class StringUtils {
    */
   public static TextFormatter<?> filePathTextFormatter() {
     return new TextFormatter<>(change -> {
-      if (TreeFileManager.INVALID_PATH_CHARS.stream().anyMatch(s -> change.getControlNewText().contains(s.toString())))
+      if (TreeFileManager.INVALID_PATH_CHARS.stream()
+          .anyMatch(s -> change.getControlNewText().contains(s.toString())))
         return null;
       return change;
     });
@@ -103,7 +102,8 @@ public final class StringUtils {
       final @NotNull Collection<String> words,
       boolean caseSensitive
   ) {
-    final Function<String, String> classifier = caseSensitive ? Function.identity() : String::toLowerCase;
+    final Function<String, String> classifier =
+        caseSensitive ? Function.identity() : String::toLowerCase;
     return words.stream().collect(Collectors.groupingBy(classifier, Collectors.counting()));
   }
 

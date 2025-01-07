@@ -49,7 +49,10 @@ public final class XmlUtils {
    * @param name    Name of child elements.
    * @return List of read elements.
    */
-  public static List<Element> getChildElements(final @NotNull Element element, @NotNull String name) {
+  public static List<Element> getChildElements(
+      final @NotNull Element element,
+      @NotNull String name
+  ) {
     final List<Element> elements = new LinkedList<>();
     final NodeList childNodes = element.getChildNodes();
     for (int i = 0; i < childNodes.getLength(); i++) {
@@ -122,7 +125,11 @@ public final class XmlUtils {
    * @param document     XML document to write to.
    * @param config       The app’s config.
    */
-  public static void writeFile(@NotNull OutputStream outputStream, final @NotNull Document document, final @NotNull Config config) {
+  public static void writeFile(
+      @NotNull OutputStream outputStream,
+      final @NotNull Document document,
+      final @NotNull Config config
+  ) {
     final Transformer tr;
     try {
       tr = TransformerFactory.newInstance().newTransformer();
