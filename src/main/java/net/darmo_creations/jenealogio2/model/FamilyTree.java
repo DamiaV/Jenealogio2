@@ -286,14 +286,6 @@ public class FamilyTree {
     return Optional.ofNullable(this.root);
   }
 
-  public GenderRegistry genderRegistry() {
-    return this.genderRegistry;
-  }
-
-  public LifeEventTypeRegistry lifeEventTypeRegistry() {
-    return this.lifeEventTypeRegistry;
-  }
-
   /**
    * Set this tree’s root.
    *
@@ -304,5 +296,13 @@ public class FamilyTree {
     if (!this.persons.contains(root))
       throw new NoSuchElementException("Person %s is not in this family tree".formatted(root));
     this.root = Objects.requireNonNull(root);
+  }
+
+  public GenderRegistry genderRegistry() {
+    return this.genderRegistry;
+  }
+
+  public LifeEventTypeRegistry lifeEventTypeRegistry() {
+    return this.lifeEventTypeRegistry;
   }
 }
