@@ -38,7 +38,7 @@ public class ComboBoxItem<T> {
   }
 
   /**
-   * The data help by this item.
+   * The data held by this item.
    */
   public @Nullable T data() {
     return this.data;
