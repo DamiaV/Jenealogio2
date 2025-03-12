@@ -18,6 +18,7 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
   private final String normalizedFileExt;
   private String description;
   private DateTime date;
+  // TODO specify which Persons are mentionned or visible in the document
 
   /**
    * Create a new document.
@@ -46,6 +47,7 @@ public class AttachedDocument implements Comparable<AttachedDocument> {
 
   /**
    * Set the current path of this document on the file system.
+   * This does NOT move the file on the file system.
    *
    * @param path This document’s new path.
    */

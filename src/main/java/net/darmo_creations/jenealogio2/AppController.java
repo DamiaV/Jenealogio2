@@ -41,6 +41,7 @@ public class AppController {
   private final MenuItem setAsRootMenuItem = new MenuItem();
   private final MenuItem editPersonMenuItem = new MenuItem();
   private final MenuItem removePersonMenuItem = new MenuItem();
+  private final MenuItem mergePersonsMenuItem = new MenuItem();
   private final MenuItem addChildMenuItem = new MenuItem();
   private final MenuItem addSiblingMenuItem = new MenuItem();
   private final MenuItem editParentsMenuItem = new MenuItem();
@@ -79,6 +80,7 @@ public class AppController {
   private final TreesManagerDialog treesManagerDialog;
   private final RegistriesDialog editRegistriesDialog;
   private final EditPersonDialog editPersonDialog;
+  private final MergePersonsDialog mergePersonsDialog;
   private final ManageDocumentsDialog editDocumentsDialog;
   private final BirthdaysDialog birthdaysDialog;
   private final MapDialog mapDialog;
@@ -124,6 +126,7 @@ public class AppController {
     this.treesManagerDialog = new TreesManagerDialog(config);
     this.editRegistriesDialog = new RegistriesDialog(config);
     this.editPersonDialog = new EditPersonDialog(config);
+    this.mergePersonsDialog = new MergePersonsDialog(config);
     this.editDocumentsDialog = new ManageDocumentsDialog(config);
     this.mapDialog = new MapDialog(config);
     this.settingsDialog = new SettingsDialog(config);
@@ -299,6 +302,14 @@ public class AppController {
     this.removePersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
     this.removePersonMenuItem.setOnAction(event -> this.onRemovePersonAction());
     editMenu.getItems().add(this.removePersonMenuItem);
+
+    editMenu.getItems().add(new SeparatorMenuItem());
+
+    this.mergePersonsMenuItem.setText(language.translate("menu.edit.merge_persons"));
+    this.mergePersonsMenuItem.setGraphic(theme.getIcon(Icon.MERGE_PERSONS, Icon.Size.SMALL));
+    this.mergePersonsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
+    this.mergePersonsMenuItem.setOnAction(event -> this.openMergePersonsDialog());
+    editMenu.getItems().add(this.mergePersonsMenuItem);
 
     editMenu.getItems().add(new SeparatorMenuItem());
 
@@ -1153,6 +1164,20 @@ public class AppController {
   }
 
   /**
+   * Open the merge persons dialog.
+   */
+  private void openMergePersonsDialog() {
+    final Optional<Person> selectedPerson = this.getSelectedPerson();
+    if (selectedPerson.isEmpty())
+      return;
+    final Person person = selectedPerson.get();
+    if (this.familyTree.persons().stream().noneMatch(p -> p != person))
+      return;
+    this.mergePersonsDialog.setPerson(this.familyTree, person);
+    this.mergePersonsDialog.showAndWait();
+  }
+
+  /**
    * Update the UI, i.e. menu items, toolbar buttons and stage’s title.
    */
   private void updateUI() {
@@ -1199,6 +1224,8 @@ public class AppController {
     this.setAsRootMenuItem.setDisable(!selection || selectedIsRoot);
     this.editPersonMenuItem.setDisable(!selection);
     this.removePersonMenuItem.setDisable(!selection || selectedIsRoot);
+    this.mergePersonsMenuItem.setDisable(
+        !selection || this.familyTree.persons().stream().noneMatch(p -> p != selectedPerson.get()));
     this.addChildMenuItem.setDisable(!selection);
     this.addSiblingMenuItem.setDisable(!hasAnyParents);
     this.editParentsMenuItem.setDisable(!selection);

@@ -29,6 +29,7 @@ public enum Icon {
   ADD_PERSON("user_add"),
   EDIT_PERSON("user_edit"),
   REMOVE_PERSON("user_delete"),
+  MERGE_PERSONS("users_men_women"),
   ADD_CHILD("kids_add"),
   ADD_SIBLING("users_3_add"),
   EDIT_PARENTS("group_edit"),

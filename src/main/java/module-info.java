@@ -27,4 +27,5 @@ module net.darmo_creations.jenealogio2 {
   opens net.darmo_creations.jenealogio2.model.datetime;
   opens net.darmo_creations.jenealogio2.utils;
   opens net.darmo_creations.jenealogio2.utils.text_parser;
+  opens net.darmo_creations.jenealogio2.ui.components.choice to javafx.base;
 }
