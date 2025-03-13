@@ -43,7 +43,6 @@ public class ParentsListView extends VBox implements PersonRequester {
     this.removeRelativeButton = new Button(language.translate("parents_list.remove"),
         theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
     this.removeRelativeButton.setOnAction(event -> this.onRemove());
-    this.removeRelativeButton.setDisable(true);
     final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
     buttonsHBox.getChildren().addAll(spacer, this.addRelativeButton, this.removeRelativeButton);
@@ -60,6 +59,8 @@ public class ParentsListView extends VBox implements PersonRequester {
     });
 
     this.getChildren().addAll(buttonsHBox, this.personsListView);
+
+    this.onSelection();
   }
 
   private void onListChange() {
@@ -82,10 +83,13 @@ public class ParentsListView extends VBox implements PersonRequester {
    * Opens an dialog to choose a person.
    */
   private void onAdd() {
-    this.personRequestListener.onPersonRequest(new LinkedList<>(this.personsListView.getItems()))
+    final var items = this.personsListView.getItems();
+    this.personRequestListener.onPersonRequest(new LinkedList<>(items))
         .ifPresent(person -> {
-          if (!this.personsListView.getItems().contains(person))
-            this.personsListView.getItems().add(person);
+          if (!items.contains(person)) {
+            items.add(person);
+            items.sort(Person.lastThenFirstNamesComparator());
+          }
         });
   }
 
@@ -115,10 +119,10 @@ public class ParentsListView extends VBox implements PersonRequester {
     if (maxCount.isPresent() && persons.size() > maxCount.get())
       throw new IllegalArgumentException("Too many persons, expected %d, got %d"
           .formatted(maxCount.get(), persons.size()));
-    this.personsListView.getItems().clear();
-    this.personsListView.getItems().addAll(persons.stream()
-        .sorted(Person.birthDateThenNameComparator(false))
-        .toList());
+    final var items = this.personsListView.getItems();
+    items.clear();
+    items.addAll(persons);
+    items.sort(Person.lastThenFirstNamesComparator());
   }
 
   @Override
