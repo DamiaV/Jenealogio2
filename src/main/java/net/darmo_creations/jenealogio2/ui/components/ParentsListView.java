@@ -19,7 +19,7 @@ public class ParentsListView extends VBox implements PersonRequester {
   private final ListView<Person> personsListView = new ListView<>();
 
   private final ParentalRelationType relationType;
-  private final Button addWitnessButton;
+  private final Button addRelativeButton;
 
   private PersonRequestListener personRequestListener;
   private final Set<UpdateListener> updateListeners = new HashSet<>();
@@ -37,16 +37,16 @@ public class ParentsListView extends VBox implements PersonRequester {
 
     final HBox buttonsHBox = new HBox(5);
 
-    this.addWitnessButton = new Button(language.translate("parents_list.add"),
+    this.addRelativeButton = new Button(language.translate("parents_list.add"),
         theme.getIcon(Icon.ADD_PARENT, Icon.Size.SMALL));
-    this.addWitnessButton.setOnAction(event -> this.onAdd());
+    this.addRelativeButton.setOnAction(event -> this.onAdd());
     this.removeRelativeButton = new Button(language.translate("parents_list.remove"),
         theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
     this.removeRelativeButton.setOnAction(event -> this.onRemove());
     this.removeRelativeButton.setDisable(true);
     final Pane spacer = new Pane();
     HBox.setHgrow(spacer, Priority.ALWAYS);
-    buttonsHBox.getChildren().addAll(spacer, this.addWitnessButton, this.removeRelativeButton);
+    buttonsHBox.getChildren().addAll(spacer, this.addRelativeButton, this.removeRelativeButton);
 
     VBox.setVgrow(this.personsListView, Priority.ALWAYS);
     this.personsListView.setPrefHeight(50);
@@ -64,7 +64,7 @@ public class ParentsListView extends VBox implements PersonRequester {
 
   private void onListChange() {
     final var maxCount = this.relationType.maxParentsCount();
-    this.addWitnessButton.setDisable(
+    this.addRelativeButton.setDisable(
         maxCount.isPresent() && this.personsListView.getItems().size() >= maxCount.get());
     this.updateListeners.forEach(UpdateListener::onUpdate);
   }
