@@ -6,7 +6,7 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 
 /**
- * Objects implementing this interface may request {@link Person} objects to their listeners.
+ * Objects implementing this interface may request {@link Person} objects from their listeners.
  */
 public interface PersonRequester {
   /**
