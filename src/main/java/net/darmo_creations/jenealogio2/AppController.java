@@ -338,7 +338,8 @@ public class AppController {
 
     final Menu viewMenu = new Menu(language.translate("menu.view"));
 
-    final CheckMenuItem showLegendsMenuItem = new CheckMenuItem(language.translate("menu.view.show_legends"));
+    final CheckMenuItem showLegendsMenuItem = new CheckMenuItem();
+    showLegendsMenuItem.setText(language.translate("menu.view.show_legends"));
     showLegendsMenuItem.setGraphic(theme.getIcon(Icon.SHOW_LEGEND, Icon.Size.SMALL));
     showLegendsMenuItem.setSelected(this.config.shouldShowLegends());
     showLegendsMenuItem.selectedProperty()
