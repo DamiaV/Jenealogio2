@@ -339,10 +339,18 @@ public class AppController {
     final Menu viewMenu = new Menu(language.translate("menu.view"));
 
     final CheckMenuItem showLegendsMenuItem = new CheckMenuItem(language.translate("menu.view.show_legends"));
+    showLegendsMenuItem.setGraphic(theme.getIcon(Icon.SHOW_LEGEND, Icon.Size.SMALL));
     showLegendsMenuItem.setSelected(this.config.shouldShowLegends());
     showLegendsMenuItem.selectedProperty()
         .addListener((observable, oldValue, newValue) -> this.onShowLegendsChange(newValue));
     viewMenu.getItems().add(showLegendsMenuItem);
+
+    final MenuItem focusSearchBarMenuItem = new MenuItem();
+    focusSearchBarMenuItem.setText(language.translate("menu.view.focus_search_bar"));
+    focusSearchBarMenuItem.setGraphic(theme.getIcon(Icon.FOCUS_SEARCH_BAR, Icon.Size.SMALL));
+    focusSearchBarMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN));
+    focusSearchBarMenuItem.setOnAction(event -> this.familyMembersTreeView.requestSearchFilterFocus());
+    viewMenu.getItems().add(focusSearchBarMenuItem);
 
     //
 

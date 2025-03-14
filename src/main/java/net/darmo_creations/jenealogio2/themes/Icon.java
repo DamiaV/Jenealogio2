@@ -35,6 +35,9 @@ public enum Icon {
   EDIT_LIFE_EVENTS("time_edit"),
   EDIT_DOCUMENTS("page_white_stack_edit"),
 
+  SHOW_LEGEND("legend"),
+  FOCUS_SEARCH_BAR("search_field_go"),
+
   CALCULATE_RELATIONSHIPS("link_go"),
   BIRTHDAYS("cake"),
   MAP("map"),

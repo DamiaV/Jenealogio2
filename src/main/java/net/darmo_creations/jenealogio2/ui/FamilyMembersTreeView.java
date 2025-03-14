@@ -152,6 +152,11 @@ public class FamilyMembersTreeView extends FamilyTreeComponent {
     }
   }
 
+  public void requestSearchFilterFocus() {
+    if (!this.searchField.textField().isFocused())
+      this.searchField.textField().requestFocus();
+  }
+
   /**
    * Called whenever the search filter changes.
    *
