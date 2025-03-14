@@ -19,7 +19,7 @@ import java.util.*;
  * A dialog used to select persons from the given {@link FamilyTree} object.
  */
 public class SelectPersonDialog extends DialogBase<Person> {
-  private final TextField filterTextInput = new TextField();
+  private final ErasableTextField filterTextInput;
   private final ListView<PersonView> personListView = new ListView<>();
   private final ObservableList<PersonView> personList = FXCollections.observableArrayList();
 
@@ -38,11 +38,12 @@ public class SelectPersonDialog extends DialogBase<Person> {
     );
     final Language language = config.language();
 
+    this.filterTextInput = new ErasableTextField(config);
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
-    this.filterTextInput.setPromptText(language.translate("dialog.select_person.filter"));
+    this.filterTextInput.textField().setPromptText(language.translate("dialog.select_person.filter"));
     final FilteredList<PersonView> filteredList = new FilteredList<>(this.personList, data -> true);
     this.personListView.setItems(filteredList);
-    this.filterTextInput.textProperty().addListener(
+    this.filterTextInput.textField().textProperty().addListener(
         (observable, oldValue, newValue) ->
             filteredList.setPredicate(pictureView -> {
               if (newValue == null || newValue.isEmpty())
@@ -69,6 +70,11 @@ public class SelectPersonDialog extends DialogBase<Person> {
     content.setPrefHeight(400);
     this.getDialogPane().setContent(content);
 
+    this.getDialogPane().addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+      if (!this.filterTextInput.textField().isFocused())
+        this.filterTextInput.textField().requestFocus();
+    });
+
     final Stage stage = this.stage();
     stage.setMinWidth(400);
     stage.setMinHeight(400);
@@ -93,7 +99,7 @@ public class SelectPersonDialog extends DialogBase<Person> {
    * @param exclusionList List of persons to NOT add to the list view.
    */
   public void updatePersonList(@NotNull FamilyTree tree, final @NotNull Collection<Person> exclusionList) {
-    this.filterTextInput.setText(null);
+    this.filterTextInput.textField().setText(null);
     this.personList.clear();
     tree.persons().stream()
         .filter(p -> !exclusionList.contains(p))

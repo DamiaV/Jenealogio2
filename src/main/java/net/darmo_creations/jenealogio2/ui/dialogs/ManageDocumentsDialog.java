@@ -221,6 +221,11 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
       event.consume();
     });
 
+    this.getDialogPane().addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+      if (!this.filterTextInput.textField().isFocused())
+        this.filterTextInput.textField().requestFocus();
+    });
+
     this.setResultConverter(buttonType -> {
       final boolean updated = !buttonType.getButtonData().isCancelButton();
       if (updated)
