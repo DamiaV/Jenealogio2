@@ -9,7 +9,6 @@ import java.time.*;
 import java.time.format.*;
 import java.util.*;
 import java.util.function.*;
-import java.util.stream.*;
 
 /**
  * Class providing methods to handle objects from the {@link java.time} package.
@@ -66,15 +65,8 @@ public final class DateTimeUtils {
           new FormatArg("date1", formatter.apply(d.startDate())),
           new FormatArg("date2", formatter.apply(d.endDate()))
       );
-    else if (date instanceof DateTimeAlternative d) {
-      final String comma = language.translate("list_comma");
-      final String or = language.translate("list_or");
-      final String str = d.dates().stream().map(formatter).collect(Collectors.joining(comma));
-      final StringBuilder sb = new StringBuilder(str);
-      // Replace last occurrence of "comma" by "or"
-      sb.replace(str.lastIndexOf(comma), str.lastIndexOf(comma) + comma.length(), or);
-      return sb.toString();
-    }
+    else if (date instanceof DateTimeAlternative d)
+      return language.makeList(d.dates().stream().map(formatter).toList(), true);
 
     throw new IllegalArgumentException("Unsupported date type: " + date.getClass());
   }

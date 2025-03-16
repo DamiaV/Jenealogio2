@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.model;
 
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -14,8 +15,14 @@ import java.util.*;
 public abstract class GenealogyObject<T extends GenealogyObject<T>> {
   private String notes;
   private String sources;
-  private final Map<String, AttachedDocument> documents = new HashMap<>();
+  private final Map<AnnotationType, Set<AttachedDocument>> documentAnnotations =
+      new EnumMap<>(AnnotationType.class);
   private Picture mainPicture;
+
+  protected GenealogyObject() {
+    for (final var annotationType : AnnotationType.values())
+      this.documentAnnotations.put(annotationType, new HashSet<>());
+  }
 
   /**
    * The name of this object in the given language.
@@ -61,13 +68,6 @@ public abstract class GenealogyObject<T extends GenealogyObject<T>> {
   }
 
   /**
-   * A unmodifiable view of this object’s documents.
-   */
-  public @UnmodifiableView Collection<AttachedDocument> documents() {
-    return Collections.unmodifiableCollection(this.documents.values());
-  }
-
-  /**
    * This object’s main picture.
    */
   public Optional<Picture> mainPicture() {
@@ -75,41 +75,51 @@ public abstract class GenealogyObject<T extends GenealogyObject<T>> {
   }
 
   /**
-   * Add a document to this object.
+   * The set of documents this object is annotated in.
    *
-   * @param document The document to add.
+   * @param annotationType The specific type of annotation to consider.
+   * @return An unmodifiable view of the internal set.
    */
-  void addDocument(@NotNull AttachedDocument document) {
-    this.documents.put(document.fileName(), document);
+  public Set<AttachedDocument> getAnnotatedInDocuments(@NotNull AnnotationType annotationType) {
+    return Collections.unmodifiableSet(this.documentAnnotations.get(annotationType));
   }
 
   /**
-   * Remove from this object the document with the given ID.
+   * Add a document where this object is annotated.
+   * Does <b>not</b> update the {@link AttachedDocument} object.
    *
-   * @param fileName Name of the document to remove.
+   * @param document       The document where this object is annotated.
+   * @param annotationType The specific annotation type to which the document has to be added.
    */
-  void removeDocument(@NotNull String fileName) {
-    Objects.requireNonNull(fileName);
-    if (this.mainPicture != null && this.mainPicture.fileName().equals(fileName))
-      this.setMainPicture(null);
-    this.documents.remove(fileName);
+  void addAnnotatedInDocument(
+      final @NotNull AttachedDocument document,
+      @NotNull AnnotationType annotationType
+  ) {
+    this.documentAnnotations.get(annotationType)
+        .add(Objects.requireNonNull(document));
+  }
+
+  /**
+   * Remove a document from this object’s annotation set.
+   * Does <b>not</b> update the {@link AttachedDocument} object.
+   *
+   * @param annotationType The specific annotation type from which the document has to be removed.
+   * @param document       The document to remove.
+   */
+  void removeAnnotatedInDocument(
+      @NotNull AnnotationType annotationType,
+      final @NotNull AttachedDocument document
+  ) {
+    this.documentAnnotations.get(annotationType)
+        .remove(Objects.requireNonNull(document));
   }
 
   /**
    * Set the main picture of this object.
    *
-   * @param fileName Name of the picture to set as main. May be null.
-   * @throws IllegalArgumentException If no picture with the given name is associated with this object.
-   * @throws ClassCastException       If the file is not a picture.
+   * @param picture The {@link Picture} to set as main. May be null.
    */
-  void setMainPicture(String fileName) {
-    if (fileName != null) {
-      if (!this.documents.containsKey(fileName))
-        throw new IllegalArgumentException("No such picture: " + fileName);
-      if (!(this.documents.get(fileName) instanceof Picture p))
-        throw new ClassCastException("File \"%s\" is not an image".formatted(fileName));
-      this.mainPicture = p;
-    } else
-      this.mainPicture = null;
+  void setMainPicture(final Picture picture) {
+    this.mainPicture = picture;
   }
 }

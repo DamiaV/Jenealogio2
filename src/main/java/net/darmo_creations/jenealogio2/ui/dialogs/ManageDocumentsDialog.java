@@ -4,58 +4,43 @@ import javafx.collections.*;
 import javafx.collections.transformation.*;
 import javafx.event.*;
 import javafx.geometry.*;
+import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
-import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
-import java.util.stream.*;
 
 /**
- * This dialog manages the documents of {@link GenealogyObject}s.
+ * This dialog manages the documents of a {@link FamilyTree}.
+ * Features a button to import documents directly from the filesystem.
  */
 public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Result> {
-  private static final int MAX_IMAGE_SIZE = 100;
-
-  private final SelectDocumentDialog selectDocumentDialog;
   private final EditDocumentDialog editDocumentDialog;
 
   private final Label buttonDescriptionLabel = new Label();
 
-  private final VBox mainImagePanel;
-  private final ImageView mainImageView = new ImageView();
-  private final Button removeMainImageButton = new Button();
-  private final Button setAsMainImageButton = new Button();
-  private final Button addDocumentButton = new Button();
-  private final Button removeDocumentButton = new Button();
   private final Button editDocumentDescButton = new Button();
   private final Button deleteDocumentButton = new Button();
   private final ErasableTextField filterTextInput;
-  private final ListView<DocumentView> documentsList = new ListView<>();
-  private final ObservableList<DocumentView> documentsList_ = FXCollections.observableArrayList();
+  private final ListView<DocumentView> documentsListView = new ListView<>();
+  private final ObservableList<DocumentView> documentsList = FXCollections.observableArrayList();
   private final Button applyButton;
 
-  /**
-   * The object’s current main document.
-   */
-  private Picture mainPicture;
   /**
    * Set of documents to remove from the current tree.
    */
   private final Set<AttachedDocument> documentsToDelete = new HashSet<>();
-  /**
-   * Set of documents to remove from the current object.
-   */
-  private final Set<AttachedDocument> documentsToRemove = new HashSet<>();
   /**
    * Set of documents to add to the current object.
    */
@@ -64,10 +49,6 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   private boolean pendingUpdates = false;
   private boolean anyDocumentUpdated = false;
 
-  /**
-   * The object to manage the documents of.
-   */
-  private GenealogyObject<?> genealogyObject;
   /**
    * The family tree the object belongs to.
    */
@@ -81,7 +62,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   public ManageDocumentsDialog(final @NotNull Config config) {
     super(
         config,
-        "manage_object_documents",
+        "manage_tree_documents",
         true,
         ButtonTypes.OK,
         ButtonTypes.APPLY,
@@ -91,70 +72,40 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     final Language language = config.language();
     final Theme theme = config.theme();
 
-    this.selectDocumentDialog = new SelectDocumentDialog(config);
     this.editDocumentDialog = new EditDocumentDialog(config);
 
     final VBox content = new VBox(5);
 
-    final HBox hBox = new HBox(5,
-        new Label(language.translate("dialog.manage_object_documents.main_image")),
-        this.removeMainImageButton
+    final Label label = new Label(
+        language.translate("dialog.manage_tree_documents.description"),
+        theme.getIcon(Icon.INFO, Icon.Size.SMALL)
     );
-    hBox.setAlignment(Pos.CENTER_LEFT);
-    this.mainImageView.setPreserveRatio(true);
+    label.setWrapText(true);
+    content.getChildren().add(label);
 
-    this.mainImagePanel = new VBox(5, hBox, this.mainImageView);
-    this.mainImagePanel.managedProperty().bind(this.mainImagePanel.visibleProperty());
-    content.getChildren().add(this.mainImagePanel);
-
-    final Pane spacer = new Pane();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
-
-    this.removeMainImageButton.setText(language.translate("dialog.manage_object_documents.remove_main_image"));
-    this.removeMainImageButton.setGraphic(theme.getIcon(Icon.REMOVE_MAIN_IMAGE, Icon.Size.SMALL));
-    this.removeMainImageButton.setOnAction(e -> this.onRemoveMainImage());
-    this.removeMainImageButton.hoverProperty().addListener(
-        (observable, oldValue, newValue) ->
-            this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_main_image"));
-    this.removeMainImageButton.managedProperty().bind(this.removeMainImageButton.visibleProperty());
-
-    this.addDocumentButton.setGraphic(theme.getIcon(Icon.ADD_DOCUMENT, Icon.Size.SMALL));
-    this.addDocumentButton.setOnAction(e -> this.onAddDocument());
-    this.addDocumentButton.hoverProperty().addListener(
+    final Button addDocumentButton = new Button(
+        language.translate("dialog.manage_tree_documents.add_document"),
+        theme.getIcon(Icon.IMPORT_FILE, Icon.Size.SMALL)
+    );
+    addDocumentButton.setOnAction(e -> this.onAddDocument());
+    addDocumentButton.hoverProperty().addListener(
         (observable, oldValue, newValue) ->
             this.showButtonDescription(
                 newValue,
-                "dialog.manage_%s_documents.add_document"
-                    .formatted(this.genealogyObject != null ? "object" : "tree")
+                "dialog.manage_tree_documents.add_document"
             ));
 
-    this.setAsMainImageButton.setText(language.translate("dialog.manage_object_documents.set_as_main_image"));
-    this.setAsMainImageButton.setGraphic(theme.getIcon(Icon.SET_AS_MAIN_IMAGE, Icon.Size.SMALL));
-    this.setAsMainImageButton.setOnAction(e -> this.onSetAsMainImage());
-    this.setAsMainImageButton.hoverProperty().addListener(
-        (observable, oldValue, newValue) ->
-            this.showButtonDescription(newValue, "dialog.manage_object_documents.set_as_main_image"));
-    this.setAsMainImageButton.managedProperty().bind(this.setAsMainImageButton.visibleProperty());
-
-    this.removeDocumentButton.setText(language.translate("dialog.manage_object_documents.remove_document"));
-    this.removeDocumentButton.setGraphic(theme.getIcon(Icon.REMOVE_DOCUMENT, Icon.Size.SMALL));
-    this.removeDocumentButton.setOnAction(e -> this.onRemoveDocuments());
-    this.stage().getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE), this::onRemoveDocuments);
-    this.removeDocumentButton.hoverProperty().addListener(
-        (observable, oldValue, newValue) ->
-            this.showButtonDescription(newValue, "dialog.manage_object_documents.remove_document"));
-    this.removeDocumentButton.managedProperty().bind(this.removeDocumentButton.visibleProperty());
-
+    this.editDocumentDescButton.setText(language.translate("dialog.manage_tree_documents.edit_document_desc"));
     this.editDocumentDescButton.setGraphic(theme.getIcon(Icon.EDIT_DOCUMENT_DESC, Icon.Size.SMALL));
     this.editDocumentDescButton.setOnAction(e -> this.onEditDocumentDesc());
     this.editDocumentDescButton.hoverProperty().addListener(
         (observable, oldValue, newValue) ->
             this.showButtonDescription(
                 newValue,
-                "dialog.manage_%s_documents.edit_document_desc"
-                    .formatted(this.genealogyObject != null ? "object" : "tree")
+                "dialog.manage_tree_documents.edit_document_desc"
             ));
 
+    this.deleteDocumentButton.setText(language.translate("dialog.manage_tree_documents.delete_document"));
     this.deleteDocumentButton.setGraphic(theme.getIcon(Icon.DELETE_DOCUMENT, Icon.Size.SMALL));
     this.deleteDocumentButton.setOnAction(e -> this.onDeleteDocuments());
     this.stage().getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.SHIFT_DOWN), this::onDeleteDocuments);
@@ -162,28 +113,23 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
         (observable, oldValue, newValue) ->
             this.showButtonDescription(
                 newValue,
-                "dialog.manage_%s_documents.delete_document"
-                    .formatted(this.genealogyObject != null ? "object" : "tree")
+                "dialog.manage_tree_documents.delete_document"
             ));
 
-    final HBox title = new HBox(
+    final HBox buttons = new HBox(
         5,
-        new Label(language.translate("dialog.manage_object_documents.list")),
-        spacer,
-        this.setAsMainImageButton,
-        this.addDocumentButton,
-        this.removeDocumentButton,
+        addDocumentButton,
         this.editDocumentDescButton,
         this.deleteDocumentButton
     );
-    title.setAlignment(Pos.CENTER_LEFT);
-    content.getChildren().add(title);
+    buttons.setAlignment(Pos.CENTER);
+    content.getChildren().add(buttons);
 
     this.filterTextInput = new ErasableTextField(config);
     HBox.setHgrow(this.filterTextInput, Priority.ALWAYS);
     this.filterTextInput.textField().setPromptText(language.translate("dialog.select_documents.filter"));
-    final FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList_, data -> true);
-    this.documentsList.setItems(filteredList);
+    final FilteredList<DocumentView> filteredList = new FilteredList<>(this.documentsList, data -> true);
+    this.documentsListView.setItems(filteredList);
     this.filterTextInput.textField().textProperty().addListener(
         ((observable, oldValue, newValue) ->
             filteredList.setPredicate(documentView -> {
@@ -197,13 +143,13 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
         ));
     content.getChildren().add(this.filterTextInput);
 
-    this.documentsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    this.documentsList.getSelectionModel().selectedItemProperty().addListener(
+    this.documentsListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    this.documentsListView.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) ->
             this.updateButtons());
-    this.documentsList.setOnMouseClicked(this::onListClicked);
-    VBox.setVgrow(this.documentsList, Priority.ALWAYS);
-    content.getChildren().add(this.documentsList);
+    this.documentsListView.setOnMouseClicked(this::onListClicked);
+    VBox.setVgrow(this.documentsListView, Priority.ALWAYS);
+    content.getChildren().add(this.documentsListView);
 
     this.buttonDescriptionLabel.getStyleClass().add("help-text");
     content.getChildren().add(this.buttonDescriptionLabel);
@@ -217,7 +163,7 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
 
     this.applyButton = (Button) this.getDialogPane().lookupButton(ButtonTypes.APPLY);
     this.applyButton.addEventFilter(ActionEvent.ACTION, event -> {
-      this.updateObject();
+      this.updateTree();
       event.consume();
     });
 
@@ -226,135 +172,159 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
         this.filterTextInput.textField().requestFocus();
     });
 
+    // Files drag-and-drop
+    final Scene scene = stage.getScene();
+    scene.setOnDragOver(event -> {
+      if (event.getGestureSource() == null // From another application
+          && this.isDragAndDropValid(event.getDragboard()))
+        event.acceptTransferModes(TransferMode.COPY);
+      event.consume();
+    });
+    scene.setOnDragDropped(event -> {
+      final Dragboard db = event.getDragboard();
+      final boolean success = this.isDragAndDropValid(db);
+      if (success)
+        this.importFiles(db.getFiles().stream().map(File::toPath).toList());
+      event.setDropCompleted(success);
+      event.consume();
+    });
+
     this.setResultConverter(buttonType -> {
       final boolean updated = !buttonType.getButtonData().isCancelButton();
       if (updated)
-        this.updateObject();
+        this.updateTree();
       return new Result(updated, this.anyDocumentUpdated);
     });
   }
 
-  public void setObject(GenealogyObject<?> object, @NotNull FamilyTree familyTree) {
-    this.genealogyObject = object;
+  private boolean isDragAndDropValid(final @NotNull Dragboard dragboard) {
+    return dragboard.hasFiles(); // Accept all file types
+  }
+
+  public void refresh(@NotNull FamilyTree familyTree) {
     this.familyTree = familyTree;
     this.documentsToDelete.clear();
-    this.documentsToRemove.clear();
     this.documentsToAdd.clear();
 
     final Language language = this.config.language();
 
-    final boolean hasObject = object != null;
-    this.mainImagePanel.setVisible(hasObject);
-    this.setAsMainImageButton.setVisible(hasObject);
-    this.removeDocumentButton.setVisible(hasObject);
     final Collection<AttachedDocument> documents;
-    if (hasObject) {
-      this.setTitle(language.translate("dialog.manage_object_documents.title",
-          new FormatArg("name", object.name(language))));
-      final Optional<Picture> picture = this.genealogyObject.mainPicture();
-      this.mainPicture = picture.orElse(null);
-      final Image defaultImage = object instanceof Person
-          ? PersonWidget.DEFAULT_IMAGE
-          : PersonDetailsView.DEFAULT_EVENT_IMAGE;
-      final Optional<Image> image = picture.map(
-          p -> p.image().orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
-      this.mainImageView.setImage(image.orElse(defaultImage));
-      this.mainImageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
-      this.mainImageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
-      this.removeMainImageButton.setDisable(picture.isEmpty());
-      this.addDocumentButton.setText(language.translate("dialog.manage_object_documents.add_document"));
-      this.editDocumentDescButton.setText(language.translate("dialog.manage_object_documents.edit_document_desc"));
-      this.deleteDocumentButton.setText(language.translate("dialog.manage_object_documents.delete_document"));
-      documents = object.documents();
-    } else {
-      this.setTitle(language.translate("dialog.manage_tree_documents.title"));
-      documents = familyTree.documents();
-      this.addDocumentButton.setText(language.translate("dialog.manage_tree_documents.add_document"));
-      this.editDocumentDescButton.setText(language.translate("dialog.manage_tree_documents.edit_document_desc"));
-      this.deleteDocumentButton.setText(language.translate("dialog.manage_tree_documents.delete_document"));
-    }
+    this.setTitle(language.translate("dialog.manage_tree_documents.title"));
+    documents = familyTree.documents();
 
     this.filterTextInput.textField().setText(null);
-    this.documentsList_.clear();
+    this.documentsList.clear();
     for (final var document : documents)
-      this.documentsList_.add(new DocumentView(document, true, this.config));
-    this.documentsList_.sort(null);
+      this.documentsList.add(new DocumentView(document, true, this.config));
+    this.documentsList.sort(null);
 
     this.pendingUpdates = false;
     this.anyDocumentUpdated = false;
     this.updateButtons();
   }
 
-  private void removeMainImage() {
-    this.mainPicture = null;
-    this.mainImageView.setImage(PersonWidget.DEFAULT_IMAGE);
-    this.pendingUpdates = true;
-  }
-
-  private void onRemoveMainImage() {
-    if (this.mainPicture == null)
-      return;
-    this.removeMainImage();
-    this.updateButtons();
-  }
-
-  private void onSetAsMainImage() {
-    final List<DocumentView> selection = this.getSelectedDocuments();
-    if (selection.size() != 1)
-      return;
-    final DocumentView dv = selection.get(0);
-    if (!(dv.document() instanceof Picture pic))
-      return;
-    this.mainPicture = pic;
-    final Image image = this.mainPicture.image()
-        .orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG));
-    this.mainImageView.setImage(image);
-    //noinspection DataFlowIssue
-    this.mainImageView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.getHeight()));
-    this.mainImageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.getWidth()));
-    this.pendingUpdates = true;
-    this.updateButtons();
-  }
-
   private void onAddDocument() {
-    final List<AttachedDocument> exclusionList = this.documentsList_.stream()
-        .map(DocumentView::document)
-        .collect(Collectors.toCollection(LinkedList::new));
-    exclusionList.addAll(this.documentsToDelete);
-    this.selectDocumentDialog.updateDocumentsList(this.familyTree, exclusionList);
-    this.selectDocumentDialog.showAndWait().ifPresent(this::addDocumentsToList);
+    final Optional<Path> file = FileChoosers.showFileChooser(this.config, this.stage(), null);
+    if (file.isPresent()) {
+      final String name = file.get().getFileName().toString();
+      if (this.isFileImported(name))
+        Alerts.warning(
+            this.config,
+            "alert.document_already_imported.header",
+            null,
+            null,
+            new FormatArg("file_name", name)
+        );
+      else {
+        try {
+          this.importFile(file.get());
+        } catch (final IOException e) {
+          Alerts.error(
+              this.config,
+              "alert.load_error.header",
+              "alert.load_error.content",
+              "alert.load_error.title",
+              new FormatArg("trace", e.getMessage())
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Import the given files from the filesystem into the current tree and document list.
+   *
+   * @param files List of files to import.
+   */
+  private void importFiles(final @NotNull List<Path> files) {
+    boolean someAlreadyImported = false;
+    int errorsNb = 0;
+    for (final Path file : files) {
+      if (this.isFileImported(file.getFileName().toString())) {
+        someAlreadyImported = true;
+        continue;
+      }
+      try {
+        this.importFile(file);
+      } catch (final IOException e) {
+        errorsNb++;
+      }
+    }
+    if (errorsNb != 0)
+      Alerts.error(
+          this.config,
+          "alert.load_errors.header",
+          "alert.load_errors.content",
+          "alert.load_errors.title",
+          new FormatArg("nb", errorsNb)
+      );
+    if (someAlreadyImported)
+      Alerts.warning(
+          this.config,
+          "alert.documents_already_imported.header",
+          null,
+          null
+      );
+  }
+
+  /**
+   * Import the given file from the filesystem into the current tree and document list.
+   *
+   * @param file The file to import.
+   */
+  private void importFile(final @NotNull Path file) throws IOException {
+    final AttachedDocument document;
+    final Optional<String> ext = FileUtils.splitExtension(file.getFileName().toString()).extension();
+    if (ext.isPresent() && Picture.FILE_EXTENSIONS.contains(ext.get().toLowerCase()))
+      document = new Picture(FileUtils.loadImage(file), file, null, null);
+    else
+      document = new AttachedDocument(file, null, null);
+    this.addDocumentsToList(Set.of(document));
   }
 
   private void addDocumentsToList(final @NotNull Collection<AttachedDocument> documents) {
     documents.forEach(d -> {
       final DocumentView dv = new DocumentView(d, true, this.config);
-      this.documentsList_.add(dv);
-      this.documentsList.scrollTo(dv);
+      this.documentsList.add(dv);
+      this.documentsListView.scrollTo(dv);
       this.documentsToAdd.add(d);
-      this.documentsToRemove.remove(d);
       this.documentsToDelete.remove(d);
     });
     if (!documents.isEmpty()) {
-      this.documentsList_.sort(null);
+      this.documentsList.sort(null);
       this.pendingUpdates = true;
       this.updateButtons();
     }
   }
 
-  private void onRemoveDocuments() {
-    final List<DocumentView> selection = this.getSelectedDocuments();
-    if (selection.isEmpty())
-      return;
-    selection.forEach(dv -> {
-      final AttachedDocument document = dv.document();
-      if (document instanceof Picture pic && pic.equals(this.mainPicture))
-        this.removeMainImage();
-      this.documentsToRemove.add(document);
-      this.documentsToAdd.remove(document);
-      this.documentsList_.remove(dv);
-    });
-    this.pendingUpdates = true;
-    this.updateButtons();
+  /**
+   * Check whether a file name is already present in the document list.
+   *
+   * @param name Name of the file.
+   * @return True if a file with the given name is in the list, false otherwise.
+   */
+  private boolean isFileImported(String name) {
+    return this.familyTree.getDocument(name).isPresent();
   }
 
   private void onDeleteDocuments() {
@@ -368,11 +338,9 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     )) return;
     selection.forEach(dv -> {
       final AttachedDocument document = dv.document();
-      if (document instanceof Picture pic && pic.equals(this.mainPicture))
-        this.removeMainImage();
       this.documentsToDelete.add(document);
       this.documentsToAdd.remove(document);
-      this.documentsList_.remove(dv);
+      this.documentsList.remove(dv);
     });
     this.pendingUpdates = true;
     this.updateButtons();
@@ -406,34 +374,20 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
   }
 
   private List<DocumentView> getSelectedDocuments() {
-    return new ArrayList<>(this.documentsList.getSelectionModel().getSelectedItems());
+    return new ArrayList<>(this.documentsListView.getSelectionModel().getSelectedItems());
   }
 
   private void updateButtons() {
-    this.removeMainImageButton.setDisable(this.mainPicture == null);
-    final var selectionModel = this.documentsList.getSelectionModel();
+    final var selectionModel = this.documentsListView.getSelectionModel();
     final boolean noSelection = selectionModel.isEmpty();
-    this.removeDocumentButton.setDisable(noSelection);
     this.deleteDocumentButton.setDisable(noSelection);
     final var selectedItems = selectionModel.getSelectedItems();
     final boolean not1Selected = selectedItems.size() != 1;
-    this.setAsMainImageButton.setDisable(
-        not1Selected ||
-            selectedItems.get(0) != null // Selection list sometimes contains null
-                && (selectedItems.get(0).document().equals(this.mainPicture)
-                || !(selectedItems.get(0).document() instanceof Picture))
-    );
     this.editDocumentDescButton.setDisable(not1Selected);
     this.applyButton.setDisable(!this.pendingUpdates);
   }
 
-  private void updateObject() {
-    if (this.genealogyObject != null) {
-      this.documentsToRemove.forEach(document ->
-          this.familyTree.removeDocumentFromObject(document.fileName(), this.genealogyObject));
-      this.documentsToRemove.clear();
-    }
-
+  private void updateTree() {
     this.documentsToDelete.forEach(document ->
         this.familyTree.removeDocument(document.fileName()));
     this.documentsToDelete.clear();
@@ -441,16 +395,8 @@ public class ManageDocumentsDialog extends DialogBase<ManageDocumentsDialog.Resu
     this.documentsToAdd.forEach(p -> {
       if (this.familyTree.getDocument(p.fileName()).isEmpty())
         this.familyTree.addDocument(p);
-      if (this.genealogyObject != null)
-        this.familyTree.addDocumentToObject(p.fileName(), this.genealogyObject);
     });
     this.documentsToAdd.clear();
-
-    if (this.genealogyObject != null)
-      if (this.mainPicture != null)
-        this.familyTree.setMainPictureOfObject(this.mainPicture.fileName(), this.genealogyObject);
-      else
-        this.familyTree.setMainPictureOfObject(null, this.genealogyObject);
 
     this.pendingUpdates = false;
     this.updateButtons();

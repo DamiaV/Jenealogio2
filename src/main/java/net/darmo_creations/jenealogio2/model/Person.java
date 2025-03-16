@@ -62,6 +62,10 @@ public class Person extends GenealogyObject<Person> {
    * Ordered list of all life events this person was an actor in.
    */
   private final List<LifeEvent> lifeEvents = new ArrayList<>();
+  /**
+   * The documents this person has authored.
+   */
+  private final Set<AttachedDocument> authoredDocuments = new HashSet<>();
 
   /**
    * Create a new alive person.
@@ -757,7 +761,8 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
-   * Add a life event to this person. Does <b>not</b> update the {@link LifeEvent} object.
+   * Add a life event to this person.
+   * Does <b>not</b> update the {@link LifeEvent} object.
    * <p>
    * If the event has a type with {@link LifeEventType#indicatesDeath()} to true,
    * this person’s life status is set to {@link LifeStatus#DECEASED}.
@@ -780,12 +785,43 @@ public class Person extends GenealogyObject<Person> {
   }
 
   /**
-   * Remove a life event from this person. Does <b>not</b> update the {@link LifeEvent} object.
+   * Remove a life event from this person.
+   * Does <b>not</b> update the {@link LifeEvent} object.
    *
    * @param event Life event to remove.
    */
   void removeLifeEvent(final LifeEvent event) {
     this.lifeEvents.remove(event);
+  }
+
+  /**
+   * The set of documents this person has authored.
+   *
+   * @return An unmodifiable view of the internal set.
+   */
+  @UnmodifiableView
+  public Set<AttachedDocument> authoredDocuments() {
+    return Collections.unmodifiableSet(this.authoredDocuments);
+  }
+
+  /**
+   * Add a document this person has authored.
+   * Does <b>not</b> update the {@link AttachedDocument} object.
+   *
+   * @param document The document to add.
+   */
+  void addAuthoredDocument(final @NotNull AttachedDocument document) {
+    this.authoredDocuments.add(document);
+  }
+
+  /**
+   * Remove a document from this person’s authored set.
+   * Does <b>not</b> update the {@link AttachedDocument} object.
+   *
+   * @param document The document to remove.
+   */
+  void removeAuthoredDocument(final @NotNull AttachedDocument document) {
+    this.authoredDocuments.remove(document);
   }
 
   /**

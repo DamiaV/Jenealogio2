@@ -79,7 +79,7 @@ public final class TreesMetadataManager {
         final Element root = (Element) childNodes.item(0);
         final Optional<Element> trees = XmlUtils.getChildElement(root, TREES_TAG, true);
         if (trees.isPresent())
-          for (final Element treeElement : XmlUtils.getChildElements(trees.get(), TREE_METADATA_TAG))
+          for (final Element treeElement : XmlUtils.getChildrenElements(trees.get(), TREE_METADATA_TAG))
             try {
               final String dirName = XmlUtils.getAttr(
                   treeElement,

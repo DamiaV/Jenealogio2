@@ -16,7 +16,7 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 
 /**
- * A dialog used to select persons from the given {@link FamilyTree} object.
+ * A dialog used to select a person from the given {@link FamilyTree} object.
  */
 public class SelectPersonDialog extends DialogBase<Person> {
   private final ErasableTextField filterTextInput;
@@ -48,7 +48,7 @@ public class SelectPersonDialog extends DialogBase<Person> {
             filteredList.setPredicate(pictureView -> {
               if (newValue == null || newValue.isEmpty())
                 return true;
-              return pictureView.person().matchesName(newValue.toLowerCase(), language);
+              return pictureView.person().matchesName(newValue, language);
             })
     );
 
@@ -98,12 +98,12 @@ public class SelectPersonDialog extends DialogBase<Person> {
    * @param tree          Tree to pull persons from.
    * @param exclusionList List of persons to NOT add to the list view.
    */
-  public void updatePersonList(@NotNull FamilyTree tree, final @NotNull Collection<Person> exclusionList) {
+  public void updatePersonList(final @NotNull FamilyTree tree, final @NotNull Collection<Person> exclusionList) {
     this.filterTextInput.textField().setText(null);
     this.personList.clear();
     tree.persons().stream()
         .filter(p -> !exclusionList.contains(p))
-        .forEach(p -> this.personList.add(new PersonView(p)));
+        .forEach(p -> this.personList.add(new PersonView(p, this.config)));
     this.personList.sort(
         (p1, p2) -> Person.lastThenFirstNamesComparator().compare(p1.person(), p2.person()));
   }
@@ -124,12 +124,12 @@ public class SelectPersonDialog extends DialogBase<Person> {
   /**
    * Simple widget that shows the name, birth/death dates, and main picture of a given person.
    */
-  private class PersonView extends HBox {
+  public static class PersonView extends HBox {
     private static final int IMAGE_SIZE = 100;
 
     private final Person person;
 
-    public PersonView(final @NotNull Person person) {
+    public PersonView(final @NotNull Person person, final @NotNull Config config) {
       super(5);
       this.person = person;
       final ImageView imageView = new ImageView(
@@ -138,7 +138,6 @@ public class SelectPersonDialog extends DialogBase<Person> {
       imageView.setFitWidth(IMAGE_SIZE);
       imageView.setFitHeight(IMAGE_SIZE);
       final Label nameLabel = new Label(person.toString());
-      final Config config = SelectPersonDialog.this.config;
       final DateLabel birthLabel = new DateLabel(person.getBirthDate().orElse(null), "?", config);
       birthLabel.setGraphic(config.theme().getIcon(Icon.BIRTH, Icon.Size.SMALL));
       final DateLabel deathLabel = new DateLabel(person.getDeathDate().orElse(null), "?", config);

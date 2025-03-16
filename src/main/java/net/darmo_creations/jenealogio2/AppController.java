@@ -283,7 +283,7 @@ public class AppController {
 
     final MenuItem addPersonMenuItem = new MenuItem();
     addPersonMenuItem.setText(language.translate("menu.edit.add_person"));
-    addPersonMenuItem.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.SMALL));
+    addPersonMenuItem.setGraphic(theme.getIcon(Icon.CREATE_PERSON, Icon.Size.SMALL));
     addPersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN));
     addPersonMenuItem.setOnAction(event -> this.onAddPersonAction());
     editMenu.getItems().add(addPersonMenuItem);
@@ -295,7 +295,7 @@ public class AppController {
     editMenu.getItems().add(this.editPersonMenuItem);
 
     this.removePersonMenuItem.setText(language.translate("menu.edit.remove_person"));
-    this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.REMOVE_PERSON, Icon.Size.SMALL));
+    this.removePersonMenuItem.setGraphic(theme.getIcon(Icon.DELETE_PERSON, Icon.Size.SMALL));
     this.removePersonMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
     this.removePersonMenuItem.setOnAction(event -> this.onRemovePersonAction());
     editMenu.getItems().add(this.removePersonMenuItem);
@@ -303,13 +303,13 @@ public class AppController {
     editMenu.getItems().add(new SeparatorMenuItem());
 
     this.addChildMenuItem.setText(language.translate("menu.edit.add_child"));
-    this.addChildMenuItem.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.SMALL));
+    this.addChildMenuItem.setGraphic(theme.getIcon(Icon.CREATE_CHILD, Icon.Size.SMALL));
     this.addChildMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
     this.addChildMenuItem.setOnAction(event -> this.onAddChildAction());
     editMenu.getItems().add(this.addChildMenuItem);
 
     this.addSiblingMenuItem.setText(language.translate("menu.edit.add_sibling"));
-    this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.SMALL));
+    this.addSiblingMenuItem.setGraphic(theme.getIcon(Icon.CREATE_SIBLING, Icon.Size.SMALL));
     this.addSiblingMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN));
     this.addSiblingMenuItem.setOnAction(event -> this.onAddSiblingAction());
     editMenu.getItems().add(this.addSiblingMenuItem);
@@ -325,14 +325,6 @@ public class AppController {
     this.editLifeEventsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.SHIFT_DOWN, KeyCombination.ALT_DOWN));
     this.editLifeEventsMenuItem.setOnAction(event -> this.onEditLifeEventsAction());
     editMenu.getItems().add(this.editLifeEventsMenuItem);
-
-    editMenu.getItems().add(new SeparatorMenuItem());
-
-    this.editDocumentsMenuItem.setText(language.translate("menu.edit.edit_documents"));
-    this.editDocumentsMenuItem.setGraphic(theme.getIcon(Icon.EDIT_DOCUMENTS, Icon.Size.SMALL));
-    this.editDocumentsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN));
-    this.editDocumentsMenuItem.setOnAction(event -> this.onEditObjectDocumentsAction());
-    editMenu.getItems().add(this.editDocumentsMenuItem);
 
     //
 
@@ -460,17 +452,17 @@ public class AppController {
 
     final Button addPersonToolbarButton = new Button();
     addPersonToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_person")));
-    addPersonToolbarButton.setGraphic(theme.getIcon(Icon.ADD_PERSON, Icon.Size.BIG));
+    addPersonToolbarButton.setGraphic(theme.getIcon(Icon.CREATE_PERSON, Icon.Size.BIG));
     addPersonToolbarButton.setOnAction(event -> this.onAddPersonAction());
     toolbar.getItems().add(addPersonToolbarButton);
 
     this.addChildToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_child")));
-    this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.ADD_CHILD, Icon.Size.BIG));
+    this.addChildToolbarButton.setGraphic(theme.getIcon(Icon.CREATE_CHILD, Icon.Size.BIG));
     this.addChildToolbarButton.setOnAction(event -> this.onAddChildAction());
     toolbar.getItems().add(this.addChildToolbarButton);
 
     this.addSiblingToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.add_sibling")));
-    this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.ADD_SIBLING, Icon.Size.BIG));
+    this.addSiblingToolbarButton.setGraphic(theme.getIcon(Icon.CREATE_SIBLING, Icon.Size.BIG));
     this.addSiblingToolbarButton.setOnAction(event -> this.onAddSiblingAction());
     toolbar.getItems().add(this.addSiblingToolbarButton);
 
@@ -484,9 +476,11 @@ public class AppController {
     this.editLifeEventsToolbarButton.setOnAction(event -> this.onEditLifeEventsAction());
     toolbar.getItems().add(this.editLifeEventsToolbarButton);
 
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
     this.editDocumentsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.edit_documents")));
-    this.editDocumentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_DOCUMENTS, Icon.Size.BIG));
-    this.editDocumentsToolbarButton.setOnAction(event -> this.onEditObjectDocumentsAction());
+    this.editDocumentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_TREE_DOCUMENTS, Icon.Size.BIG));
+    this.editDocumentsToolbarButton.setOnAction(event -> this.onEditTreeDocumentsAction());
     toolbar.getItems().add(this.editDocumentsToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
@@ -927,22 +921,6 @@ public class AppController {
   }
 
   /**
-   * Open dialog to edit the documents of the selected person.
-   */
-  private void onEditObjectDocumentsAction() {
-    final Optional<? extends GenealogyObject<?>> selectedObject;
-    final Optional<LifeEvent> selectedLifeEvent = this.personDetailsView.getDisplayedLifeEvent();
-    if (selectedLifeEvent.isPresent())
-      selectedObject = selectedLifeEvent;
-    else
-      selectedObject = this.getSelectedPerson();
-    selectedObject.ifPresent(o -> {
-      this.editDocumentsDialog.setObject(o, this.familyTree);
-      this.editDocumentsDialog.showAndWait().ifPresent(this::onDocumentsUpdate);
-    });
-  }
-
-  /**
    * Delete the currently selected person.
    * <p>
    * Person is removed from any life event it is an actor or witness of.
@@ -1112,7 +1090,7 @@ public class AppController {
    * Open the dialog to edit the current tree’s documents.
    */
   private void onEditTreeDocumentsAction() {
-    this.editDocumentsDialog.setObject(null, this.familyTree);
+    this.editDocumentsDialog.refresh(this.familyTree);
     this.editDocumentsDialog.showAndWait().ifPresent(this::onDocumentsUpdate);
   }
 
@@ -1223,7 +1201,6 @@ public class AppController {
     this.addSiblingToolbarButton.setDisable(!hasAnyParents);
     this.editParentsToolbarButton.setDisable(!selection);
     this.editLifeEventsToolbarButton.setDisable(!selection);
-    this.editDocumentsToolbarButton.setDisable(!selection);
   }
 
   private void onShowLegendsChange(boolean show) {

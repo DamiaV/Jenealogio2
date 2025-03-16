@@ -13,6 +13,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StringUtilsTest {
   @Test
+  void capitalizeCaptilizesFirstLetter() {
+    assertEquals("Abcd", StringUtils.capitalize("abcd"));
+  }
+
+  @Test
+  void capitalizeSetsOtherCharactersToLowerCase() {
+    assertEquals("Abcd", StringUtils.capitalize("ABCD"));
+  }
+
+  @Test
   void testStripNullableEmpty() {
     assertTrue(StringUtils.stripNullable("").isEmpty());
   }

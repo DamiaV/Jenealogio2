@@ -211,3 +211,7 @@ Text.hyperlink {
 *:invalid {
   -fx-border-color: red;
 }
+
+.document-tag {
+  -fx-background-color: derive(-fx-base, -20%);
+}

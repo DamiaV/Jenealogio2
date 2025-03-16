@@ -67,10 +67,18 @@ public abstract class TreeXMLManager {
   protected static final String WITNESSES_TAG = "Witnesses";
   protected static final String PERSON_TAG = "Person";
   protected static final String PERSON_ID_ATTR = "id";
+  protected static final String MAIN_PICTURE_TAG = "MainPicture";
+  protected static final String MAIN_PICTURE_NAME_ATTR = "name";
   protected static final String DOCUMENT_TAG = "Document";
   protected static final String DOCUMENT_NAME_ATTR = "name";
-  protected static final String DOCUMENT_MAIN_PICTURE_ATTR = "mainPicture";
   protected static final String DOCUMENT_DESC_TAG = "Description";
+  protected static final String AUTHORS_TAG = "Authors";
+  protected static final String AUTHORS_IDS_ATTR = "ids";
+  protected static final String DOCUMENT_ANNOTATIONS_TAG = "Annotations";
+  protected static final String PERSON_ANNOTATION_TAG = "Person";
+  protected static final String LIFE_EVENT_ANNOTATION_TAG = "LifeEvent";
+  protected static final String ANNOTATION_OBJECT_ID_ATTR = "id";
+  protected static final String ANNOTATION_NOTE_ATTR = "note";
 
   protected static final String DATE_WITH_PRECISION = "with_precision";
   protected static final String DATE_RANGE = "range";

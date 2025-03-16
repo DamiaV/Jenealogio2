@@ -23,7 +23,7 @@ public final class XmlUtils {
    * @param name         Name of the element to read.
    * @param allowMissing True to allow the element designated by {@code name} to be missing;
    *                     false to throw an error if missing.
-   * @return The read element.
+   * @return The first occurence of the specified child element.
    * @throws IOException If any error occurs.
    */
   public static Optional<Element> getChildElement(
@@ -43,13 +43,13 @@ public final class XmlUtils {
   }
 
   /**
-   * Read all child elements with a given name.
+   * Read all children elements with a given name.
    *
    * @param element Element to read from.
    * @param name    Name of child elements.
    * @return List of read elements.
    */
-  public static List<Element> getChildElements(
+  public static List<Element> getChildrenElements(
       final @NotNull Element element,
       @NotNull String name
   ) {

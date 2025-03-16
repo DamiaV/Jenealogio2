@@ -11,6 +11,7 @@ import javafx.stage.*;
 import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.ui.components.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 
@@ -38,9 +39,6 @@ public class AboutDialog extends DialogBase<ButtonType> {
 
     final Label systemPropsLabel = new Label(config.language().translate("dialog.about.system_properties"));
 
-    final Pane spacer = new Pane();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
-
     final Button button = new Button(null, config.theme().getIcon(Icon.COPY_TO_CLIPBOARD, Icon.Size.SMALL));
     button.setTooltip(new Tooltip(config.language().translate("dialog.about.copy_specs_button.tooltip")));
     button.setOnAction(event -> {
@@ -49,7 +47,12 @@ public class AboutDialog extends DialogBase<ButtonType> {
       Clipboard.getSystemClipboard().setContent(clipboardContent);
     });
 
-    final HBox buttonBox = new HBox(5, systemPropsLabel, spacer, button);
+    final HBox buttonBox = new HBox(
+        5,
+        systemPropsLabel,
+        new Spacer(Orientation.HORIZONTAL),
+        button
+    );
     buttonBox.setAlignment(Pos.CENTER_LEFT);
 
     final TextArea systemPropsTextArea = new TextArea(App.getSystemProperties());

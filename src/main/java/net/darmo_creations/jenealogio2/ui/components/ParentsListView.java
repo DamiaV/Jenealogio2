@@ -1,12 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.components;
 
-import javafx.collections.*;
-import javafx.scene.control.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.themes.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -14,15 +9,8 @@ import java.util.*;
 /**
  * JavaFX component that presents a form to edit the parents of a person.
  */
-public class ParentsListView extends VBox implements PersonRequester {
-  private final Button removeRelativeButton;
-  private final ListView<Person> personsListView = new ListView<>();
-
+public class ParentsListView extends PersonListView {
   private final ParentalRelationType relationType;
-  private final Button addRelativeButton;
-
-  private PersonRequestListener personRequestListener;
-  private final Set<UpdateListener> updateListeners = new HashSet<>();
 
   /**
    * Create a new component.
@@ -30,82 +18,15 @@ public class ParentsListView extends VBox implements PersonRequester {
    * @param config The app’s config.
    */
   public ParentsListView(final @NotNull Config config, @NotNull ParentalRelationType relationType) {
-    super(5);
+    super(config, true);
     this.relationType = relationType;
-    final Language language = config.language();
-    final Theme theme = config.theme();
-
-    final HBox buttonsHBox = new HBox(5);
-
-    this.addRelativeButton = new Button(language.translate("parents_list.add"),
-        theme.getIcon(Icon.ADD_PARENT, Icon.Size.SMALL));
-    this.addRelativeButton.setOnAction(event -> this.onAdd());
-    this.removeRelativeButton = new Button(language.translate("parents_list.remove"),
-        theme.getIcon(Icon.REMOVE_PARENT, Icon.Size.SMALL));
-    this.removeRelativeButton.setOnAction(event -> this.onRemove());
-    final Pane spacer = new Pane();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
-    buttonsHBox.getChildren().addAll(spacer, this.addRelativeButton, this.removeRelativeButton);
-
-    VBox.setVgrow(this.personsListView, Priority.ALWAYS);
-    this.personsListView.setPrefHeight(50);
-    this.personsListView.getSelectionModel().selectedItemProperty()
-        .addListener((observable, oldValue, newValue) -> this.onSelection());
-    this.personsListView.getItems()
-        .addListener((ListChangeListener<? super Person>) c -> this.onListChange());
-    this.personsListView.setOnKeyPressed(event -> {
-      if (event.getCode() == KeyCode.DELETE)
-        this.onRemove();
-    });
-
-    this.getChildren().addAll(buttonsHBox, this.personsListView);
-
-    this.onSelection();
   }
 
-  private void onListChange() {
-    final var maxCount = this.relationType.maxParentsCount();
-    this.addRelativeButton.setDisable(
-        maxCount.isPresent() && this.personsListView.getItems().size() >= maxCount.get());
-    this.updateListeners.forEach(UpdateListener::onUpdate);
-  }
-
-  /**
-   * Called when the selection in {@link #personsListView} changes.
-   */
-  private void onSelection() {
-    this.removeRelativeButton.setDisable(
-        this.personsListView.getSelectionModel().getSelectedItems().isEmpty());
-  }
-
-  /**
-   * Called when the “Add” button is clicked.
-   * Opens an dialog to choose a person.
-   */
-  private void onAdd() {
-    final var items = this.personsListView.getItems();
-    this.personRequestListener.onPersonRequest(new LinkedList<>(items))
-        .ifPresent(person -> {
-          if (!items.contains(person)) {
-            items.add(person);
-            items.sort(Person.lastThenFirstNamesComparator());
-          }
-        });
-  }
-
-  /**
-   * Called when the “Remove” action (button or keyboard key) is fired.
-   */
-  private void onRemove() {
-    this.personsListView.getItems()
-        .removeAll(new LinkedList<>(this.personsListView.getSelectionModel().getSelectedItems()));
-  }
-
-  /**
-   * The persons contained in this list.
-   */
-  public List<Person> getPersons() {
-    return new LinkedList<>(this.personsListView.getItems());
+  @Override
+  protected void onListChange() {
+    final int maxCount = this.relationType.maxParentsCount().orElse(Integer.MAX_VALUE);
+    this.addButton.setDisable(this.personsListView.getItems().size() >= maxCount);
+    super.onListChange();
   }
 
   /**
@@ -114,27 +35,11 @@ public class ParentsListView extends VBox implements PersonRequester {
    * @param persons List of relatives.
    * @throws IllegalArgumentException If more persons are passed than allowed by this view’s {@link ParentalRelationType}.
    */
-  public void setPersons(final @NotNull Set<Person> persons) {
+  public void setPersons(final @NotNull Collection<Person> persons) {
     final var maxCount = this.relationType.maxParentsCount();
     if (maxCount.isPresent() && persons.size() > maxCount.get())
       throw new IllegalArgumentException("Too many persons, expected %d, got %d"
           .formatted(maxCount.get(), persons.size()));
-    final var items = this.personsListView.getItems();
-    items.clear();
-    items.addAll(persons);
-    items.sort(Person.lastThenFirstNamesComparator());
-  }
-
-  @Override
-  public void setPersonRequestListener(@NotNull PersonRequestListener listener) {
-    this.personRequestListener = listener;
-  }
-
-  public void addUpdateListener(@NotNull UpdateListener listener) {
-    this.updateListeners.add(listener);
-  }
-
-  public interface UpdateListener {
-    void onUpdate();
+    super.setPersons(persons);
   }
 }

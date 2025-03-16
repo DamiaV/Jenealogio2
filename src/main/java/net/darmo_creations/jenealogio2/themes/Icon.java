@@ -26,14 +26,13 @@ public enum Icon {
   EDIT_TREE_DOCUMENTS("page_white_stack_edit"),
   RENAME_TREE("tree_textfield"),
   SET_AS_ROOT("anchor"),
-  ADD_PERSON("user_add"),
+  CREATE_PERSON("user_add"),
   EDIT_PERSON("user_edit"),
-  REMOVE_PERSON("user_delete"),
-  ADD_CHILD("kids_add"),
-  ADD_SIBLING("users_3_add"),
+  DELETE_PERSON("user_delete"),
+  CREATE_CHILD("kids_add"),
+  CREATE_SIBLING("users_3_add"),
   EDIT_PARENTS("group_edit"),
   EDIT_LIFE_EVENTS("time_edit"),
-  EDIT_DOCUMENTS("page_white_stack_edit"),
 
   SHOW_LEGEND("legend"),
   FOCUS_SEARCH_BAR("search_field_go"),
@@ -65,34 +64,31 @@ public enum Icon {
   OPEN_LATLON_SELECTOR("map_pins"),
   LOADING("arrow_refresh"),
 
-  EDIT_PARENT("pencil"),
-  SWAP_PARENTS("arrow_refresh"),
-
-  ADD_PARENT("plus"),
-  REMOVE_PARENT("minus"),
-
-  REMOVE_MAIN_IMAGE("arrow_down"),
-  ADD_DOCUMENT("plus"),
-  SET_AS_MAIN_IMAGE("arrow_up"),
-  REMOVE_DOCUMENT("minus"),
+  IMPORT_FILE("folder_page_white"),
   DELETE_DOCUMENT("cross"),
   EDIT_DOCUMENT_DESC("pencil"),
 
-  IMPORT_FILE("folder_page_white"),
+  ADD_PERSON_ANNOTATION("user_add"),
+  ADD_EVENT_ANNOTATION("clock_add"),
+  REMOVE_ANNOTATION("minus"),
+  PERSON_ANNOTATION("user"),
+  EVENT_ANNOTATION("clock"),
+
+  ADD_PERSON("plus"),
+  REMOVE_PERSON("minus"),
+  MOVE_UP("arrow_up"),
+  MOVE_DOWN("arrow_down"),
 
   TREE_ROOT("anchor"),
   MORE("plus"),
 
+  EDIT_DOCUMENT("pencil"),
   GO_TO("arrow_right"),
-  PLUS("plus"),
   CLOSE_LIFE_EVENT("arrow_left"),
-
-  UNCERTAIN("help"),
 
   IMPORT_REGISTRIES("tag_blue_down"),
   IMPORT_REGISTRIES_FROM_TREE("tree_down"),
   EXPORT_REGISTRIES("tag_blue_up"),
-  EDIT_ICON("picture_edit"),
 
   ADD_ENTRY("plus"),
   DELETE_ENTRY("cross"),
@@ -106,6 +102,8 @@ public enum Icon {
   LIFE_EVENTS_TAB("clock"),
   FAMILY_TAB("users_5"),
   FOSTER_PARENTS_TAB("users_3"),
+  EDIT_MAIN_PICTURE("pencil"),
+  REMOVE_MAIN_PICTURE("minus"),
 
   SHOW_FILE_IN_EXPLORER("folder_vertical_open"),
 

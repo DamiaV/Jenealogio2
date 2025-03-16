@@ -3,6 +3,7 @@ package net.darmo_creations.jenealogio2.ui.dialogs;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
+import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.converter.*;
@@ -24,7 +25,8 @@ import java.util.*;
  * Dialog to edit a {@link Person} object and its {@link LifeEvent}s.
  */
 public class EditPersonDialog extends DialogBase<Person>
-    implements PersonRequester.PersonRequestListener, CoordinatesRequester.CoordinatesRequestListener {
+    implements PersonRequester.PersonRequestListener,
+    CoordinatesRequester.CoordinatesRequestListener {
   /**
    * Index of the profile tab.
    */
@@ -38,8 +40,11 @@ public class EditPersonDialog extends DialogBase<Person>
    */
   public static final int TAB_PARENTS = 2;
 
+  private static final int MAX_IMAGE_SIZE = 100;
+
   private final TabPane tabPane = new TabPane();
 
+  private final ImageView mainPictureView = new ImageView();
   private final ComboBox<NotNullComboBoxItem<LifeStatus>> lifeStatusCombo = new ComboBox<>();
   private final TextField legalLastNameField = new TextField();
   private final TextField legalFirstNamesField = new TextField();
@@ -59,6 +64,7 @@ public class EditPersonDialog extends DialogBase<Person>
 
   private final SelectPersonDialog selectPersonDialog;
   private final SelectCoordinatesDialog selectCoordinatesDialog;
+  private final SelectDocumentDialog selectDocumentDialog;
 
   /**
    * The person object being edited.
@@ -76,6 +82,10 @@ public class EditPersonDialog extends DialogBase<Person>
    * Whether the person is being created.
    */
   private boolean creating;
+  /**
+   * The file name of the current main picture.
+   */
+  private Picture mainPicture;
   /**
    * Stores the life status to be restored if the user selects an event type
    * that indicates death but reverts it later on.
@@ -105,6 +115,7 @@ public class EditPersonDialog extends DialogBase<Person>
     );
     this.selectPersonDialog = new SelectPersonDialog(config);
     this.selectCoordinatesDialog = new SelectCoordinatesDialog(config);
+    this.selectDocumentDialog = new SelectDocumentDialog(config, SelectionMode.SINGLE);
 
     VBox.setVgrow(this.tabPane, Priority.ALWAYS);
     this.tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -149,6 +160,31 @@ public class EditPersonDialog extends DialogBase<Person>
     gridPane.setHgap(5);
     gridPane.setVgap(5);
     int row = 0;
+
+    {
+      this.mainPictureView.setPreserveRatio(true);
+      final Button editMainPictureButton = new Button(
+          language.translate("dialog.edit_person.profile.edit_main_picture"),
+          theme.getIcon(Icon.EDIT_MAIN_PICTURE, Icon.Size.SMALL)
+      );
+      editMainPictureButton.setOnAction(event -> this.onSetMainPicture());
+      final Button removeMainPictureButton = new Button(
+          language.translate("dialog.edit_person.profile.remove_main_picture"),
+          theme.getIcon(Icon.REMOVE_MAIN_PICTURE, Icon.Size.SMALL)
+      );
+      removeMainPictureButton.setOnAction(event -> this.onRemoveMainPicture());
+      this.mainPictureView.imageProperty().addListener((observable, oldValue, newValue) -> {
+        removeMainPictureButton.setDisable(newValue == PersonWidget.DEFAULT_IMAGE);
+      });
+      final HBox hBox = new HBox(5, this.mainPictureView, editMainPictureButton, removeMainPictureButton);
+      final Label label = new Label(language.translate("dialog.edit_person.profile.main_picture"));
+      label.setPadding(new Insets(3, 0, 0, 0));
+      GridPane.setValignment(label, VPos.TOP);
+      gridPane.addRow(row++, label, hBox);
+      final RowConstraints rc = new RowConstraints();
+      rc.setVgrow(Priority.SOMETIMES);
+      gridPane.getRowConstraints().add(rc);
+    }
 
     {
       this.lifeStatusCombo.getItems().addAll(Arrays.stream(LifeStatus.values())
@@ -301,8 +337,6 @@ public class EditPersonDialog extends DialogBase<Person>
     final Tab tab = new Tab(language.translate("dialog.edit_person.events.title"));
     tab.setGraphic(theme.getIcon(Icon.LIFE_EVENTS_TAB, Icon.Size.SMALL));
 
-    final Pane spacer = new Pane();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
     this.addEventButton.setText(language.translate("dialog.edit_person.add_event"));
     this.addEventButton.setGraphic(theme.getIcon(Icon.ADD_EVENT, Icon.Size.SMALL));
     this.addEventButton.setOnAction(event -> {
@@ -314,7 +348,10 @@ public class EditPersonDialog extends DialogBase<Person>
           .getEntry(new RegistryEntryKey(Registry.BUILTIN_NS, "birth"));
       this.addEvent(new LifeEvent(date, birth), true);
     });
-    final HBox buttonsBox = new HBox(spacer, this.addEventButton);
+    final HBox buttonsBox = new HBox(
+        new Spacer(Orientation.HORIZONTAL),
+        this.addEventButton
+    );
 
     this.lifeEventsList.setSelectionModel(new NoSelectionModel<>());
     VBox.setVgrow(this.lifeEventsList, Priority.ALWAYS);
@@ -407,8 +444,10 @@ public class EditPersonDialog extends DialogBase<Person>
     this.creating = person == null;
     if (!this.creating) {
       this.person = person;
-      this.setTitle(language.translate("dialog.edit_person.title",
-          new FormatArg("person_name", this.person.toString())));
+      this.setTitle(language.translate(
+          "dialog.edit_person.title",
+          new FormatArg("person_name", this.person.toString())
+      ));
     } else {
       this.person = new Person();
       this.setTitle(language.translate("dialog.edit_person.title.create"));
@@ -423,6 +462,13 @@ public class EditPersonDialog extends DialogBase<Person>
   }
 
   private void setPersonProfileFields() {
+    this.mainPicture = this.person.mainPicture().orElse(null);
+    final Optional<Image> image = this.person.mainPicture()
+        .map(picture -> picture.image()
+            .orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG)));
+    this.mainPictureView.setImage(image.orElse(PersonWidget.DEFAULT_IMAGE));
+    this.mainPictureView.setFitHeight(Math.min(MAX_IMAGE_SIZE, image.map(Image::getHeight).orElse(Double.MAX_VALUE)));
+    this.mainPictureView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
     this.lifeStatusCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.person.lifeStatus()));
     this.agabCombo.getSelectionModel().select(new ComboBoxItem<>(this.person.assignedGenderAtBirth().orElse(null)));
     this.genderCombo.getSelectionModel().select(new ComboBoxItem<>(this.person.gender().orElse(null)));
@@ -483,6 +529,29 @@ public class EditPersonDialog extends DialogBase<Person>
    */
   public void selectTab(int index) {
     this.tabPane.getSelectionModel().select(index);
+  }
+
+  private void onSetMainPicture() {
+    final Set<AttachedDocument> exclusionList = new HashSet<>();
+    if (this.mainPicture != null) exclusionList.add(this.mainPicture);
+    this.familyTree.documents()
+        .stream()
+        .filter(d -> !(d instanceof Picture))
+        .forEach(exclusionList::add);
+    this.selectDocumentDialog.updateDocumentsList(this.familyTree, exclusionList);
+    this.selectDocumentDialog.showAndWait().ifPresent(documents -> {
+      final var iterator = documents.iterator();
+      if (!iterator.hasNext()) return;
+      this.mainPicture = (Picture) iterator.next();
+      final Image image = this.mainPicture.image()
+          .orElse(this.config.theme().getIconImage(Icon.NO_IMAGE, Icon.Size.BIG));
+      this.mainPictureView.setImage(image);
+    });
+  }
+
+  private void onRemoveMainPicture() {
+    this.mainPicture = null;
+    this.mainPictureView.setImage(PersonWidget.DEFAULT_IMAGE);
   }
 
   /**
@@ -604,6 +673,7 @@ public class EditPersonDialog extends DialogBase<Person>
    */
   private void updatePerson(@NotNull Person person) {
     // Profile
+    this.familyTree.setMainPictureOfObject(this.mainPicture != null ? this.mainPicture.fileName() : null, person);
     person.setAssignedGenderAtBirth(this.agabCombo.getSelectionModel().getSelectedItem().data());
     person.setGender(this.genderCombo.getSelectionModel().getSelectedItem().data());
     person.setLegalLastName(this.getText(this.legalLastNameField));

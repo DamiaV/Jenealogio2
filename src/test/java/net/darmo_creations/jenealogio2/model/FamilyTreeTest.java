@@ -1,8 +1,9 @@
 package net.darmo_creations.jenealogio2.model;
 
+import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -375,20 +376,21 @@ class FamilyTreeTest {
     assertSame(p, this.tree.removeDocument(p.fileName()));
   }
 
-  @Test
-  void removeDocumentRemovesFromGenealogyObjects() throws IOException {
+  @ParameterizedTest
+  @EnumSource(AnnotationType.class)
+  void removeDocumentRemovesFromDocumentAnnotations(AnnotationType annotationType) throws IOException {
     final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
     final Person p = new Person();
-    p.addDocument(pic);
+    pic.addAuthor(p, 0);
     final DateTime date = new DateTimeWithPrecision(Calendar.forName(GregorianCalendarSystem.NAME).getDate(null, 2024, 1, 1, 0, 0), DateTimePrecision.EXACT);
     final LifeEvent l = new LifeEvent(date, new LifeEventTypeRegistry().getEntry(new RegistryEntryKey("builtin:birth")));
-    l.addDocument(pic);
+    pic.annotateObject(annotationType, l, "note");
     this.tree.addPerson(p);
     this.tree.setLifeEventActors(l, Set.of(p));
     this.tree.removeDocument(pic.fileName());
-    assertTrue(p.documents().isEmpty());
-    assertTrue(l.documents().isEmpty());
+    assertTrue(p.authoredDocuments().isEmpty());
+    assertTrue(l.getAnnotatedInDocuments(annotationType).isEmpty());
   }
 
   @Test
@@ -432,52 +434,13 @@ class FamilyTreeTest {
   }
 
   @Test
-  void addDocumentToObjectAddsDocument() throws IOException {
-    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
-    this.tree.addDocument(pic);
-    final Person p = new Person();
-    this.tree.addPerson(p);
-    this.tree.addDocumentToObject("app_icon.png", p);
-    assertSame(pic, p.documents().iterator().next());
-  }
-
-  @Test
-  void addDocumentToObjectThrowsIfInvalidName() throws IOException {
-    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
-    this.tree.addDocument(pic);
-    final Person p = new Person();
-    this.tree.addPerson(p);
-    assertThrows(NoSuchElementException.class, () -> this.tree.addDocumentToObject("invalid", p));
-  }
-
-  @Test
-  void removeDocumentFromObjectRemovesDocument() throws IOException {
-    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
-    this.tree.addDocument(pic);
-    final Person p = new Person();
-    this.tree.addPerson(p);
-    this.tree.removeDocumentFromObject("app_icon.png", p);
-    assertTrue(p.documents().isEmpty());
-  }
-
-  @Test
   void setMainPictureOfObjectSetsMainPicture() throws IOException {
     final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
     this.tree.addDocument(pic);
     final Person p = new Person();
     this.tree.addPerson(p);
-    this.tree.addDocumentToObject("app_icon.png", p);
     this.tree.setMainPictureOfObject("app_icon.png", p);
     assertSame(pic, p.mainPicture().orElseThrow());
-  }
-
-  @Test
-  void setMainPictureOfObjectThrowsIfNotAddedToObject() throws IOException {
-    final Picture pic = new Picture(PictureTest.getImage(IMG_PATH), Path.of("app_icon.png"), null, null);
-    this.tree.addDocument(pic);
-    final Person p = new Person();
-    this.tree.addPerson(p);
-    assertThrows(IllegalArgumentException.class, () -> this.tree.setMainPictureOfObject("invalid", p));
   }
 
   @Test
@@ -486,8 +449,7 @@ class FamilyTreeTest {
     this.tree.addDocument(doc);
     final Person p = new Person();
     this.tree.addPerson(p);
-    this.tree.addDocumentToObject("doc.pdf", p);
-    assertThrows(ClassCastException.class, () -> this.tree.setMainPictureOfObject("doc.pdf", p));
+    assertThrows(IllegalArgumentException.class, () -> this.tree.setMainPictureOfObject("doc.pdf", p));
   }
 
   @Test

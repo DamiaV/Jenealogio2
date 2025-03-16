@@ -188,9 +188,11 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
         theme.getIcon(Icon.REMOVE_WITNESS, Icon.Size.SMALL));
     removeWitnessButton.setOnAction(event -> this.onRemoveWitness());
     removeWitnessButton.setDisable(true);
-    final Pane spacer = new Pane();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
-    buttonsHBox.getChildren().addAll(spacer, addWitnessButton, removeWitnessButton);
+    buttonsHBox.getChildren().addAll(
+        new Spacer(Orientation.HORIZONTAL),
+        addWitnessButton,
+        removeWitnessButton
+    );
     this.witnessesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
         removeWitnessButton.setDisable(this.witnessesList.getSelectionModel().getSelectedItems().isEmpty()));
     this.witnessesList.setOnKeyPressed(event -> {
@@ -251,6 +253,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
   }
 
   private void onPartnerSelect() {
+    if (this.personRequestListener == null) return;
     this.personRequestListener.onPersonRequest(this.getExclusionList()).ifPresent(p -> {
       this.setPartner(p);
       this.notifyUpdateListeners();
@@ -289,6 +292,7 @@ public class LifeEventView extends TitledPane implements PersonRequester, Coordi
    * Called when the add witness button is clicked.
    */
   private void onAddWitness() {
+    if (this.personRequestListener == null) return;
     this.personRequestListener.onPersonRequest(this.getExclusionList())
         .ifPresent(this.witnessesList.getItems()::add);
   }

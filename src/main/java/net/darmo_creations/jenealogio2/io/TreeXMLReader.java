@@ -3,8 +3,8 @@ package net.darmo_creations.jenealogio2.io;
 import javafx.scene.image.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
-import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.model.datetime.calendar.*;
+import net.darmo_creations.jenealogio2.model.datetime.calendar.Calendar;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 import org.w3c.dom.*;
@@ -65,8 +65,9 @@ public class TreeXMLReader extends TreeXMLManager {
 
     final Optional<Element> documentsElement = XmlUtils
         .getChildElement(familyTreeElement, DOCUMENTS_TAG, true);
+    final Map<AttachedDocument, DocumentAnnotations> annotations = new HashMap<>();
     if (documentsElement.isPresent())
-      this.loadDocuments(documentsElement.get(), familyTree, documentBuilder);
+      this.loadDocuments(documentsElement.get(), familyTree, documentBuilder, annotations);
 
     final List<Person> persons = this.readPersons(peopleElement, familyTree);
     if (rootID == -1) {
@@ -81,8 +82,12 @@ public class TreeXMLReader extends TreeXMLManager {
     }
     final Optional<Element> eventsElement = XmlUtils
         .getChildElement(familyTreeElement, LIFE_EVENTS_TAG, true);
+    final List<LifeEvent> lifeEvents;
     if (eventsElement.isPresent())
-      this.readLifeEvents(eventsElement.get(), persons, familyTree);
+      lifeEvents = this.readLifeEvents(eventsElement.get(), persons, familyTree);
+    else lifeEvents = new ArrayList<>();
+
+    this.applyDocumentAnnotations(persons, lifeEvents, annotations);
 
     return familyTree;
   }
@@ -142,7 +147,7 @@ public class TreeXMLReader extends TreeXMLManager {
     final Optional<Element> gendersElement = XmlUtils
         .getChildElement(registriesElement, GENDERS_TAG, true);
     if (gendersElement.isPresent())
-      for (final Element entryElement : XmlUtils.getChildElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
+      for (final Element entryElement : XmlUtils.getChildrenElements(gendersElement.get(), REGISTRY_ENTRY_TAG)) {
         final RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(
             entryElement,
             REGISTRY_ENTRY_KEY_ATTR,
@@ -170,7 +175,7 @@ public class TreeXMLReader extends TreeXMLManager {
     final Optional<Element> eventTypeElement = XmlUtils
         .getChildElement(registriesElement, LIFE_EVENT_TYPES_TAG, true);
     if (eventTypeElement.isPresent()) {
-      for (final Element entryElement : XmlUtils.getChildElements(eventTypeElement.get(), REGISTRY_ENTRY_TAG)) {
+      for (final Element entryElement : XmlUtils.getChildrenElements(eventTypeElement.get(), REGISTRY_ENTRY_TAG)) {
         final RegistryEntryKey key = new RegistryEntryKey(XmlUtils.getAttr(
             entryElement,
             REGISTRY_ENTRY_KEY_ATTR,
@@ -277,9 +282,10 @@ public class TreeXMLReader extends TreeXMLManager {
   private void loadDocuments(
       @NotNull Element documentsElement,
       @NotNull FamilyTree familyTree,
-      @NotNull AttachedDocumentBuilder documentBuilder
+      @NotNull AttachedDocumentBuilder documentBuilder,
+      @NotNull Map<AttachedDocument, DocumentAnnotations> annotations
   ) throws IOException {
-    final List<Element> documentElements = XmlUtils.getChildElements(documentsElement, DOCUMENT_TAG);
+    final List<Element> documentElements = XmlUtils.getChildrenElements(documentsElement, DOCUMENT_TAG);
     for (final Element documentElement : documentElements) {
       final String name = XmlUtils.getAttr(
           documentElement,
@@ -292,7 +298,108 @@ public class TreeXMLReader extends TreeXMLManager {
           .getChildElement(documentElement, DOCUMENT_DESC_TAG, true);
       final String desc = descElement.map(Element::getTextContent).orElse(null);
       final DateTime date = this.readDateTag(documentElement, true);
-      familyTree.addDocument(documentBuilder.build(name, desc, date));
+      final AttachedDocument document = documentBuilder.build(name, desc, date);
+      familyTree.addDocument(document);
+
+      final Optional<Element> authorsElement = XmlUtils
+          .getChildElement(documentElement, AUTHORS_TAG, true);
+      final List<Integer> authorsIds;
+      if (authorsElement.isPresent()) {
+        authorsIds = XmlUtils.getAttr(
+            authorsElement.get(),
+            AUTHORS_IDS_ATTR,
+            s -> Arrays.stream(s.split(",")).map(Integer::parseInt).toList(),
+            null,
+            false
+        );
+      } else authorsIds = new ArrayList<>();
+
+      final Optional<Element> annotationsElement = XmlUtils
+          .getChildElement(documentElement, DOCUMENT_ANNOTATIONS_TAG, true);
+      if (annotationsElement.isEmpty()) continue;
+
+      final Map<AnnotationType, Set<Annotation>> docAnnotations = new EnumMap<>(AnnotationType.class);
+      for (final var annotationType : AnnotationType.values()) {
+        docAnnotations.put(annotationType, new HashSet<>());
+        final Optional<Element> docAnnotationsElement = XmlUtils
+            .getChildElement(annotationsElement.get(), StringUtils.capitalize(annotationType.name()), true);
+        if (docAnnotationsElement.isPresent()) {
+          this.readAnnotations(docAnnotationsElement.get(), PERSON_ANNOTATION_TAG, docAnnotations.get(annotationType), Person.class);
+          this.readAnnotations(docAnnotationsElement.get(), LIFE_EVENT_ANNOTATION_TAG, docAnnotations.get(annotationType), LifeEvent.class);
+        }
+      }
+      annotations.put(document, new DocumentAnnotations(authorsIds, docAnnotations));
+    }
+  }
+
+  private void readAnnotations(
+      final @NotNull Element mentionsElement,
+      @NotNull String tagName,
+      @NotNull Set<Annotation> annotations,
+      @NotNull Class<? extends GenealogyObject<?>> objectClass
+  ) throws IOException {
+    for (final Element element : XmlUtils.getChildrenElements(mentionsElement, tagName)) {
+      final Integer id = XmlUtils.getAttr(
+          element,
+          ANNOTATION_OBJECT_ID_ATTR,
+          Integer::parseInt,
+          null,
+          false
+      );
+      final String note = XmlUtils.getAttr(
+          element,
+          ANNOTATION_NOTE_ATTR,
+          s -> s,
+          () -> null,
+          true
+      );
+      annotations.add(new Annotation(id, objectClass, note));
+    }
+  }
+
+  private void applyDocumentAnnotations(
+      final @NotNull List<Person> persons,
+      final @NotNull List<LifeEvent> lifeEvents,
+      final @NotNull Map<AttachedDocument, DocumentAnnotations> annotations
+  ) {
+    for (final var entry : annotations.entrySet()) {
+      final var document = entry.getKey();
+      final var docAnnotations = entry.getValue();
+      final List<Integer> authorsIds = docAnnotations.authorsIds();
+
+      for (int i = 0; i < authorsIds.size(); i++)
+        document.addAuthor(persons.get(authorsIds.get(i)), i);
+
+      for (final var annotationType : AnnotationType.values())
+        for (final var annotation : docAnnotations.annotations().get(annotationType)) {
+          final int objectId = annotation.objectId();
+          final var objectClass = annotation.objectClass();
+          final GenealogyObject<?> object;
+          if (objectClass == Person.class) object = persons.get(objectId);
+          else if (objectClass == LifeEvent.class) object = lifeEvents.get(objectId);
+          else throw new IllegalArgumentException("invalid object objectClass: " + objectClass);
+          document.annotateObject(annotationType, object, annotation.note());
+        }
+    }
+  }
+
+  private record DocumentAnnotations(
+      @NotNull List<Integer> authorsIds,
+      @NotNull Map<AnnotationType, Set<Annotation>> annotations
+  ) {
+    DocumentAnnotations {
+      Objects.requireNonNull(authorsIds);
+      Objects.requireNonNull(annotations);
+    }
+  }
+
+  private record Annotation(
+      int objectId,
+      @NotNull Class<? extends GenealogyObject<?>> objectClass,
+      String note
+  ) {
+    Annotation {
+      Objects.requireNonNull(objectClass);
     }
   }
 
@@ -314,10 +421,9 @@ public class TreeXMLReader extends TreeXMLManager {
     final List<Person> persons = new LinkedList<>();
     final Map<Person, Map<ParentalRelationType, List<Integer>>> parentsIDs = new HashMap<>();
 
-    for (final Element personElement : XmlUtils.getChildElements(peopleElement, PERSON_TAG)) {
+    for (final Element personElement : XmlUtils.getChildrenElements(peopleElement, PERSON_TAG)) {
       final Person person = new Person();
 
-      this.readDocumentsTag(personElement, person, familyTree);
       this.readDisambiguationIdTag(personElement, person);
       this.readLifeStatusTag(personElement, person);
       // Legal last name
@@ -336,6 +442,7 @@ public class TreeXMLReader extends TreeXMLManager {
       this.readParentsTag(personElement, person, parentsIDs);
       this.readNotesTag(personElement, person);
       this.readSourcesTag(personElement, person);
+      this.readMainPictureTag(personElement, person, familyTree);
 
       familyTree.addPerson(person);
       persons.add(person);
@@ -344,46 +451,6 @@ public class TreeXMLReader extends TreeXMLManager {
     this.setParents(persons, parentsIDs);
 
     return persons;
-  }
-
-  /**
-   * Read the {@code <Documents>} tag for the given object.
-   *
-   * @param element    XML element to extract the documents from.
-   * @param o          The object corresponding to the tag.
-   * @param familyTree The tree the object belongs to.
-   */
-  private void readDocumentsTag(
-      final @NotNull Element element,
-      @NotNull GenealogyObject<?> o,
-      @NotNull FamilyTree familyTree
-  ) throws IOException {
-    final Optional<Element> documentsElement = XmlUtils
-        .getChildElement(element, DOCUMENTS_TAG, true);
-    if (documentsElement.isPresent()) {
-      final List<Element> documentElements = XmlUtils
-          .getChildElements(documentsElement.get(), DOCUMENT_TAG);
-      for (final Element documentElement : documentElements) {
-        final String name = XmlUtils.getAttr(
-            documentElement,
-            DOCUMENT_NAME_ATTR,
-            s -> s,
-            () -> null,
-            false
-        );
-        familyTree.addDocumentToObject(name, o);
-        final boolean isMain = XmlUtils.getAttr(
-            documentElement,
-            DOCUMENT_MAIN_PICTURE_ATTR,
-            Boolean::parseBoolean,
-            () -> false,
-            false
-        );
-        final var document = familyTree.getDocument(name);
-        if (isMain && document.isPresent() && document.get() instanceof Picture)
-          familyTree.setMainPictureOfObject(name, o);
-      }
-    }
   }
 
   /**
@@ -518,7 +585,7 @@ public class TreeXMLReader extends TreeXMLManager {
       final HashMap<ParentalRelationType, List<Integer>> groupsMap = new HashMap<>();
       relativesIDs.put(person, groupsMap);
       for (final Element groupElement : XmlUtils
-          .getChildElements(relativesElement.get(), PARENT_GROUP_TAG)) {
+          .getChildrenElements(relativesElement.get(), PARENT_GROUP_TAG)) {
         final int ordinal = XmlUtils.getAttr(
             groupElement,
             PARENT_GROUP_ORDINAL_ATTR,
@@ -534,7 +601,7 @@ public class TreeXMLReader extends TreeXMLManager {
         }
         final LinkedList<Integer> parentsList = new LinkedList<>();
         groupsMap.put(parentType, parentsList);
-        for (final Element parentElement : XmlUtils.getChildElements(groupElement, PARENT_TAG)) {
+        for (final Element parentElement : XmlUtils.getChildrenElements(groupElement, PARENT_TAG)) {
           // Defer setting relatives to when all person objects have been deserialized
           parentsList.add(XmlUtils.getAttr(
               parentElement,
@@ -576,6 +643,27 @@ public class TreeXMLReader extends TreeXMLManager {
     final Optional<Element> sourcesElement = XmlUtils
         .getChildElement(element, SOURCES_TAG, true);
     sourcesElement.ifPresent(e -> o.setSources(e.getTextContent().strip()));
+  }
+
+  private void readMainPictureTag(
+      final @NotNull Element element,
+      @NotNull GenealogyObject<?> o,
+      @NotNull FamilyTree familyTree
+  ) throws IOException {
+    final Optional<Element> mainPictureElement = XmlUtils
+        .getChildElement(element, MAIN_PICTURE_TAG, true);
+    if (mainPictureElement.isEmpty()) return;
+
+    final String fileName = XmlUtils.getAttr(
+        mainPictureElement.get(),
+        MAIN_PICTURE_NAME_ATTR,
+        s -> s,
+        null,
+        false
+    );
+    final var document = familyTree.getDocument(fileName);
+    if (document.isPresent() && document.get() instanceof Picture)
+      familyTree.setMainPictureOfObject(fileName, o);
   }
 
   private void setParents(
@@ -643,7 +731,7 @@ public class TreeXMLReader extends TreeXMLManager {
     if (namesElement.isPresent()) {
       final List<String> names = new LinkedList<>();
       for (final Element nameElement : XmlUtils
-          .getChildElements(namesElement.get(), NAME_TAG))
+          .getChildrenElements(namesElement.get(), NAME_TAG))
         try {
           names.add(XmlUtils.getAttr(
               nameElement,
@@ -667,14 +755,17 @@ public class TreeXMLReader extends TreeXMLManager {
    *
    * @param eventsElement XML element to read from.
    * @param persons       List of loaded persons to fetch IDs from.
+   * @return The list of loaded events.
    * @throws IOException If any error occurs.
    */
-  private void readLifeEvents(
+  private List<LifeEvent> readLifeEvents(
       final @NotNull Element eventsElement,
       final @NotNull List<Person> persons,
       @NotNull FamilyTree familyTree
   ) throws IOException {
-    for (final Element eventElement : XmlUtils.getChildElements(eventsElement, LIFE_EVENT_TAG)) {
+    final List<LifeEvent> lifeEvents = new LinkedList<>();
+
+    for (final Element eventElement : XmlUtils.getChildrenElements(eventsElement, LIFE_EVENT_TAG)) {
       final LifeEvent lifeEvent;
       final DateTime date = this.readDateTag(eventElement, false);
       final LifeEventType type = this.readLifeEventTypeTag(eventElement, familyTree);
@@ -687,8 +778,8 @@ public class TreeXMLReader extends TreeXMLManager {
       } catch (final IllegalArgumentException e) {
         throw new IOException(e);
       }
+      lifeEvents.add(lifeEvent);
 
-      this.readDocumentsTag(eventElement, lifeEvent, familyTree);
       // Witnesses
       this.extractPersons(
           eventElement,
@@ -700,7 +791,10 @@ public class TreeXMLReader extends TreeXMLManager {
       this.readPlaceTag(eventElement, lifeEvent);
       this.readNotesTag(eventElement, lifeEvent);
       this.readSourcesTag(eventElement, lifeEvent);
+      this.readMainPictureTag(eventElement, lifeEvent, familyTree);
     }
+
+    return lifeEvents;
   }
 
   /**
@@ -708,7 +802,7 @@ public class TreeXMLReader extends TreeXMLManager {
    *
    * @param eventElement {@code <LifeEvent>} element to extract the date from.
    * @return The date of the event.
-   * @throws IOException If the subtree is malformed or the date type is undefined.
+   * @throws IOException If the subtree is malformed or the date objectClass is undefined.
    */
   private @Nullable DateTime readDateTag(
       final @NotNull Element eventElement,
@@ -774,7 +868,7 @@ public class TreeXMLReader extends TreeXMLManager {
           throw new IOException(e);
         }
       }
-      default -> throw new IOException("Undefined date type " + dateType);
+      default -> throw new IOException("Undefined date objectClass " + dateType);
     };
   }
 
@@ -788,10 +882,10 @@ public class TreeXMLReader extends TreeXMLManager {
   /**
    * Read the {@code <Type>} tag for the given event.
    *
-   * @param eventElement {@code <LifeEvent>} element to extract the type from.
+   * @param eventElement {@code <LifeEvent>} element to extract the objectClass from.
    * @param familyTree   The family tree to get {@link LifeEventType} objects from.
-   * @return The type of the event.
-   * @throws IOException If the event type is undefined or malformed.
+   * @return The objectClass of the event.
+   * @throws IOException If the event objectClass is undefined or malformed.
    */
   private LifeEventType readLifeEventTypeTag(
       final @NotNull Element eventElement,
@@ -810,7 +904,7 @@ public class TreeXMLReader extends TreeXMLManager {
       ));
       type = familyTree.lifeEventTypeRegistry().getEntry(key);
       if (type == null)
-        throw new IOException("Undefined life event type registry key: " + key.fullName());
+        throw new IOException("Undefined life event objectClass registry key: " + key.fullName());
     } catch (final IllegalArgumentException e) {
       throw new IOException(e);
     }
@@ -821,7 +915,7 @@ public class TreeXMLReader extends TreeXMLManager {
    * Read the {@code <Actors>} tag for the given event.
    *
    * @param eventElement {@code <LifeEvent>} element to extract actors from.
-   * @param type         The type of the event.
+   * @param type         The objectClass of the event.
    * @param persons      List of all persons from the current family tree.
    * @return The list of all actors for the event.
    * @throws IOException If the XML subtree is malformed or the event has an invalid number of actors.
@@ -835,7 +929,7 @@ public class TreeXMLReader extends TreeXMLManager {
     this.extractPersons(eventElement, ACTORS_TAG, persons, actors::add, false);
     final int actorsNb = actors.size();
     if (actorsNb < type.minActors() || actorsNb > type.maxActors())
-      throw new IOException("Wrong number of actors for event type '%s': %d"
+      throw new IOException("Wrong number of actors for event objectClass '%s': %d"
           .formatted(type.key().fullName(), actorsNb));
     return actors;
   }
@@ -894,7 +988,7 @@ public class TreeXMLReader extends TreeXMLManager {
         .getChildElement(eventElement, elementName, allowMissing);
     if (personsElement.isEmpty())
       return;
-    for (final Element actorElement : XmlUtils.getChildElements(personsElement.get(), PERSON_TAG)) {
+    for (final Element actorElement : XmlUtils.getChildrenElements(personsElement.get(), PERSON_TAG)) {
       final int id = XmlUtils.getAttr(
           actorElement,
           PERSON_ID_ATTR,

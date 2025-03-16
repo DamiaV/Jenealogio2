@@ -13,9 +13,9 @@ import java.util.*;
 /**
  * Base class for this app’s dialogs.
  *
- * @param <T> Type of returned values.
+ * @param <R> Type of returned values.
  */
-public abstract class DialogBase<T> extends Dialog<T> {
+public abstract class DialogBase<R> extends Dialog<R> {
   protected Config config;
 
   /**
@@ -61,8 +61,10 @@ public abstract class DialogBase<T> extends Dialog<T> {
     this.setIcon(config.theme().getAppIcon());
     this.getDialogPane().getButtonTypes().addAll(buttonTypes);
     this.stage().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-      if (event.getCode() == KeyCode.ESCAPE) // Avoid event being consumed by focused widget
+      if (event.getCode() == KeyCode.ESCAPE) { // Avoid event being consumed by focused widget
+        event.consume();
         this.hide();
+      }
     });
   }
 

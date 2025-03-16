@@ -8,6 +8,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.*;
 import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
 import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
@@ -18,11 +19,13 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.*;
 
 /**
  * This view shows all available information about a specific {@link Person} object.
  */
-public class PersonDetailsView extends TabPane implements PersonClickObservable {
+public class PersonDetailsView extends TabPane
+    implements PersonClickObservable, PersonClickListener, LifeEventClickListener {
   @SuppressWarnings("DataFlowIssue")
   public static final Image DEFAULT_EVENT_IMAGE =
       new Image(PersonWidget.class.getResourceAsStream(App.IMAGES_PATH + "default_event_image.png"));
@@ -49,6 +52,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final Label nicknamesLabel = new Label();
   private final TextFlow notesTextFlow = new TextFlow();
   private final TextFlow sourcesTextFlow = new TextFlow();
+  private final Button editDocumentButton = new Button();
+  private final ListView<DocumentView> documentsList = new ListView<>();
 
   private final SplitPane eventsTabPane = new SplitPane();
   private final ListView<LifeEventItem> lifeEventsList = new ListView<>();
@@ -63,6 +68,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final TextFlow eventNotesTextFlow = new TextFlow();
   private final TextFlow eventSourcesTextFlow = new TextFlow();
   private final ListView<PersonCard> eventWitnessesList = new ListView<>();
+  private final Button editEventDocumentButton = new Button();
   private final ListView<DocumentView> eventDocumentsList = new ListView<>();
 
   private final ListView<ChildrenItem> siblingsList = new ListView<>();
@@ -73,9 +79,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private final List<NewParentClickListener> newParentClickListeners = new LinkedList<>();
   private final List<Consumer<AttachedDocument>> documentEditedListeners = new LinkedList<>();
 
-  private final ListView<DocumentView> documentsList = new ListView<>();
-
   private final EditDocumentDialog editDocumentDialog;
+  private final ShowDocumentDialog showDocumentDialog;
 
   private LifeEvent displayedLifeEvent = null;
 
@@ -91,6 +96,10 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     final Theme theme = config.theme();
 
     this.editDocumentDialog = new EditDocumentDialog(config);
+    this.showDocumentDialog = new ShowDocumentDialog(config);
+    this.showDocumentDialog.personClickListeners().add(this);
+    this.showDocumentDialog.lifeEventClickListeners().add(this);
+
     this.imageView = new ClickableImageView(PersonWidget.DEFAULT_IMAGE);
     this.eventImageView = new ClickableImageView(DEFAULT_EVENT_IMAGE);
     this.eventDateLabel = new DateLabel(null, config);
@@ -181,9 +190,21 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     VBox.setVgrow(sourcesScroll, Priority.ALWAYS);
     final VBox sourcesBox = new VBox(new SectionLabel("sources"), sourcesScroll);
     sourcesBox.getStyleClass().add("person-details");
+    this.editDocumentButton.setText(language.translate("person_details_view.edit_document"));
+    this.editDocumentButton.setGraphic(this.config.theme().getIcon(Icon.EDIT_DOCUMENT, Icon.Size.SMALL));
+    this.editDocumentButton.setOnAction(event -> this.onEditDocument(this.documentsList));
+    final HBox buttonBox = new HBox(
+        5,
+        new Spacer(Orientation.HORIZONTAL),
+        this.editDocumentButton
+    );
+    this.editDocumentButton.setDisable(true);
+    this.documentsList.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.editDocumentButton.setDisable(newValue == null));
     this.documentsList.setOnMouseClicked(this::onDocumentListClicked);
     VBox.setVgrow(this.documentsList, Priority.ALWAYS);
-    final VBox documentsBox = new VBox(new SectionLabel("documents"), this.documentsList);
+    final VBox documentsBox = new VBox(new SectionLabel("documents"), buttonBox, this.documentsList);
     documentsBox.getStyleClass().add("person-details");
     splitPane.getItems().addAll(
         topBox,
@@ -194,6 +215,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   }
 
   private void setupEventsTab() {
+    final Language language = this.config.language();
+
     this.eventsTabPane.setOrientation(Orientation.VERTICAL);
     this.eventsTab.contentProperty().addListener((observable, oldValue, newValue) -> {
       if (newValue == this.eventsTabPane)
@@ -233,8 +256,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
     this.eventTypeLabel.getStyleClass().add("person-details-title");
     this.eventDateLabel.getStyleClass().add("person-details-title");
-    final Pane spacer = new Pane();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
     final Button closeButton = new Button(
         null,
         this.config.theme().getIcon(Icon.CLOSE_LIFE_EVENT, Icon.Size.SMALL)
@@ -246,7 +267,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         5,
         this.eventImageView,
         this.eventTypeLabel,
-        spacer,
+        new Spacer(Orientation.HORIZONTAL),
         this.eventDateLabel,
         closeButton
     );
@@ -269,9 +290,21 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     sourcesBox.getStyleClass().add("person-details");
     final VBox witnessesBox = new VBox(new SectionLabel("witnesses"), this.eventWitnessesList);
     witnessesBox.getStyleClass().add("person-details");
+    this.editEventDocumentButton.setText(language.translate("person_details_view.edit_document"));
+    this.editEventDocumentButton.setGraphic(this.config.theme().getIcon(Icon.EDIT_DOCUMENT, Icon.Size.SMALL));
+    this.editEventDocumentButton.setOnAction(event -> this.onEditDocument(this.eventDocumentsList));
+    final HBox buttonBox = new HBox(
+        5,
+        new Spacer(Orientation.HORIZONTAL),
+        this.editEventDocumentButton
+    );
+    this.editEventDocumentButton.setDisable(true);
+    this.eventDocumentsList.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) ->
+            this.editEventDocumentButton.setDisable(newValue == null));
     this.eventDocumentsList.setOnMouseClicked(this::onDocumentListClicked);
     VBox.setVgrow(this.eventDocumentsList, Priority.ALWAYS);
-    final VBox documentsBox = new VBox(new SectionLabel("documents"), this.eventDocumentsList);
+    final VBox documentsBox = new VBox(new SectionLabel("documents"), buttonBox, this.eventDocumentsList);
     documentsBox.getStyleClass().add("person-details");
     this.eventPane.getItems().addAll(
         topBox,
@@ -350,7 +383,18 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private void onDocumentListClicked(final @NotNull MouseEvent event) {
     if (event.getClickCount() > 1)
       //noinspection unchecked
-      this.onEditDocument((ListView<DocumentView>) event.getSource());
+      this.onShowDocument((ListView<DocumentView>) event.getSource());
+  }
+
+  private void onShowDocument(@NotNull ListView<DocumentView> list) {
+    final List<DocumentView> selection = list.getSelectionModel().getSelectedItems();
+    if (selection.size() == 1) {
+      final DocumentView documentView = selection.get(0);
+      final AttachedDocument document = documentView.document();
+      this.showDocumentDialog.setDocument(document);
+      if (!this.showDocumentDialog.isShowing())
+        this.showDocumentDialog.showAndWait();
+    }
   }
 
   private void onEditDocument(@NotNull ListView<DocumentView> list) {
@@ -390,13 +434,6 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         this.showEvent(displayedEvent);
     } else
       this.resetFields();
-  }
-
-  /**
-   * The currently visible life event.
-   */
-  public Optional<LifeEvent> getDisplayedLifeEvent() {
-    return Optional.ofNullable(this.displayedLifeEvent);
   }
 
   private void resetLists() {
@@ -510,18 +547,24 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .sorted(compareParentsAndChildren)
         .forEach(e -> this.childrenList.getItems().add(new ChildrenItem(e.left(), e.right())));
 
-    for (final ParentalRelationType parentType : ParentalRelationType.values())
+    for (final var parentType : ParentalRelationType.values())
       this.person.parents(parentType).stream()
           .sorted(personComparator)
           .forEach(parent -> this.parentsLists.get(parentType).getItems().add(new PersonCard(parent)));
 
-    this.person.documents().forEach(
-        p -> this.documentsList.getItems().add(new DocumentView(p, false, this.config)));
+    final var annotationsStream = Arrays.stream(AnnotationType.values())
+        .flatMap(t -> this.person.getAnnotatedInDocuments(t).stream());
+    Stream.concat(this.person.authoredDocuments().stream(), annotationsStream)
+        .distinct()
+        .forEach(doc -> this.documentsList.getItems()
+            .add(new DocumentView(doc, false, this.person, this.config)));
     this.documentsList.getItems().sort(null);
   }
 
   private void showEvent(final @NotNull LifeEvent lifeEvent) {
     this.displayedLifeEvent = lifeEvent;
+    if (this.getSelectionModel().getSelectedItem() != this.eventsTab)
+      this.getSelectionModel().select(this.eventsTab);
 
     final Language language = this.config.language();
 
@@ -540,7 +583,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     for (final Person actor : actors) {
       final Label label = new Label(language.translate("person_details_view.life_events." + (first ? "of" : "and")));
       final Button b = new Button(actor.toString(), this.config.theme().getIcon(Icon.GO_TO, Icon.Size.SMALL));
-      b.setOnAction(event -> PersonDetailsView.this.firePersonClickEvent(b));
+      b.setOnAction(event -> this.firePersonClickEvent(b));
       b.setUserData(actor);
       final HBox hBox = new HBox(5, label, b);
       hBox.setAlignment(Pos.CENTER_LEFT);
@@ -570,11 +613,19 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         .forEach(w -> this.eventWitnessesList.getItems().add(new PersonCard(w)));
 
     this.eventDocumentsList.getItems().clear();
-    lifeEvent.documents().forEach(
-        p -> this.eventDocumentsList.getItems().add(new DocumentView(p, false, this.config)));
+    Arrays.stream(AnnotationType.values())
+        .flatMap(t -> lifeEvent.getAnnotatedInDocuments(t).stream())
+        .distinct()
+        .forEach(doc -> this.eventDocumentsList.getItems()
+            .add(new DocumentView(doc, false, lifeEvent, this.config)));
     this.eventDocumentsList.getItems().sort(null);
 
     this.eventsTab.setContent(this.eventPane);
+  }
+
+  @Override
+  public void onClick(final @NotNull PersonClickEvent event) {
+    this.firePersonClickEvent(event);
   }
 
   public final List<PersonClickListener> personClickListeners() {
@@ -587,6 +638,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   public List<Consumer<AttachedDocument>> documentEditedListeners() {
     return this.documentEditedListeners;
+  }
+
+  @Override
+  public void onClick(final @NotNull LifeEventClickEvent event) {
+    if (event instanceof LifeEventClickedEvent e)
+      this.showEvent(e.lifeEvent());
   }
 
   /**
@@ -752,10 +809,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
       else
         type = Objects.requireNonNull(lifeEvent.type().userDefinedName());
       final Label typeLabel = new Label(type);
-      final Pane spacer = new Pane();
-      HBox.setHgrow(spacer, Priority.ALWAYS);
       final DateLabel dateLabel = new DateLabel(lifeEvent.date(), null, config);
-      header.getChildren().addAll(typeLabel, spacer, dateLabel);
+      header.getChildren().addAll(
+          typeLabel,
+          new Spacer(Orientation.HORIZONTAL),
+          dateLabel
+      );
       this.getChildren().add(header);
     }
 

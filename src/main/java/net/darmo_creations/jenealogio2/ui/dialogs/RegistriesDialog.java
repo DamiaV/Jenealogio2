@@ -267,9 +267,12 @@ public class RegistriesDialog extends DialogBase<ButtonType> {
           theme.getIcon(Icon.DELETE_ENTRY, Icon.Size.SMALL));
       this.removeButton.setOnAction(event -> this.onRemoveSelectedItems());
       this.removeButton.setDisable(true);
-      final Pane spacer = new Pane();
-      HBox.setHgrow(spacer, Priority.ALWAYS);
-      this.buttonsBox = new HBox(5, spacer, addButton, this.removeButton);
+      this.buttonsBox = new HBox(
+          5,
+          new Spacer(Orientation.HORIZONTAL),
+          addButton,
+          this.removeButton
+      );
 
       // Table
       VBox.setVgrow(this.entriesTable, Priority.ALWAYS);

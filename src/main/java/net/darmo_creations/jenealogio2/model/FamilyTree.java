@@ -17,7 +17,7 @@ public class FamilyTree {
   private final Set<Person> persons = new HashSet<>();
   private final Set<LifeEvent> lifeEvents = new HashSet<>();
   private final Map<String, AttachedDocument> documents = new HashMap<>();
-  private final List<FileOperation> fileOperations = new LinkedList<>();
+  private final List<FileOperation> pendingFileOperations = new LinkedList<>();
   private String name;
   private Person root;
 
@@ -81,14 +81,14 @@ public class FamilyTree {
    * An unmodifiable view of all pending file operations of this tree.
    */
   public @UnmodifiableView List<FileOperation> pendingFileOperations() {
-    return Collections.unmodifiableList(this.fileOperations);
+    return Collections.unmodifiableList(this.pendingFileOperations);
   }
 
   /**
    * Clear all pending file operations of this tree.
    */
   public void clearPendingFileOperations() {
-    this.fileOperations.clear();
+    this.pendingFileOperations.clear();
   }
 
   /**
@@ -125,6 +125,10 @@ public class FamilyTree {
       this.lifeEvents.remove(lifeEvent);
     }
     this.persons.remove(person);
+    person.authoredDocuments().forEach(d -> d.removeAuthor(person));
+    for (final var annotationType : AnnotationType.values())
+      person.getAnnotatedInDocuments(annotationType)
+          .forEach(d -> d.removeObjectAnnotation(annotationType, person));
   }
 
   /**
@@ -188,7 +192,7 @@ public class FamilyTree {
     if (this.documents.containsKey(document.fileName()))
       return false;
     this.documents.put(document.fileName(), document);
-    this.fileOperations.add(new ImportFileOperation(document.fileName(), document.path(), document));
+    this.pendingFileOperations.add(new ImportFileOperation(document.fileName(), document.path(), document));
     return true;
   }
 
@@ -202,11 +206,18 @@ public class FamilyTree {
   public @Nullable AttachedDocument removeDocument(@NotNull String fileName) {
     if (!this.documents.containsKey(fileName))
       return null;
-    Objects.requireNonNull(fileName);
-    this.persons.forEach(p -> this.removeDocumentFromObject(fileName, p));
-    this.lifeEvents.forEach(l -> this.removeDocumentFromObject(fileName, l));
     final AttachedDocument document = this.documents.remove(fileName);
-    this.fileOperations.add(new DeleteFileOperation(fileName, document));
+    Objects.requireNonNull(fileName);
+    this.persons.forEach(p -> {
+      p.removeAuthoredDocument(document);
+      for (final var annotationType : AnnotationType.values())
+        p.removeAnnotatedInDocument(annotationType, document);
+    });
+    this.lifeEvents.forEach(event -> {
+      for (final var annotationType : AnnotationType.values())
+        event.removeAnnotatedInDocument(annotationType, document);
+    });
+    this.pendingFileOperations.add(new DeleteFileOperation(fileName, document));
     return document;
   }
 
@@ -231,30 +242,7 @@ public class FamilyTree {
     final AttachedDocument document = this.documents.remove(oldFileName);
     document.setName(newName);
     this.documents.put(newFileName, document);
-    this.fileOperations.add(new RenameFileOperation(oldFileName, newFileName, document));
-  }
-
-  /**
-   * Add a document from this tree to the given {@link GenealogyObject}.
-   *
-   * @param fileName Name of the document to add.
-   * @param o        The object to update.
-   * @throws NoSuchElementException If no document of this tree matches the given name.
-   */
-  public void addDocumentToObject(@NotNull String fileName, @NotNull GenealogyObject<?> o) {
-    if (!this.documents.containsKey(fileName))
-      throw new NoSuchElementException("No document with name " + fileName);
-    o.addDocument(this.documents.get(Objects.requireNonNull(fileName)));
-  }
-
-  /**
-   * Remove from the given {@link GenealogyObject} the document with the given ID.
-   *
-   * @param fileName Name of the document to remove.
-   * @param o        The object to update.
-   */
-  public void removeDocumentFromObject(@NotNull String fileName, @NotNull GenealogyObject<?> o) {
-    o.removeDocument(fileName);
+    this.pendingFileOperations.add(new RenameFileOperation(oldFileName, newFileName, document));
   }
 
   /**
@@ -262,11 +250,17 @@ public class FamilyTree {
    *
    * @param fileName Name of the picture to set as main. May be null.
    * @param o        The object to update.
-   * @throws IllegalArgumentException If no picture with the given name is associated with the object.
-   * @throws ClassCastException       If the file is not a picture.
+   * @throws IllegalArgumentException If the file is not a picture.
    */
   public void setMainPictureOfObject(String fileName, @NotNull GenealogyObject<?> o) {
-    o.setMainPicture(fileName);
+    if (fileName == null) {
+      o.setMainPicture(null);
+      return;
+    }
+    final AttachedDocument document = this.documents.get(fileName);
+    if (!(document instanceof Picture p))
+      throw new IllegalArgumentException("File \"%s\" is not an image".formatted(document.fileName()));
+    o.setMainPicture(p);
   }
 
   /**

@@ -178,6 +178,29 @@ public final class Language {
         .map(Suffix::suffix);
   }
 
+  /**
+   * Format a list of values using this language’s equivalent of the comma “,” and “or”/“and”.
+   *
+   * @param values        The values to format.
+   * @param asDisjunction If true, the seperator word will be the equivalent of “or”, else “and”.
+   * @return The formatted list.
+   */
+  public String makeList(final @NotNull List<?> values, boolean asDisjunction) {
+    final String comma = this.translate("list_comma");
+    final String lastWord = this.translate(asDisjunction ? "list_or" : "list_and");
+    final StringBuilder sb = new StringBuilder();
+    final int size = values.size();
+    for (int i = 0; i < size; i++) {
+      final Object item = values.get(i);
+      if (i > 0) {
+        if (i == size - 1) sb.append(lastWord);
+        else sb.append(comma);
+      }
+      sb.append(item);
+    }
+    return sb.toString();
+  }
+
   @Override
   public String toString() {
     return this.name;
@@ -191,9 +214,9 @@ public final class Language {
       return false;
     final Language that = (Language) obj;
     return Objects.equals(this.code, that.code) &&
-           Objects.equals(this.name, that.name) &&
-           Objects.equals(this.locale, that.locale) &&
-           Objects.equals(this.resources, that.resources);
+        Objects.equals(this.name, that.name) &&
+        Objects.equals(this.locale, that.locale) &&
+        Objects.equals(this.resources, that.resources);
   }
 
   @Override

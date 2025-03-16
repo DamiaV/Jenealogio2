@@ -16,6 +16,16 @@ import java.util.stream.*;
  */
 public final class StringUtils {
   /**
+   * Capitalize the first character of the given string and set all others to lower case.
+   *
+   * @param s The string to capitalize.
+   * @return A new string with the first character capitalized and all other letters lower-cased.
+   */
+  public static String capitalize(@NotNull String s) {
+    return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+  }
+
+  /**
    * Strip a string of all leading and trailing whitespace. If the string is null, is empty,
    * or only contains whitespace, null is returned.
    *
