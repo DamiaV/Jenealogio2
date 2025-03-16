@@ -40,6 +40,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
 
   private final ClickableImageView imageView;
   private final Label fullNameLabel = new Label();
+  private final Label agabLabelDesc;
   private final GenderLabel agabLabel;
   private final GenderLabel genderLabel;
   private final Label occupationLabel = new Label();
@@ -94,6 +95,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.eventImageView = new ClickableImageView(DEFAULT_EVENT_IMAGE);
     this.eventDateLabel = new DateLabel(null, config);
 
+    this.agabLabelDesc = new Label(language.translate("person_details_view.agab"));
     this.agabLabel = new GenderLabel(null, true, config);
     this.genderLabel = new GenderLabel(null, true, config);
 
@@ -143,7 +145,7 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
         5,
         this.fullNameLabel,
         this.genderLabel,
-        new Label(language.translate("person_details_view.agab")),
+        this.agabLabelDesc,
         this.agabLabel,
         this.occupationLabel
     );
@@ -422,8 +424,8 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView.setFitWidth(MAX_IMAGE_SIZE);
     this.fullNameLabel.setText(null);
     this.fullNameLabel.setTooltip(null);
+    this.agabLabelDesc.setVisible(false);
     this.agabLabel.setGender(null);
-    this.agabLabel.setText("-");
     this.genderLabel.setGender(null);
     this.occupationLabel.setText(null);
     this.occupationLabel.setTooltip(null);
@@ -444,10 +446,13 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     this.imageView.setFitWidth(Math.min(MAX_IMAGE_SIZE, image.map(Image::getWidth).orElse(Double.MAX_VALUE)));
     this.fullNameLabel.setText(this.person.toString());
     this.fullNameLabel.setTooltip(new Tooltip(this.person.toString()));
-    this.agabLabel.setGender(this.person.assignedGenderAtBirth().orElse(null));
-    if (this.person.assignedGenderAtBirth().isEmpty())
-      this.agabLabel.setText("-");
-    this.genderLabel.setGender(this.person.gender().orElse(null));
+    final var agab = this.person.assignedGenderAtBirth();
+    final var gender = this.person.gender();
+    final boolean showAgab = !agab.equals(gender);
+    this.agabLabelDesc.setVisible(showAgab);
+    if (showAgab) this.agabLabel.setGender(agab.orElse(null));
+    else this.agabLabel.setGender(null);
+    this.genderLabel.setGender(gender.orElse(null));
     this.occupationLabel.setText(this.person.mainOccupation().orElse(null));
     this.occupationLabel.setTooltip(this.person.mainOccupation().map(Tooltip::new).orElse(null));
     this.publicLastNameLabel.setText(this.person.publicLastName().orElse("-"));
