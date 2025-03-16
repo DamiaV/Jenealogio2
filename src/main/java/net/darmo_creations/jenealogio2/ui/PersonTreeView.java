@@ -41,6 +41,7 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
   private final Legend legend;
 
   private Person targettedPerson;
+  private boolean targetHasChanged;
   private boolean internalClick;
 
   /**
@@ -94,24 +95,27 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
     final Optional<Person> selectedPerson = this.getSelectedPerson();
     this.pane.getChildren().clear();
     this.personWidgets.clear();
-    if (this.familyTree().isEmpty())
-      return;
+    if (this.familyTree().isEmpty()) return;
     final FamilyTree familyTree = this.familyTree().get();
     if (!familyTree.persons().contains(this.targettedPerson)) {
       final Optional<Person> root = familyTree.root();
-      if (root.isEmpty())
-        return;
+      if (root.isEmpty()) return;
       this.targettedPerson = root.get();
+      this.targetHasChanged = true;
     }
     final PersonWidget root = this.buildTree(familyTree, this.targettedPerson);
     this.adjustView();
 
     this.scrollPane.layout(); // Allows proper positioning when scrolling to a specific widget
-    if (selectedPerson.isPresent() && familyTree.persons().contains(selectedPerson.get())) { // Keep current selection
+    // Keep current selection if it the targetted person hasn’t changed
+    if (!this.targetHasChanged &&
+        selectedPerson.isPresent() &&
+        familyTree.persons().contains(selectedPerson.get())) {
       this.internalClick = true;
       this.select(selectedPerson.get(), false);
       this.internalClick = false;
     }
+    this.targetHasChanged = false;
 
     this.centerNodeInScrollPane(root);
   }
@@ -156,6 +160,7 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
         || this.personWidgets.stream().noneMatch(w -> w.person().map(p -> p.equals(person))
         .orElse(false))) {
       this.targettedPerson = person;
+      this.targetHasChanged = true;
       this.refresh();
     }
     this.personWidgets.forEach(w -> {
