@@ -126,9 +126,9 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
   private void setupProfileTab() {
     final Language language = this.config.language();
 
-    final SplitPane tabPane = new SplitPane();
-    tabPane.setOrientation(Orientation.VERTICAL);
-    this.profileTab.setContent(tabPane);
+    final SplitPane splitPane = new SplitPane();
+    splitPane.setOrientation(Orientation.VERTICAL);
+    this.profileTab.setContent(splitPane);
 
     final VBox vHeader = new VBox(5);
     vHeader.getStyleClass().add("person-details-header");
@@ -185,12 +185,12 @@ public class PersonDetailsView extends TabPane implements PersonClickObservable 
     VBox.setVgrow(this.documentsList, Priority.ALWAYS);
     final VBox documentsBox = new VBox(new SectionLabel("documents"), this.documentsList);
     documentsBox.getStyleClass().add("person-details");
-    tabPane.getItems().addAll(
+    splitPane.getItems().addAll(
         topBox,
         sourcesBox,
         documentsBox
     );
-    tabPane.setDividerPositions(0.2, 0.4);
+    splitPane.setDividerPositions(0.5, 0.75);
   }
 
   private void setupEventsTab() {
