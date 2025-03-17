@@ -8,8 +8,8 @@ import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.config.theme.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.components.*;
 import org.jetbrains.annotations.*;
 

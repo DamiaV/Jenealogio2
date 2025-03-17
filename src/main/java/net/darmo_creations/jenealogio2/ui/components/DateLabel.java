@@ -2,8 +2,8 @@ package net.darmo_creations.jenealogio2.ui.components;
 
 import javafx.scene.control.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.config.theme.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
-import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
 

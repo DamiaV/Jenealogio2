@@ -1,4 +1,4 @@
-package net.darmo_creations.jenealogio2.themes;
+package net.darmo_creations.jenealogio2.config.theme;
 
 import com.google.gson.*;
 import javafx.scene.image.*;

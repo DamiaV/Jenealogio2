@@ -1,7 +1,7 @@
 package net.darmo_creations.jenealogio2.config;
 
 import net.darmo_creations.jenealogio2.*;
-import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.config.theme.*;
 import net.darmo_creations.jenealogio2.ui.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.ini4j.*;

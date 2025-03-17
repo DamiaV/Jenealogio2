@@ -3,7 +3,7 @@ package net.darmo_creations.jenealogio2.ui.components;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.config.*;
-import net.darmo_creations.jenealogio2.themes.*;
+import net.darmo_creations.jenealogio2.config.theme.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;

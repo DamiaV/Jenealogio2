@@ -6,9 +6,9 @@ import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.config.theme.*;
 import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.model.*;
-import net.darmo_creations.jenealogio2.themes.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;

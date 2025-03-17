@@ -5,8 +5,8 @@ import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.config.theme.*;
 import net.darmo_creations.jenealogio2.model.datetime.*;
-import net.darmo_creations.jenealogio2.themes.*;
 import net.darmo_creations.jenealogio2.ui.dialogs.*;
 import org.jetbrains.annotations.*;
 
