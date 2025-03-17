@@ -1,6 +1,5 @@
 package net.darmo_creations.jenealogio2.config.theme;
 
-import com.google.gson.*;
 import com.jthemedetecor.*;
 import javafx.scene.image.*;
 import net.darmo_creations.jenealogio2.*;
@@ -27,24 +26,11 @@ public final class Theme {
 
   /**
    * Load all available themes.
-   *
-   * @throws IOException If no themes were found.
    */
-  public static void loadThemes() throws IOException {
+  public static void loadThemes() {
     THEMES.clear();
-    for (final var themeSetting : ThemeSetting.THEMES) {
-      final String themeID = themeSetting.id();
-      try (final var stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
-        if (stream != null)
-          try (final var reader = new InputStreamReader(stream)) {
-            final var data = new Gson().fromJson(reader, Map.class);
-            THEMES.put(themeSetting, new Theme(themeID, (String) data.get("name")));
-          }
-      } catch (final RuntimeException e) {
-        App.LOGGER.exception(e);
-      }
-    }
-    if (THEMES.isEmpty()) throw new IOException("no themes found");
+    for (final var themeSetting : ThemeSetting.THEMES)
+      THEMES.put(themeSetting, new Theme(themeSetting.id()));
     THEMES.put(ThemeSetting.SYSTEM, THEMES.get(isDarkMode() ? ThemeSetting.DARK : ThemeSetting.LIGHT));
   }
 
@@ -58,6 +44,11 @@ public final class Theme {
     return THEMES.get(Objects.requireNonNull(setting));
   }
 
+  /**
+   * Check whether the OS is using a dark theme.
+   *
+   * @return True if a dark theme is active, false otherwise.
+   */
   private static boolean isDarkMode() {
     if (OsThemeDetector.getDetector().isDark()) return true;
     // FreeDesktop is not yet supported by OsThemeDetector
@@ -87,17 +78,14 @@ public final class Theme {
   }
 
   private final String id;
-  private final String name;
 
   /**
    * Create a theme.
    *
-   * @param id   Theme’s ID.
-   * @param name Theme’s name.
+   * @param id Theme’s ID.
    */
-  private Theme(@NotNull String id, @NotNull String name) {
+  private Theme(@NotNull String id) {
     this.id = Objects.requireNonNull(id);
-    this.name = Objects.requireNonNull(name);
   }
 
   /**
@@ -105,13 +93,6 @@ public final class Theme {
    */
   public String id() {
     return this.id;
-  }
-
-  /**
-   * Theme’s name.
-   */
-  public String name() {
-    return this.name;
   }
 
   /**
@@ -185,6 +166,6 @@ public final class Theme {
 
   @Override
   public String toString() {
-    return this.name;
+    return this.id;
   }
 }

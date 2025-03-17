@@ -80,12 +80,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.languageCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
     Arrays.stream(ThemeSetting.values())
-        .map(ts -> {
-          final String text;
-          if (ts == ThemeSetting.SYSTEM) text = language.translate("dialog.settings.interface_box.theme.system");
-          else text = Theme.getTheme(ts).name();
-          return new NotNullComboBoxItem<>(ts, text);
-        })
+        .map(ts -> new NotNullComboBoxItem<>(ts, language.translate("theme." + ts.id())))
         .forEach(this.themeCombo.getItems()::add);
     this.themeCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue)
