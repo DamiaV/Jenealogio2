@@ -19,6 +19,13 @@
     <junit.platform.version>1.10.1</junit.platform.version>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.openjfx</groupId>
@@ -61,6 +68,12 @@
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.Dansoftowner</groupId>
+      <artifactId>jSystemThemeDetector</artifactId>
+      <version>3.9.1</version>
     </dependency>
 
     <dependency>
@@ -132,7 +145,15 @@
       <artifactId>gson</artifactId>
       <version>2.10.1</version>
     </dependency>
+    <!-- Disable SLF4J’s warning messages caused by jSystemThemeDetector -->
+    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-nop -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <version>1.7.32</version>
+    </dependency>
 
+    <!-- Tests -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>

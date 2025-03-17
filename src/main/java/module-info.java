@@ -14,6 +14,7 @@ module net.darmo_creations.jenealogio2 {
   requires lib.french.revolutionary.calendar;
   requires com.gluonhq.maps;
   requires net.time4j.base;
+  requires com.jthemedetector;
 
   // Make App accessible to JavaFX, other classes accessible from App’s public interface
   // are not exported because it’s not necessary

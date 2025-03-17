@@ -13,13 +13,14 @@ import org.jetbrains.annotations.*;
 
 import java.io.*;
 import java.time.*;
+import java.util.*;
 
 /**
  * Dialog to update the app’s settings. It is not resizable.
  */
 public class SettingsDialog extends DialogBase<ButtonType> {
   private final ComboBox<Language> languageCombo = new ComboBox<>();
-  private final ComboBox<Theme> themeCombo = new ComboBox<>();
+  private final ComboBox<NotNullComboBoxItem<ThemeSetting>> themeCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<DateFormat>> dateFormatCombo = new ComboBox<>();
   private final ComboBox<NotNullComboBoxItem<TimeFormat>> timeFormatCombo = new ComboBox<>();
   private final Spinner<Integer> maxTreeHeightField = new Spinner<>(1, 7, 1);
@@ -78,9 +79,17 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.languageCombo.getItems().addAll(Config.languages());
     this.languageCombo.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> this.onLanguageSelect(newValue));
-    this.themeCombo.getItems().addAll(Theme.themes());
+    Arrays.stream(ThemeSetting.values())
+        .map(ts -> {
+          final String text;
+          if (ts == ThemeSetting.SYSTEM) text = language.translate("dialog.settings.interface_box.theme.system");
+          else text = Theme.getTheme(ts).name();
+          return new NotNullComboBoxItem<>(ts, text);
+        })
+        .forEach(this.themeCombo.getItems()::add);
     this.themeCombo.getSelectionModel().selectedItemProperty().addListener(
-        (observable, oldValue, newValue) -> this.onThemeSelect(newValue));
+        (observable, oldValue, newValue)
+            -> this.onThemeSelect(newValue.data()));
 
     final LocalDateTime sampleDate = LocalDateTime.of(2017, 9, 4, 13, 3);
     for (final DateFormat dateFormat : DateFormat.values())
@@ -163,7 +172,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.localConfig = config.clone();
 
     this.languageCombo.getSelectionModel().select(this.localConfig.language());
-    this.themeCombo.getSelectionModel().select(this.localConfig.theme());
+    this.themeCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.localConfig.themeSetting()));
     this.maxTreeHeightField.getValueFactory().setValue(this.localConfig.maxTreeHeight());
     this.dateFormatCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.localConfig.dateFormat()));
     this.timeFormatCombo.getSelectionModel().select(new NotNullComboBoxItem<>(this.localConfig.timeFormat()));
@@ -186,8 +195,8 @@ public class SettingsDialog extends DialogBase<ButtonType> {
    */
   private ChangeType configChanged() {
     if (!this.localConfig.language().equals(this.config.language())
-        || !this.localConfig.theme().equals(this.config.theme()))
-      return ChangeType.NEEDS_RESTART;
+        || !this.localConfig.themeSetting().equals(this.config.themeSetting()))
+      return ChangeType.RESTART_NEEDED;
     return !this.localConfig.equals(this.config) ? ChangeType.NO_RESTART_NEEDED : ChangeType.NONE;
   }
 
@@ -196,7 +205,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     this.updateState();
   }
 
-  private void onThemeSelect(@NotNull Theme newValue) {
+  private void onThemeSelect(@NotNull ThemeSetting newValue) {
     this.localConfig = this.localConfig.withTheme(newValue);
     this.updateState();
   }
@@ -231,7 +240,7 @@ public class SettingsDialog extends DialogBase<ButtonType> {
     /**
      * Some changes were made. Some require to restart the app to apply them.
      */
-    NEEDS_RESTART(true, true),
+    RESTART_NEEDED(true, true),
     ;
 
     private final boolean changed;

@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.config.theme;
 
 import com.google.gson.*;
+import com.jthemedetecor.*;
 import javafx.scene.image.*;
 import net.darmo_creations.jenealogio2.*;
 import org.jetbrains.annotations.*;
@@ -19,18 +20,10 @@ public final class Theme {
    * Jar path to the directory containing theme files.
    */
   private static final String THEMES_PATH = App.RESOURCES_ROOT + "themes/";
-  /**
-   * Array of available themes IDs.
-   */
-  private static final String[] THEME_IDS = {
-      "dark",
-      "light",
-  };
-  public static final String DEFAULT_THEME_ID = THEME_IDS[0];
 
   private static final String ICONS_PATH = App.IMAGES_PATH + "icons/";
 
-  private static final Map<String, Theme> THEMES = new HashMap<>();
+  private static final Map<ThemeSetting, Theme> THEMES = new EnumMap<>(ThemeSetting.class);
 
   /**
    * Load all available themes.
@@ -39,35 +32,58 @@ public final class Theme {
    */
   public static void loadThemes() throws IOException {
     THEMES.clear();
-    for (final String themeID : THEME_IDS)
+    for (final var themeSetting : ThemeSetting.THEMES) {
+      final String themeID = themeSetting.id();
       try (final var stream = Theme.class.getResourceAsStream(THEMES_PATH + themeID + ".json")) {
         if (stream != null)
           try (final var reader = new InputStreamReader(stream)) {
             final var data = new Gson().fromJson(reader, Map.class);
-            THEMES.put(themeID, new Theme(themeID, (String) data.get("name")));
+            THEMES.put(themeSetting, new Theme(themeID, (String) data.get("name")));
           }
       } catch (final RuntimeException e) {
         App.LOGGER.exception(e);
       }
-    if (THEMES.isEmpty())
-      throw new IOException("no themes found");
+    }
+    if (THEMES.isEmpty()) throw new IOException("no themes found");
+    THEMES.put(ThemeSetting.SYSTEM, THEMES.get(isDarkMode() ? ThemeSetting.DARK : ThemeSetting.LIGHT));
   }
 
   /**
    * Return the theme with the given ID.
    *
-   * @param id ID of the theme to fetch.
+   * @param setting Setting of the theme to fetch.
    * @return The theme.
    */
-  public static Optional<Theme> getTheme(@NotNull String id) {
-    return Optional.ofNullable(THEMES.get(id));
+  public static Theme getTheme(@NotNull ThemeSetting setting) {
+    return THEMES.get(Objects.requireNonNull(setting));
   }
 
-  /**
-   * Return a list of all available themes.
-   */
-  public static List<Theme> themes() {
-    return THEMES.values().stream().sorted(Comparator.comparing(Theme::name)).toList();
+  private static boolean isDarkMode() {
+    if (OsThemeDetector.getDetector().isDark()) return true;
+    // FreeDesktop is not yet supported by OsThemeDetector
+    try {
+      final String[] command = {
+          "gdbus",
+          "call",
+          "--session",
+          "--timeout=1000",
+          "--dest=org.freedesktop.portal.Desktop",
+          "--object-path=/org/freedesktop/portal/desktop",
+          "--method=org.freedesktop.portal.Settings.Read",
+          "org.freedesktop.appearance",
+          "color-scheme"
+      };
+      // Using ProcessBuilder as Runtime.getRuntime().exec(command) doesn’t work properly for some reason
+      final Process process = new ProcessBuilder(command).start();
+      try (final var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        // https://unix.stackexchange.com/a/723275/422485
+        return "(<<uint32 1>>,)".equals(reader.readLine());
+      }
+    } catch (final IOException e) {
+      App.LOGGER.error("Couldn’t detect FreeDesktop theme");
+      App.LOGGER.exception(e);
+    }
+    return false;
   }
 
   private final String id;

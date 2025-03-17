@@ -60,8 +60,9 @@ public final class Config implements Cloneable {
     if (!LANGUAGES.containsKey(langCode))
       throw new ConfigException("unsupported language code: " + langCode);
 
-    final String themeID = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION)).orElse(Theme.DEFAULT_THEME_ID);
-    final Theme theme = Theme.getTheme(themeID).orElseThrow(() -> new ConfigException("undefined theme: " + themeID));
+    final ThemeSetting themeSetting = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION))
+        .flatMap(ThemeSetting::fromId)
+        .orElse(ThemeSetting.SYSTEM);
 
     final boolean syncTree = ini.get(APP_SECTION, SYNC_TREE_OPTION, boolean.class);
     Integer maxTreeHeight = ini.get(APP_SECTION, MAX_TREE_HEIGHT_OPTION, Integer.class);
@@ -87,7 +88,7 @@ public final class Config implements Cloneable {
     try {
       return new Config(
           LANGUAGES.get(langCode),
-          theme,
+          themeSetting,
           syncTree,
           maxTreeHeight,
           dateFormat,
@@ -154,6 +155,7 @@ public final class Config implements Cloneable {
   }
 
   private final Language language;
+  private final ThemeSetting themeSetting;
   private final Theme theme;
   private final boolean debug;
   private boolean syncTreeWithMainPane;
@@ -167,7 +169,7 @@ public final class Config implements Cloneable {
    * Create a configuration object.
    *
    * @param language             Language to use.
-   * @param theme                Theme to use.
+   * @param themeSetting         Theme setting to use.
    * @param syncTreeWithMainPane Whether the tree pane and view should be synchronized.
    * @param maxTreeHeight        Maximum number of levels to display above the center widget in the tree panel.
    * @param dateFormat           Date format.
@@ -177,7 +179,7 @@ public final class Config implements Cloneable {
    */
   public Config(
       @NotNull Language language,
-      @NotNull Theme theme,
+      @NotNull ThemeSetting themeSetting,
       boolean syncTreeWithMainPane,
       int maxTreeHeight,
       @NotNull DateFormat dateFormat,
@@ -187,7 +189,8 @@ public final class Config implements Cloneable {
       boolean debug
   ) {
     this.language = Objects.requireNonNull(language);
-    this.theme = Objects.requireNonNull(theme);
+    this.themeSetting = Objects.requireNonNull(themeSetting);
+    this.theme = Theme.getTheme(themeSetting);
     this.setShouldSyncTreeWithMainPane(syncTreeWithMainPane);
     this.setMaxTreeHeight(maxTreeHeight);
     this.setDateFormat(dateFormat);
@@ -202,6 +205,13 @@ public final class Config implements Cloneable {
    */
   public Language language() {
     return this.language;
+  }
+
+  /**
+   * The theme setting to use.
+   */
+  public ThemeSetting themeSetting() {
+    return this.themeSetting;
   }
 
   /**
@@ -293,7 +303,7 @@ public final class Config implements Cloneable {
   public Config withLanguage(@NotNull Language language) {
     return new Config(
         language,
-        this.theme,
+        this.themeSetting,
         this.syncTreeWithMainPane,
         this.maxTreeHeight,
         this.dateFormat,
@@ -307,13 +317,13 @@ public final class Config implements Cloneable {
   /**
    * Return a copy of this object and replace its theme by the given one.
    *
-   * @param theme The theme to use.
+   * @param themeSetting The theme setting to use.
    * @return A new configuration object.
    */
-  public Config withTheme(@NotNull Theme theme) {
+  public Config withTheme(@NotNull ThemeSetting themeSetting) {
     return new Config(
         this.language,
-        theme,
+        themeSetting,
         this.syncTreeWithMainPane,
         this.maxTreeHeight,
         this.dateFormat,
@@ -345,7 +355,7 @@ public final class Config implements Cloneable {
     App.LOGGER.info("Saving config…");
     final Wini ini = getOrCreateIniFile();
     ini.put(APP_SECTION, LANGUAGE_OPTION, this.language.code());
-    ini.put(APP_SECTION, THEME_OPTION, this.theme.id());
+    ini.put(APP_SECTION, THEME_OPTION, this.themeSetting.id());
     ini.put(APP_SECTION, SYNC_TREE_OPTION, this.syncTreeWithMainPane);
     ini.put(APP_SECTION, MAX_TREE_HEIGHT_OPTION, this.maxTreeHeight);
     ini.put(APP_SECTION, DATE_FORMAT_OPTION, this.dateFormat.ordinal());
