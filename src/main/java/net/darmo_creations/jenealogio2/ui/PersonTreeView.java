@@ -4,6 +4,7 @@ import javafx.collections.*;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
+import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.*;
@@ -21,7 +22,8 @@ import static net.darmo_creations.jenealogio2.model.ParentalRelationType.*;
  * Base class for components that show a partial view of a {@link FamilyTree}
  * relative to a specific {@link Person}.
  */
-public abstract class PersonTreeView extends FamilyTreeComponent {
+public abstract class PersonTreeView extends FamilyTreeComponent
+    implements TreeImageProvider {
   protected static final Map<ParentalRelationType, String> CSS_CLASSES = new EnumMap<>(ParentalRelationType.class);
 
   static {
@@ -65,6 +67,8 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
     this.scrollPane.setPannable(true);
     this.scrollPane.getStyleClass().add("no-focus-scroll-pane");
     stackPane.getChildren().add(this.scrollPane);
+
+    this.pane.getStyleClass().add("tree-pane");
 
     this.legend = new Legend(possibleRelationTypes);
     StackPane.setAlignment(this.legend, Pos.BOTTOM_RIGHT);
@@ -172,6 +176,22 @@ public abstract class PersonTreeView extends FamilyTreeComponent {
           .filter(w -> w.person().orElse(null) == person)
           .findFirst()
           .ifPresent(this::centerNodeInScrollPane);
+  }
+
+  /**
+   * Export this view as an image.
+   */
+  @Override
+  public Image exportAsImage() {
+    return this.pane.snapshot(new SnapshotParameters(), null);
+  }
+
+  /**
+   * The currently targetted {@link Person}.
+   */
+  @Override
+  public Optional<Person> targettedPerson() {
+    return Optional.ofNullable(this.targettedPerson);
   }
 
   /**

@@ -109,6 +109,36 @@ public final class FileChoosers {
   }
 
   /**
+   * Open a dialog to save a file.
+   *
+   * @param config      The app’s config.
+   * @param stage       The parent stage object.
+   * @param titleKey    Title translation key.
+   * @param descKey     Description’s i18n key. Ignored if no extensions are specified.
+   * @param defaultName Default file name.
+   * @param extensions  Allowed file extensions. Leave empty to allow any file type.
+   * @return The selected file.
+   */
+  public static Optional<Path> showFileSaver(
+      final @NotNull Config config,
+      final @NotNull Window stage,
+      String titleKey,
+      @NotNull String descKey,
+      String defaultName,
+      @NotNull String... extensions
+  ) {
+    return showFileChooser(
+        config,
+        stage,
+        titleKey == null ? "file_saver" : titleKey,
+        true,
+        descKey,
+        defaultName,
+        extensions
+    );
+  }
+
+  /**
    * Open a dialog to choose a file.
    *
    * @param config     The app’s config.
@@ -120,7 +150,7 @@ public final class FileChoosers {
   public static Optional<Path> showFileChooser(
       final @NotNull Config config,
       final @NotNull Window stage,
-      String descKey,
+      @NotNull String descKey,
       @NotNull String... extensions
   ) {
     return showFileChooser(
@@ -151,14 +181,16 @@ public final class FileChoosers {
       @NotNull Window stage,
       @NotNull String titleKey,
       boolean saver,
-      String descKey,
+      @NotNull String descKey,
       String defaultName,
       @NotNull String... extensions
   ) {
     final FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle(config.language().translate("dialog.%s.title".formatted(titleKey)));
     if (extensions.length != 0) {
-      final List<String> exts = Arrays.stream(extensions).map(e -> "*" + e).toList();
+      final List<String> exts = Arrays.stream(extensions)
+          .map(e -> "*" + e)
+          .toList();
       final String desc = config.language().translate(
           "dialog.%s.filter_description".formatted(Objects.requireNonNull(descKey)),
           new FormatArg("exts", String.join(", ", exts))
@@ -170,18 +202,18 @@ public final class FileChoosers {
         defaultName += extensions[0];
       fileChooser.setInitialFileName(defaultName);
     }
+
     File file = saver ? fileChooser.showSaveDialog(stage) : fileChooser.showOpenDialog(stage);
     Path path = null;
     if (file != null) {
       final String fileName = file.getName();
       if (extensions.length != 0 && Arrays.stream(extensions).noneMatch(fileName::endsWith)) {
-        if (saver)
-          file = new File(file.getPath() + extensions[0]);
-        else
-          return Optional.empty();
+        if (saver) file = new File(file.getPath() + extensions[0]);
+        else return Optional.empty();
       }
       path = file.toPath();
     }
+
     return Optional.ofNullable(path);
   }
 

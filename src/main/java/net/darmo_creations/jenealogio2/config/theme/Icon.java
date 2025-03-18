@@ -36,6 +36,7 @@ public enum Icon {
 
   SHOW_LEGEND("legend"),
   FOCUS_SEARCH_BAR("search_field_go"),
+  EXPORT_TREE_AS_IMAGE("tree_picture"),
 
   CALCULATE_RELATIONSHIPS("link_go"),
   BIRTHDAYS("cake"),

@@ -27,6 +27,11 @@ Text.hyperlink {
 
 /* Custom components */
 
+.tree-pane {
+  /* Set explicitely for screenshots */
+  -fx-background-color: -fx-base;
+}
+
 .tree-legend .legend-item.biological-parent .item-color-patch {
   -fx-background-color: -j2-biological-parent;
 }

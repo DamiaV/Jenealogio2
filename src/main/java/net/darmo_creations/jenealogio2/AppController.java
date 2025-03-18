@@ -46,6 +46,7 @@ public class AppController {
   private final MenuItem editParentsMenuItem = new MenuItem();
   private final MenuItem editLifeEventsMenuItem = new MenuItem();
   private final MenuItem editDocumentsMenuItem = new MenuItem();
+  private final MenuItem exportTreeAsMenuItem = new MenuItem();
 
   private final Button saveToolbarButton = new Button();
   private final Button undoToolbarButton = new Button();
@@ -58,6 +59,7 @@ public class AppController {
   private final Button addSiblingToolbarButton = new Button();
   private final Button editParentsToolbarButton = new Button();
   private final Button editLifeEventsToolbarButton = new Button();
+  private final Button exportTreeAsToolbarButton = new Button();
 
   // File managers
   private final FamilyTreeWriter familyTreeWriter = new FamilyTreeWriter();
@@ -80,6 +82,7 @@ public class AppController {
   private final RegistriesDialog editRegistriesDialog;
   private final EditPersonDialog editPersonDialog;
   private final ManageDocumentsDialog editDocumentsDialog;
+  private final ExportTreeAsImageDialog exportTreeAsImageDialog;
   private final BirthdaysDialog birthdaysDialog;
   private final MapDialog mapDialog;
   private final SettingsDialog settingsDialog;
@@ -125,6 +128,11 @@ public class AppController {
     this.editRegistriesDialog = new RegistriesDialog(config);
     this.editPersonDialog = new EditPersonDialog(config);
     this.editDocumentsDialog = new ManageDocumentsDialog(config);
+    this.exportTreeAsImageDialog = new ExportTreeAsImageDialog(
+        config,
+        this.geneticFamilyTreePane,
+        this.familyMemberFullViewPane
+    );
     this.mapDialog = new MapDialog(config);
     this.settingsDialog = new SettingsDialog(config);
     this.aboutDialog = new AboutDialog(config);
@@ -338,12 +346,22 @@ public class AppController {
         .addListener((observable, oldValue, newValue) -> this.onShowLegendsChange(newValue));
     viewMenu.getItems().add(showLegendsMenuItem);
 
+    viewMenu.getItems().add(new SeparatorMenuItem());
+
     final MenuItem focusSearchBarMenuItem = new MenuItem();
     focusSearchBarMenuItem.setText(language.translate("menu.view.focus_search_bar"));
     focusSearchBarMenuItem.setGraphic(theme.getIcon(Icon.FOCUS_SEARCH_BAR, Icon.Size.SMALL));
     focusSearchBarMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN));
     focusSearchBarMenuItem.setOnAction(event -> this.familyMembersTreeView.requestSearchFilterFocus());
     viewMenu.getItems().add(focusSearchBarMenuItem);
+
+    viewMenu.getItems().add(new SeparatorMenuItem());
+
+    this.exportTreeAsMenuItem.setText(language.translate("menu.view.export_tree_as_image"));
+    this.exportTreeAsMenuItem.setGraphic(theme.getIcon(Icon.EXPORT_TREE_AS_IMAGE, Icon.Size.SMALL));
+    this.exportTreeAsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.F12));
+    this.exportTreeAsMenuItem.setOnAction(event -> this.onExportTreeAsImage());
+    viewMenu.getItems().add(this.exportTreeAsMenuItem);
 
     //
 
@@ -484,6 +502,15 @@ public class AppController {
     this.editLifeEventsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.BIG));
     this.editLifeEventsToolbarButton.setOnAction(event -> this.onEditLifeEventsAction());
     toolbar.getItems().add(this.editLifeEventsToolbarButton);
+
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
+    //
+
+    this.exportTreeAsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.export_tree_as_image")));
+    this.exportTreeAsToolbarButton.setGraphic(theme.getIcon(Icon.EXPORT_TREE_AS_IMAGE, Icon.Size.BIG));
+    this.exportTreeAsToolbarButton.setOnAction(event -> this.onExportTreeAsImage());
+    toolbar.getItems().add(this.exportTreeAsToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
@@ -1166,6 +1193,7 @@ public class AppController {
     final boolean selection = selectedPerson.isPresent();
     final boolean hasAnyParents = selection && selectedPerson.get().hasAnyParents();
     final boolean selectedIsRoot = selection && this.familyTree.isRoot(selectedPerson.get());
+    final boolean noTarget = this.geneticFamilyTreePane.targettedPerson().isEmpty();
 
     this.openTreeMenu.getItems().clear();
     final Map<String, TreeMetadata> treesMetadata = App.treesMetadataManager().treesMetadata();
@@ -1193,6 +1221,7 @@ public class AppController {
     this.editParentsMenuItem.setDisable(!selection);
     this.editLifeEventsMenuItem.setDisable(!selection);
     this.editDocumentsMenuItem.setDisable(!selection);
+    this.exportTreeAsMenuItem.setDisable(noTarget);
 
     this.saveToolbarButton.setDisable(!this.unsavedChanges);
     this.previousSelectionToolbarButton.setDisable(this.selectionIndex <= 0);
@@ -1203,6 +1232,7 @@ public class AppController {
     this.addSiblingToolbarButton.setDisable(!hasAnyParents);
     this.editParentsToolbarButton.setDisable(!selection);
     this.editLifeEventsToolbarButton.setDisable(!selection);
+    this.exportTreeAsToolbarButton.setDisable(noTarget);
   }
 
   private void onShowLegendsChange(boolean show) {
@@ -1214,6 +1244,10 @@ public class AppController {
     }
     this.geneticFamilyTreePane.setLegendVisible(show);
     this.familyMemberFullViewPane.setLegendVisible(show);
+  }
+
+  private void onExportTreeAsImage() {
+    this.exportTreeAsImageDialog.showAndWait();
   }
 
   /**
