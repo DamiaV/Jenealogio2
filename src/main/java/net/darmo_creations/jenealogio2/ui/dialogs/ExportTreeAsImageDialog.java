@@ -15,7 +15,7 @@ import java.nio.file.*;
 import java.util.*;
 
 /**
- * This dialogs is used to export the currently shown trees to PNG images.
+ * This dialogs is used to export the currently shown trees as PNG images.
  */
 public class ExportTreeAsImageDialog extends DialogBase<Void> {
   private final ToggleGroup group = new ToggleGroup();
