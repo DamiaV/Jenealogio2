@@ -4,10 +4,10 @@ A user-friendly, inclusive, LGBTQAI+-friendly and non-spying family tree manager
 
 ## Why this name?
 
-The name Jenealogio is a build from the Esperanto word for genealogy, “_genealogio_”, with the _G_ replaced by a _J_ for
-**J**ava, the language the app is written in.
+The name Jenealogio is built from the Esperanto word for genealogy, _genealogio_, with the _G_ replaced by a _J_ for
+**J**ava, the language this app is written in.
 
-## Why 2?
+## Why _2_?
 
 The first version of this software was developed quite a while back but I was not satisfied with the direction it took.
 So in 2023 I archived its [repository](https://github.com/DamiaV/Jenealogio) and started again from scratch with this
@@ -18,12 +18,11 @@ new version.
 They are two main reasons: privacy and inclusivity.
 
 Firstly, regarding privacy, I generally don’t trust online genealogical apps with ensuring the privacy and security of
-the information I give them, and that they will not sell it to third-parties. Plus, there is the risk data leaks due to
-hacks.
+the information I give them, and that they will not sell it to third-parties. Plus, there is the risk of data leaks.
 
 Secondly, being queer myself, while researching the genealogy of my own family, I grew tired of the lack of
-LGBTQAI+ inclusivity in most genealogical softwares. As such, I decided to build my own that would fill this need. I was
-also inspired by blog posts on _[sixgen.org](https://sixgen.org/)_ that talked about this issue. After reading their
+LGBTQAI+ inclusivity in most genealogical softwares. As such, I decided to build my own that would fulfill this need. I
+was also inspired by blog posts on _[sixgen.org](https://sixgen.org/)_ that talked about this issue. After reading their
 posts on [LGBTQ Genealogy & Software](https://sixgen.org/lgbtq-genealogy-software-part-1/), I was further motivated to
 pursue this endeavor.
 
@@ -63,17 +62,29 @@ I tried to follow these suggestions in Jenealogio 2. Here’s how those points h
 1. The app offers various builtin relationship types such as marriage, non-married partners, and civil solidarity pact.
    This list may be expanded in the future. The app also offers the ability to create custom types if none of the
    builtin ones fit a situation.
-2. The only explicit family links currently supported are parent-child relations and relations between partners/spouses.
-   Siblings are deduced from the parents they have in common.
-3. This point is not yet fully supported. As I made the decision to show parent-child relations as a binary tree to
-   simplify its rendering, a person can have at most 2 direct parents. However, adoptive, foster and godparents can be
-   specified without any upper cap on the number but they do not appear in the graphical tree view. All of this may
-   change in the future but I won’t guarantee anything.
-4. The software makes no assumptions regarding DNA relations between the members of a tree. It is left to the
-   interpretation of the users.
-5. The app uses neutral terminology such as _Parent 1_ and _Parent 2_ for parents, and _Partner_ instead of _Husband_ or
+2. There are currently two family links that can be defined manually: parent-child relations and relations between
+   partners/spouses. Siblings are deduced from the parents they have in common. There are no restrictions about who can
+   be related to whom.
+3. You can support any number of the following parent types:
+    * Non-biological parents: people that are recognized as parents, without any genetic link to the children
+      (e.g. in same-sex couples)
+    * Adoptive parents
+    * Foster parents
+    * Godparents
+
+   The other supported parental relations are:
+    * Biological parents (2 max):
+    * Surrogate parent (1 max)
+    * Egg donor (1 max)
+    * Sperm donor (1 max)
+4. See above item. There are two available tree representations:
+    * Genetic/biological: Classical tree representation showing only biological relations.
+      This includes surrogate parent and egg/sperm donors.
+    * Constellation: Graphical representation of all the relations of a given person
+      (all parents, children, siblings, etc.).
+5. The app uses neutral terminology such as _Parent_ instead of _Mother/Father_, and _Partner_ instead of _Husband_ or
    _Wife_. A single non-representative placeholder icon is used for all people, regardless of their gender. Gender is
-   represented by an icon instead of a color.
+   represented by an icon instead of a single color.
 6. Assigned gender at birth and gender are two separate fields. There are several builtin gender identities (agender,
    female, gender fluid, male, non-binary) and users can define the ones they want if these are not sufficient. More
    builtin genders may be added in the future if needs be.
@@ -88,7 +99,7 @@ The app offers 11 different calendar systems for dates:
 * Coptic
 * Ethiopian
 * French Republican
-* French Republican with decimal time (10 hours in a day, 100 minutes in 1 hour, etc.)
+* French Republican with decimal time (10 hours in a day, 100 minutes in 1 hour, 100 seconds in 1 minute)
 * Gregorian
 * Hebrew
 * Indian
@@ -101,7 +112,7 @@ You can choose how dates and times are displayed in the app among several format
 and many more.
 
 **Notice:** All dates and times are expressed as local time, this means that there may be some sorting inconsistencies
-if events occur in different time zones. Conversions from French Republican calendars to Gregorian use the modern
+if events occur in different time zones. Conversions from the French Republican calendar to Gregorian use the modern
 Europe/Paris timezone.
 
 # Languages
@@ -114,7 +125,7 @@ The app is available in 3 languages:
 
 # Privacy
 
-This app does not and will never send your data and files anywhere or to anyone.
+This app does not and will never sell your data and files nor send them anywhere or to anyone.
 You keep full control of your data and files.
 
 # Requirements
