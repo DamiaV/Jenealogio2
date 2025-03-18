@@ -17,16 +17,7 @@ import java.util.*;
  * and the application to be restarted to apply.
  */
 public final class Config implements Cloneable {
-  /**
-   * Array of all available language codes.
-   */
-  private static final String[] LANGUAGE_CODES = {
-      "en",
-      "fr",
-      "eo",
-  };
-  private static final String DEFAULT_LANGUAGE_CODE = LANGUAGE_CODES[0];
-  private static final Map<String, Language> LANGUAGES = new HashMap<>();
+  private static final Map<LanguageSetting, Language> LANGUAGES = new EnumMap<>(LanguageSetting.class);
 
   private static final File SETTINGS_FILE = new File("settings.ini");
 
@@ -56,9 +47,9 @@ public final class Config implements Cloneable {
 
     final Wini ini = getOrCreateIniFile();
 
-    final String langCode = StringUtils.stripNullable(ini.get(APP_SECTION, LANGUAGE_OPTION)).orElse(DEFAULT_LANGUAGE_CODE);
-    if (!LANGUAGES.containsKey(langCode))
-      throw new ConfigException("unsupported language code: " + langCode);
+    final LanguageSetting languageSetting = StringUtils.stripNullable(ini.get(APP_SECTION, LANGUAGE_OPTION))
+        .flatMap(LanguageSetting::fromId)
+        .orElse(LanguageSetting.SYSTEM);
 
     final ThemeSetting themeSetting = StringUtils.stripNullable(ini.get(APP_SECTION, THEME_OPTION))
         .flatMap(ThemeSetting::fromId)
@@ -87,7 +78,7 @@ public final class Config implements Cloneable {
 
     try {
       return new Config(
-          LANGUAGES.get(langCode),
+          languageSetting,
           themeSetting,
           syncTree,
           maxTreeHeight,
@@ -121,15 +112,19 @@ public final class Config implements Cloneable {
    */
   private static void loadLanguages() throws IOException {
     LANGUAGES.clear();
-    for (final String langCode : LANGUAGE_CODES) {
-      final ResourceBundle bundle = getResourceBundle(new Locale(langCode));
+    for (final var langSetting : LanguageSetting.LANGUAGES) {
+      final String langCode = langSetting.id();
+      final Locale locale = new Locale(langCode);
+      final ResourceBundle bundle = getResourceBundle(locale);
       if (bundle != null) {
         final String langName = bundle.getString("language_name");
-        LANGUAGES.put(langCode, new Language(langCode, langName, new Locale(langCode), bundle));
+        LANGUAGES.put(langSetting, new Language(langCode, langName, locale, bundle));
       }
     }
-    if (LANGUAGES.isEmpty())
-      throw new IOException("No languages found");
+    if (LANGUAGES.isEmpty()) throw new IOException("No languages found");
+    final LanguageSetting defaultSetting = LanguageSetting.fromId(Locale.getDefault().getLanguage())
+        .orElseThrow(() -> new IOException("No language found"));
+    LANGUAGES.put(LanguageSetting.SYSTEM, LANGUAGES.get(defaultSetting));
   }
 
   /**
@@ -146,14 +141,16 @@ public final class Config implements Cloneable {
   }
 
   /**
-   * List of all available languages.
+   * Get the {@link Language} for the given {@link LanguageSetting}.
    *
-   * @return A new copy of the internal list.
+   * @param languageSetting The setting to get the language of.
+   * @return The corresponding {@link Language}.
    */
-  public static List<Language> languages() {
-    return LANGUAGES.values().stream().sorted(Comparator.comparing(Language::name)).toList();
+  public static Language getLanguage(@NotNull LanguageSetting languageSetting) {
+    return LANGUAGES.get(languageSetting);
   }
 
+  private final LanguageSetting languageSetting;
   private final Language language;
   private final ThemeSetting themeSetting;
   private final Theme theme;
@@ -168,7 +165,7 @@ public final class Config implements Cloneable {
   /**
    * Create a configuration object.
    *
-   * @param language             Language to use.
+   * @param languageSetting      Language setting to use.
    * @param themeSetting         Theme setting to use.
    * @param syncTreeWithMainPane Whether the tree pane and view should be synchronized.
    * @param maxTreeHeight        Maximum number of levels to display above the center widget in the tree panel.
@@ -178,7 +175,7 @@ public final class Config implements Cloneable {
    * @param debug                Whether to run the app in debug mode.
    */
   public Config(
-      @NotNull Language language,
+      @NotNull LanguageSetting languageSetting,
       @NotNull ThemeSetting themeSetting,
       boolean syncTreeWithMainPane,
       int maxTreeHeight,
@@ -188,7 +185,8 @@ public final class Config implements Cloneable {
       boolean showLegends,
       boolean debug
   ) {
-    this.language = Objects.requireNonNull(language);
+    this.languageSetting = Objects.requireNonNull(languageSetting);
+    this.language = LANGUAGES.get(languageSetting);
     this.themeSetting = Objects.requireNonNull(themeSetting);
     this.theme = Theme.getTheme(themeSetting);
     this.setShouldSyncTreeWithMainPane(syncTreeWithMainPane);
@@ -198,6 +196,13 @@ public final class Config implements Cloneable {
     this.setShouldShowDeceasedPersonsBirthdays(showDeceasedPersonsBirthdays);
     this.setShouldShowLegends(showLegends);
     this.debug = debug;
+  }
+
+  /**
+   * The language setting to use.
+   */
+  public LanguageSetting languageSetting() {
+    return this.languageSetting;
   }
 
   /**
@@ -295,14 +300,14 @@ public final class Config implements Cloneable {
   }
 
   /**
-   * Return a copy of this object and replace its language by the given one.
+   * Return a copy of this object and replace its language setting by the given one.
    *
-   * @param language The language to use.
+   * @param languageSetting The language setting to use.
    * @return A new configuration object.
    */
-  public Config withLanguage(@NotNull Language language) {
+  public Config withLanguage(@NotNull LanguageSetting languageSetting) {
     return new Config(
-        language,
+        languageSetting,
         this.themeSetting,
         this.syncTreeWithMainPane,
         this.maxTreeHeight,
@@ -315,14 +320,14 @@ public final class Config implements Cloneable {
   }
 
   /**
-   * Return a copy of this object and replace its theme by the given one.
+   * Return a copy of this object and replace its theme setting by the given one.
    *
    * @param themeSetting The theme setting to use.
    * @return A new configuration object.
    */
   public Config withTheme(@NotNull ThemeSetting themeSetting) {
     return new Config(
-        this.language,
+        this.languageSetting,
         themeSetting,
         this.syncTreeWithMainPane,
         this.maxTreeHeight,
@@ -354,7 +359,7 @@ public final class Config implements Cloneable {
   public void save() throws IOException {
     App.LOGGER.info("Saving config…");
     final Wini ini = getOrCreateIniFile();
-    ini.put(APP_SECTION, LANGUAGE_OPTION, this.language.code());
+    ini.put(APP_SECTION, LANGUAGE_OPTION, this.languageSetting.id());
     ini.put(APP_SECTION, THEME_OPTION, this.themeSetting.id());
     ini.put(APP_SECTION, SYNC_TREE_OPTION, this.syncTreeWithMainPane);
     ini.put(APP_SECTION, MAX_TREE_HEIGHT_OPTION, this.maxTreeHeight);
