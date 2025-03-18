@@ -19,7 +19,7 @@ import static net.darmo_creations.jenealogio2.model.ParentalRelationType.*;
 
 /**
  * Base class for components that show a partial view of a {@link FamilyTree}
- * relative to specific {@link Person}.
+ * relative to a specific {@link Person}.
  */
 public abstract class PersonTreeView extends FamilyTreeComponent {
   protected static final Map<ParentalRelationType, String> CSS_CLASSES = new EnumMap<>(ParentalRelationType.class);
