@@ -27,40 +27,42 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
   private final Map<AnnotationType, Label> annotationLabels = new HashMap<>();
 
   private final AttachedDocument document;
+  private final boolean showFileExtension;
   private final GenealogyObject<?> referenceObject;
 
   /**
    * Create a new document view.
    *
-   * @param document The document to show.
-   * @param showName Whether to show the document’s name.
-   * @param config   The app’s config.
+   * @param document          The document to show.
+   * @param showFileExtension Whether to show the document’s extension.
+   * @param config            The app’s config.
    */
   public DocumentView(
       final @NotNull AttachedDocument document,
-      boolean showName,
+      boolean showFileExtension,
       @NotNull Config config
   ) {
-    this(document, showName, null, config);
+    this(document, showFileExtension, null, config);
   }
 
   /**
    * Create a new document view.
    *
-   * @param document        The document to show.
-   * @param showName        Whether to show the document’s name.
-   * @param referenceObject A {@link GenealogyObject} from which tags data will be taken (author, mentioned, etc.).
-   *                        May be null.
-   * @param config          The app’s config.
+   * @param document          The document to show.
+   * @param showFileExtension Whether to show the document’s extension.
+   * @param referenceObject   A {@link GenealogyObject} from which tags data will be taken (author, mentioned, etc.).
+   *                          May be null.
+   * @param config            The app’s config.
    */
   public DocumentView(
       final @NotNull AttachedDocument document,
-      boolean showName,
+      boolean showFileExtension,
       GenealogyObject<?> referenceObject,
       @NotNull Config config
   ) {
     super(5);
     this.document = Objects.requireNonNull(document);
+    this.showFileExtension = showFileExtension;
     this.referenceObject = referenceObject;
 
     final Language language = config.language();
@@ -86,9 +88,8 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
       imageNode = imageView;
     }
     final VBox vBox = new VBox(5);
-    if (showName) vBox.getChildren().add(this.nameLabel);
     this.dateLabel = new DateLabel("-", config);
-    vBox.getChildren().addAll(this.dateLabel, this.descLabel);
+    vBox.getChildren().addAll(this.nameLabel, this.dateLabel, this.descLabel);
     if (this.referenceObject != null) {
       this.authorTag.setText(language.translate("document_view.tag.author"));
       this.authorTag.getStyleClass().add("document-tag");
@@ -122,7 +123,7 @@ public class DocumentView extends HBox implements Comparable<DocumentView> {
    * Refresh the displayed picture information.
    */
   public void refresh() {
-    this.nameLabel.setText(this.document.fileName());
+    this.nameLabel.setText(this.showFileExtension ? this.document.fileName() : this.document.name());
     this.dateLabel.setDateTime(this.document.date().orElse(null));
     this.descLabel.setText(this.document.description().orElse(""));
     this.openFileButton.setDisable(this.document instanceof Picture p && p.image().isEmpty());
