@@ -1174,14 +1174,12 @@ public class AppController {
   private void updateUI() {
     final String fileName = this.loadedFile.getFileName().toString();
     final String treeName = this.familyTree.name();
-    String title = "%s%s – %s%s".formatted(
+    final String title = "%s%s – %s%s".formatted(
+        treeName + (!treeName.equals(fileName) ? " (%s)".formatted(fileName) : ""),
+        this.unsavedChanges ? "*" : "",
         App.NAME,
-        this.config.isDebug() ? " [Debug]" : "",
-        treeName,
-        this.unsavedChanges ? "*" : ""
+        this.config.isDebug() ? " [Debug]" : ""
     );
-    if (!treeName.equals(fileName))
-      title += " (%s)".formatted(fileName);
     this.stage.setTitle(title);
 
     if (this.birthdaysDialog.isShowing())

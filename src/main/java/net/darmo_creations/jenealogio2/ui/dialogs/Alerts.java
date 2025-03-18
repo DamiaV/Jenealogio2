@@ -5,6 +5,7 @@ import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
+import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -205,7 +206,7 @@ public final class Alerts {
     if (titleKey == null)
       titleKey = "alert.%s.title".formatted(type.key());
     final Language language = config.language();
-    alert.setTitle(language.translate(titleKey));
+    alert.setTitle(language.translate(titleKey) + " – " + App.NAME);
     alert.setHeaderText(language.translate(headerKey, contentArgs));
     ((Stage) dialogPane.getScene().getWindow()).getIcons().add(config.theme().getAppIcon());
     return alert;

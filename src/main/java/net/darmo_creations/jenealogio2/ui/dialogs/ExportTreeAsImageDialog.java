@@ -48,7 +48,7 @@ public class ExportTreeAsImageDialog extends DialogBase<Void> {
     final Language language = config.language();
 
     final VBox content = new VBox(5);
-    content.setPrefWidth(350);
+    content.setPrefWidth(400);
 
     content.getChildren().add(new Label(language.translate("dialog.export_tree_as_image.selection")));
 

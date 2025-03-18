@@ -4,6 +4,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.stage.*;
+import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.utils.*;
 import org.jetbrains.annotations.*;
@@ -17,6 +18,7 @@ import java.util.*;
  */
 public abstract class DialogBase<R> extends Dialog<R> {
   protected Config config;
+  private boolean internalTitleUpdate;
 
   /**
    * Create a modal dialog.
@@ -56,6 +58,12 @@ public abstract class DialogBase<R> extends Dialog<R> {
         .forEach(url -> this.stage().getScene().getStylesheets().add(url.toExternalForm()));
     this.initModality(modal ? Modality.APPLICATION_MODAL : Modality.NONE);
     this.setResizable(resizable);
+    this.titleProperty().addListener((observable, oldValue, newValue) -> {
+      if (this.internalTitleUpdate) return;
+      this.internalTitleUpdate = true;
+      this.titleProperty().setValue(newValue + " – " + App.NAME);
+      this.internalTitleUpdate = false;
+    });
     this.setTitle(config.language().translate("dialog.%s.title".formatted(name),
         this.getTitleFormatArgs().toArray(FormatArg[]::new)));
     this.setIcon(config.theme().getAppIcon());

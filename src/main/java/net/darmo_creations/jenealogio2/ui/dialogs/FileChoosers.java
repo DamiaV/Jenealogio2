@@ -1,6 +1,7 @@
 package net.darmo_creations.jenealogio2.ui.dialogs;
 
 import javafx.stage.*;
+import net.darmo_creations.jenealogio2.*;
 import net.darmo_creations.jenealogio2.config.*;
 import net.darmo_creations.jenealogio2.io.*;
 import net.darmo_creations.jenealogio2.utils.*;
@@ -186,7 +187,7 @@ public final class FileChoosers {
       @NotNull String... extensions
   ) {
     final FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle(config.language().translate("dialog.%s.title".formatted(titleKey)));
+    fileChooser.setTitle(config.language().translate("dialog.%s.title".formatted(titleKey)) + " – " + App.NAME);
     if (extensions.length != 0) {
       final List<String> exts = Arrays.stream(extensions)
           .map(e -> "*" + e)
