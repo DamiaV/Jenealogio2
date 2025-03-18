@@ -50,6 +50,7 @@ public class AppController {
   private final Button saveToolbarButton = new Button();
   private final Button undoToolbarButton = new Button();
   private final Button redoToolbarButton = new Button();
+  private final Button editDocumentsToolbarButton = new Button();
   private final Button previousSelectionToolbarButton = new Button();
   private final Button nextSelectionToolbarButton = new Button();
   private final Button setAsRootToolbarButton = new Button();
@@ -57,7 +58,6 @@ public class AppController {
   private final Button addSiblingToolbarButton = new Button();
   private final Button editParentsToolbarButton = new Button();
   private final Button editLifeEventsToolbarButton = new Button();
-  private final Button editDocumentsToolbarButton = new Button();
 
   // File managers
   private final FamilyTreeWriter familyTreeWriter = new FamilyTreeWriter();
@@ -431,6 +431,15 @@ public class AppController {
 
     //
 
+    this.editDocumentsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.edit_documents")));
+    this.editDocumentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_TREE_DOCUMENTS, Icon.Size.BIG));
+    this.editDocumentsToolbarButton.setOnAction(event -> this.onEditTreeDocumentsAction());
+    toolbar.getItems().add(this.editDocumentsToolbarButton);
+
+    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
+
+    //
+
     this.previousSelectionToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.previous_selection")));
     this.previousSelectionToolbarButton.setGraphic(theme.getIcon(Icon.PERSON_BACK, Icon.Size.BIG));
     this.previousSelectionToolbarButton.setOnAction(event -> this.onNavigateSelectionHistory(-1));
@@ -475,13 +484,6 @@ public class AppController {
     this.editLifeEventsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_LIFE_EVENTS, Icon.Size.BIG));
     this.editLifeEventsToolbarButton.setOnAction(event -> this.onEditLifeEventsAction());
     toolbar.getItems().add(this.editLifeEventsToolbarButton);
-
-    toolbar.getItems().add(new Separator(Orientation.VERTICAL));
-
-    this.editDocumentsToolbarButton.setTooltip(new Tooltip(language.translate("toolbar.edit_documents")));
-    this.editDocumentsToolbarButton.setGraphic(theme.getIcon(Icon.EDIT_TREE_DOCUMENTS, Icon.Size.BIG));
-    this.editDocumentsToolbarButton.setOnAction(event -> this.onEditTreeDocumentsAction());
-    toolbar.getItems().add(this.editDocumentsToolbarButton);
 
     toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 
