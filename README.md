@@ -65,18 +65,19 @@ I tried to follow these suggestions in Jenealogio 2. Here’s how those points h
 2. There are currently two family links that can be defined manually: parent-child relations and relations between
    partners/spouses. Siblings are deduced from the parents they have in common. There are no restrictions about who can
    be related to whom.
-3. You can support any number of the following parent types:
-    * Non-biological parents: people that are recognized as parents, without any genetic link to the children
-      (e.g. in same-sex couples)
+3. You can specify any number of the following parent types:
+    * Non-biological parents: people that are recognized as parents, without any genetic link to the child
+      (e.g. in same-sex couples).
     * Adoptive parents
     * Foster parents
     * Godparents
 
    The other supported parental relations are:
-    * Biological parents (2 max):
-    * Surrogate parent (1 max)
-    * Egg donor (1 max)
-    * Sperm donor (1 max)
+    * Biological parents (2 max): people from the family unit who gave their own genetic material to the child,
+      excluding donors.
+    * Surrogate parent (1 max): person, generally external to the family unit, that bore the child.
+    * Egg donor (1 max): person, generally external to the family unit, that gave their eggs.
+    * Sperm donor (1 max): person, generally external to the family unit, that gave their sperm.
 4. See above item. There are two available tree representations:
     * Genetic/biological: Classical tree representation showing only biological relations.
       This includes surrogate parent and egg/sperm donors.
