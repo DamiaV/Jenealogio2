@@ -17,11 +17,11 @@ public final class PseudoClasses {
    */
   public static final PseudoClass SEARCH_MATCH = PseudoClass.getPseudoClass("search-match");
   /**
-   * Mark a {@link PersonWidget} as being selected.
+   * Marks a {@link PersonWidget} as being selected.
    */
   public static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
   /**
-   * Mark a {@link TableCell} as being disabled.
+   * Marks a {@link TableCell} as being disabled.
    */
   public static final PseudoClass DISABLED = PseudoClass.getPseudoClass("disabled");
 
