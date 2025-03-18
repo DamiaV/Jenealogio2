@@ -328,7 +328,7 @@ public abstract class PersonTreeView extends FamilyTreeComponent
 
     final double xOffset = minX;
     final double yOffset = minY;
-    final double gap = HGAP;
+    final double gap = 20;
     children.forEach(w -> {
       w.setLayoutX(w.getLayoutX() - xOffset + gap);
       w.setLayoutY(w.getLayoutY() - yOffset + gap);
