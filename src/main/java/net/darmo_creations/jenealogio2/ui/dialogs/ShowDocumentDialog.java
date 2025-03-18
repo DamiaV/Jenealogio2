@@ -61,7 +61,9 @@ public class ShowDocumentDialog extends DocumentViewDialogBase<Void>
         5,
         this.fileExtensionLabel,
         new Label(language.translate("dialog.show_document.date")),
-        this.dateTimeLabel
+        this.dateTimeLabel,
+        new Spacer(Orientation.HORIZONTAL),
+        this.openFileButton
     );
 
     final ScrollPane descriptionScroll = new ScrollPane(this.descriptionPanel);
@@ -116,7 +118,9 @@ public class ShowDocumentDialog extends DocumentViewDialogBase<Void>
           l -> l.onClick(new LifeEventClickedEvent(e)));
   }
 
+  @Override
   public void setDocument(final @NotNull AttachedDocument document) {
+    super.setDocument(document);
     this.setTitle(document.fileName());
     final Icon fileTypeIcon = Icon.forFile(document.fileName());
     final Image image;

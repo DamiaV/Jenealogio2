@@ -116,7 +116,12 @@ public class EditDocumentDialog extends DocumentViewDialogBase<ButtonType>
 
     final VBox content = new VBox(
         5,
-        new Label(language.translate("dialog.edit_document.name")),
+        new HBox(
+            5,
+            new Label(language.translate("dialog.edit_document.name")),
+            new Spacer(Orientation.HORIZONTAL),
+            this.openFileButton
+        ),
         documentNameBox,
         new Label(language.translate("dialog.edit_document.date")),
         this.dateTimeSelector,
@@ -195,7 +200,7 @@ public class EditDocumentDialog extends DocumentViewDialogBase<ButtonType>
    * @param familyTree The family tree the document belongs to.
    */
   public void setDocument(@NotNull AttachedDocument document, @NotNull FamilyTree familyTree) {
-    this.document = Objects.requireNonNull(document);
+    this.setDocument(document);
     this.familyTree = Objects.requireNonNull(familyTree);
     this.setTitle(this.config.language().translate("dialog.edit_document.title",
         new FormatArg("name", document.fileName())));

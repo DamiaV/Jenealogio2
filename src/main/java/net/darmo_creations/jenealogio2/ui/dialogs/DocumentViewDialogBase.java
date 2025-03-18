@@ -7,7 +7,12 @@ import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import net.darmo_creations.jenealogio2.config.*;
+import net.darmo_creations.jenealogio2.config.theme.*;
+import net.darmo_creations.jenealogio2.io.*;
+import net.darmo_creations.jenealogio2.model.*;
 import org.jetbrains.annotations.*;
+
+import java.util.*;
 
 /**
  * Base class for dialogs that show a document.
@@ -18,6 +23,9 @@ public abstract class DocumentViewDialogBase<R> extends DialogBase<R> {
   private final HBox imageViewBox;
   protected final ImageView imageView = new ImageView();
   private final SplitPane content;
+  protected final Button openFileButton = new Button();
+
+  private AttachedDocument document;
 
   protected DocumentViewDialogBase(
       @NotNull Config config,
@@ -40,6 +48,10 @@ public abstract class DocumentViewDialogBase<R> extends DialogBase<R> {
     this.imageView.setPreserveRatio(true);
     this.imageView.managedProperty().bind(this.imageView.visibleProperty());
 
+    this.openFileButton.setText(config.language().translate("document_view_dialog.open_file"));
+    this.openFileButton.setGraphic(config.theme().getIcon(Icon.SHOW_FILE_IN_EXPLORER, Icon.Size.SMALL));
+    this.openFileButton.setOnAction(event -> FileUtils.openInFileExplorer(this.document().path()));
+
     this.content = new SplitPane(this.imageViewBox);
     this.content.setOrientation(Orientation.VERTICAL);
     this.content.setDividerPositions(0.65);
@@ -61,6 +73,14 @@ public abstract class DocumentViewDialogBase<R> extends DialogBase<R> {
     if (this.content.getItems().size() == 1)
       this.content.getItems().add(node);
     else this.content.getItems().set(1, node);
+  }
+
+  protected AttachedDocument document() {
+    return this.document;
+  }
+
+  protected void setDocument(@NotNull AttachedDocument document) {
+    this.document = Objects.requireNonNull(document);
   }
 
   private void updateImageViewSize() {
