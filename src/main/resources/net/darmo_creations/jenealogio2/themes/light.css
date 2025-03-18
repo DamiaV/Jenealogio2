@@ -69,13 +69,8 @@ Text.hyperlink {
 }
 
 .person-widget {
-  -fx-padding: 0.5em;
-  -fx-border-radius: 3px;
-  -fx-background-radius: 3px;
   -fx-background-color: derive(-fx-base, -10%);
   -fx-border-color: derive(-fx-base, -20%);
-  -fx-border-width: 2px;
-  -fx-cursor: hand;
 }
 
 .person-widget:hover {

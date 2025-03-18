@@ -2,6 +2,14 @@
  * This stylesheet is always loaded before any theme-specific stylesheet.
  */
 
+.person-widget {
+  -fx-padding: 0.5em;
+  -fx-border-radius: 3px;
+  -fx-background-radius: 3px;
+  -fx-border-width: 2px;
+  -fx-cursor: hand;
+}
+
 .table-row-cell > .table-cell:disabled {
   -fx-opacity: 0.4;
 }
@@ -24,7 +32,8 @@
   -fx-font-style: italic;
 }
 
-.person-details .life-events-list-item, .clickable-image {
+.person-details .life-events-list-item,
+.clickable-image {
   -fx-cursor: hand;
 }
 
@@ -53,7 +62,8 @@
   -fx-underline: false;
 }
 
-.map-attributions .hyperlink:visited, .map-attributions .hyperlink:armed {
+.map-attributions .hyperlink:visited,
+.map-attributions .hyperlink:armed {
   -fx-text-fill: -fx-accent;
   -fx-underline: false;
 }
